@@ -1,0 +1,30 @@
+.richText-rbx h1{
+    color: #02542d;
+}
+.richText-rbx h2{
+    color: #02542d;
+}
+.richText-rbx h3{
+    color: #02542d;
+}
+.richText-rbx h4{
+    color: #02542d;
+}
+.richText-rbx p{
+    color: #585858;
+    text-align: justify;
+    text-justify: inter-word;
+}
+.richText-rbx a{
+    color: #4f46e5;
+}
+.richText-rbx img{
+    border-radius: 0.5em;
+    margin: 1em auto;
+}
+.card-rbx{
+    border-radius: 0.5em;
+    background-color: white;
+    padding: 2em;
+    box-shadow: 0.5em 0.5em 1em rgba(0,0,0,0.7);
+}
