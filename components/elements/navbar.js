@@ -12,9 +12,13 @@ import {
 } from "utils/types";
 import { getButtonAppearance } from "utils/button";
 import CustomLink from "./custom-link";
+import { signIn, signOut, useSession } from "next-auth/client"
+
+
 
 const Navbar = ({ navbar }) => {
   const [mobileMenuIsShown, setMobileMenuIsShown] = useState(false);
+  const [session, loading] = useSession();
 
   return (
     <>
@@ -45,6 +49,19 @@ const Navbar = ({ navbar }) => {
               ))}
             </ul>
           </div>
+          {!session && (
+            <>
+              Not signed in <br />
+              <button onClick={() => signIn()}>Sign in</button>
+            </>
+          )}
+          {session && (
+            <>
+              Signed in as {session.user.email} <br />
+              <button onClick={() => signOut()}>Sign out</button>
+            </>
+          )}
+
           {/* Hamburger menu on mobile */}
           <button
             onClick={() => setMobileMenuIsShown(true)}
