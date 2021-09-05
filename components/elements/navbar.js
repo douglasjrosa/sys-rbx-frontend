@@ -23,25 +23,25 @@ const Navbar = ({ navbar }) => {
   return (
     <>
       {/* The actual navbar */}
-      <nav className="shadow-lg py-6 sm:py-3 bg-white">
-        <div className="container flex flex-row items-center justify-between">
+      <nav classname="">
+        <div classname="">
           {/* Content aligned to the left */}
-          <div className="flex flex-row items-center">
+          <div classname="">
             <Link href="/[[...slug]]" as="/">
               <a aria-label="Página inicial">
                 <Image
                   media={navbar.logo}
-                  className="h-10 w-auto object-contain"
+                  classname=""
                   alt="Logomarca Ribermax"
                 />
               </a>
             </Link>
             {/* List of links on desktop */}
-            <ul className="hidden list-none md:flex flex-row gap-4 items-baseline ml-10 text-lg">
+            <ul classname="">
               {navbar.links.map((navLink) => (
                 <li key={navLink.id}>
                   <CustomLink link={navLink}>
-                    <div className="hover:text-gray-900 px-2 py-1">
+                    <div classname="">
                       {navLink.text}
                     </div>
                   </CustomLink>
@@ -65,14 +65,14 @@ const Navbar = ({ navbar }) => {
           {/* Hamburger menu on mobile */}
           <button
             onClick={() => setMobileMenuIsShown(true)}
-            className="p-1 block md:hidden"
+            classname=""
             aria-label="Menu principal"
           >
-            <MdMenu className="h-8 w-auto" />
+            <MdMenu classname="" />
           </button>
           {/* CTA button on desktop */}
           {navbar.button && (
-            <div className="hidden md:block">
+            <div classname="">
               <ButtonLink
                 button={navbar.button}
                 appearance={getButtonAppearance(navbar.button.type, "light")}

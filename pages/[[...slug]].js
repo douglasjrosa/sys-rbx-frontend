@@ -1,7 +1,6 @@
 import ErrorPage from "next/error";
 import { getStrapiURL, getPageData } from "utils/api";
 import Sections from "@/components/sections";
-import Seo from "@/components/elements/seo";
 import { useRouter } from "next/dist/client/router";
 
 // The file is called [[...slug]].js because we're using Next's
@@ -22,8 +21,6 @@ const DynamicPage = ({ sections, metadata, preview }) => {
   }
   return (
     <>
-      {/* Add meta tags for SEO*/}
-      <Seo metadata={metadata} />
       {/* Display content sections */}
       <Sections sections={sections} preview={preview} />
     </>

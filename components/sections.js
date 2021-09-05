@@ -42,11 +42,11 @@ const PreviewModeBanner = () => {
   )}`;
 
   return (
-    <div className="py-4 bg-red-600 text-red-100 font-semibold uppercase tracking-wide">
-      <div className="container">
+    <div classname="">
+      <div classname="">
         Preview mode is on.{" "}
         <a
-          className="underline"
+          classname=""
           href={`/api/exit-preview?redirect=${router.asPath}`}
         >
           Turn off
@@ -59,7 +59,7 @@ const PreviewModeBanner = () => {
 // Display the list of sections
 const Sections = ({ sections, preview }) => {
   return (
-    <div className="flex flex-col">
+    <div classname="">
       {/* Show a banner if preview mode is on */}
       {preview && <PreviewModeBanner />}
       {/* Show the actual sections */}

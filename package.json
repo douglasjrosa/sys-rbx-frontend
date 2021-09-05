@@ -8,30 +8,23 @@
     "start": "next start"
   },
   "dependencies": {
-    "@tailwindcss/postcss7-compat": "^2.0.2",
-    "@tailwindcss/typography": "^0.3.0",
+    "@chakra-ui/react": "^1.6.7",
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
     "autoprefixer": "^9",
     "axios": "^0.21.3",
     "classnames": "^2.2.6",
     "date-fns": "2.14.0",
     "formik": "^2.2.6",
+    "framer-motion": "^4",
     "mongodb": "^3.5.9",
     "next": "^11.0.0",
     "next-auth": "^3.29.0",
-    "next-seo": "^4.7.1",
-    "postcss": "^7",
-    "postcss-nested": "^4.2.3",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-icons": "^3.10.0",
     "react-markdown": "^6.0.2",
-    "sitemap": "^7.0.0",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.2",
     "yup": "^0.32.8"
-  },
-  "devDependencies": {
-    "postcss-flexbugs-fixes": "4.2.1",
-    "postcss-preset-env": "^6.7.0"
   }
 }
