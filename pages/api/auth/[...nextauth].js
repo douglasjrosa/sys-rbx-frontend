@@ -1,36 +1,65 @@
-import NextAuth from "next-auth";
-import Providers from "next-auth/providers";
+import NextAuth from 'next-auth'
+import Providers from 'next-auth/providers'
+import axios from 'axios'
 
-export default NextAuth({
-  Providers: [
+const options = {
+  providers: [
     Providers.Credentials({
-      // The name to display on the sign in form (e.g. 'Sign in with...')
-      name: "Credentials",
-      // The credentials is used to generate a suitable form on the sign in page.
-      // You can specify whatever fields you are expecting to be submitted.
-      // e.g. domain, username, password, 2FA token, etc.
+      name: 'Credentials',
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
-        password: { label: "Password", type: "password" },
+        email: { label: "Email", type: "text", placeholder: "test@test.com" },
+        password: {  label: "Password", type: "password" }
       },
-      async authorize(credentials, req) {
-        // Add logic here to look up the user from the credentials supplied
-        const user = { id: 1, name: "J Smith", email: "jsmith@example.com" };
-
-        if (user) {
-          // Any object returned will be saved in `user` property of the JWT
-          return user;
-        } else {
-          // If you return null or false then the credentials will be rejected
+    async authorize(credentials) {
+        try {
+          const { data } = await axios.post(`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/auth/local`, {
+            identifier: credentials.email,
+            password: credentials.password
+          });
+          if (data) {
+            return data;
+          }
+          else {
+            return null;
+          }
+        } catch (e) {
+          // console.log('caught error');
+          // const errorMessage = e.response.data.message
+          // Redirecting to the login page with error message          in the URL
+          // throw new Error(errorMessage + '&email=' + credentials.email)
           return null;
-          // You can also Reject this callback with an Error or with a URL:
-          // throw new Error('error message') // Redirect to error page
-          // throw '/path/to/redirect'        // Redirect to a URL
         }
-      },
+      }
     })
-  ]//,
+  ],
 
-  // A database is optional, but required to persist accounts in a database
-  //database: null, //process.env.DATABASE_URL,
-});
+  pages: {
+    signIn: '/auth/signin'
+  },
+
+  session: {
+    jwt: true,
+  },
+
+  callbacks: {
+    // Getting the JWT token from API response
+    jwt: async (token, user, account) => {
+      const isSignIn = user ? true : false;
+      if (isSignIn) {
+        token.jwt = user.jwt;
+        token.id = user.user.id;
+        token.name = user.user.username;
+        token.email = user.user.email;
+      }
+      return Promise.resolve(token);
+    },
+  
+    session: async (session, user) => {
+      session.jwt = user.jwt;
+      session.id = user.id;
+      return Promise.resolve(session);
+    },
+  }
+}
+
+export default (req, res) => NextAuth(req, res, options)

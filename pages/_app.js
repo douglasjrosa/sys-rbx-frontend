@@ -24,7 +24,6 @@ const MyApp = ({ Component, pageProps }) => {
   }
   const { metadata } = global;
 
-  
   return (
     <Provider session={pageProps.session}>
       <AppHead favicon={getStrapiMedia(global.favicon.url)} />
