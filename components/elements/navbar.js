@@ -1,98 +1,123 @@
 import { useState } from "react";
-import Link from "next/link";
 import PropTypes from "prop-types";
 import { MdMenu } from "react-icons/md";
 import MobileNavMenu from "./mobile-nav-menu";
-import ButtonLink from "./button-link";
-import Image from "./image";
+import StrapiImage from "./image";
 import {
   mediaPropTypes,
   linkPropTypes,
   buttonLinkPropTypes,
 } from "utils/types";
-import { getButtonAppearance } from "utils/button";
-import CustomLink from "./custom-link";
 import { signIn, signOut, useSession } from "next-auth/client"
-
-
+import NextLink from "next/link";
+import {
+  Flex,
+  Box,
+  Text,
+  List,
+  ListItem,
+  ListIcon,
+  Link,
+  Image,
+  Spacer,
+  Divider,
+  Button,
+  Center,
+  Avatar
+} from "@chakra-ui/react"
+import {
+  ArrowForwardIcon,
+  ExternalLinkIcon,
+  UnlockIcon
+} from '@chakra-ui/icons';
+import { useRouter } from 'next/router'
 
 const Navbar = ({ navbar }) => {
   const [mobileMenuIsShown, setMobileMenuIsShown] = useState(false);
   const [session, loading] = useSession();
-
+  
+  const router = useRouter();
   return (
-    <>
+    <Flex
+      flexDir="column"
+      justifyContent="space-between"
+      h="100vh"
+    >
       {/* The actual navbar */}
-      <nav classname="">
-        <div classname="">
-          {/* Content aligned to the left */}
-          <div classname="">
-            <Link href="/[[...slug]]" as="/">
-              <a aria-label="Página inicial">
-                <Image
-                  media={navbar.logo}
-                  classname=""
-                  alt="Logomarca Ribermax"
-                />
-              </a>
-            </Link>
-            {/* List of links on desktop */}
-            <ul classname="">
-              {navbar.links.map((navLink) => (
-                <li key={navLink.id}>
-                  <CustomLink link={navLink}>
-                    <div classname="">
-                      {navLink.text}
-                    </div>
-                  </CustomLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-          {!session && (
-            <>
-              Not signed in <br />
-              <button onClick={() => signIn()}>Sign in</button>
-            </>
-          )}
-          {session && (
-            <>
-              Signed in as {session.user.email} <br />
-              <button onClick={() => signOut()}>Sign out</button>
-            </>
-          )}
-
-          {/* Hamburger menu on mobile */}
-          <button
-            onClick={() => setMobileMenuIsShown(true)}
-            classname=""
-            aria-label="Menu principal"
-          >
-            <MdMenu classname="" />
-          </button>
-          {/* CTA button on desktop */}
-          {navbar.button && (
-            <div classname="">
-              <ButtonLink
-                button={navbar.button}
-                appearance={getButtonAppearance(navbar.button.type, "light")}
-                compact
-                aria-label="Menu principal"
-              />
-            </div>
-          )}
-        </div>
-      </nav>
-
-      {/* Mobile navigation menu panel */}
-      {mobileMenuIsShown && (
-        <MobileNavMenu
-          navbar={navbar}
-          closeSelf={() => setMobileMenuIsShown(false)}
-          aria-label="Fechar menu principal"
+      <Flex
+        flexDir="column"
+        as="nav"
+      >
+        <Image
+          rounded="5px"
+          w="80%"
+          m="10%"
+          src="https://rbx-backend-media.s3.sa-east-1.amazonaws.com/thumbnail_logomarca_p_min_86fe429da5.webp"
+          alt="Ribermax Logomarca"
         />
+        <Flex
+          flexDir="column"
+          m="10%"
+        >
+          <List spacing={5}>
+            {navbar.links.map((navLink) => (
+              <ListItem key={navLink.id}>
+                <Text fontSize="lg">
+                  <ListIcon
+                    color="greenyellow"
+                    as={ArrowForwardIcon}
+                  />
+                  <NextLink href={navLink.url} as={navLink.url} passHref>
+                    <Link 
+                      color={
+                        router.asPath === navLink.url ? "green.300" : "whiteAlpha.800"
+                      }>
+                      {navLink.text}
+                    </Link>
+                  </NextLink>
+                </Text>
+              </ListItem>
+            ))}
+          </List>
+        </Flex>
+      </Flex>
+      {!session && (
+        <Flex
+          m="10%"
+        >
+          <Button
+            onClick={() => signIn()}
+            leftIcon={<UnlockIcon />}
+            colorScheme="success"
+          >
+            Entrar
+          </Button>
+        </Flex>
       )}
-    </>
+      {session && (
+        <Flex
+          flexDir="column"
+          align="center"
+        >
+          <Avatar
+            name={session.user.name}
+            src={session.user.image}
+          />
+          <Text
+            color="whiteAlpha.800"
+          >
+            {session.user.name}
+          </Text>
+          <Button
+            colorScheme="secondary"
+            leftIcon={<ExternalLinkIcon />}
+            onClick={() => signOut()}
+          >
+            Sair
+          </Button>
+        </Flex>
+      )}
+    </Flex>
   );
 };
 

@@ -1,13 +1,18 @@
 import { getStrapiMedia } from "utils/media";
 import PropTypes from "prop-types";
 import { mediaPropTypes } from "utils/types";
+import { Image } from "@chakra-ui/react"
 
-const Image = ({ media, className }) => {
+const StrapiImage = ({ media, ...props }) => {
   const { url, alternativeText } = media;
   const fullUrl = getStrapiMedia(url);
 
   return (
-    <img src={fullUrl} alt={alternativeText || ""} className={className} />
+    <Image
+      {...props}
+      src={fullUrl}
+      alt={alternativeText || ""}
+    />
   );
 };
 
@@ -16,4 +21,4 @@ Image.propTypes = {
   className: PropTypes.string,
 };
 
-export default Image;
+export default StrapiImage;

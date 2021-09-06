@@ -5,9 +5,11 @@ import { useRouter } from "next/router";
 import { getStrapiMedia } from "utils/media";
 import { getGlobalData } from "utils/api";
 import Layout from "@/components/layout";
-import "@/styles/index.css";
-import "@/styles/rbx.css";
-import { Provider } from "next-auth/client"
+import { Provider } from "next-auth/client";
+import { ChakraProvider, extendTheme, CSSReset } from "@chakra-ui/react";
+import theme from "../styles/theme";
+
+const myTheme = extendTheme(theme);
 
 const MyApp = ({ Component, pageProps }) => {
   // Prevent Next bug when it tries to render the [[...slug]] route
@@ -23,15 +25,15 @@ const MyApp = ({ Component, pageProps }) => {
   }
 
   return (
-    <Provider session={pageProps.session}>
-      {/* Global site metadata */}
-      <AppHead favicon={getStrapiMedia(global.favicon.url)} />
-
-      {/* Display the content */}
-      <Layout global={global}>
-        <Component {...pageProps} />
-      </Layout>
-    </Provider>
+    <ChakraProvider theme={myTheme}>
+      <Provider session={pageProps.session}>
+        <AppHead favicon={getStrapiMedia(global.favicon.url)} />
+        <CSSReset />
+        <Layout global={global}>
+          <Component {...pageProps} />
+        </Layout>
+      </Provider>
+    </ChakraProvider>
   );
 };
 

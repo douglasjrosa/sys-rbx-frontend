@@ -1,10 +1,10 @@
 import { fetchAPI } from "utils/api";
 
-const Dashboard = (props) => {
+const Painel = (props) => {
     
-    console.log(props);
+    //console.log(props);
     if(!props) return <h1>Nada ainda...</h1>
-    return <h1>Dashboard</h1>
+    return <h1>Painel</h1>
 };
 
 export async function getServerSideProps(){
@@ -18,4 +18,4 @@ export async function getServerSideProps(){
     }
 }
 
-export default Dashboard;
+export default Painel;
