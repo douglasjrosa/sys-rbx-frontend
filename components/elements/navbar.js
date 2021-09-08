@@ -1,49 +1,29 @@
-import { useState } from "react";
-import PropTypes from "prop-types";
-import { MdMenu } from "react-icons/md";
-import MobileNavMenu from "./mobile-nav-menu";
-import StrapiImage from "./image";
-import {
-  mediaPropTypes,
-  linkPropTypes,
-  buttonLinkPropTypes,
-} from "utils/types";
-import { signIn, signOut, useSession } from "next-auth/client"
 import NextLink from "next/link";
+import { useRouter } from 'next/router';
 import {
   Flex,
-  Box,
-  Text,
-  List,
-  ListItem,
-  ListIcon,
   Link,
+  Text,
+  ListItem,
+  List,
+  ListIcon,
   Image,
-  Spacer,
-  Divider,
-  Button,
-  Center,
-  Avatar
+  Center
 } from "@chakra-ui/react"
-import {
-  ArrowForwardIcon,
-  ExternalLinkIcon,
-  UnlockIcon
-} from '@chakra-ui/icons';
-import { useRouter } from 'next/router'
+import NavMenuItems from "./nav-menu-items";
+import ProfilePopover from "./profile-popover";
 
-const Navbar = ({ navbar }) => {
-  const [mobileMenuIsShown, setMobileMenuIsShown] = useState(false);
-  const [session, loading] = useSession();
+const Navbar = () => {
   
   const router = useRouter();
+  
   return (
     <Flex
       flexDir="column"
       justifyContent="space-between"
       h="100vh"
+      d={["none", "none", "flex", "flex", "flex"]}
     >
-      {/* The actual navbar */}
       <Flex
         flexDir="column"
         as="nav"
@@ -60,19 +40,19 @@ const Navbar = ({ navbar }) => {
           m="10%"
         >
           <List spacing={5}>
-            {navbar.links.map((navLink) => (
-              <ListItem key={navLink.id}>
+            {NavMenuItems.map((navItem) => (
+              <ListItem key={`navbar-${navItem.id}`}>
                 <Text fontSize="lg">
                   <ListIcon
                     color="greenyellow"
-                    as={ArrowForwardIcon}
+                    as={navItem.icon}
                   />
-                  <NextLink href={navLink.url} as={navLink.url} passHref>
+                  <NextLink href={navItem.url} as={navItem.url} passHref>
                     <Link 
                       color={
-                        router.asPath === navLink.url ? "green.300" : "whiteAlpha.800"
+                        router.asPath === navItem.url ? "greenyellow" : "whiteAlpha.800"
                       }>
-                      {navLink.text}
+                      {navItem.text}
                     </Link>
                   </NextLink>
                 </Text>
@@ -81,52 +61,12 @@ const Navbar = ({ navbar }) => {
           </List>
         </Flex>
       </Flex>
-      {!session && (
-        <Flex
-          m="10%"
-        >
-          <Button
-            onClick={() => signIn()}
-            leftIcon={<UnlockIcon />}
-            colorScheme="success"
-          >
-            Entrar
-          </Button>
-        </Flex>
-      )}
-      {session && (
-        <Flex
-          flexDir="column"
-          align="center"
-        >
-          <Avatar
-            name={session.user.name}
-            src={session.user.image}
-          />
-          <Text
-            color="whiteAlpha.800"
-          >
-            {session.user.name}
-          </Text>
-          <Button
-            colorScheme="secondary"
-            leftIcon={<ExternalLinkIcon />}
-            onClick={() => signOut()}
-          >
-            Sair
-          </Button>
-        </Flex>
-      )}
+      <Center
+        my="15px"
+      >
+        <ProfilePopover />
+      </Center>
     </Flex>
   );
 };
-
-Navbar.propTypes = {
-  navbar: PropTypes.shape({
-    logo: mediaPropTypes,
-    links: PropTypes.arrayOf(linkPropTypes),
-    button: buttonLinkPropTypes,
-  }),
-};
-
 export default Navbar;

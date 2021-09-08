@@ -1,9 +1,8 @@
 import Navbar from "./elements/navbar";
-import Footer from "./elements/footer";
-import { Flex, Center, Box } from "@chakra-ui/react"
+import { Flex } from "@chakra-ui/react";
+import MobileNavbar from "./elements/mobile-navbar";
 
-const Layout = ({ children, global }) => {
-  const { navbar, footer } = global;
+const Layout = ({ children }) => {
 
   return (
     <Flex
@@ -16,10 +15,11 @@ const Layout = ({ children, global }) => {
         flexDir="column"
         alignItems="center"
         bg="gray.700"
-        w={["100%", "100%", "20%", "20%", "20%"]}
+        w={["100%", "100%", "15%", "15%", "15%"]}
         minW="150px"
       >
-        <Navbar navbar={navbar} />
+        <Navbar />
+        <MobileNavbar />
       </Flex>
       <Flex
         minH="100vh"
@@ -27,9 +27,8 @@ const Layout = ({ children, global }) => {
         w={["100%", "100%", "80%", "80%", "80%"]}
         flexDir="column"
       >
-        <div className="">{children}</div>
+        {children}
       </Flex>
-      {/* <Footer footer={footer} /> */}
     </Flex>
   );
 };
