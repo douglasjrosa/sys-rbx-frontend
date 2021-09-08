@@ -1,4 +1,4 @@
-const Pessoas = (props) => {
+const Pessoas = () => {
     
     return <h1>Hello World pessoas</h1>
 }

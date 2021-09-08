@@ -1,5 +1,5 @@
 
-const Empresas = (props) => {
+const Empresas = () => {
 
     return <><h1>Empresas</h1></>
 }

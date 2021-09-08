@@ -3,11 +3,9 @@ import Layout from "@/components/layout";
 import { Provider } from "next-auth/client";
 import { ChakraProvider, extendTheme, CSSReset } from "@chakra-ui/react";
 import theme from "../styles/theme";
-
 const myTheme = extendTheme(theme);
 
 const MyApp = ({ Component, pageProps }) => {
-
   return (
     <ChakraProvider theme={myTheme}>
       <Provider session={pageProps.session}>
@@ -18,7 +16,6 @@ const MyApp = ({ Component, pageProps }) => {
           </Layout>
       </Provider>
     </ChakraProvider>
-  );
-};
-
+  )
+}
 export default MyApp;
