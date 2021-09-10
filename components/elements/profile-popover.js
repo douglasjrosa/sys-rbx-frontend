@@ -11,7 +11,6 @@ import {
   Portal,
   Avatar,
   Flex,
-  onClose,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 
@@ -20,7 +19,7 @@ import { signOut, useSession } from "next-auth/client";
 
 const ProfilePopover = () => {
   const [session, loading] = useSession();
-  console.log(session);
+
   return (
     <>
       {session && (
