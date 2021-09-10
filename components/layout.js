@@ -1,4 +1,5 @@
 import Navbar from "./elements/navbar";
+import Loading from "./elements/loading";
 import MobileNavbar from "./elements/mobile-navbar";
 import { Flex } from "@chakra-ui/react";
 import { useSession } from "next-auth/client";
@@ -9,13 +10,14 @@ const Layout = ({ children }) => {
   const router = useRouter()
   const [ session, loading ] = useSession();
 
-  if( loading ) return (<h1>Carregando...</h1>);
+  if( loading ) return <Loading status="Carregando..." />;
   
-  if( !session && router.asPath !== "/auth/signin") router.push("/auth/signin");
+  if( !session && router.asPath !== "/auth/signin"){
+    router.push("/auth/signin");
+    return <Loading status="Redirecionando..." />;
+  }
   
   if(!session && router.asPath === "/auth/signin") return children;
-  
-  if( !session ) return (<h1>Redirecionando...</h1>);
 
   return (
     <Flex

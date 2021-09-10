@@ -2,6 +2,7 @@
   "name": "cms-strapi",
   "version": "1.0.0",
   "scripts": {
+    "serv": "./serv.sh",
     "dev": "next",
     "develop": "next",
     "build": "next build",
