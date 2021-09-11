@@ -10,14 +10,19 @@ const Layout = ({ children }) => {
   const router = useRouter()
   const [ session, loading ] = useSession();
 
-  if( loading ) return <Loading status="Carregando..." />;
+  if( loading ) return <Loading size="200px" >Carregando...</Loading>;
   
   if( !session && router.asPath !== "/auth/signin"){
     router.push("/auth/signin");
-    return <Loading status="Redirecionando..." />;
+    return <Loading size="200px" >Redirecionando...</Loading>;
   }
   
   if(!session && router.asPath === "/auth/signin") return children;
+
+  if(session && router.asPath === "/auth/signin"){
+    router.push("/");
+    return <Loading size="200px" >Redirecionando...</Loading>;
+  }
 
   return (
     <Flex
