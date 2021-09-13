@@ -71,6 +71,7 @@ const MobileNavbar = () => {
                     </MenuList>
                 </Menu>
                 <Text
+                    ml="15px"
                     color="whiteAlpha.800"
                     fontSize="2xl"
                 >

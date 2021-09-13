@@ -15,7 +15,6 @@ const GeneratePdf = ( {html, isAutoPrint, ...props} ) => {
     window.open(URL.createObjectURL(blob));
   };
 
-  console.log(props)
   return (
     <Button  p="0px" bg="white" onClick={generateImage} {...props} >
       <Center>

@@ -9,7 +9,7 @@ const Negocios = () => {
 
   return (
     <div>
-      <GeneratePDF html={ref} w="30px" m="20px" isAutoPrint />
+      <GeneratePDF html={ref} w="30px" m="20px" />
       <div ref={ref}>
         <Produtos />
       </div>
