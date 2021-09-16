@@ -15,21 +15,23 @@ export const Canvas = ({ children }) => {
     )
 }
 
-export const calcVaos = (long, sarrafoLarg) => {
+export const calcVaos = (long, sarrafoLarg, escala) => {
     let vaos = Math.ceil(long / 50) // vão máximo de 50cm
     vaos = Math.max(vaos, 2) // mínimo de 2 vãos
 
-    let vao = long / vaos + sarrafoLarg / 2
-    vao = Number(vao).toFixed(1)
-
-    return { vaos: vaos, vao: vao }
+    const vao = Number(long / vaos).toFixed(1)
+    
+    const sarrafosCount = vaos + 1
+    let vaoPx = (long - sarrafoLarg * sarrafosCount) / vaos + sarrafoLarg * 1.5
+    vaoPx = escalar(vaoPx, escala, true)
+    return { vaos: vaos, vao: vao, vaoPx}
 }
 
 export const CotaE = ({ escala, alt, sarrafoLarg }) => {
-    const { vaos, vao } = calcVaos(alt, sarrafoLarg)
+    const { vao, vaoPx } = calcVaos(alt, sarrafoLarg, escala)
     return (
         <VStack
-            h={escalar(vao, escala, false) - 4 + 'px'}
+            h={vaoPx}
             border="1px solid gray"
             borderRight="none"
             px="3px"
@@ -63,10 +65,10 @@ export const CotaD = ({ cota, escala }) => {
 }
 
 export const CotaHeader = ({ comp, escala, sarrafoLarg }) => {
-    const { vao } = calcVaos(comp, sarrafoLarg)
+    const { vao, vaoPx } = calcVaos(comp, sarrafoLarg, escala)
     return (
         <VStack
-            w={escalar(vao, escala, true)}
+            w={vaoPx}
             border="1px solid gray"
             borderBottom="none"
             py="3px"
@@ -85,6 +87,7 @@ export const CotaBottom = ({ comp, escala }) => {
             borderTop="none"
             py="3px"
             maxH="30px"
+            spacing="0px" 
         >
             <Text align="center">{comp}</Text>
         </VStack>
@@ -122,7 +125,7 @@ export const MeioH = ({ sarrafoLarg, comp, alt, escala, isInverted }) => {
 
     const long = isInverted ? alt : comp
 
-    const { vaos } = calcVaos(long, sarrafoLarg)
+    const { vaos } = calcVaos(long, sarrafoLarg, escala)
 
     const sarrafosMeioCount = vaos - 1
 
@@ -190,8 +193,8 @@ export const QuadroH = ({
                     </Heading>
                 </Box>
             </HStack>
-            <HStack align="start" spacing="0px">
-                <VStack key="col1" w="70px" align="end">
+            <HStack align="start" >
+                <VStack key="col1" w="70px" align="end"  spacing="0px" >
                     <HStack h="30px">
                         <Text>Mad: </Text>
                         <Text>{sarrafoLarg}</Text>
@@ -204,8 +207,8 @@ export const QuadroH = ({
                         />
                     )}
                 </VStack>
-                <VStack key="col2" w="100%">
-                    <VStack h="30px" align="end" w={w}>
+                <VStack key="col2" w={w} p="0%" spacing="0px" >
+                    <VStack h="30px" align="end" w={w} spacing="0px" >
                         {!isInverted && (
                             <CotaHeader
                                 comp={comp}
@@ -214,7 +217,7 @@ export const QuadroH = ({
                             />
                         )}
                     </VStack>
-                    <VStack w={w}>
+                    <VStack w={w} >
                         <Chapa>
                             <Sarrafo h={sarrafoLargPx} />
                             <MeioH
@@ -229,7 +232,7 @@ export const QuadroH = ({
                         <CotaBottom comp={comp} escala={escala} />
                     </VStack>
                 </VStack>
-                <VStack key="col3" align="start">
+                <VStack key="col3" align="start" spacing="0px" >
                     <HStack h="30px">
                         <Text>Ch: </Text>
                         <Text>{chapa}</Text>
