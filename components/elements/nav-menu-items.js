@@ -3,6 +3,7 @@ import { BsPeopleFill } from "react-icons/bs";
 import { FaMoneyBillAlt, FaTasks } from "react-icons/fa";
 import { GiCube } from "react-icons/gi";
 import { MdBusiness } from "react-icons/md";
+import { AiOutlineCodepen } from "react-icons/ai";
 
 const NavMenuItems = [
     {
@@ -28,20 +29,27 @@ const NavMenuItems = [
     },
     {
     id: "4",
+    url: "/orcamentos",
+    text: "Orçamentos",
+    icon: AiOutlineCodepen,
+    iconComponent: <AiOutlineCodepen />
+    },
+    {
+    id: "5",
     url: "/empresas",
     text: "Empresas",
     icon: MdBusiness,
     iconComponent: <MdBusiness />
     },
     {
-    id: "5",
+    id: "6",
     url: "/pessoas",
     text: "Pessoas",
     icon: BsPeopleFill,
     iconComponent: <BsPeopleFill />
     },
     {
-    id: "6",
+    id: "7",
     url: "/produtos",
     text: "Produtos",
     icon: GiCube,
