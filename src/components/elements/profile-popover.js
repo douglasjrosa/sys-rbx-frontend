@@ -13,16 +13,14 @@ import {
   Flex,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
-
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { signOut, useSession } from 'next-auth/client';
 
-const ProfilePopover = () => {
+function ProfilePopover() {
   const [session, loading] = useSession();
-
   return (
     <>
-      {session && (
+      {session ? (
         <Popover>
           {({ onClose }) => (
             <>
@@ -41,7 +39,6 @@ const ProfilePopover = () => {
                   />
                 </Button>
               </PopoverTrigger>
-
               <Portal>
                 <PopoverContent>
                   <PopoverArrow />
@@ -70,8 +67,8 @@ const ProfilePopover = () => {
             </>
           )}
         </Popover>
-      )}
+      ) : null}
     </>
   );
-};
+}
 export default ProfilePopover;

@@ -26,10 +26,12 @@ const options = {
             return null;
           }
         } catch (e) {
-          // console.log('caught error');
-          // const errorMessage = e.response.data.message
-          // Redirecting to the login page with error message          in the URL
-          // throw new Error(errorMessage + '&email=' + credentials.email)
+          /*
+           * Console.log('caught error');
+           * Const errorMessage = e.response.data.message
+           * Redirecting to the login page with error message          in the URL
+           * Throw new Error(errorMessage + '&email=' + credentials.email)
+           */
           return null;
         }
       },
@@ -47,7 +49,7 @@ const options = {
   callbacks: {
     // Getting the JWT token from API response
     jwt: async (token, user, account) => {
-      const isSignIn = user ? true : false;
+      const isSignIn = Boolean(user);
       if (isSignIn) {
         token.jwt = user.jwt;
         token.id = user.user.id;

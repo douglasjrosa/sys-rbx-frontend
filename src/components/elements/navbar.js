@@ -13,15 +13,15 @@ import {
 import NavMenuItems from './nav-menu-items';
 import ProfilePopover from './profile-popover';
 
-const Navbar = () => {
+function Navbar() {
   const router = useRouter();
 
   return (
     <Flex
-      flexDir="column"
-      justifyContent="space-between"
-      h="100vh"
       d={['none', 'none', 'flex', 'flex', 'flex']}
+      flexDir="column"
+      h="100vh"
+      justifyContent="space-between"
     >
       <Flex flexDir="column" as="nav">
         <Image
@@ -54,10 +54,11 @@ const Navbar = () => {
           </List>
         </Flex>
       </Flex>
+
       <Center my="15px">
         <ProfilePopover />
       </Center>
     </Flex>
   );
-};
+}
 export default Navbar;

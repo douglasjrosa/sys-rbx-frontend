@@ -12,19 +12,20 @@ const renderPDFFooter = () => (
     This is a sample footer
   </div>
 );
-
-const PDFLayout = ({ children }) => (
-  <html>
-    <head>
-      <meta charSet="utf8" />
-      <link rel="stylesheet" href="http://localhost:1234/static/pdf.css" />
-    </head>
-    <body>
-      {children}
-      {renderPDFFooter()}
-    </body>
-  </html>
-);
+function PDFLayout({ children }) {
+  return (
+    <html>
+      <head>
+        <meta charSet="utf8" />
+        <link rel="stylesheet" href="http://localhost:1234/static/pdf.css" />
+      </head>
+      <body>
+        {children}
+        {renderPDFFooter()}
+      </body>
+    </html>
+  );
+}
 
 PDFLayout.propTypes = {
   children: PropTypes.node,

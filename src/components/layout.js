@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import Navbar from './elements/navbar';
 import Loading from './elements/loading';
 import MobileNavbar from './elements/mobile-navbar';
@@ -5,19 +6,22 @@ import { Flex } from '@chakra-ui/react';
 import { useSession } from 'next-auth/client';
 import { useRouter } from 'next/router';
 
-// eslint-disable-next-line react/prop-types
-const Layout = ({ children }) => {
-  const router = useRouter();
-  const [session, loading] = useSession();
+function Layout({ children }) {
+  const router = useRouter(),
+    [session, loading] = useSession();
 
-  if (loading) return <Loading size="200px">Carregando...</Loading>;
+  if (loading) {
+    return <Loading size="200px">Carregando...</Loading>;
+  }
 
   if (!session && router.asPath !== '/auth/signin') {
     router.push('/auth/signin');
     return <Loading size="200px">Redirecionando...</Loading>;
   }
 
-  if (!session && router.asPath === '/auth/signin') return children;
+  if (!session && router.asPath === '/auth/signin') {
+    return children;
+  }
 
   if (session && router.asPath === '/auth/signin') {
     router.push('/');
@@ -32,25 +36,27 @@ const Layout = ({ children }) => {
       maxW="2000px"
     >
       <Flex
-        flexDir="column"
         alignItems="center"
         bg="gray.700"
-        w={['100%', '100%', '15%', '15%', '15%']}
+        flexDir="column"
         minW="150px"
+        w={['100%', '100%', '15%', '15%', '15%']}
       >
         <Navbar />
+
         <MobileNavbar />
       </Flex>
+
       <Flex
+        flexDir="column"
         minH="100vh"
         overflow="auto"
         w={['100%', '100%', '80%', '80%', '80%']}
-        flexDir="column"
       >
         {children}
       </Flex>
     </Flex>
   );
-};
+}
 
 export default Layout;

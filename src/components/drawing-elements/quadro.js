@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { escalar } from '../../../utils/rbx';
 
-export const Canvas = ({ children }) => {
+export function Canvas({ children }) {
   return (
     <Box
       maxW="750px"
@@ -23,40 +23,41 @@ export const Canvas = ({ children }) => {
       m="30px"
     />
   );
-};
+}
 
 export const calcVaos = (long, sarrafoLarg, escala) => {
-  let vaos = Math.ceil(long / 50); // vão máximo de 50cm
-  vaos = Math.max(vaos, 2); // mínimo de 2 vãos
+  let vaos = Math.ceil(long / 50); // Vão máximo de 50cm
+  vaos = Math.max(vaos, 2); // Mínimo de 2 vãos
 
-  const vao = Number(long / vaos).toFixed(1);
-
-  const sarrafosCount = vaos + 1;
+  const vao = Number(long / vaos).toFixed(1),
+    sarrafosCount = vaos + 1;
   let vaoPx = (long - sarrafoLarg * sarrafosCount) / vaos + sarrafoLarg * 1.5;
   vaoPx = escalar(vaoPx, escala, true);
   return { vaos: vaos, vao: vao, vaoPx };
 };
 
-export const CotaE = ({ escala, alt, sarrafoLarg }) => {
+export function CotaE({ escala, alt, sarrafoLarg }) {
   const { vao, vaoPx } = calcVaos(alt, sarrafoLarg, escala);
   return (
     <VStack
-      h={vaoPx}
       border="1px solid gray"
       borderRight="none"
-      px="3px"
+      h={vaoPx}
       maxW="50px"
+      px="3px"
     >
       <Spacer />
+
       <Box>
         <Text transform="rotate(-90deg)">{vao}</Text>
       </Box>
+
       <Spacer />
     </VStack>
   );
-};
+}
 
-export const CotaD = ({ cota, escala }) => {
+export function CotaD({ cota, escala }) {
   return (
     <VStack
       h={escalar(cota, escala, true)}
@@ -66,15 +67,17 @@ export const CotaD = ({ cota, escala }) => {
       maxW="50px"
     >
       <Spacer />
+
       <Box>
         <Text transform="rotate(-90deg)">{cota}</Text>
       </Box>
+
       <Spacer />
     </VStack>
   );
-};
+}
 
-export const CotaHeader = ({ comp, escala, sarrafoLarg }) => {
+export function CotaHeader({ comp, escala, sarrafoLarg }) {
   const { vao, vaoPx } = calcVaos(comp, sarrafoLarg, escala);
   return (
     <VStack
@@ -87,9 +90,9 @@ export const CotaHeader = ({ comp, escala, sarrafoLarg }) => {
       <Text align="center">{vao}</Text>
     </VStack>
   );
-};
+}
 
-export const CotaBottom = ({ comp, escala }) => {
+export function CotaBottom({ comp, escala }) {
   return (
     <VStack
       w={escalar(comp, escala, true)}
@@ -102,9 +105,9 @@ export const CotaBottom = ({ comp, escala }) => {
       <Text align="center">{comp}</Text>
     </VStack>
   );
-};
+}
 
-export const Chapa = ({ children }) => {
+export function Chapa({ children }) {
   return (
     <VStack
       spacing="0px"
@@ -114,33 +117,26 @@ export const Chapa = ({ children }) => {
       children={children}
     />
   );
-};
+}
 
-export const Sarrafo = (props) => {
+export function Sarrafo(props) {
   return (
     <HStack h="100%" w="100%" {...props}>
       <Box border="1px solid gray" bg="rgb(255,225,100)" h="100%" w="100%" />
     </HStack>
   );
-};
+}
 
-export const MeioH = ({ sarrafoLarg, comp, alt, escala, isInverted }) => {
-  const h = escalar(alt - 2 * sarrafoLarg, escala, true);
-  const wBorda = escalar(sarrafoLarg, escala, true);
-
-  const long = isInverted ? alt : comp;
-
-  const { vaos } = calcVaos(long, sarrafoLarg, escala);
-
-  const sarrafosMeioCount = vaos - 1;
-
-  const wMeio = isInverted
-    ? escalar(comp - 2 * sarrafoLarg, escala, true)
-    : wBorda;
-  const hMeio = isInverted ? escalar(sarrafoLarg, escala, true) : h;
-
-  const meio = [];
-  const meioInvertido = [];
+export function MeioH({ sarrafoLarg, comp, alt, escala, isInverted }) {
+  const h = escalar(alt - 2 * sarrafoLarg, escala, true),
+    wBorda = escalar(sarrafoLarg, escala, true),
+    long = isInverted ? alt : comp,
+    { vaos } = calcVaos(long, sarrafoLarg, escala),
+    sarrafosMeioCount = vaos - 1,
+    wMeio = isInverted ? escalar(comp - 2 * sarrafoLarg, escala, true) : wBorda,
+    hMeio = isInverted ? escalar(sarrafoLarg, escala, true) : h,
+    meio = [],
+    meioInvertido = [];
 
   meio.push(<Spacer key="spacerInicio" />);
 
@@ -159,14 +155,17 @@ export const MeioH = ({ sarrafoLarg, comp, alt, escala, isInverted }) => {
   return (
     <HStack key="meioH" w="100%" h={h} spacing="0px">
       <Sarrafo key="bordaInicio" w={wBorda} />
+
       {!isInverted && meio}
-      {isInverted && meioInvertido}
+
+      {isInverted ? meioInvertido : null}
+
       <Sarrafo key="bordaFim" w={wBorda} />
     </HStack>
   );
-};
+}
 
-export const QuadroH = ({
+export function QuadroH({
   sarrafoLarg,
   chapa,
   comp,
@@ -175,39 +174,42 @@ export const QuadroH = ({
   qtde,
   partName,
   sarrafoEsp,
-}) => {
-  const isInverted = alt >= comp * 1.2;
-  const sarrafoLargPx = escalar(sarrafoLarg, escala, true);
-
-  const w = escalar(comp, escala, true);
-  const h = escalar(alt, escala, true);
+}) {
+  const isInverted = alt >= comp * 1.2,
+    sarrafoLargPx = escalar(sarrafoLarg, escala, true),
+    w = escalar(comp, escala, true),
+    h = escalar(alt, escala, true);
 
   let longMeio = !isInverted ? alt : comp;
   longMeio -= sarrafoLarg * 2;
 
-  const longVaos = isInverted ? alt : comp;
-  const { vaos } = calcVaos(longVaos, sarrafoLarg);
-  const qtdeMeio = vaos - 1;
+  const longVaos = isInverted ? alt : comp,
+    { vaos } = calcVaos(longVaos, sarrafoLarg),
+    qtdeMeio = vaos - 1;
 
   return (
     <VStack fontSize="10pt">
       <HStack align="start" w="100%">
         <Box>
           <Heading as="h2" size="md">
-            {partName} = {qtde}
+            {partName} ={qtde}
           </Heading>
         </Box>
       </HStack>
+
       <HStack align="start">
         <VStack key="col1" w="70px" align="end" spacing="0px">
           <HStack h="30px">
             <Text>Mad: </Text>
+
             <Text>{sarrafoLarg}</Text>
           </HStack>
-          {isInverted && (
+
+          {isInverted ? (
             <CotaE sarrafoLarg={sarrafoLarg} escala={escala} alt={alt} />
-          )}
+          ) : null}
         </VStack>
+
         <VStack key="col2" w={w} p="0%" spacing="0px">
           <VStack h="30px" align="end" w={w} spacing="0px">
             {!isInverted && (
@@ -218,9 +220,11 @@ export const QuadroH = ({
               />
             )}
           </VStack>
+
           <VStack w={w}>
             <Chapa>
               <Sarrafo h={sarrafoLargPx} />
+
               <MeioH
                 comp={comp}
                 alt={alt}
@@ -228,19 +232,25 @@ export const QuadroH = ({
                 escala={escala}
                 isInverted={isInverted}
               />
+
               <Sarrafo h={sarrafoLargPx} />
             </Chapa>
+
             <CotaBottom comp={comp} escala={escala} />
           </VStack>
         </VStack>
+
         <VStack key="col3" align="start" spacing="0px">
           <HStack h="30px">
             <Text>Ch: </Text>
+
             <Text>{chapa}</Text>
           </HStack>
+
           <CotaD cota={alt} escala={escala} />
         </VStack>
       </HStack>
+
       <VStack py="20px" w="100%" align="end">
         <Box w="130px">
           <VStack justify="center">
@@ -248,26 +258,38 @@ export const QuadroH = ({
               Corte:
             </Heading>
           </VStack>
+
           <HStack justify="end">
             <Text>{comp}</Text>
-            <Text>x {sarrafoLarg}</Text>
-            <Text>x {sarrafoEsp}</Text>
-            <Text>= {qtde * 2}</Text>
+
+            <Text>x{sarrafoLarg}</Text>
+
+            <Text>x{sarrafoEsp}</Text>
+
+            <Text>={qtde * 2}</Text>
           </HStack>
+
           <HStack justify="end">
             <Text>{alt - sarrafoLarg * 2}</Text>
-            <Text>x {sarrafoLarg}</Text>
-            <Text>x {sarrafoEsp}</Text>
-            <Text>= {qtde * 2}</Text>
+
+            <Text>x{sarrafoLarg}</Text>
+
+            <Text>x{sarrafoEsp}</Text>
+
+            <Text>={qtde * 2}</Text>
           </HStack>
+
           <HStack justify="end">
             <Text>{longMeio}</Text>
-            <Text>x {sarrafoLarg}</Text>
-            <Text>x {sarrafoEsp}</Text>
-            <Text>= {qtdeMeio * qtde}</Text>
+
+            <Text>x{sarrafoLarg}</Text>
+
+            <Text>x{sarrafoEsp}</Text>
+
+            <Text>={qtdeMeio * qtde}</Text>
           </HStack>
         </Box>
       </VStack>
     </VStack>
   );
-};
+}
