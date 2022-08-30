@@ -6,7 +6,7 @@ const renderPDFFooter = () => (
     id="pageFooter"
     style={{
       fontSize: '10px',
-      color: '#666'
+      color: '#666',
     }}
   >
     This is a sample footer

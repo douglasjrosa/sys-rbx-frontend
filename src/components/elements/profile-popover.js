@@ -11,11 +11,11 @@ import {
   Portal,
   Avatar,
   Flex,
-} from "@chakra-ui/react";
-import NextLink from "next/link";
+} from '@chakra-ui/react';
+import NextLink from 'next/link';
 
-import { ExternalLinkIcon } from "@chakra-ui/icons";
-import { signOut, useSession } from "next-auth/client";
+import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { signOut, useSession } from 'next-auth/client';
 
 const ProfilePopover = () => {
   const [session, loading] = useSession();
@@ -32,7 +32,7 @@ const ProfilePopover = () => {
                   w="56px"
                   h="56px"
                   bg="transparent"
-                  _hover={{ bg: "gray.400" }}
+                  _hover={{ bg: 'gray.400' }}
                 >
                   <Avatar
                     name={session.user.name}
@@ -49,10 +49,7 @@ const ProfilePopover = () => {
                   <PopoverCloseButton />
                   <PopoverBody>
                     <NextLink href="/perfil">
-                      <Button
-                        bg="transparent"
-                        onClick={onClose}
-                      >
+                      <Button bg="transparent" onClick={onClose}>
                         Meu perfil
                       </Button>
                     </NextLink>

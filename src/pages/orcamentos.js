@@ -1,6 +1,6 @@
 import { Component } from 'react'
 import { QuadroH, Canvas } from '../components/drawing-elements/quadro'
-import { getEscala } from '../utils/rbx'
+import { getEscala } from '../../utils/rbx'
 import {
     Input,
     Button,

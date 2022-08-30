@@ -1,25 +1,28 @@
-import NextAuth from 'next-auth'
-import Providers from 'next-auth/providers'
-import axios from 'axios'
+/* eslint-disable no-undef */
+import NextAuth from 'next-auth';
+import Providers from 'next-auth/providers';
+import axios from 'axios';
 
 const options = {
   providers: [
     Providers.Credentials({
       name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "text", placeholder: "test@test.com" },
-        password: {  label: "Password", type: "password" }
+        email: { label: 'Email', type: 'text', placeholder: 'test@test.com' },
+        password: { label: 'Password', type: 'password' },
       },
-    async authorize(credentials) {
+      async authorize(credentials) {
         try {
-          const { data } = await axios.post(`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/auth/local`, {
-            identifier: credentials.email,
-            password: credentials.password
-          });
+          const { data } = await axios.post(
+            `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/auth/local`,
+            {
+              identifier: credentials.email,
+              password: credentials.password,
+            },
+          );
           if (data) {
             return data;
-          }
-          else {
+          } else {
             return null;
           }
         } catch (e) {
@@ -29,12 +32,12 @@ const options = {
           // throw new Error(errorMessage + '&email=' + credentials.email)
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
 
   pages: {
-    signIn: '/auth/signin'
+    signIn: '/auth/signin',
   },
 
   session: {
@@ -53,13 +56,13 @@ const options = {
       }
       return Promise.resolve(token);
     },
-  
+
     session: async (session, user) => {
       session.jwt = user.jwt;
       session.id = user.id;
       return Promise.resolve(session);
     },
-  }
-}
+  },
+};
 
-export default (req, res) => NextAuth(req, res, options)
+export default (req, res) => NextAuth(req, res, options);
