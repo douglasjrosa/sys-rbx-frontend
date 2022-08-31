@@ -28,7 +28,7 @@ function Navbar() {
           rounded="5px"
           w="80%"
           m="10%"
-          src="https://rbx-backend-media.s3.sa-east-1.amazonaws.com/thumbnail_logomarca_p_min_86fe429da5.webp"
+          src="https://ribermax.com.br/images/logomarca-h.webp?w=1080&q=75"
           alt="Ribermax Logomarca"
         />
         <Flex flexDir="column" m="10%">

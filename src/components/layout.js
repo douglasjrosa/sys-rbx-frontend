@@ -7,26 +7,26 @@ import { useSession } from 'next-auth/client';
 import { useRouter } from 'next/router';
 
 function Layout({ children }) {
-  const router = useRouter(),
-    [session, loading] = useSession();
+  const router = useRouter();
+  const [session, loading] = useSession();
 
-  if (loading) {
-    return <Loading size="200px">Carregando...</Loading>;
-  }
+  // if (loading) {
+  //   return <Loading size="200px">Carregando...</Loading>;
+  // }
 
-  if (!session && router.asPath !== '/auth/signin') {
-    router.push('/auth/signin');
-    return <Loading size="200px">Redirecionando...</Loading>;
-  }
+  // if (!session && router.asPath !== '/auth/signin') {
+  //   router.push('/auth/signin');
+  //   return <Loading size="200px">Redirecionando...</Loading>;
+  // }
 
-  if (!session && router.asPath === '/auth/signin') {
-    return children;
-  }
+  // if (!session && router.asPath === '/auth/signin') {
+  //   return children;
+  // }
 
-  if (session && router.asPath === '/auth/signin') {
-    router.push('/');
-    return <Loading size="200px">Redirecionando...</Loading>;
-  }
+  // if (session && router.asPath === '/auth/signin') {
+  //   router.push('/');
+  //   return <Loading size="200px">Redirecionando...</Loading>;
+  // }
 
   return (
     <Flex

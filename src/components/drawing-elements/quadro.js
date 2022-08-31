@@ -1,5 +1,5 @@
-/* eslint-disable react/prop-types */
 /* eslint-disable react/no-children-prop */
+/* eslint-disable react/prop-types */
 import {
   VStack,
   HStack,
@@ -35,6 +35,7 @@ export const calcVaos = (long, sarrafoLarg, escala) => {
   vaoPx = escalar(vaoPx, escala, true);
   return { vaos: vaos, vao: vao, vaoPx };
 };
+// eslint-disable-next-line react/prop-types
 
 export function CotaE({ escala, alt, sarrafoLarg }) {
   const { vao, vaoPx } = calcVaos(alt, sarrafoLarg, escala);

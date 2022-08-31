@@ -24,6 +24,7 @@
     }
   },
   "rules": {
+    "no-process-env": "off",
     "react/react-in-jsx-scope": "off",
     "no-unused-vars": "off",
     "react/no-unstable-nested-components": [

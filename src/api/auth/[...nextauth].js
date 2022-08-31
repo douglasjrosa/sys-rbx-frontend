@@ -14,7 +14,7 @@ const options = {
       async authorize(credentials) {
         try {
           const { data } = await axios.post(
-            `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/auth/local`,
+            process.env.NEXT_PUBLIC_STRAPI_API_URL + '/auth/local',
             {
               identifier: credentials.email,
               password: credentials.password,
@@ -26,12 +26,11 @@ const options = {
             return null;
           }
         } catch (e) {
-          /*
-           * Console.log('caught error');
-           * Const errorMessage = e.response.data.message
-           * Redirecting to the login page with error message          in the URL
-           * Throw new Error(errorMessage + '&email=' + credentials.email)
-           */
+          console.log('caught error');
+          //  const errorMessage = e.response.data.message
+          //  redirecting to the login page with error message          in the URL
+          //  Throw new Error(errorMessage + '&email=' + credentials.email)
+
           return null;
         }
       },
