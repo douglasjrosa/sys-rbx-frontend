@@ -1,19 +1,19 @@
 {
   "name": "cms-strapi",
-  "version": "1.0.0",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "serv": "./serv.sh",
-    "dev": "next",
-    "develop": "next",
+    "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "browser": {
     "html-pdf": false
   },
   "dependencies": {
     "@chakra-ui/icons": "^1.0.15",
-    "@chakra-ui/react": "^1.6.7",
+    "@chakra-ui/react": "^2.3.1",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "autoprefixer": "^9",
@@ -21,17 +21,29 @@
     "classnames": "^2.2.6",
     "date-fns": "2.14.0",
     "formik": "^2.2.6",
-    "framer-motion": "^4",
+    "framer-motion": "^6",
     "html-to-image": "^1.7.0",
     "jspdf": "^2.3.1",
     "mongodb": "^3.5.9",
-    "next": "^11.0.0",
-    "next-auth": "^3.29.0",
-    "prop-types": "^15.7.2",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
+    "next": "12.2.5",
+    "next-auth": "^4.10.3",
+    "prop-types": "^15.8.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "react-icons": "^3.10.0",
     "react-markdown": "^6.0.2",
     "yup": "^0.32.8"
+  },
+  "devDependencies": {
+    "@types/next-auth": "^3.15.0",
+    "@types/node": "^18.7.14",
+    "@types/react": "^18.0.18",
+    "eslint": "^8.23.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.31.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.2"
   }
 }
