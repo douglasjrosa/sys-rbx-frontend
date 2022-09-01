@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { QuadroH, Canvas } from '../components/drawing-elements/quadro';
-import { getEscala } from '../../utils/rbx';
+import { getEscala } from '../utils/rbx';
 import {
   Input,
   Button,
@@ -39,7 +39,7 @@ class Orcamentos extends Component {
     },
   };
 
-  constructor(props) {
+  constructor(props: {} | Readonly<{}>) {
     super(props);
   }
 
@@ -47,8 +47,8 @@ class Orcamentos extends Component {
     const { caixaComp, caixaAlt, sarrafoLarg, chapaEsp, latQtde, sarrafoEsp } =
       this.state.caixa.medidas;
 
-    // const tela = Math.min((innerWidth - 17) * 0.9, 700);
-    // const escala = getEscala(caixaComp, 0.3 * tela);
+    const tela = Math.min((innerWidth - 17) * 0.9, 700);
+    const escala = getEscala(caixaComp, 0.3 * tela);
 
     return (
       <VStack px="5%">
@@ -113,7 +113,7 @@ class Orcamentos extends Component {
         <HStack>
           <Canvas>
             <QuadroH
-              // escala={escala}
+              escala={ escala }
               comp={caixaComp}
               alt={caixaAlt}
               sarrafoLarg={sarrafoLarg}

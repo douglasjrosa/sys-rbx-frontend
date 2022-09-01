@@ -10,58 +10,31 @@ function Layout({ children }) {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-<<<<<<< Updated upstream:src/components/layout.js
-  // if (loading) {
-  //   return <Loading size="200px">Carregando...</Loading>;
-  // }
-
-  // if (!session && router.asPath !== '/auth/signin') {
-  //   router.push('/auth/signin');
-  //   return <Loading size="200px">Redirecionando...</Loading>;
-  // }
-
-  // if (!session && router.asPath === '/auth/signin') {
-  //   return children;
-  // }
-
-  // if (session && router.asPath === '/auth/signin') {
-  //   router.push('/');
-  //   return <Loading size="200px">Redirecionando...</Loading>;
-  // }
-=======
-  console.log(router.asPath);
-  console.log(session);
-  console.log(status);
-
-  if (status === 'loading'){
-    return <Loading size="200px">Carregando...</Loading>
+  if (status === 'loading') {
+    return <Loading size="200px">Carregando...</Loading>;
   }
 
   if (!status && router.asPath !== '/auth/signin') {
     router.push('/auth/signin');
-    console.log('passou')
+    console.log('passou');
     return <Loading size="200px">Redirecionando...</Loading>;
-  };
+  }
 
   if (!session && router.asPath === '/auth/signin') {
-    console.log('passou aki')
-   return children;
-  };
-  if (!session) {
-    console.log('passou aki sesspom')
-    router.push('/auth/signin')
-  };
-  if (!status) {
-    console.log('passou aki status')
-    router.push('/auth/signin')
-  };
+    return children;
+  }
+  if (!status&& router.asPath === '/'||!session && router.asPath === '/') {
+    router.push('/auth/signin');
+  }
+  if (!status && router.asPath === '/') {
+    router.push('/auth/signin');
+  }
 
   if (session && router.asPath === '/auth/signin') {
     console.log(status);
     router.push('/');
     return <Loading size="200px">Redirecionando...</Loading>;
   }
->>>>>>> Stashed changes:src/components/layout.tsx
 
   return (
     <Flex

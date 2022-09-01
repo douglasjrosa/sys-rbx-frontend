@@ -9,7 +9,7 @@ const GeneratePdf = ({ html, isAutoPrint, ...props }) => {
     const image = await toPng(html.current, { quality: 0.95 });
     const doc = new jsPDF();
 
-    doc.addImage(image, 'WEBP', 5, 12);
+    doc.addImage(image, 'WEBP', 5, 12, 0, 0);
     if (isAutoPrint) doc.autoPrint();
 
     const blob = doc.output('blob');

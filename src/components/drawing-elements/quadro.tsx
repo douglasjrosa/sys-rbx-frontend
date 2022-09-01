@@ -9,7 +9,7 @@ import {
   Heading,
   Divider,
 } from '@chakra-ui/react';
-import { escalar } from '../../../utils/rbx';
+import { escalar } from '../../utils/rbx';
 
 export function Canvas({ children }) {
   return (

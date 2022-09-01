@@ -1,59 +1,69 @@
 import { getCsrfToken } from 'next-auth/react';
+import { CtxOrReq } from 'next-auth/client/_utils';
 import {
   Button,
+  Checkbox,
   Flex,
-  Center,
-  Box,
-  Image,
-  Input,
   FormControl,
   FormLabel,
+  Heading,
+  Input,
+  Link,
+  Stack,
+  Image,
 } from '@chakra-ui/react';
-import { CtxOrReq } from 'next-auth/client/_utils';
+
 
 const SignIn = ({ csrfToken }) => {
   return (
-    <Flex
-      flexDir="column"
-      backgroundImage="url('https://rbx-backend-media.s3.sa-east-1.amazonaws.com/wood_min_d8be08f601.webp')"
-      h="100vh"
+    <Stack
+      minH={'100vh'}
+      minW={'100vw'}
+      direction={{ base: 'column', md: 'row' }}
     >
-      <Center mt="5%">
-        <Box w="280px">
-          <Image
-            bg="white"
-            rounded="8px"
-            src="https://rbx-backend-media.s3.sa-east-1.amazonaws.com/small_Logo_Ribermax_min_759d92c93c.webp"
-            alt="Logomarca Ribermax"
-          />
-        </Box>
-      </Center>
-      <Center>
-        <Box bg="white" rounded="8px" p="25px" w="280px" mt="30px">
+      <Flex p={8} flex={1} align={'center'} justify={'center'}>
+        <Stack spacing={4} w={'full'} maxW={'md'}>
+          <Heading fontSize={'2xl'}>Sign in to your account</Heading>
           <form method="post" action="/api/auth/callback/credentials">
             <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-            <FormControl py="15px">
-              <FormLabel htmlFor="email">Usuário:</FormLabel>
+            <FormControl>
+              <FormLabel htmlFor="email">Email address</FormLabel>
               <Input name="email" type="text" />
             </FormControl>
-            <FormControl py="15px">
-              <FormLabel htmlFor="password">Senha:</FormLabel>
+            <FormControl>
+              <FormLabel htmlFor="password">Password</FormLabel>
               <Input name="password" type="password" />
             </FormControl>
-            <Center>
-              <Button mt={4} colorScheme="teal" type="submit">
-                Entrar
+            <Stack spacing={6}>
+              <Stack
+                direction={{ base: 'column', sm: 'row' }}
+                align={'start'}
+                justify={'space-between'}
+              >
+                <Checkbox>Remember me</Checkbox>
+                <Link color={'blue.500'}>Forgot password?</Link>
+              </Stack>
+              <Button colorScheme={'blue'} variant={'solid'} type="submit">
+                Sign in
               </Button>
-            </Center>
+            </Stack>
           </form>
-        </Box>
-      </Center>
-    </Flex>
+        </Stack>
+      </Flex>
+      <Flex flex={1}>
+        <Image
+          alt={'Login Image'}
+          objectFit={'cover'}
+          src={
+            'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1352&q=80'
+          }
+        />
+      </Flex>
+    </Stack>
   );
 };
 export default SignIn;
 
-// This is the recommended way for Next.js 9.3 or newer
 export async function getServerSideProps(context: CtxOrReq) {
   return {
     props: {
