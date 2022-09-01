@@ -55,6 +55,14 @@ const NavMenuItems = [
     icon: GiCube,
     iconComponent: <GiCube />,
   },
+  {
+    id: '88',
+    url: '/api/auth/signout',
+    text: 'Signout',
+    icon: GiCube,
+    iconComponent: <GiCube />,
+  },
+
 ];
 
 export default NavMenuItems;

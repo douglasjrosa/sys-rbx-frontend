@@ -21,7 +21,11 @@ function Navbar() {
       d={['none', 'none', 'flex', 'flex', 'flex']}
       flexDir="column"
       h="100vh"
+<<<<<<< Updated upstream:src/components/elements/navbar.js
       justifyContent="space-between"
+=======
+      display={['none', 'none', 'flex', 'flex', 'flex']}
+>>>>>>> Stashed changes:src/components/elements/navbar.tsx
     >
       <Flex flexDir="column" as="nav">
         <Image

@@ -3,13 +3,14 @@ import Navbar from './elements/navbar';
 import Loading from './elements/loading';
 import MobileNavbar from './elements/mobile-navbar';
 import { Flex } from '@chakra-ui/react';
-import { useSession } from 'next-auth/client';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 
 function Layout({ children }) {
   const router = useRouter();
-  const [session, loading] = useSession();
+  const { data: session, status } = useSession();
 
+<<<<<<< Updated upstream:src/components/layout.js
   // if (loading) {
   //   return <Loading size="200px">Carregando...</Loading>;
   // }
@@ -27,6 +28,40 @@ function Layout({ children }) {
   //   router.push('/');
   //   return <Loading size="200px">Redirecionando...</Loading>;
   // }
+=======
+  console.log(router.asPath);
+  console.log(session);
+  console.log(status);
+
+  if (status === 'loading'){
+    return <Loading size="200px">Carregando...</Loading>
+  }
+
+  if (!status && router.asPath !== '/auth/signin') {
+    router.push('/auth/signin');
+    console.log('passou')
+    return <Loading size="200px">Redirecionando...</Loading>;
+  };
+
+  if (!session && router.asPath === '/auth/signin') {
+    console.log('passou aki')
+   return children;
+  };
+  if (!session) {
+    console.log('passou aki sesspom')
+    router.push('/auth/signin')
+  };
+  if (!status) {
+    console.log('passou aki status')
+    router.push('/auth/signin')
+  };
+
+  if (session && router.asPath === '/auth/signin') {
+    console.log(status);
+    router.push('/');
+    return <Loading size="200px">Redirecionando...</Loading>;
+  }
+>>>>>>> Stashed changes:src/components/layout.tsx
 
   return (
     <Flex

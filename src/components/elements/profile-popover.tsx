@@ -14,10 +14,16 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { signOut, useSession } from 'next-auth/client';
+import { signOut, useSession } from 'next-auth/react';
 
+<<<<<<< Updated upstream:src/components/elements/profile-popover.js
 function ProfilePopover() {
   const [session, loading] = useSession();
+=======
+const ProfilePopover = () => {
+  const { data: session } = useSession()
+
+>>>>>>> Stashed changes:src/components/elements/profile-popover.tsx
   return (
     <>
       {session ? (
