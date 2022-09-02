@@ -1,4 +1,4 @@
-import Economica from '../components/box-models/economica';
+// import Economica from '../components/box-models/economica';
 
 function Produtos() {
   return <h1>Produtos</h1>;

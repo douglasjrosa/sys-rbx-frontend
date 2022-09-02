@@ -28,6 +28,8 @@ function Navbar() {
           rounded="5px"
           w="80%"
           m="10%"
+          bg={'white'}
+          p={3}
           src="https://ribermax.com.br/images/logomarca-h.webp?w=1080&q=75"
           alt="Ribermax Logomarca"
         />

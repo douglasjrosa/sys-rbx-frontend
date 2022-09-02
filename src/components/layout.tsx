@@ -59,7 +59,7 @@ function Layout({ children }) {
         flexDir="column"
         minH="100vh"
         overflow="auto"
-        w={['100%', '100%', '80%', '80%', '80%']}
+        w={['100%', '100%', '85%', '85%', '85%']}
       >
         {children}
       </Flex>
