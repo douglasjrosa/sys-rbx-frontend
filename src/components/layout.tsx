@@ -5,6 +5,7 @@ import MobileNavbar from './elements/mobile-navbar';
 import { Flex } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 function Layout({ children }) {
   const router = useRouter();
@@ -13,23 +14,39 @@ function Layout({ children }) {
   if (status === 'loading') {
     return <Loading size="200px">Carregando...</Loading>;
   }
-
+  if (!session && router.asPath !== '/auth/signin') {
+    setTimeout(() => {
+      router.push('/auth/signin');
+    }, 100);
+    return <Loading size="200px">Carregando...</Loading>;
+  }
   if (!status && router.asPath !== '/auth/signin') {
     router.push('/auth/signin');
     console.log('passou');
     return <Loading size="200px">Redirecionando...</Loading>;
   }
-
   if (!session && router.asPath === '/auth/signin') {
     return children;
   }
-  if (!status&& router.asPath === '/'||!session && router.asPath === '/') {
+  if (
+    (!status && router.asPath === '/') ||
+    (!session && router.asPath === '/')
+  ) {
+    router.push('/auth/signin');
+  }
+  if (
+    (!status &&
+      router.asPath ===
+        '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin') ||
+    (!session &&
+      router.asPath ===
+        '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin')
+  ) {
     router.push('/auth/signin');
   }
   if (!status && router.asPath === '/') {
     router.push('/auth/signin');
   }
-
   if (session && router.asPath === '/auth/signin') {
     console.log(status);
     router.push('/');
@@ -59,7 +76,7 @@ function Layout({ children }) {
         flexDir="column"
         minH="100vh"
         overflow="auto"
-        w={['100%', '100%', '85%', '85%', '85%']}
+        w={{sm:'100%', md:'85%'}}
       >
         {children}
       </Flex>
