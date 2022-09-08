@@ -12,13 +12,13 @@ export const Header = () => {
         w={'full'}
         h={16}
         borderBottom={'2px'}
-        borderColor={'gray.400'}
+        borderColor={'gray.300'}
         display={'flex'}
         alignItems={'center'}
         justifyContent="space-around"
       >
         <Box>
-          <Heading size={'sd'} color={'gray.600'}>Listas De Empresas</Heading>
+          <Heading size={'sd'} color={'gray.500'}>Listas De Empresas</Heading>
         </Box>
         <Box display={'flex'} flexDirection={'column'} alignItems={'center'} h='100%' justifyContent={'space-evenly'} py='2'>
           <Box>

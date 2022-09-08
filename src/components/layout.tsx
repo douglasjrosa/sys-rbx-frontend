@@ -55,7 +55,7 @@ function Layout({ children }) {
 
   return (
     <Flex
-      h={[null, null, '100vh']}
+      h={'100vh'}
       flexDir={['column', 'column', 'row']}
       overflow="hidden"
       maxW="2000px"
@@ -76,7 +76,8 @@ function Layout({ children }) {
         flexDir="column"
         minH="100vh"
         overflow="auto"
-        w={{sm:'100%', md:'85%'}}
+        w={{ sm: '100%', md: '85%' }}
+        h={'100%'}
       >
         {children}
       </Flex>
