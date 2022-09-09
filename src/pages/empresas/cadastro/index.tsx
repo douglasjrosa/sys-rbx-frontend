@@ -56,8 +56,7 @@ export default function Cadastro(): JSX.Element {
       method: 'GET',
       url: url,
       headers: {
-        Authorization:
-          '665e9589-575e-4b33-b429-2eb989f36117-ab620fe3-7b9c-4388-bc25-a80b362bee92',
+        Authorization: process.env.ATORIZZATION_CNPJ,
       },
     })
       .then(function (response) {
@@ -106,9 +105,10 @@ export default function Cadastro(): JSX.Element {
         _dark={{
           bg: '#111',
         }}
-        p={10}
+        px={5}
+        pt={3}
       >
-        <Box mt={[10, 0]}>
+        <Box mt={[5, 0]}>
           <SimpleGrid
             display={{
               base: 'initial',
@@ -127,32 +127,36 @@ export default function Cadastro(): JSX.Element {
                 md: 2,
               }}
               rounded={20}
-              boxShadow="dark-lg"
             >
               <chakra.form
                 method="POST"
                 shadow="base"
-                rounded={[null, 'md']}
+                rounded={[null, 20]}
                 overflow={{
                   sm: 'hidden',
                 }}
-                rounded={20}
               >
                 <Stack
                   px={4}
-                  py={5}
-                  p={[null, 6]}
+                  py={3}
                   bg="gray.100"
                   _dark={{
                     bg: '#141517',
                   }}
                   spacing={6}
                 >
-                  <SimpleGrid columns={9} spacing={[1, 4, 9]}>
-                  <Heading as={GridItem} colSpan={9} size='sd'>Modelos de Caixas</Heading>
+                  <SimpleGrid columns={12} spacing={3}>
+                  <Heading as={GridItem} colSpan={12} size="md">
+                      Cadastro de cliente
+                    </Heading>
+                   </SimpleGrid>
+                  <SimpleGrid columns={12} spacing={3}>
+                    <Heading as={GridItem} colSpan={12} size="sd">
+                      Dados da empresa
+                    </Heading>
                     <FormControl as={GridItem} colSpan={[8, 5, null, 2]}>
                       <FormLabel
-                        htmlFor="last_name"
+                        htmlFor="cnpj"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -164,8 +168,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="last_name"
-                        id="last_name"
+                        name="cnpj"
+                        id="cnpj"
                         autoComplete="family-name"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -179,7 +183,8 @@ export default function Cadastro(): JSX.Element {
                     <Button
                       as={GridItem}
                       colSpan={[8, 4, null, 2]}
-                      mt={'4'}
+                      h={8}
+                      mt={5}
                       colorScheme="messenger"
                       onClick={consulta}
                     >
@@ -190,7 +195,7 @@ export default function Cadastro(): JSX.Element {
                   <SimpleGrid columns={9} spacing={3}>
                     <FormControl as={GridItem} colSpan={[5, 2]}>
                       <FormLabel
-                        htmlFor="first_name"
+                        htmlFor="rozao"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -202,8 +207,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="first_name"
-                        id="first_name"
+                        name="rozao"
+                        id="rozao"
                         autoComplete="given-name"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -218,7 +223,7 @@ export default function Cadastro(): JSX.Element {
 
                     <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
-                        htmlFor="email_address"
+                        htmlFor="email"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -226,12 +231,12 @@ export default function Cadastro(): JSX.Element {
                           color: 'gray.50',
                         }}
                       >
-                        Email address
+                        Email
                       </FormLabel>
                       <Input
                         type="text"
-                        name="email_address"
-                        id="email_address"
+                        name="email"
+                        id="email"
                         autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -245,7 +250,7 @@ export default function Cadastro(): JSX.Element {
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
-                        htmlFor="email_address"
+                        htmlFor="cnae"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -257,8 +262,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="email_address"
-                        id="email_address"
+                        name="cnae"
+                        id="cnae"
                         autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -273,7 +278,7 @@ export default function Cadastro(): JSX.Element {
 
                     <FormControl as={GridItem} colSpan={[6, 1]}>
                       <FormLabel
-                        htmlFor="email_address"
+                        htmlFor="ie"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -285,8 +290,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="email_address"
-                        id="email_address"
+                        name="ie"
+                        id="ie"
                         autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -300,7 +305,7 @@ export default function Cadastro(): JSX.Element {
 
                     <FormControl as={GridItem} colSpan={[6, 1]}>
                       <FormLabel
-                        htmlFor="email_address"
+                        htmlFor="status"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -312,8 +317,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="email_address"
-                        id="email_address"
+                        name="status"
+                        id="status"
                         autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -327,10 +332,10 @@ export default function Cadastro(): JSX.Element {
                     </FormControl>
                   </SimpleGrid>
 
-                  <SimpleGrid columns={12} spacing={6}>
+                  <SimpleGrid columns={12} spacing={3}>
                     <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
-                        htmlFor="country"
+                        htmlFor="pais"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -342,8 +347,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="email_address"
-                        id="email_address"
+                        name="pais"
+                        id="pais"
                         autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -356,9 +361,9 @@ export default function Cadastro(): JSX.Element {
                       />
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 1]}>
+                    <FormControl as={GridItem} colSpan={[6, 2, 1]}>
                       <FormLabel
-                        htmlFor="country"
+                        htmlFor="cod.pais"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -370,8 +375,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="email_address"
-                        id="email_address"
+                        name="cod.pais"
+                        id="cod.pais"
                         autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -384,9 +389,9 @@ export default function Cadastro(): JSX.Element {
                       />
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 4]}>
+                    <FormControl as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
-                        htmlFor="street_address"
+                        htmlFor="endereço"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -398,8 +403,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="street_address"
-                        id="street_address"
+                        name="endereço"
+                        id="endereço"
                         autoComplete="street-address"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -414,7 +419,7 @@ export default function Cadastro(): JSX.Element {
 
                     <FormControl as={GridItem} colSpan={[6, 1]}>
                       <FormLabel
-                        htmlFor="street_address"
+                        htmlFor="numero"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -426,8 +431,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="street_address"
-                        id="street_address"
+                        name="numero"
+                        id="numero"
                         autoComplete="street-address"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -440,9 +445,9 @@ export default function Cadastro(): JSX.Element {
                       />
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 3]}>
+                    <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
-                        htmlFor="street_address"
+                        htmlFor="complemento"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -454,8 +459,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="street_address"
-                        id="street_address"
+                        name="complemento"
+                        id="complemento"
                         autoComplete="street-address"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -470,7 +475,7 @@ export default function Cadastro(): JSX.Element {
 
                     <FormControl as={GridItem} colSpan={[6, 3, null, 3]}>
                       <FormLabel
-                        htmlFor="postal_code"
+                        htmlFor="bairro"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -482,8 +487,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="postal_code"
-                        id="postal_code"
+                        name="bairro"
+                        id="bairro"
                         autoComplete="postal-code"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -498,7 +503,7 @@ export default function Cadastro(): JSX.Element {
 
                     <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
                       <FormLabel
-                        htmlFor="postal_code"
+                        htmlFor="cep"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -510,8 +515,8 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="postal_code"
-                        id="postal_code"
+                        name="cep"
+                        id="cep"
                         autoComplete="postal-code"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
@@ -526,7 +531,7 @@ export default function Cadastro(): JSX.Element {
 
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
                       <FormLabel
-                        htmlFor="city"
+                        htmlFor="cidade"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -538,9 +543,9 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="city"
-                        id="city"
-                        autoComplete="city"
+                        name="cidade"
+                        id="cidade"
+                        autoComplete="cidade"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -552,9 +557,9 @@ export default function Cadastro(): JSX.Element {
                       />
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 1]}>
+                    <FormControl as={GridItem} colSpan={[3, null, 1]}>
                       <FormLabel
-                        htmlFor="state"
+                        htmlFor="uf"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -566,9 +571,9 @@ export default function Cadastro(): JSX.Element {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="state"
-                        id="state"
-                        autoComplete="state"
+                        name="uf"
+                        id="uf"
+                        autoComplete="uf"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -583,23 +588,564 @@ export default function Cadastro(): JSX.Element {
                 </Stack>
                 <Stack
                   px={4}
-                  py={5}
-                  p={[null, 6]}
+                  py={3}
                   bg="gray.100"
                   _dark={{
                     bg: '#141517',
                   }}
-                  spacing={6}
-                  borderTopColor={'gray.100'}
+                  spacing={3}
                 >
-                  <SimpleGrid columns={9} spacing={[1, 4, 9]}>
-                    <Heading as={GridItem} colSpan={9} size='sd'>Configurações da Emprsa</Heading>
+                  <SimpleGrid columns={12} spacing={4}>
+                    <Heading as={GridItem} colSpan={12} size="sd">
+                      Configurações da Emprsa
+                    </Heading>
+                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <FormLabel
+                        htmlFor="tabela de calculo"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        Tabela de calculo
+                      </FormLabel>
+                      <Select
+                        name="tabela de calculo"
+                        id="tabela de calculo"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        fontSize="xs"
+                        rounded="md"
+                        placeholder="selecine uma opção"
+                      >
+                        <option value="Vip">Vip</option>
+                        <option value="option2">Option 2</option>
+                        <option value="option3">Option 3</option>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <FormLabel
+                        htmlFor="prazo pagamento"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        Prazo pagamento
+                      </FormLabel>
+                      <Select
+                        name="prazo pagamento"
+                        id="prazo pagamento"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        fontSize="xs"
+                        rounded="md"
+                        placeholder="selecine uma opção"
+                      >
+                        <option value="28 dias">28 Dias</option>
+                        <option value="option2">Option 2</option>
+                        <option value="option3">Option 3</option>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <FormLabel
+                        htmlFor="pagamento"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        Pagamento
+                      </FormLabel>
+                      <Select
+                        name="pagamento"
+                        id="pagamento"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        fontSize="xs"
+                        rounded="md"
+                        placeholder="selecine uma opção"
+                      >
+                        <option value="À VISTA">À VISTA</option>
+                        <option value="option2">Option 2</option>
+                        <option value="option3">Option 3</option>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <FormLabel
+                        htmlFor="frete"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        Frete
+                      </FormLabel>
+                      <Select
+                        name="frete"
+                        id="frete"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        fontSize="xs"
+                        rounded="md"
+                        placeholder="selecine uma opção"
+                      >
+                        <option value="CIF">CIF - Por conta da Ribermax</option>
+                        <option value="option2">Option 2</option>
+                        <option value="option3">Option 3</option>
+                      </Select>
+                    </FormControl>
                   </SimpleGrid>
-                  <SimpleGrid columns={9} spacing={[1, 4, 9]}>
-                  <Heading as={GridItem} colSpan={9} size='sd'>Configurações de Embalagens</Heading>
+
+                  <SimpleGrid columns={12} spacing={5}>
+                    <Heading as={GridItem} colSpan={12} mb={3} size="sd">
+                      Configurações de Embalagens
+                    </Heading>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Adesivo Frágil nas Laterais
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Adesivo Frágil nas Cabeceiras
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Adesivo Especial nas Laterais
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Adesivo Especial nas Cabeceiras
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Laterais por fora das Cabeceiras
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Cabeceiras até o chão
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Cabeceiras até o topo
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
                   </SimpleGrid>
-                  <SimpleGrid columns={9} spacing={[1, 4, 9]}>
-                  <Heading as={GridItem} colSpan={9} size='sd'>Modelos de Caixas</Heading>
+
+                  <SimpleGrid columns={12} spacing={5}>
+
+                    <Heading as={GridItem} colSpan={12} mb={5} size="sd">
+                      Modelos de Caixas
+                    </Heading>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Caixa econômica
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Caixa estrturada
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Caixa leve
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Caixa Reforçada
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Caixa Super Reforçada
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Paletes sob medida
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Caixa Resistente
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Engradado econômico
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Engradado leve
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Engradado reforçado
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
+                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
+                      <Flex>
+                        <Flex alignItems="center" h={5}>
+                          <Checkbox
+                            colorScheme="green"
+                            borderColor="gray.400"
+                            rounded="md"
+                          />
+                        </Flex>
+                        <Box ml={3} fontSize="xs">
+                          <chakra.label
+                            fontWeight="md"
+                            color="gray.700"
+                            _dark={{
+                              color: 'gray.50',
+                            }}
+                          >
+                            Engradado resistente
+                          </chakra.label>
+                        </Box>
+                      </Flex>
+                    </Box>
+
                   </SimpleGrid>
                 </Stack>
                 <Box
@@ -607,7 +1153,8 @@ export default function Cadastro(): JSX.Element {
                     base: 4,
                     sm: 6,
                   }}
-                  py={3}
+                  py={2}
+                  pb={[12,null,0]}
                   bg="gray.100"
                   _dark={{
                     bg: '#121212',
