@@ -50,7 +50,6 @@ export default NextAuth({
           }
           return data;
         } catch (e) {
-          console.log('deu ruim');
           console.log(e);
           return null;
         }
