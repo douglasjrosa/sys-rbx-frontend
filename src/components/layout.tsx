@@ -2,12 +2,12 @@
 import Navbar from './elements/navbar';
 import Loading from './elements/loading';
 import MobileNavbar from './elements/mobile-navbar';
-import { Flex } from '@chakra-ui/react';
+import { Flex, useToast } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
 
 function Layout({ children }) {
+  const toast = useToast()
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -15,40 +15,40 @@ function Layout({ children }) {
     return <Loading size="200px">Carregando...</Loading>;
   }
   if (!session && router.asPath !== '/auth/signin') {
-    setTimeout(() => {
       router.push('/auth/signin');
-    }, 100);
-    return <Loading size="200px">Carregando...</Loading>;
   }
   if (!status && router.asPath !== '/auth/signin') {
     router.push('/auth/signin');
-    console.log('passou');
-    return <Loading size="200px">Redirecionando...</Loading>;
   }
   if (!session && router.asPath === '/auth/signin') {
     return children;
   }
   if (
-    (!status && router.asPath === '/') ||
-    (!session && router.asPath === '/')
+    !session &&
+    router.asPath ===
+      '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin'
   ) {
-    router.push('/auth/signin');
-  }
-  if (
-    (!status &&
-      router.asPath ===
-        '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin') ||
-    (!session &&
-      router.asPath ===
-        '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin')
-  ) {
-    router.push('/auth/signin');
+    return (
+      toast({
+        title: 'Email ou senha incorreto',
+        description: 'As credenciais que você está usando são inválidas.',
+        status: 'error',
+        duration: 7000,
+        position: 'top-right',
+        isClosable: true,
+      }),
+      children
+    );
   }
   if (!status && router.asPath === '/') {
     router.push('/auth/signin');
+    return <Loading size="200px">Carregando...</Loading>;
   }
-  if (session && router.asPath === '/auth/signin') {
-    console.log(status);
+  if (!session && router.asPath === '/') {
+    router.push('/auth/signin');
+    return <Loading size="200px">Carregando...</Loading>;
+  }
+  if (session && router.asPath === '/auth/signin' || status && router.asPath === '/auth/signin') {
     router.push('/');
     return <Loading size="200px">Redirecionando...</Loading>;
   }

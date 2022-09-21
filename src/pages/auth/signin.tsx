@@ -13,8 +13,8 @@ import {
   Image,
 } from '@chakra-ui/react';
 
-
 const SignIn = ({ csrfToken }) => {
+
   return (
     <Stack
       minH={'100vh'}
