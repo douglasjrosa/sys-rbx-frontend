@@ -1,7 +1,9 @@
 import { Button } from '@chakra-ui/react';
 import axios from 'axios';
+import { useState } from 'react';
 
 function Negocios() {
+  const [data, setData] = useState([])
   const consulta = async () => {
     const id = 15870204711
     const url2 = `/api/request/get/contatos/${id}`;
@@ -26,6 +28,7 @@ function Negocios() {
   return (
     <>
       <Button onClick={consulta}>consulta</Button>
+      ,<pre>{data}</pre>
     </>
   );
 }

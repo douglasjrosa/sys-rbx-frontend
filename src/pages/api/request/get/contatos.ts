@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { XMLParser } from 'fast-xml-parser';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function Contato(
