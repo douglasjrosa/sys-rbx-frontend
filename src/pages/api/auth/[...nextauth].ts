@@ -1,6 +1,7 @@
+import axios from 'axios';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-
+import { any } from 'prop-types';
 
 export default NextAuth({
   jwt: {
@@ -24,27 +25,25 @@ export default NextAuth({
           password: credentials.password,
         };
 
-        const res = await fetch(
-          process.env.NEXT_PUBLIC_STRAPI_API_URL + '/auth/local',
-          {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' },
-          },
-        );
+        const res = await axios({
+          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/auth/local',
+          method: 'POST',
+          data: data,
+          headers: { 'Content-Type': 'application/json' },
+        });
         try {
-          const { jwt, user } = await res.json();
-          const { confirmed, blocked, username, _id, email } = await user;
+          const { jwt, user } = await res.data;
+          const { confirmed, blocked, username, id, email } = await user;
           const data = {
             jwt: jwt,
-            id: _id,
+            id: id,
             name: username,
             email: email,
             confirmed: confirmed,
             blocked: blocked,
           };
 
-          if (!jwt || !_id || !username || !email) {
+          if (!jwt || !id || !username || !email) {
             throw new Error('Usuario e senha incorreto');
             return null;
           }
@@ -104,13 +103,13 @@ export default NextAuth({
         //se não exixtir o mate a navegação
         return null;
       }
-
-      session.token = token.twt;
-      session.user = {
+      const dataUser: any = {
         id: token.id,
         name: token.name,
         email: token.email,
       };
+      session.token = token.twt;
+      session.user = dataUser;
 
       return session;
     },

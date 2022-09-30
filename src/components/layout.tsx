@@ -23,23 +23,23 @@ function Layout({ children }) {
   if (!session && router.asPath === '/auth/signin') {
     return children;
   }
-  if (
-    !session &&
-    router.asPath ===
-      '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin'
-  ) {
-    return (
-      toast({
-        title: 'Email ou senha incorreto',
-        description: 'As credenciais que você está usando são inválidas.',
-        status: 'error',
-        duration: 7000,
-        position: 'top-right',
-        isClosable: true,
-      }),
-      children
-    );
-  }
+  // if (
+  //   !session &&
+  //   router.asPath ===
+  //     '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin'
+  // ) {
+  //   return (
+  //     toast({
+  //       title: 'Email ou senha incorreto',
+  //       description: 'As credenciais que você está usando são inválidas.',
+  //       status: 'error',
+  //       duration: 7000,
+  //       position: 'top-right',
+  //       isClosable: true,
+  //     }),
+  //     children
+  //   );
+  // }
   if (!status && router.asPath === '/') {
     router.push('/auth/signin');
     return <Loading size="200px">Carregando...</Loading>;
@@ -52,6 +52,8 @@ function Layout({ children }) {
     router.push('/');
     return <Loading size="200px">Redirecionando...</Loading>;
   }
+console.log(status)
+console.log(session)
 
   return (
     <Flex
