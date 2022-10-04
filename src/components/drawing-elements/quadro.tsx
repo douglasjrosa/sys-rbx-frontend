@@ -31,7 +31,7 @@ export const calcVaos = (long, sarrafoLarg, escala) => {
 
   const vao = Number(long / vaos).toFixed(1),
     sarrafosCount = vaos + 1;
-  let vaoPx = (long - sarrafoLarg * sarrafosCount) / vaos + sarrafoLarg * 1.5;
+  let vaoPx:any = (long - sarrafoLarg * sarrafosCount) / vaos + sarrafoLarg * 1.5;
   vaoPx = escalar(vaoPx, escala, true);
   return { vaos: vaos, vao: vao, vaoPx };
 };

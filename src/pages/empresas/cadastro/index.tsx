@@ -1,31 +1,22 @@
 import {
-  Avatar,
   chakra,
   Box,
   Button,
   Checkbox,
-  Divider,
   Flex,
   FormControl,
-  FormHelperText,
   FormLabel,
   GridItem,
   Heading,
-  Icon,
   Input,
-  InputGroup,
-  InputLeftAddon,
-  Radio,
-  RadioGroup,
   Select,
   SimpleGrid,
   Stack,
-  Text,
-  Textarea,
-  VisuallyHidden,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import axios from 'axios';
+import { confgEnb } from '../../../components/data/confgEnb';
+import { modCaix } from '../../../components/data/modCaix';
 
 export default function Cadastro(): JSX.Element {
   const [CNPJ, setCNPJ] = useState('');
@@ -47,6 +38,35 @@ export default function Cadastro(): JSX.Element {
   const [cep, setCep] = useState('');
   const [pais, setPais] = useState('');
   const [codpais, setCodpais] = useState('');
+
+  const [adFrailLat, setAdFragilLat] = useState(false);
+  const [adFrailCab, setAdFragilCab] = useState(false);
+  const [adEspecialLat, setAdEspecialLat] = useState(false);
+  const [adEspecialCab, setAdEspecialCab] = useState(false);
+  const [latFCab, setLatFCab] = useState(false);
+  const [cabChao, setCabChao] = useState(false);
+  const [cabTop, setCabTop] = useState(false);
+
+
+  const [cxEco, setCxEco] = useState(false);
+  const [cxEst, setCxEst] = useState(false);
+  const [cxLev, setCxLev] = useState(false);
+  const [cxRef, setCxRef] = useState(false);
+  const [cxSupRef, setCxSupRef] = useState(false);
+  const [platSMed, setPlatSMed] = useState(false);
+  const [cxResi, setCxResi] = useState(false);
+  const [engEco, setEngEco] = useState(false);
+  const [engLev, setEngLev] = useState(false);
+  const [engRef, setEngRef] = useState(false);
+  const [engResi, setEngResi] = useState(false);
+
+
+  console.log(adFrailLat)
+  console.log(adFrailCab)
+  console.log(cabTop)
+  console.log(cxEco)
+  console.log(cxRef)
+  console.log(engResi)
 
   const consulta = () => {
     console.log(CNPJ);
@@ -146,10 +166,10 @@ export default function Cadastro(): JSX.Element {
                   spacing={6}
                 >
                   <SimpleGrid columns={12} spacing={3}>
-                  <Heading as={GridItem} colSpan={12} size="md">
+                    <Heading as={GridItem} colSpan={12} size="md">
                       Cadastro de cliente
                     </Heading>
-                   </SimpleGrid>
+                  </SimpleGrid>
                   <SimpleGrid columns={12} spacing={3}>
                     <Heading as={GridItem} colSpan={12} size="sd">
                       Dados da empresa
@@ -595,11 +615,12 @@ export default function Cadastro(): JSX.Element {
                   }}
                   spacing={3}
                 >
-                  <SimpleGrid columns={12} spacing={4}>
+                  <SimpleGrid columns={12} spacing={3}>
                     <Heading as={GridItem} colSpan={12} size="sd">
                       Configurações da Emprsa
                     </Heading>
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+
+                    <FormControl as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
                         htmlFor="tabela de calculo"
                         fontSize="xs"
@@ -629,7 +650,7 @@ export default function Cadastro(): JSX.Element {
                       </Select>
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                    <FormControl as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
                         htmlFor="prazo pagamento"
                         fontSize="xs"
@@ -639,7 +660,7 @@ export default function Cadastro(): JSX.Element {
                           color: 'gray.50',
                         }}
                       >
-                        Prazo pagamento
+                        Máximo prazo p/ pagamento:
                       </FormLabel>
                       <Select
                         name="prazo pagamento"
@@ -653,13 +674,22 @@ export default function Cadastro(): JSX.Element {
                         rounded="md"
                         placeholder="selecine uma opção"
                       >
-                        <option value="28 dias">28 Dias</option>
-                        <option value="option2">Option 2</option>
-                        <option value="option3">Option 3</option>
+                        <option>Selecione uma tabela</option>
+                        <option value="0">Á vista (antecipado)</option>
+                        <option value="5">5 dias</option>
+                        <option value="15">15 dias</option>
+                        <option value="28" selected>
+                          28 Dias
+                        </option>
+                        <option value="35">28 e 35 dias</option>
+                        <option value="42">28,35 e 42 dias</option>
+                        <option value="90">
+                          90 dias (Casos muito excepcionais)
+                        </option>
                       </Select>
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                    <FormControl as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
                         htmlFor="pagamento"
                         fontSize="xs"
@@ -669,7 +699,7 @@ export default function Cadastro(): JSX.Element {
                           color: 'gray.50',
                         }}
                       >
-                        Pagamento
+                        Preferência de pagamento:
                       </FormLabel>
                       <Select
                         name="pagamento"
@@ -683,13 +713,15 @@ export default function Cadastro(): JSX.Element {
                         rounded="md"
                         placeholder="selecine uma opção"
                       >
-                        <option value="À VISTA">À VISTA</option>
-                        <option value="option2">Option 2</option>
-                        <option value="option3">Option 3</option>
+                        <option>Escolha uma opção</option>
+                        <option value="desconto">Desconto À VISTA</option>
+                        <option value="prazo">
+                          maior prazo para pagamento
+                        </option>
                       </Select>
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                    <FormControl as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
                         htmlFor="frete"
                         fontSize="xs"
@@ -713,439 +745,128 @@ export default function Cadastro(): JSX.Element {
                         rounded="md"
                         placeholder="selecine uma opção"
                       >
-                        <option value="CIF">CIF - Por conta da Ribermax</option>
-                        <option value="option2">Option 2</option>
-                        <option value="option3">Option 3</option>
+                        <option>Escolha uma opção</option>
+                        <option value="option3">
+                          FOB - Por conta do cliente
+                        </option>
+                        <option value="cif">CIF - Por conta da Ribermax</option>
                       </Select>
-                    </FormControl>
+                      </FormControl>
                   </SimpleGrid>
 
                   <SimpleGrid columns={12} spacing={5}>
                     <Heading as={GridItem} colSpan={12} mb={3} size="sd">
                       Configurações de Embalagens
                     </Heading>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Adesivo Frágil nas Laterais
-                          </chakra.label>
+                    {confgEnb.map((item) => {
+                      return (
+                        <Box
+                          key={item.id}
+                          as={GridItem}
+                          colSpan={[6, 3, null, 2]}
+                        >
+                          <Flex>
+                            <Flex alignItems="center" h={5}>
+                              <Checkbox
+                                colorScheme="green"
+                                borderColor="gray.400"
+                                rounded="md"
+                                onChange={(e) => {
+                                  const set =
+                                    item.id === '1'
+                                      ? setAdFragilLat(true)
+                                      : item.id === '2'
+                                      ? setAdFragilCab(true)
+                                      : item.id === '3'
+                                      ? setAdEspecialLat(true)
+                                      : item.id === '4'
+                                      ? setAdEspecialCab(true)
+                                      : item.id === '5'
+                                      ? setLatFCab(true)
+                                      : item.id === '6'
+                                      ? setCabChao(true)
+                                      : setCabTop(true);
+                                  return set;
+                                }}
+                              />
+                            </Flex>
+                            <Box ml={3} fontSize="xs">
+                              <chakra.label
+                                fontWeight="md"
+                                color="gray.700"
+                                _dark={{
+                                  color: 'gray.50',
+                                }}
+                              >
+                                {item.title}
+                              </chakra.label>
+                            </Box>
+                          </Flex>
                         </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Adesivo Frágil nas Cabeceiras
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Adesivo Especial nas Laterais
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Adesivo Especial nas Cabeceiras
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Laterais por fora das Cabeceiras
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Cabeceiras até o chão
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Cabeceiras até o topo
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
+                      );
+                    })}
                   </SimpleGrid>
 
                   <SimpleGrid columns={12} spacing={5}>
-
                     <Heading as={GridItem} colSpan={12} mb={5} size="sd">
                       Modelos de Caixas
                     </Heading>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Caixa econômica
-                          </chakra.label>
+                    {modCaix.map((item) => {
+                      return (
+                        <Box
+                          key={item.id}
+                          as={GridItem}
+                          colSpan={[6, 3, null, 2]}
+                        >
+                          <Flex>
+                            <Flex alignItems="center" h={5}>
+                              <Checkbox
+                                colorScheme="green"
+                                borderColor="gray.400"
+                                rounded="md"
+                                onChange={(e) => {
+                                  const set =
+                                    item.id === '1'
+                                      ? setCxEco(true)
+                                      : item.id === '2'
+                                      ? setCxEst(true)
+                                      : item.id === '3'
+                                      ? setCxLev(true)
+                                      : item.id === '4'
+                                      ? setCxRef(true)
+                                      : item.id === '5'
+                                      ? setCxSupRef(true)
+                                      : item.id === '6'
+                                      ? setPlatSMed(true)
+                                      : item.id === '7'
+                                      ? setCxResi(true)
+                                      : item.id === '8'
+                                      ? setEngEco(true)
+                                      : item.id === '9'
+                                      ? setEngLev(true)
+                                      : item.id === '10'
+                                      ? setEngRef(true)
+                                      : setEngResi(true)
+                                  return set;
+                                }}
+                              />
+                            </Flex>
+                            <Box ml={3} fontSize="xs">
+                              <chakra.label
+                                fontWeight="md"
+                                color="gray.700"
+                                _dark={{
+                                  color: 'gray.50',
+                                }}
+                              >
+                                {item.title}
+                              </chakra.label>
+                            </Box>
+                          </Flex>
                         </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Caixa estrturada
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Caixa leve
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Caixa Reforçada
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Caixa Super Reforçada
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Paletes sob medida
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Caixa Resistente
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Engradado econômico
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Engradado leve
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Engradado reforçado
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
-                    <Box as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <Flex>
-                        <Flex alignItems="center" h={5}>
-                          <Checkbox
-                            colorScheme="green"
-                            borderColor="gray.400"
-                            rounded="md"
-                          />
-                        </Flex>
-                        <Box ml={3} fontSize="xs">
-                          <chakra.label
-                            fontWeight="md"
-                            color="gray.700"
-                            _dark={{
-                              color: 'gray.50',
-                            }}
-                          >
-                            Engradado resistente
-                          </chakra.label>
-                        </Box>
-                      </Flex>
-                    </Box>
-
+                      );
+                    })}
+                    
                   </SimpleGrid>
                 </Stack>
                 <Box
@@ -1154,7 +875,7 @@ export default function Cadastro(): JSX.Element {
                     sm: 6,
                   }}
                   py={2}
-                  pb={[12,null,0]}
+                  pb={[12, null, 0]}
                   bg="gray.100"
                   _dark={{
                     bg: '#121212',
