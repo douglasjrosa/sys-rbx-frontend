@@ -118,6 +118,10 @@ export default function Cadastro(): JSX.Element {
   const resppais = pais.length !== 0 ? true : false;
   const respcodpais = codpais.length !== 0 ? true : false;
 
+  const save = () => {
+
+  }
+  
   return (
     <>
       <Box
@@ -866,7 +870,7 @@ export default function Cadastro(): JSX.Element {
                         </Box>
                       );
                     })}
-                    
+
                   </SimpleGrid>
                 </Stack>
                 <Box
