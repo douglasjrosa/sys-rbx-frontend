@@ -1457,7 +1457,7 @@ axe-core@^4.4.3:
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.4.3.tgz#11c74d23d5013c0fa5d183796729bc3482bd2f6f"
   integrity sha512-32+ub6kkdhhWick/UjvEwRchgoetXqTK14INLqbGm5U2TzBkBNF3nQtLYm8ovxSkQWArjEQvftCKryjZaATu3w==
 
-axios@^0.21.3:
+axios@^0.21.1, axios@^0.21.3:
   version "0.21.4"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
   integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
@@ -1655,6 +1655,13 @@ concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
+
+consultar-cnpj@^1.0.15:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/consultar-cnpj/-/consultar-cnpj-1.0.15.tgz#06f8fe05fac527e47b3cf97bcd1e4abf8050605a"
+  integrity sha512-C+kwh0gW4XPnKEx9QrnNt/U952W4J4UN/Z4zsfXMeog4Xf23QJbjFiLP/3N619djuH8dJKuRYtUGRyiWYrJqmw==
+  dependencies:
+    axios "^0.21.1"
 
 convert-source-map@^1.5.0:
   version "1.8.0"

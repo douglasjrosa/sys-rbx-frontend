@@ -17,20 +17,28 @@ import { useState } from 'react';
 import axios from 'axios';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
+import { PostEmpresa } from '../../api/empresas/endpoint';
 
 export default function Cadastro(): JSX.Element {
   const [CNPJ, setCNPJ] = useState('');
   const [dados, setDados]: any = useState([]);
 
-  const [razao, setRazao] = useState('');
-  const [tel, setTel] = useState('');
+  const [nome, setNome] = useState('');
+  const [fantasia, setFantasia] = useState('');
+  const [tipoPessoa, setTipoPessoa] = useState('');
+  const [fone, setFone] = useState('');
+  const [celular, setCelular] = useState('');
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('');
+  const [emailNfe, setEmailNfe] = useState('');
+  const [ieStatus, setIeStatus] = useState('');
   const [CNAE, setCNAE] = useState('');
   const [Ie, setIE] = useState('');
+  const [porte, setPorte] = useState('');
+  const [simples, setSimples] = useState(false);
+  const [site, setSite] = useState('');
 
-  const [end, setEnd] = useState('');
-  const [nuber, setNuber] = useState('');
+  const [endereco, setEndereco] = useState('');
+  const [numero, setNumero] = useState('');
   const [bairro, setBairro] = useState('');
   const [complemento, setComplemento] = useState('');
   const [cidade, setCidade] = useState('');
@@ -47,7 +55,6 @@ export default function Cadastro(): JSX.Element {
   const [cabChao, setCabChao] = useState(false);
   const [cabTop, setCabTop] = useState(false);
 
-
   const [cxEco, setCxEco] = useState(false);
   const [cxEst, setCxEst] = useState(false);
   const [cxLev, setCxLev] = useState(false);
@@ -60,43 +67,47 @@ export default function Cadastro(): JSX.Element {
   const [engRef, setEngRef] = useState(false);
   const [engResi, setEngResi] = useState(false);
 
-
-  console.log(adFrailLat)
-  console.log(adFrailCab)
-  console.log(cabTop)
-  console.log(cxEco)
-  console.log(cxRef)
-  console.log(engResi)
-
   const consulta = () => {
     console.log(CNPJ);
-    let url = 'https://api.cnpja.com/office/' + CNPJ;
+    let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
 
     axios({
       method: 'GET',
       url: url,
       headers: {
-        Authorization: process.env.ATORIZZATION_CNPJ,
+        'Content-Type': 'application/json',
       },
     })
       .then(function (response) {
-        let ddd = response.data.phones[0].area;
-        let tel1 = response.data.phones[0].number;
+        console.log(response.data);
         setDados(response.data);
-        setRazao(response.data.alias);
-        setEmail(response.data.emails[0].address);
-        setStatus(response.data.status.text);
-        setCNAE(response.data.mainActivity.id);
-        setEnd(response.data.address.street);
-        setNuber(response.data.address.number);
-        setBairro(response.data.address.district);
-        setComplemento(response.data.address.details);
-        setCidade(response.data.address.city);
-        setUf(response.data.address.state);
-        setCep(response.data.address.zip);
-        setPais(response.data.address.country.name);
-        setCodpais(response.data.address.country.id);
-        setTel(ddd + tel1);
+
+        setNome(dados.razao_social);
+        setFantasia(dados.nome_fantasia);
+        setTipoPessoa('cnpj');
+        setIE(dados.estabelecimento.inscricoes_estaduais[0].inscricao_estadual);
+        setIeStatus(dados.estabelecimento.inscricoes_estaduais[0].ativo);
+        setEndereco(
+          dados.estabelecimento.tipo_logradouro +
+            ' ' +
+            dados.estabelecimento.logradouro,
+        );
+        setNumero(dados.estabelecimento.numero);
+        setComplemento(dados.estabelecimento.complemento);
+        setBairro(dados.estabelecimento.bairro);
+        setCep(dados.estabelecimento.cep);
+        setCidade(dados.estabelecimento.cidade.nome);
+        setUf(dados.estabelecimento.estado.nome);
+        let ddd = dados.estabelecimento.ddd1;
+        let tel1 = dados.estabelecimento.telefone1;
+        setFone(ddd + tel1);
+        setEmail(dados.estabelecimento.email);
+        setPais(dados.estabelecimento.pais.nome);
+        setCodpais(dados.estabelecimento.pais.id);
+        setCNAE(dados.estabelecimento.atividade_principal.id);
+        setPorte(dados.porte.descricao);
+        const cheksimples = dados.simples === null ? false : true;
+        setSimples(cheksimples);
       })
       .catch(function (error) {
         console.log(error);
@@ -104,12 +115,12 @@ export default function Cadastro(): JSX.Element {
   };
   console.log(dados);
 
-  const resprazao = razao.length !== 0 ? true : false;
+  const resprazao = nome.length !== 0 ? true : false;
   const respemail = email.length !== 0 ? true : false;
-  const respStatus = status.length !== 0 ? true : false;
+  const respStatus = ieStatus.length !== 0 ? true : false;
   const respCNAE = CNAE.length !== 0 ? true : false;
-  const respend = end.length !== 0 ? true : false;
-  const respnuber = nuber.length !== 0 ? true : false;
+  const respend = endereco.length !== 0 ? true : false;
+  const respnuber = numero.length !== 0 ? true : false;
   const respbairro = bairro.length !== 0 ? true : false;
   const respcomplemento = complemento.length !== 0 ? true : false;
   const respcidade = cidade.length !== 0 ? true : false;
@@ -118,10 +129,42 @@ export default function Cadastro(): JSX.Element {
   const resppais = pais.length !== 0 ? true : false;
   const respcodpais = codpais.length !== 0 ? true : false;
 
-  const save = () => {
+  // const save = async () => {
+  //   const data = {
+  //     nome,
+  //     fantasia,
+  //     tipoPessoa,
+  //     contribuinte,
+  //     cnpj,
+  //     Ie,
+  //     ieStatus,
+  //     endereco,
+  //     numero,
+  //     complemento,
+  //     bairro,
+  //     cep,
+  //     cidade,
+  //     uf,
+  //     pais,
+  //     codpais,
+  //     fone,
+  //     celular,
+  //     email,
+  //     emailNfe,
+  //     site,
+  //     CNAE,
+  //     porte,
+  //     simples,
+  //     status,
+  //   }
+  //   const response = await PostEmpresa(data)
+  //     .then((response) => {
+  //       console.log(response.data);
+  //       return response.data;
+  //     })
+  //     .catch((err) => console.log(err.data));
+  // };
 
-  }
-  
   return (
     <>
       <Box
@@ -241,7 +284,7 @@ export default function Cadastro(): JSX.Element {
                         w="full"
                         rounded="md"
                         disabled={resprazao}
-                        value={razao}
+                        value={nome}
                       />
                     </FormControl>
 
@@ -323,7 +366,8 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={(e) => setIE(e.target.value)}
+                        disabled={respStatus}
+                        value={Ie}
                       />
                     </FormControl>
 
@@ -337,7 +381,7 @@ export default function Cadastro(): JSX.Element {
                           color: 'gray.50',
                         }}
                       >
-                        Status
+                        IE Status
                       </FormLabel>
                       <Input
                         type="text"
@@ -351,7 +395,7 @@ export default function Cadastro(): JSX.Element {
                         w="full"
                         rounded="md"
                         disabled={respStatus}
-                        value={status}
+                        value={ieStatus}
                       />
                     </FormControl>
                   </SimpleGrid>
@@ -437,7 +481,7 @@ export default function Cadastro(): JSX.Element {
                         w="full"
                         rounded="md"
                         disabled={respend}
-                        value={end}
+                        value={endereco}
                       />
                     </FormControl>
 
@@ -465,7 +509,7 @@ export default function Cadastro(): JSX.Element {
                         w="full"
                         rounded="md"
                         disabled={respnuber}
-                        value={nuber}
+                        value={numero}
                       />
                     </FormControl>
 
@@ -606,6 +650,79 @@ export default function Cadastro(): JSX.Element {
                         rounded="md"
                         disabled={respuf}
                         value={uf}
+                      />
+                    </FormControl>
+                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                      <FormLabel
+                        htmlFor="cidade"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        site
+                      </FormLabel>
+                      <Input
+                        type="text"
+                        name="cidade"
+                        id="cidade"
+                        autoComplete="cidade"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        rounded="md"
+                        onChange={(e) => setSite(e.target.value)}
+                      />
+                    </FormControl>
+
+                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                      <FormLabel
+                        htmlFor="cidade"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        email para emvio de Nfe
+                      </FormLabel>
+                      <Input
+                        type="text"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        rounded="md"
+                        onChange={(e) => setEmailNfe(e.target.value)}
+                      />
+                    </FormControl>
+                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                      <FormLabel
+                        htmlFor="cidade"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        whatsapp
+                      </FormLabel>
+                      <Input
+                        type="text"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        rounded="md"
+                        onChange={(e) => setCelular(e.target.value)}
                       />
                     </FormControl>
                   </SimpleGrid>
@@ -755,7 +872,7 @@ export default function Cadastro(): JSX.Element {
                         </option>
                         <option value="cif">CIF - Por conta da Ribermax</option>
                       </Select>
-                      </FormControl>
+                    </FormControl>
                   </SimpleGrid>
 
                   <SimpleGrid columns={12} spacing={5}>
@@ -850,7 +967,7 @@ export default function Cadastro(): JSX.Element {
                                       ? setEngLev(true)
                                       : item.id === '10'
                                       ? setEngRef(true)
-                                      : setEngResi(true)
+                                      : setEngResi(true);
                                   return set;
                                 }}
                               />
@@ -870,7 +987,6 @@ export default function Cadastro(): JSX.Element {
                         </Box>
                       );
                     })}
-
                   </SimpleGrid>
                 </Stack>
                 <Box
@@ -898,12 +1014,12 @@ export default function Cadastro(): JSX.Element {
                     Cancelar
                   </Button>
                   <Button
-                    type="submit"
                     colorScheme="whatsapp"
                     _focus={{
                       shadow: '',
                     }}
                     fontWeight="md"
+                    // onClick={save}
                   >
                     Save
                   </Button>
