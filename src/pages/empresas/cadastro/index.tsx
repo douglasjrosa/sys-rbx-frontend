@@ -12,17 +12,16 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Switch
 } from '@chakra-ui/react';
+import React from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
-import { PostEmpresa } from '../../api/empresas/endpoint';
 
 export default function Cadastro(): JSX.Element {
   const [CNPJ, setCNPJ] = useState('');
-  const [dados, setDados]: any = useState([]);
-
   const [nome, setNome] = useState('');
   const [fantasia, setFantasia] = useState('');
   const [tipoPessoa, setTipoPessoa] = useState('');
@@ -30,13 +29,12 @@ export default function Cadastro(): JSX.Element {
   const [celular, setCelular] = useState('');
   const [email, setEmail] = useState('');
   const [emailNfe, setEmailNfe] = useState('');
-  const [ieStatus, setIeStatus] = useState('');
+  const [ieStatus, setIeStatus] = useState(false);
   const [CNAE, setCNAE] = useState('');
   const [Ie, setIE] = useState('');
   const [porte, setPorte] = useState('');
   const [simples, setSimples] = useState(false);
   const [site, setSite] = useState('');
-
   const [endereco, setEndereco] = useState('');
   const [numero, setNumero] = useState('');
   const [bairro, setBairro] = useState('');
@@ -46,7 +44,6 @@ export default function Cadastro(): JSX.Element {
   const [cep, setCep] = useState('');
   const [pais, setPais] = useState('');
   const [codpais, setCodpais] = useState('');
-
   const [adFrailLat, setAdFragilLat] = useState(false);
   const [adFrailCab, setAdFragilCab] = useState(false);
   const [adEspecialLat, setAdEspecialLat] = useState(false);
@@ -54,11 +51,10 @@ export default function Cadastro(): JSX.Element {
   const [latFCab, setLatFCab] = useState(false);
   const [cabChao, setCabChao] = useState(false);
   const [cabTop, setCabTop] = useState(false);
-
   const [cxEco, setCxEco] = useState(false);
   const [cxEst, setCxEst] = useState(false);
   const [cxLev, setCxLev] = useState(false);
-  const [cxRef, setCxRef] = useState(false);
+  const [cxRef, setCxRef] = useState(null);
   const [cxSupRef, setCxSupRef] = useState(false);
   const [platSMed, setPlatSMed] = useState(false);
   const [cxResi, setCxResi] = useState(false);
@@ -66,7 +62,7 @@ export default function Cadastro(): JSX.Element {
   const [engLev, setEngLev] = useState(false);
   const [engRef, setEngRef] = useState(false);
   const [engResi, setEngResi] = useState(false);
-
+  
   const consulta = () => {
     console.log(CNPJ);
     let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
@@ -79,91 +75,134 @@ export default function Cadastro(): JSX.Element {
       },
     })
       .then(function (response) {
-        console.log(response.data);
-        setDados(response.data);
-
-        setNome(dados.razao_social);
-        setFantasia(dados.nome_fantasia);
+        setNome(response.data.razao_social);
+        setFantasia(response.data.estabelecimento.nome_fantasia);
         setTipoPessoa('cnpj');
-        setIE(dados.estabelecimento.inscricoes_estaduais[0].inscricao_estadual);
-        setIeStatus(dados.estabelecimento.inscricoes_estaduais[0].ativo);
-        setEndereco(
-          dados.estabelecimento.tipo_logradouro +
-            ' ' +
-            dados.estabelecimento.logradouro,
+        setIE(
+          response.data.estabelecimento.inscricoes_estaduais[0]
+            .inscricao_estadual,
         );
-        setNumero(dados.estabelecimento.numero);
-        setComplemento(dados.estabelecimento.complemento);
-        setBairro(dados.estabelecimento.bairro);
-        setCep(dados.estabelecimento.cep);
-        setCidade(dados.estabelecimento.cidade.nome);
-        setUf(dados.estabelecimento.estado.nome);
-        let ddd = dados.estabelecimento.ddd1;
-        let tel1 = dados.estabelecimento.telefone1;
+        setIeStatus(
+          response.data.estabelecimento.inscricoes_estaduais[0].ativo,
+        );
+        setEndereco(
+          response.data.estabelecimento.tipo_logradouro +
+            ' ' +
+            response.data.estabelecimento.logradouro,
+        );
+        setNumero(response.data.estabelecimento.numero);
+        setComplemento(response.data.estabelecimento.complemento);
+        setBairro(response.data.estabelecimento.bairro);
+        setCep(response.data.estabelecimento.cep);
+        setCidade(response.data.estabelecimento.cidade.nome);
+        setUf(response.data.estabelecimento.estado.sigla);
+        let ddd = response.data.estabelecimento.ddd1;
+        let tel1 = response.data.estabelecimento.telefone1;
         setFone(ddd + tel1);
-        setEmail(dados.estabelecimento.email);
-        setPais(dados.estabelecimento.pais.nome);
-        setCodpais(dados.estabelecimento.pais.id);
-        setCNAE(dados.estabelecimento.atividade_principal.id);
-        setPorte(dados.porte.descricao);
-        const cheksimples = dados.simples === null ? false : true;
+        setEmail(response.data.estabelecimento.email);
+        setPais(response.data.estabelecimento.pais.nome);
+        setCodpais(response.data.estabelecimento.pais.id);
+        setCNAE(response.data.estabelecimento.atividade_principal.id);
+        setPorte(response.data.porte.descricao);
+        const cheksimples =
+          response.data.simples === null
+            ? false
+            : response.data.simples.simples === 'Sim'
+            ? true
+            : false;
         setSimples(cheksimples);
       })
       .catch(function (error) {
         console.log(error);
       });
   };
-  console.log(dados);
+  console.log(fantasia);
 
   const resprazao = nome.length !== 0 ? true : false;
-  const respemail = email.length !== 0 ? true : false;
-  const respStatus = ieStatus.length !== 0 ? true : false;
+  const respemail = !email ? false : email.length !== 0 ? true : false;
+  const respStatus =
+    ieStatus === true && nome.length !== 0
+      ? true
+      : ieStatus === false && nome.length !== 0
+      ? true
+      : false;
   const respCNAE = CNAE.length !== 0 ? true : false;
   const respend = endereco.length !== 0 ? true : false;
   const respnuber = numero.length !== 0 ? true : false;
   const respbairro = bairro.length !== 0 ? true : false;
-  const respcomplemento = complemento.length !== 0 ? true : false;
+  const respcomplemento = !complemento
+    ? false
+    : complemento.length !== 0
+    ? true
+    : false;
   const respcidade = cidade.length !== 0 ? true : false;
   const respuf = uf.length !== 0 ? true : false;
   const respcep = cep.length !== 0 ? true : false;
   const resppais = pais.length !== 0 ? true : false;
   const respcodpais = codpais.length !== 0 ? true : false;
 
-  // const save = async () => {
-  //   const data = {
-  //     nome,
-  //     fantasia,
-  //     tipoPessoa,
-  //     contribuinte,
-  //     cnpj,
-  //     Ie,
-  //     ieStatus,
-  //     endereco,
-  //     numero,
-  //     complemento,
-  //     bairro,
-  //     cep,
-  //     cidade,
-  //     uf,
-  //     pais,
-  //     codpais,
-  //     fone,
-  //     celular,
-  //     email,
-  //     emailNfe,
-  //     site,
-  //     CNAE,
-  //     porte,
-  //     simples,
-  //     status,
-  //   }
-  //   const response = await PostEmpresa(data)
-  //     .then((response) => {
-  //       console.log(response.data);
-  //       return response.data;
-  //     })
-  //     .catch((err) => console.log(err.data));
-  // };
+  const save = async () => {
+    const data = {
+      data: {
+        nome: nome,
+        fantasia: fantasia,
+        tipoPessoa: tipoPessoa,
+        endereco: endereco,
+        numero: numero,
+        complemento: complemento,
+        bairro: bairro,
+        cep: cep,
+        cidade: cidade,
+        uf: uf,
+        fone: parseInt(fone),
+        celular: parseInt(celular),
+        email: email,
+        emailNfe: emailNfe,
+        site: site,
+        CNPJ: parseInt(CNPJ),
+        Ie: parseInt(Ie),
+        pais: pais,
+        codpais: parseInt(codpais),
+        CNAE: parseInt(CNAE),
+        porte: porte,
+        simples: simples,
+        ieStatus: ieStatus,
+        status: true,
+        adFrailLat: adFrailLat,
+        adFrailCab: adFrailCab,
+        adEspecialLat: adEspecialLat,
+        adEspecialCab: adEspecialCab,
+        latFCab: latFCab,
+        cabChao: cabChao,
+        cabTop: cabTop,
+        cxEco: cxEco,
+        cxEst: cxEst,
+        cxLev: cxLev,
+        cxRef: cxRef,
+        cxSupRef: cxSupRef,
+        platSMed: platSMed,
+        cxResi: cxResi,
+        engEco: engEco,
+        engLev: engLev,
+        engRef: engRef,
+        engResi: engResi,
+      },
+    };
+
+    const url = '/api/empresas/post';
+
+    axios({
+      method: 'POST',
+      url: url,
+      data: data,
+    })
+      .then((response) => {
+        console.log(response.data);
+
+        return response.data;
+      })
+      .catch((err) => console.log(err));
+  };
 
   return (
     <>
@@ -244,6 +283,7 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
+                        maxLength={14}
                         onChange={(e) => setCNPJ(e.target.value)}
                       />
                     </FormControl>
@@ -395,7 +435,15 @@ export default function Cadastro(): JSX.Element {
                         w="full"
                         rounded="md"
                         disabled={respStatus}
-                        value={ieStatus}
+                        value={(() => {
+                          const val =
+                            ieStatus === true && nome.length !== 0
+                              ? 'sim'
+                              : ieStatus === false && nome.length !== 0
+                              ? 'não'
+                              : ' ';
+                          return val;
+                        })()}
                       />
                     </FormControl>
                   </SimpleGrid>
@@ -793,15 +841,12 @@ export default function Cadastro(): JSX.Element {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="selecine uma opção"
+                        placeholder="Selecione uma tabela"
                       >
-                        <option>Selecione uma tabela</option>
                         <option value="0">Á vista (antecipado)</option>
                         <option value="5">5 dias</option>
                         <option value="15">15 dias</option>
-                        <option value="28" selected>
-                          28 Dias
-                        </option>
+                        <option value="28">28 Dias</option>
                         <option value="35">28 e 35 dias</option>
                         <option value="42">28,35 e 42 dias</option>
                         <option value="90">
@@ -832,9 +877,8 @@ export default function Cadastro(): JSX.Element {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="selecine uma opção"
+                        placeholder="Escolha uma opção"
                       >
-                        <option>Escolha uma opção</option>
                         <option value="desconto">Desconto À VISTA</option>
                         <option value="prazo">
                           maior prazo para pagamento
@@ -864,9 +908,8 @@ export default function Cadastro(): JSX.Element {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="selecine uma opção"
+                        placeholder="Escolha uma opção"
                       >
-                        <option>Escolha uma opção</option>
                         <option value="option3">
                           FOB - Por conta do cliente
                         </option>
@@ -888,7 +931,7 @@ export default function Cadastro(): JSX.Element {
                         >
                           <Flex>
                             <Flex alignItems="center" h={5}>
-                              <Checkbox
+                              <Switch
                                 colorScheme="green"
                                 borderColor="gray.400"
                                 rounded="md"
@@ -941,13 +984,15 @@ export default function Cadastro(): JSX.Element {
                         >
                           <Flex>
                             <Flex alignItems="center" h={5}>
-                              <Checkbox
+                              <Switch
                                 colorScheme="green"
                                 borderColor="gray.400"
                                 rounded="md"
                                 onChange={(e) => {
                                   const set =
                                     item.id === '1'
+                                      ? setCxEco(true)
+                                      : item.id === '1'
                                       ? setCxEco(true)
                                       : item.id === '2'
                                       ? setCxEst(true)
@@ -972,6 +1017,7 @@ export default function Cadastro(): JSX.Element {
                                 }}
                               />
                             </Flex>
+
                             <Box ml={3} fontSize="xs">
                               <chakra.label
                                 fontWeight="md"
@@ -1019,7 +1065,7 @@ export default function Cadastro(): JSX.Element {
                       shadow: '',
                     }}
                     fontWeight="md"
-                    // onClick={save}
+                    onClick={save}
                   >
                     Save
                   </Button>

@@ -12,6 +12,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { Header } from './components/header';
+import CardEmpresa from '../../components/empresa/lista/card/card';
 
 export default function Empresas(): JSX.Element {
   const router = useRouter();
@@ -72,8 +73,11 @@ export default function Empresas(): JSX.Element {
           w="full"
           alignItems="center"
           justifyContent="center"
+          flexDirection="column"
+          gap={5}
         >
-          <Box
+          <CardEmpresa />
+          {/* <Box
             mx="auto"
             px={8}
             py={2}
@@ -82,7 +86,7 @@ export default function Empresas(): JSX.Element {
             boxShadow='dark-lg'
             bg="white"
             _dark={{
-              bg: 'gray.800',
+              bg: 'gray.900',
             }}
             w="3xl"
           >
@@ -217,7 +221,7 @@ export default function Empresas(): JSX.Element {
                 </chakra.p>
               </Box>
             </Box>
-          </Box>
+          </Box> */}
         </Flex>
       </Box>
     </Flex>
