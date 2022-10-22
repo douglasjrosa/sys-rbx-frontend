@@ -12,7 +12,7 @@ import {
   Select,
   SimpleGrid,
   Stack,
-  Switch
+  Switch,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useState } from 'react';
@@ -62,7 +62,11 @@ export default function Cadastro(): JSX.Element {
   const [engLev, setEngLev] = useState(false);
   const [engRef, setEngRef] = useState(false);
   const [engResi, setEngResi] = useState(false);
-  
+  const [tablecalc, setTablecalc] = useState('');
+  const [maxPg, setMaxpg] = useState('');
+  const [forpg, setForpg] = useState('');
+  const [frete, setFrete] = useState('');
+
   const consulta = () => {
     console.log(CNPJ);
     let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
@@ -141,6 +145,10 @@ export default function Cadastro(): JSX.Element {
   const resppais = pais.length !== 0 ? true : false;
   const respcodpais = codpais.length !== 0 ? true : false;
 
+  const reload = () => {
+    window.location.reload;
+  };
+
   const save = async () => {
     const data = {
       data: {
@@ -186,6 +194,10 @@ export default function Cadastro(): JSX.Element {
         engLev: engLev,
         engRef: engRef,
         engResi: engResi,
+        tablecalc: tablecalc,
+        maxPg: maxPg,
+        forpg: forpg,
+        frete: frete,
       },
     };
 
@@ -198,7 +210,7 @@ export default function Cadastro(): JSX.Element {
     })
       .then((response) => {
         console.log(response.data);
-
+        reload();
         return response.data;
       })
       .catch((err) => console.log(err));
@@ -802,8 +814,6 @@ export default function Cadastro(): JSX.Element {
                         Tabela de calculo
                       </FormLabel>
                       <Select
-                        name="tabela de calculo"
-                        id="tabela de calculo"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -812,6 +822,7 @@ export default function Cadastro(): JSX.Element {
                         fontSize="xs"
                         rounded="md"
                         placeholder="selecine uma opção"
+                        onChange={(e) => setTablecalc(e.target.value)}
                       >
                         <option value="Vip">Vip</option>
                         <option value="option2">Option 2</option>
@@ -842,6 +853,7 @@ export default function Cadastro(): JSX.Element {
                         fontSize="xs"
                         rounded="md"
                         placeholder="Selecione uma tabela"
+                        onChange={(e) => setMaxpg(e.target.value)}
                       >
                         <option value="0">Á vista (antecipado)</option>
                         <option value="5">5 dias</option>
@@ -878,6 +890,7 @@ export default function Cadastro(): JSX.Element {
                         fontSize="xs"
                         rounded="md"
                         placeholder="Escolha uma opção"
+                        onChange={(e) => setForpg(e.target.value)}
                       >
                         <option value="desconto">Desconto À VISTA</option>
                         <option value="prazo">
@@ -909,11 +922,10 @@ export default function Cadastro(): JSX.Element {
                         fontSize="xs"
                         rounded="md"
                         placeholder="Escolha uma opção"
+                        onChange={(e) => setFrete(e.target.value)}
                       >
-                        <option value="option3">
-                          FOB - Por conta do cliente
-                        </option>
-                        <option value="cif">CIF - Por conta da Ribermax</option>
+                        <option value="FOB">FOB - Por conta do cliente</option>
+                        <option value="CIF">CIF - Por conta da Ribermax</option>
                       </Select>
                     </FormControl>
                   </SimpleGrid>
