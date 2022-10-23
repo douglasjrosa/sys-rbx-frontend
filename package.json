@@ -16,6 +16,7 @@
     "@chakra-ui/react": "^2.3.4",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
+    "@types/react-input-mask": "^3.0.1",
     "autoprefixer": "^9",
     "axios": "^0.21.3",
     "classnames": "^2.2.6",
@@ -33,6 +34,7 @@
     "react-dom": "18.2.0",
     "react-icons": "^3.10.0",
     "react-markdown": "^6.0.2",
+    "remask": "^0.1.0-alpha.5",
     "yup": "^0.32.11"
   },
   "devDependencies": {

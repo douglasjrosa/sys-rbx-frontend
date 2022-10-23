@@ -23,7 +23,7 @@
     "src/pages/_app.tsx",
     "src/pages/api/auth/[...nextauth].ts",
     "types.d.ts"
-  ],
+, "src/pages/empresas/cadastro/cliente/index.jsx"  ],
   "exclude": [
     "node_modules"
   ]

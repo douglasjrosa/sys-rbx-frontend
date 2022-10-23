@@ -1,25 +1,29 @@
-import axios from 'axios';
-import { NextApiRequest, NextApiResponse } from 'next';
+import axios from "axios";
+import { NextApiRequest, NextApiResponse } from "next";
+import { Filtro } from "../controlers/filtroStatus";
+import { SimplesRetur } from "../controlers/simple";
 
-export default async function getId(
+
+export default async function GetEmpresa(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const { id } = req.query;
   if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN
 
     await axios({
       method: 'GET',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/empresas/' + id,
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/empresas/',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
-      .then(Response => {
-        console.log(Response.data);
-      res.status(200).json(Response.data)
+      .then(async Response => {
+        const resp = await Filtro(Response.data)
+        const simples= await SimplesRetur(resp)
+        console.log(simples)
+      res.status(200).json(simples)
     })
     .catch(err => {
       res.status(400).json({

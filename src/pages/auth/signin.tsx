@@ -32,11 +32,11 @@ const SignIn = ({ csrfToken }) => {
             <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
             <FormControl>
               <FormLabel htmlFor="email">Email address</FormLabel>
-              <Input name="email" type="text" />
+              <Input borderColor="gray.400" name="email" type="text" />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
-              <Input name="password" type="password" />
+              <Input borderColor="gray.400" name="password" type="password" />
             </FormControl>
             <Stack spacing={6}>
               <Stack
@@ -44,7 +44,6 @@ const SignIn = ({ csrfToken }) => {
                 align={'start'}
                 justify={'space-between'}
               >
-                <Checkbox>Remember me</Checkbox>
                 <Link color={'blue.500'}>Forgot password?</Link>
               </Stack>
               <Button

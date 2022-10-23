@@ -1,10 +1,11 @@
 import { Box, Flex, chakra, Link } from '@chakra-ui/react';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 export default function CardEmpresa() {
   const [dados, setDados] = useState([]);
-
+  const router = useRouter();
   const get = async () => {
     const response = await axios({
       method: 'GET',
@@ -52,16 +53,40 @@ export default function CardEmpresa() {
     };
 
     const cnpj = () => {
-      const dig01 = item.attributes.CNPJ.substr(0, 2);
-      const dig02 = item.attributes.CNPJ.substr(2, 3);
-      const dig03 = item.attributes.CNPJ.substr(5, 3);
-      const dig04 = item.attributes.CNPJ.substr(8, 4);
-      const dig05 = item.attributes.CNPJ.substr(12, 2);
-      const result = dig01 + "." + dig02 + "." + dig03 + "/" + dig04 + "-" + dig05;
+      const dig01 =
+        item.attributes.CNPJ === null
+          ? '00'
+          : item.attributes.CNPJ.substr(0, 2);
+      const dig02 =
+        item.attributes.CNPJ === null
+          ? '000'
+          : item.attributes.CNPJ.substr(2, 3);
+      const dig03 =
+        item.attributes.CNPJ === null
+          ? '000'
+          : item.attributes.CNPJ.substr(5, 3);
+      const dig04 =
+        item.attributes.CNPJ === null
+          ? '0000'
+          : item.attributes.CNPJ.substr(8, 4);
+      const dig05 =
+        item.attributes.CNPJ === null
+          ? '00'
+          : item.attributes.CNPJ.substr(12, 2);
+      const result =
+        dig01 + '.' + dig02 + '.' + dig03 + '/' + dig04 + '-' + dig05;
       return result;
-    }
-    const end = item.attributes.endereco + ", " + item.attributes.numero + " - " + item.attributes.bairro + ", " + item.attributes.cidade + " - " + item.attributes.uf;
-    console.log(end)
+    };
+    const end =
+      item.attributes.endereco +
+      ', ' +
+      item.attributes.numero +
+      ' - ' +
+      item.attributes.bairro +
+      ', ' +
+      item.attributes.cidade +
+      ' - ' +
+      item.attributes.uf;
     return (
       <Box
         mx="auto"
@@ -74,7 +99,7 @@ export default function CardEmpresa() {
         _dark={{
           bg: 'gray.900',
         }}
-        w="3xl"
+        w={['xs', 'sm', 'lg', 'xl', '3xl', '5xl', '6xl']}
         key={item.id}
         fontSize="sm"
       >
@@ -88,27 +113,53 @@ export default function CardEmpresa() {
           >
             {data()}
           </chakra.span>
-          <Link
-            px={3}
-            py={1}
-            bg="gray.600"
-            color="gray.100"
-            fontSize="sm"
-            fontWeight="700"
-            rounded="md"
-            _hover={{
-              bg: 'gray.500',
-            }}
-            onClick={async () => {
-              const id = item.id;
-              await axios({
-                method: 'PUT',
-                url: '/api/empresas/delete/' + id,
-              });
-            }}
+          <Flex
+            justifyContent="space-between"
+            alignItems="center"
+            flexDirection={['column', 'row', 'row']}
+            w={36}
+            gap={5}
           >
-            Delete
-          </Link>
+            <Link
+              px={3}
+              py={1}
+              bg="gray.600"
+              color="gray.100"
+              fontSize="sm"
+              fontWeight="700"
+              rounded="md"
+              _hover={{
+                bg: 'gray.500',
+              }}
+              onClick={async () => {
+                const id = item.id;
+                await axios({
+                  method: 'PUT',
+                  url: '/api/empresas/delete/' + id,
+                });
+              }}
+            >
+              Delete
+            </Link>
+            <Link
+              px={3}
+              py={1}
+              bg="gray.600"
+              color="gray.100"
+              fontSize="sm"
+              fontWeight="700"
+              rounded="md"
+              _hover={{
+                bg: 'gray.500',
+              }}
+              onClick={async () => {
+                localStorage.setItem('atid', item.id);
+                await router.push('/empresas/cadastro');
+              }}
+            >
+              editar
+            </Link>
+          </Flex>
         </Flex>
 
         <Box mt={2}>
@@ -127,9 +178,13 @@ export default function CardEmpresa() {
               textDecor: 'underline',
             }}
           >
-            {item.attributes.fantasia}
+            {item.attributes.nome}
           </Link>
-          <Box mt={2} display={'flex'}>
+          <Box
+            mt={2}
+            display={'flex'}
+            flexDirection={['column', 'column', 'row', 'row']}
+          >
             <chakra.p
               mt={2}
               color="gray.600"
@@ -216,6 +271,6 @@ export default function CardEmpresa() {
       </Box>
     );
   });
-  const display = !dados? null: render
+  const display = !dados ? null : render;
   return <>{display}</>;
 }
