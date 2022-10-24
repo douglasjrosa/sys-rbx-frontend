@@ -1,26 +1,24 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
-import { Filtro } from "../controlers/filtroStatus";
 
 export default async function GetEmpresa(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method === 'GET') {
+  if (req.method === 'PUT') {
+    const id = req.query
     const token = process.env.ATORIZZATION_TOKEN
 
     await axios({
-      method: 'GET',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/empresas/',
+      method: 'PUT',
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/pessoas/'+id,
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
-      .then(async Response => {
-        const resp = await Filtro(Response.data)
-        console.log(resp)
-      res.status(200).json(resp)
+    .then(Response => {
+      res.status(200).json(Response.data)
     })
     .catch(err => {
       res.status(400).json({

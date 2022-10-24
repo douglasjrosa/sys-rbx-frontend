@@ -2,8 +2,6 @@ import {
   chakra,
   Box,
   Button,
-  Checkbox,
-  Flex,
   FormControl,
   FormLabel,
   GridItem,
@@ -12,20 +10,16 @@ import {
   Select,
   SimpleGrid,
   Stack,
-  Switch,
-  ListItem,
-  ListIcon,
-  List,
   Textarea,
 } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
-import ListaEmpresa from '../../../../components/pessoas/listaEmpresa';
 import { mask, unMask } from 'remask';
-import { PaisesList } from '../../../../components/data/paisesList';
+import { PaisesList } from '../../../components/data/paisesList';
+import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 
-export default function Cadastro() {
+export default function AtualizarP() {
   //cru
   const [nome, setNome] = useState('');
   const [CEP, setCep] = useState('');
@@ -87,17 +81,18 @@ export default function Cadastro() {
 
   useEffect(() => {
     consultaEmpresa();
+    if (empresa !== '' && workId === '') {
+      consultaEmp()
+    }
   }, []);
 
   const MaskCep = (e) => {
-    // e.prevendDefault();
     const originalVelue = unMask(e.target.value);
     const maskedValue = mask(originalVelue, ['99.999-999']);
     setMaskCep(maskedValue);
   };
 
   const MaskCpf = (e) => {
-    e.prevendDefault();
     const originalVelue = unMask(e.target.value);
     const maskedValue = mask(originalVelue, ['999.999.999-99']);
     setCpf(originalVelue);
@@ -105,7 +100,6 @@ export default function Cadastro() {
   };
 
   const MaskRg = (e) => {
-    e.prevendDefault();
     const originalVelue = unMask(e.target.value);
     const maskedValue = mask(originalVelue, ['99.999.999-9']);
     setRg(originalVelue);
@@ -113,7 +107,6 @@ export default function Cadastro() {
   };
 
   const MaskWhatsapp = (e) => {
-    e.prevendDefault();
     const originalVelue = unMask(e.target.value);
     const maskedValue = mask(originalVelue, ['(99) 9 9999-9999']);
     setWhatsapp(originalVelue);
@@ -121,7 +114,6 @@ export default function Cadastro() {
   };
 
   const MaskTel = (e) => {
-    e.prevendDefault();
     const originalVelue = unMask(e.target.value);
     const maskedValue = mask(originalVelue, ['(99) 9999-9999']);
     setTelefone(originalVelue);
@@ -129,7 +121,6 @@ export default function Cadastro() {
   };
 
   const consultaEmpresaId = async (e) => {
-    e.prevendDefault;
     const id = e.target.value;
     console.log(id);
     let url = '/api/empresas/consulta/' + id;
@@ -162,14 +153,63 @@ export default function Cadastro() {
       });
   };
 
+  const consultaEmp = async () => {
+    const id = empresa;
+    console.log(id);
+    let url = '/api/empresas/consulta/' + id;
+    await axios({
+      method: 'GET',
+      url: url,
+    })
+      .then(function (response) {
+        console.log(response.data.data.id);
+        setEmpresa(response.data.data.attributes.nome);
+        setWorkId(response.data.data.id);
+        setWorkNome(response.data.data.attributes.nome);
+        setWorkfantasia(response.data.data.attributes.fantasia);
+        setWorkEndereco(response.data.data.attributes.endereco);
+        setWorkNumero(response.data.data.attributes.numero);
+        setWorkComplemento(response.data.data.attributes.complemento);
+        setWorkBairro(response.data.data.attributes.bairro);
+        setWorkCep(response.data.data.attributes.cep);
+        setWorkCidade(response.data.data.attributes.cidade);
+        setWorkUf(response.data.data.attributes.uf);
+        setWorkFone(response.data.data.attributes.fone);
+        setWorkCelular(response.data.data.attributes.celular);
+        setWorkSite(response.data.data.attributes.site);
+        setWorkEmail(response.data.data.attributes.email);
+        setWorkEmailNfe(response.data.data.attributes.emailNfe);
+        setWorkCNPJ(response.data.data.attributes.CNPJ);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+  };
+
   const save = async () => {
     const data = {
       data: {
         nome: nome,
+        CEP: CEP,
+        endereco: end,
+        numero: numero,
+        bairro: bairro,
+        cidade: cidade,
+        uf: uf,
+        CPF: CPF,
+        RG: RG,
+        whatsapp: whatsapp,
+        telefone: telefone,
+        email: complementos,
+        pais: pais,
+        obs: obs,
+        status: true,
+        empresas: [empresa],
       },
     };
 
-    const url = '/api/empresas/post';
+    const url = '/api/pessoas/Post';
 
     axios({
       method: 'POST',
@@ -192,7 +232,6 @@ export default function Cadastro() {
         }}
         px={5}
         pt={3}
-
       >
         <Box mt={[5, 0]}>
           <SimpleGrid
@@ -439,6 +478,7 @@ export default function Cadastro() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setNumero(e.target.value)}
+                        value={numero}
                       />
                     </FormControl>
 
@@ -546,6 +586,7 @@ export default function Cadastro() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setComplementos(e.target.value)}
+                        value={complementos}
                       />
                     </FormControl>
 
@@ -571,6 +612,7 @@ export default function Cadastro() {
                         placeholder="Selecione um Pais"
                         _placeholder={{ color: 'inherit' }}
                         onChange={(e) => setPais(e.target.value)}
+                        value={pais}
                       >
                         {PaisesList.map((item) => {
                           return (
@@ -658,6 +700,7 @@ export default function Cadastro() {
                         size="sm"
                         resize={'none'}
                         onChange={(e) => setObs(e.target.value)}
+                        value={obs}
                       />
                     </Box>
                   </SimpleGrid>
@@ -687,6 +730,7 @@ export default function Cadastro() {
                           CNPJ={workCNPJ}
                         />
                       )}
+
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[12, 3]}>
@@ -714,6 +758,7 @@ export default function Cadastro() {
                         rounded="md"
                         placeholder="Selecione uma tabela"
                         onChange={consultaEmpresaId}
+                        value={empresa}
                       >
                         {work.map((item) => {
                           return (

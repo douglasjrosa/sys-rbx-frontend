@@ -17,8 +17,8 @@ import {
 import React from 'react';
 import { useState } from 'react';
 import axios from 'axios';
-import { confgEnb } from '../../../../components/data/confgEnb';
-import { modCaix } from '../../../../components/data/modCaix';
+import { confgEnb } from '../../../components/data/confgEnb';
+import { modCaix } from '../../../components/data/modCaix';
 
 export default function Cadastro(): JSX.Element {
   const [CNPJ, setCNPJ] = useState('');
@@ -121,7 +121,6 @@ export default function Cadastro(): JSX.Element {
       });
   };
 
-
   const resprazao = nome.length !== 0 ? true : false;
   const respemail = !email ? false : email.length !== 0 ? true : false;
   const respStatus =
@@ -146,7 +145,52 @@ export default function Cadastro(): JSX.Element {
   const respcodpais = codpais.length !== 0 ? true : false;
 
   const reload = () => {
-    window.location.reload;
+    // window.location.reload;
+    setCNPJ('');
+    setNome('');
+    setFantasia('');
+    setTipoPessoa('');
+    setFone('');
+    setCelular('');
+    setEmail('');
+    setEmailNfe('');
+    setIeStatus(false);
+    setCNAE('');
+    setIE('');
+    setPorte('');
+    setSimples(false);
+    setSite('');
+    setEndereco('');
+    setNumero('');
+    setBairro('');
+    setComplemento('');
+    setCidade('');
+    setUf('');
+    setCep('');
+    setPais('');
+    setCodpais('');
+    setAdFragilLat(false);
+    setAdFragilCab(false);
+    setAdEspecialLat(false);
+    setAdEspecialCab(false);
+    setLatFCab(false);
+    setCabChao(false);
+    setCabTop(false);
+    setCxEco(false);
+    setCxEst(false);
+    setCxLev(false);
+    setCxRef(null);
+    setCxSupRef(false);
+    setPlatSMed(false);
+    setCxResi(false);
+    setEngEco(false);
+    setEngLev(false);
+    setEngRef(false);
+    setEngResi(false);
+    setTablecalc('');
+    setMaxpg('');
+    setForpg('');
+    setFrete('');
   };
 
   const save = async () => {
@@ -162,16 +206,16 @@ export default function Cadastro(): JSX.Element {
         cep: cep,
         cidade: cidade,
         uf: uf,
-        fone: parseInt(fone),
-        celular: parseInt(celular),
+        fone: fone,
+        celular: celular,
         email: email,
         emailNfe: emailNfe,
         site: site,
         CNPJ: CNPJ,
-        Ie: parseInt(Ie),
+        Ie: Ie,
         pais: pais,
-        codpais: parseInt(codpais),
-        CNAE: parseInt(CNAE),
+        codpais: codpais,
+        CNAE: CNAE,
         porte: porte,
         simples: simples,
         ieStatus: ieStatus,
@@ -210,9 +254,7 @@ export default function Cadastro(): JSX.Element {
     })
       .then((response) => {
         console.log(response.data);
-        setTimeout(async () => {
-          window.location.reload();
-      }, 300);
+        reload();
         return response.data;
       })
       .catch((err) => console.log(err));
@@ -267,7 +309,7 @@ export default function Cadastro(): JSX.Element {
                 >
                   <SimpleGrid columns={12} spacing={3}>
                     <Heading as={GridItem} colSpan={12} size="md">
-                      Cadastro de cliente
+                      Cadastro de Empresa
                     </Heading>
                   </SimpleGrid>
                   <SimpleGrid columns={12} spacing={3}>
@@ -825,6 +867,7 @@ export default function Cadastro(): JSX.Element {
                         rounded="md"
                         placeholder="selecine uma opção"
                         onChange={(e) => setTablecalc(e.target.value)}
+                        value={tablecalc}
                       >
                         <option value="Vip">Vip</option>
                         <option value="option2">Option 2</option>
@@ -856,6 +899,7 @@ export default function Cadastro(): JSX.Element {
                         rounded="md"
                         placeholder="Selecione uma tabela"
                         onChange={(e) => setMaxpg(e.target.value)}
+                        value={maxPg}
                       >
                         <option value="0">Á vista (antecipado)</option>
                         <option value="5">5 dias</option>
@@ -893,6 +937,7 @@ export default function Cadastro(): JSX.Element {
                         rounded="md"
                         placeholder="Escolha uma opção"
                         onChange={(e) => setForpg(e.target.value)}
+                        value={forpg}
                       >
                         <option value="desconto">Desconto À VISTA</option>
                         <option value="prazo">
@@ -925,6 +970,7 @@ export default function Cadastro(): JSX.Element {
                         rounded="md"
                         placeholder="Escolha uma opção"
                         onChange={(e) => setFrete(e.target.value)}
+                        value={frete}
                       >
                         <option value="FOB">FOB - Por conta do cliente</option>
                         <option value="CIF">CIF - Por conta da Ribermax</option>
@@ -937,6 +983,21 @@ export default function Cadastro(): JSX.Element {
                       Configurações de Embalagens
                     </Heading>
                     {confgEnb.map((item) => {
+                      const val =
+                        item.id === '12'
+                          ? adFrailLat
+                          : item.id === '13'
+                          ? adFrailCab
+                          : item.id === '14'
+                          ? adEspecialLat
+                          : item.id === '15'
+                          ? adEspecialCab
+                          : item.id === '16'
+                          ? latFCab
+                          : item.id === '17'
+                          ? cabChao
+                          : cabTop;
+
                       return (
                         <Box
                           key={item.id}
@@ -949,49 +1010,22 @@ export default function Cadastro(): JSX.Element {
                                 colorScheme="green"
                                 borderColor="gray.400"
                                 rounded="md"
-                                onChange={() => {
-                                  const FragilLat =
-                                    adFrailLat === false
-                                      ? setAdFragilLat(true)
-                                      : setAdFragilLat(false);
-                                  const FragilCab =
-                                    adFrailCab === false
-                                      ? setAdFragilCab(true)
-                                      : setAdFragilCab(false);
-                                  const EspecialLat =
-                                    adEspecialLat === false
-                                      ? setAdEspecialLat(true)
-                                      : setAdEspecialLat(true);
-                                  const EspecialCab =
-                                    adEspecialCab === false
-                                      ? setAdEspecialCab(true)
-                                      : setAdEspecialCab(true);
-                                  const LatFCab =
-                                    latFCab === false
-                                      ? setLatFCab(true)
-                                      : setLatFCab(true);
-                                  const CabChao =
-                                    cabChao === false
-                                      ? setCabChao(true)
-                                      : setCabChao(true);
-                                  const CabTop =
-                                    cabTop === false
-                                      ? setCabTop(true)
-                                      : setCabTop(true);
+                                isChecked={val}
+                                onChange={(e) => {
                                   const set =
                                     item.id === '12'
-                                      ? FragilLat
+                                      ? setAdFragilLat(e.target.checked)
                                       : item.id === '13'
-                                      ? FragilCab
+                                      ? setAdFragilCab(e.target.checked)
                                       : item.id === '14'
-                                      ? EspecialLat
+                                      ? setAdEspecialLat(e.target.checked)
                                       : item.id === '15'
-                                      ? EspecialCab
+                                      ? setAdEspecialCab(e.target.checked)
                                       : item.id === '16'
-                                      ? LatFCab
+                                      ? setLatFCab(e.target.checked)
                                       : item.id === '17'
-                                      ? CabChao
-                                      : CabTop;
+                                      ? setCabChao(e.target.checked)
+                                      : setCabTop(e.target.checked);
                                   return set;
                                 }}
                               />
@@ -1018,6 +1052,29 @@ export default function Cadastro(): JSX.Element {
                       Modelos de Caixas
                     </Heading>
                     {modCaix.map((item) => {
+                      console.log(cxEco);
+                      const val =
+                        item.id === '1'
+                          ? cxEco
+                          : item.id === '2'
+                          ? cxEst
+                          : item.id === '3'
+                          ? cxLev
+                          : item.id === '4'
+                          ? cxRef
+                          : item.id === '5'
+                          ? cxSupRef
+                          : item.id === '6'
+                          ? platSMed
+                          : item.id === '7'
+                          ? cxResi
+                          : item.id === '8'
+                          ? engEco
+                          : item.id === '9'
+                          ? engLev
+                          : item.id === '10'
+                          ? engRef
+                          : engResi;
                       return (
                         <Box
                           key={item.id}
@@ -1030,73 +1087,30 @@ export default function Cadastro(): JSX.Element {
                                 colorScheme="green"
                                 borderColor="gray.400"
                                 rounded="md"
+                                isChecked={val}
                                 onChange={(e) => {
-                                  const CxEco =
-                                    cxEco === false
-                                      ? setCxEco(true)
-                                      : setCxEco(false);
-                                  const CxEst =
-                                    cxEst === false
-                                      ? setCxEst(true)
-                                      : setCxEst(false);
-                                  const CxLev =
-                                    cxLev === false
-                                      ? setCxLev(true)
-                                      : setCxLev(false);
-                                  const CxRef =
-                                    cxRef === false
-                                      ? setCxRef(true)
-                                      : setCxRef(false);
-                                  const CxSupRef =
-                                    cxSupRef === false
-                                      ? setCxSupRef(true)
-                                      : setCxSupRef(false);
-                                  const PlatSMed =
-                                    platSMed === false
-                                      ? setPlatSMed(true)
-                                      : setPlatSMed(false);
-                                  const CxResi =
-                                    cxResi === false
-                                      ? setCxResi(true)
-                                      : setCxResi(false);
-                                  const EngEco =
-                                    engEco === false
-                                      ? setEngEco(true)
-                                      : setEngEco(false);
-                                  const EngLev =
-                                    engLev === false
-                                      ? setEngLev(true)
-                                      : setEngLev(false);
-                                  const EngRef =
-                                    engRef === false
-                                      ? setEngRef(true)
-                                      : setEngRef(false);
-                                  const EngResi =
-                                    engResi === false
-                                      ? setEngResi(true)
-                                      : setEngResi(false);
                                   const set =
                                     item.id === '1'
-                                      ? CxEco
+                                      ? setCxEco(e.target.checked)
                                       : item.id === '2'
-                                      ? CxEst
+                                      ? setCxEst(e.target.checked)
                                       : item.id === '3'
-                                      ? CxLev
+                                      ? setCxLev(e.target.checked)
                                       : item.id === '4'
-                                      ? CxRef
+                                      ? setCxRef(e.target.checked)
                                       : item.id === '5'
-                                      ? CxSupRef
+                                      ? setCxSupRef(e.target.checked)
                                       : item.id === '6'
-                                      ? PlatSMed
+                                      ? setPlatSMed(e.target.checked)
                                       : item.id === '7'
-                                      ? CxResi
+                                      ? setCxResi(e.target.checked)
                                       : item.id === '8'
-                                      ? EngEco
+                                      ? setEngEco(e.target.checked)
                                       : item.id === '9'
-                                      ? EngLev
+                                      ? setEngLev(e.target.checked)
                                       : item.id === '10'
-                                      ? EngRef
-                                      : EngResi;
+                                      ? setEngRef(e.target.checked)
+                                      : setEngResi(e.target.checked);
                                   return set;
                                 }}
                               />
@@ -1133,13 +1147,13 @@ export default function Cadastro(): JSX.Element {
                   textAlign="right"
                 >
                   <Button
-                    type="submit"
                     colorScheme="red"
                     me={5}
                     _focus={{
                       shadow: '',
                     }}
                     fontWeight="md"
+                    onClick={reload}
                   >
                     Cancelar
                   </Button>

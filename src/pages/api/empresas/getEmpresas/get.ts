@@ -1,7 +1,7 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
-import { Filtro } from "../controlers/filtroStatus";
-import { SimplesRetur } from "../controlers/simple";
+import { Filtro } from "../../controlers/filtroStatus";
+import { SimplesRetur } from "../../controlers/simple";
 
 
 export default async function GetEmpresa(
