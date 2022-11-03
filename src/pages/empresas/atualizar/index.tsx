@@ -20,7 +20,7 @@ import axios from 'axios';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
 
-export default function Cadastro(): JSX.Element {
+export default function Atualizar(): JSX.Element {
   const [CNPJ, setCNPJ] = useState('');
   const [nome, setNome] = useState('');
   const [fantasia, setFantasia] = useState('');

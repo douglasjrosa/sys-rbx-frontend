@@ -15,6 +15,7 @@ import {
 
 const SignIn = ({ csrfToken }) => {
 
+
   return (
     <Stack
       minH={'100vh'}
@@ -24,15 +25,18 @@ const SignIn = ({ csrfToken }) => {
       <Flex p={8} flex={1} align={'center'} justify={'center'}>
         <Stack spacing={4} w={'full'} maxW={'md'}>
           <Heading fontSize={'2xl'}>Sign in to your account</Heading>
-          <form method="post" action="/api/auth/callback/credentials">
+          <form
+            method="post"
+            action="/api/auth/callback/credentials"
+          >
             <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
             <FormControl>
               <FormLabel htmlFor="email">Email address</FormLabel>
-              <Input name="email" type="text" />
+              <Input borderColor="gray.400" name="email" type="text" />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
-              <Input name="password" type="password" />
+              <Input borderColor="gray.400" name="password" type="password" />
             </FormControl>
             <Stack spacing={6}>
               <Stack
@@ -40,10 +44,13 @@ const SignIn = ({ csrfToken }) => {
                 align={'start'}
                 justify={'space-between'}
               >
-                <Checkbox>Remember me</Checkbox>
                 <Link color={'blue.500'}>Forgot password?</Link>
               </Stack>
-              <Button colorScheme={'blue'} variant={'solid'} type="submit">
+              <Button
+                colorScheme={'blue'}
+                variant={'solid'}
+                type="submit"
+              >
                 Sign in
               </Button>
             </Stack>
