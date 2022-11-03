@@ -19,6 +19,7 @@ export default async function PostEmpresa(
       },
     })
       .then(Response => {
+        console.log(Response.data)
         res.status(200).json(Response.data)
       })
       .catch(err => {

@@ -3,15 +3,16 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-export default function CardEmpresa() {
+export default function CardPessoas() {
   const [dados, setDados] = useState([]);
   const router = useRouter();
   const get = async () => {
     const response = await axios({
       method: 'GET',
-      url: '/api/empresas/get',
+      url: '/api/pessoas/Get',
     });
     setDados(response.data.data);
+    console.log(response.data.data);
   };
 
   useEffect(() => {
@@ -52,29 +53,17 @@ export default function CardEmpresa() {
       return date;
     };
 
-    const cnpj = () => {
+    const cpf = () => {
       const dig01 =
-        item.attributes.CNPJ === null
-          ? '00'
-          : item.attributes.CNPJ.substr(0, 2);
+        item.attributes.cpf === null ? '000' : item.attributes.CPF.substr(0, 3);
       const dig02 =
-        item.attributes.CNPJ === null
-          ? '000'
-          : item.attributes.CNPJ.substr(2, 3);
+        item.attributes.CPF === null ? '000' : item.attributes.CPF.substr(3, 3);
       const dig03 =
-        item.attributes.CNPJ === null
-          ? '000'
-          : item.attributes.CNPJ.substr(5, 3);
+        item.attributes.CPF === null ? '000' : item.attributes.CPF.substr(6, 3);
       const dig04 =
-        item.attributes.CNPJ === null
-          ? '0000'
-          : item.attributes.CNPJ.substr(8, 4);
-      const dig05 =
-        item.attributes.CNPJ === null
-          ? '00'
-          : item.attributes.CNPJ.substr(12, 2);
-      const result =
-        dig01 + '.' + dig02 + '.' + dig03 + '/' + dig04 + '-' + dig05;
+        item.attributes.CPF === null ? '00' : item.attributes.CPF.substr(9, 2);
+
+      const result = dig01 + '.' + dig02 + '.' + dig03 + '-' + dig04;
       return result;
     };
     const end =
@@ -87,7 +76,10 @@ export default function CardEmpresa() {
       item.attributes.cidade +
       ' - ' +
       item.attributes.uf;
-    const rela = item.attributes.pessoa.data
+
+    const empresaLink = item.attributes.empresas.data[0].attributes.nome;
+    console.log(item.attributes.empresas.data[0].attributes.nome);
+
     return (
       <Box
         mx="auto"
@@ -136,7 +128,7 @@ export default function CardEmpresa() {
                 const id = item.id;
                 await axios({
                   method: 'PUT',
-                  url: '/api/empresas/delete/' + id,
+                  url: '/api/pessoas/delete/' + id,
                 });
               }}
             >
@@ -155,7 +147,8 @@ export default function CardEmpresa() {
               }}
               onClick={async () => {
                 localStorage.setItem('atid', item.id);
-                await router.push('/empresas/cadastro');
+                const id = item.id
+                await router.push('/pessoas/atualizar/'+id);
               }}
             >
               editar
@@ -193,7 +186,7 @@ export default function CardEmpresa() {
                 color: 'gray.300',
               }}
             >
-              CNPJ:
+              CPF:
             </chakra.p>
             <chakra.p
               mt={2}
@@ -203,7 +196,7 @@ export default function CardEmpresa() {
                 color: 'gray.300',
               }}
             >
-              {cnpj()}
+              {cpf()}
             </chakra.p>
             <chakra.p
               mt={2}
@@ -234,7 +227,7 @@ export default function CardEmpresa() {
                 color: 'gray.300',
               }}
             >
-              Responsavel:
+              empresas:
             </chakra.p>
             <chakra.p
               mt={2}
@@ -244,7 +237,7 @@ export default function CardEmpresa() {
                 color: 'gray.300',
               }}
             >
-              {rela === null? "não tem":rela.attributes.nome}
+              {empresaLink === null ? 'não tem' : empresaLink}
             </chakra.p>
             <chakra.p
               mt={2}

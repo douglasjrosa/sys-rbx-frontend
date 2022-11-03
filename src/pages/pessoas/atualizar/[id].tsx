@@ -19,7 +19,20 @@ import { mask, unMask } from 'remask';
 import { PaisesList } from '../../../components/data/paisesList';
 import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 
-export default function AtualizarP() {
+export async function getStaticProps(context:any) {
+
+  const { params } = context
+
+  const data = await axios(`/api/empresas/getId/${params.id}`)
+
+  const xta = data
+
+  return {
+    props:{xta},
+  }
+}
+
+export default function Cadastro({xta}) {
   //cru
   const [nome, setNome] = useState('');
   const [CEP, setCep] = useState('');
@@ -37,16 +50,7 @@ export default function AtualizarP() {
   const [pais, setPais] = useState('');
   const [obs, setObs] = useState('');
   const [empresa, setEmpresa] = useState('');
-
   const [work, setWork] = useState([]);
-
-  //mask
-  const [maskCep, setMaskCep] = useState('');
-  const [cpfmasck, setCpfmasck] = useState('');
-  const [rgmasck, setRgmasck] = useState('');
-  const [whatsappMask, setWhatsappMask] = useState('');
-  const [telefoneMask, setTelefoneMask] = useState('');
-
   const [workId, setWorkId] = useState('');
   const [workNome, setWorkNome] = useState('');
   const [workfantasia, setWorkfantasia] = useState('');
@@ -82,43 +86,10 @@ export default function AtualizarP() {
   useEffect(() => {
     consultaEmpresa();
     if (empresa !== '' && workId === '') {
-      consultaEmp()
+      consultaEmp();
     }
   }, []);
 
-  const MaskCep = (e) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['99.999-999']);
-    setMaskCep(maskedValue);
-  };
-
-  const MaskCpf = (e) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['999.999.999-99']);
-    setCpf(originalVelue);
-    setCpfmasck(maskedValue);
-  };
-
-  const MaskRg = (e) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['99.999.999-9']);
-    setRg(originalVelue);
-    setRgmasck(maskedValue);
-  };
-
-  const MaskWhatsapp = (e) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['(99) 9 9999-9999']);
-    setWhatsapp(originalVelue);
-    setWhatsappMask(maskedValue);
-  };
-
-  const MaskTel = (e) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['(99) 9999-9999']);
-    setTelefone(originalVelue);
-    setTelefoneMask(maskedValue);
-  };
 
   const consultaEmpresaId = async (e) => {
     const id = e.target.value;
@@ -130,7 +101,7 @@ export default function AtualizarP() {
     })
       .then(function (response) {
         console.log(response.data.data.id);
-        setEmpresa(response.data.data.attributes.nome);
+        setEmpresa(response.data.data.id);
         setWorkId(response.data.data.id);
         setWorkNome(response.data.data.attributes.nome);
         setWorkfantasia(response.data.data.attributes.fantasia);
@@ -162,8 +133,8 @@ export default function AtualizarP() {
       url: url,
     })
       .then(function (response) {
-        console.log(response.data.data.id);
-        setEmpresa(response.data.data.attributes.nome);
+        console.log(response.data);
+        setEmpresa(response.data.data.id);
         setWorkId(response.data.data.id);
         setWorkNome(response.data.data.attributes.nome);
         setWorkfantasia(response.data.data.attributes.fantasia);
@@ -184,7 +155,6 @@ export default function AtualizarP() {
       .catch(function (error) {
         console.log(error);
       });
-
   };
 
   const save = async () => {
@@ -201,26 +171,31 @@ export default function AtualizarP() {
         RG: RG,
         whatsapp: whatsapp,
         telefone: telefone,
-        email: complementos,
+        complemento: complementos,
+        email: email,
         pais: pais,
         obs: obs,
         status: true,
-        empresas: [empresa],
+        empresas: [
+          parseInt(empresa)
+        ]
       },
     };
 
     const url = '/api/pessoas/Post';
 
-    axios({
+    await axios({
       method: 'POST',
       url: url,
       data: data,
     })
       .then((response) => {
-        console.log(response.data);
+        console.log(response);
         return response.data;
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err)
+      });
   };
 
   return (
@@ -301,7 +276,7 @@ export default function AtualizarP() {
                         rounded="md"
                         textTransform={'uppercase'}
                         onChange={(e) => setNome(e.target.value)}
-                        value={nome}
+                        value={xta.nome}
                       />
                     </FormControl>
 
@@ -327,7 +302,7 @@ export default function AtualizarP() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setEmail(e.target.value)}
-                        value={email}
+                        value={xta.email}
                       />
                     </FormControl>
 
@@ -352,8 +327,8 @@ export default function AtualizarP() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={MaskCpf}
-                        value={cpfmasck}
+                        onChange={(e)=>setCpf(e.target.value)}
+                        value={xta.CPF}
                       />
                     </FormControl>
 
@@ -378,8 +353,8 @@ export default function AtualizarP() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={MaskRg}
-                        value={rgmasck}
+                        onChange={(e)=>setRg(e.target.value)}
+                        value={xta.RG}
                       />
                     </FormControl>
 
@@ -423,8 +398,8 @@ export default function AtualizarP() {
                               console.log(error);
                             });
                         }}
-                        onChange={MaskCep}
-                        value={maskCep}
+                        onChange={(e)=>setCep}
+                        value={xta.CEP}
                       />
                     </FormControl>
 
@@ -451,7 +426,7 @@ export default function AtualizarP() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setEnd(e.target.value)}
-                        value={end}
+                        value={xta.endereco}
                       />
                     </FormControl>
 
@@ -478,7 +453,7 @@ export default function AtualizarP() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setNumero(e.target.value)}
-                        value={numero}
+                        value={xta.numero}
                       />
                     </FormControl>
 
@@ -505,7 +480,7 @@ export default function AtualizarP() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setBairro(e.target.value)}
-                        value={bairro}
+                        value={xta.bairro}
                       />
                     </FormControl>
 
@@ -531,7 +506,7 @@ export default function AtualizarP() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        value={cidade}
+                        value={xta.cidade}
                         onChange={(e) => setCidade(e.target.value)}
                       />
                     </FormControl>
@@ -558,7 +533,7 @@ export default function AtualizarP() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        value={uf}
+                        value={xta.uf}
                         onChange={(e) => setuf(e.target.value)}
                       />
                     </FormControl>
@@ -586,7 +561,7 @@ export default function AtualizarP() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setComplementos(e.target.value)}
-                        value={complementos}
+                        value={xta.complemento}
                       />
                     </FormControl>
 
@@ -612,7 +587,7 @@ export default function AtualizarP() {
                         placeholder="Selecione um Pais"
                         _placeholder={{ color: 'inherit' }}
                         onChange={(e) => setPais(e.target.value)}
-                        value={pais}
+                        value={xta.pais}
                       >
                         {PaisesList.map((item) => {
                           return (
@@ -646,8 +621,8 @@ export default function AtualizarP() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={MaskTel}
-                        value={telefoneMask}
+                        onChange={(e)=>setTelefone(e.target.value)}
+                        value={xta.telefone}
                       />
                     </FormControl>
 
@@ -672,8 +647,8 @@ export default function AtualizarP() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={MaskWhatsapp}
-                        value={whatsappMask}
+                        onChange={(e)=>setWhatsapp(e.target.value)}
+                        value={xta.whatsapp}
                       />
                     </FormControl>
                   </SimpleGrid>
@@ -700,7 +675,7 @@ export default function AtualizarP() {
                         size="sm"
                         resize={'none'}
                         onChange={(e) => setObs(e.target.value)}
-                        value={obs}
+                        value={xta.obs}
                       />
                     </Box>
                   </SimpleGrid>
@@ -730,7 +705,6 @@ export default function AtualizarP() {
                           CNPJ={workCNPJ}
                         />
                       )}
-
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[12, 3]}>
@@ -758,7 +732,7 @@ export default function AtualizarP() {
                         rounded="md"
                         placeholder="Selecione uma tabela"
                         onChange={consultaEmpresaId}
-                        value={empresa}
+                        value={xta.empresa.id}
                       >
                         {work.map((item) => {
                           return (

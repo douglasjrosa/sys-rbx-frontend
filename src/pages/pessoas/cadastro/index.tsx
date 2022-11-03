@@ -82,7 +82,7 @@ export default function Cadastro() {
   useEffect(() => {
     consultaEmpresa();
     if (empresa !== '' && workId === '') {
-      consultaEmp()
+      consultaEmp();
     }
   }, []);
 
@@ -130,7 +130,7 @@ export default function Cadastro() {
     })
       .then(function (response) {
         console.log(response.data.data.id);
-        setEmpresa(response.data.data.attributes.nome);
+        setEmpresa(response.data.data.id);
         setWorkId(response.data.data.id);
         setWorkNome(response.data.data.attributes.nome);
         setWorkfantasia(response.data.data.attributes.fantasia);
@@ -162,8 +162,8 @@ export default function Cadastro() {
       url: url,
     })
       .then(function (response) {
-        console.log(response.data.data.id);
-        setEmpresa(response.data.data.attributes.nome);
+        console.log(response.data);
+        setEmpresa(response.data.data.id);
         setWorkId(response.data.data.id);
         setWorkNome(response.data.data.attributes.nome);
         setWorkfantasia(response.data.data.attributes.fantasia);
@@ -184,7 +184,6 @@ export default function Cadastro() {
       .catch(function (error) {
         console.log(error);
       });
-
   };
 
   const save = async () => {
@@ -201,26 +200,31 @@ export default function Cadastro() {
         RG: RG,
         whatsapp: whatsapp,
         telefone: telefone,
-        email: complementos,
+        complemento: complementos,
+        email: email,
         pais: pais,
         obs: obs,
         status: true,
-        empresas: [empresa],
+        empresas: [
+          parseInt(empresa)
+        ]
       },
     };
 
     const url = '/api/pessoas/Post';
 
-    axios({
+    await axios({
       method: 'POST',
       url: url,
       data: data,
     })
       .then((response) => {
-        console.log(response.data);
+        console.log(response);
         return response.data;
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err)
+      });
   };
 
   return (
@@ -730,7 +734,6 @@ export default function Cadastro() {
                           CNPJ={workCNPJ}
                         />
                       )}
-
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[12, 3]}>
@@ -758,7 +761,7 @@ export default function Cadastro() {
                         rounded="md"
                         placeholder="Selecione uma tabela"
                         onChange={consultaEmpresaId}
-                        value={empresa}
+                        value={workId}
                       >
                         {work.map((item) => {
                           return (

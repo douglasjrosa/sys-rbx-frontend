@@ -8,6 +8,7 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
+import CardPessoas from '../../components/pessoas/lista/card/card';
 
 
 export default function Pessoas(): JSX.Element {
@@ -65,7 +66,7 @@ export default function Pessoas(): JSX.Element {
           flexDirection="column"
           gap={5}
         >
-          {/* <CardEmpresa /> */}
+          <CardPessoas />
         </Flex>
       </Box>
     </Flex>

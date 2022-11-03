@@ -5,12 +5,13 @@ export default async function GetEmpresa(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  const { id } = req.query;
   if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN
 
     await axios({
       method: 'GET',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/empresas?filters[status][$eq]=true&populate=%2A',
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + `/api/empresas/getId/${id}?&populate=%2A`,
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
