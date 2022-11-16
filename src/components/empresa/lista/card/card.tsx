@@ -6,17 +6,18 @@ import { useEffect, useState } from 'react';
 export default function CardEmpresa() {
   const [dados, setDados] = useState([]);
   const router = useRouter();
-  const get = async () => {
-    const response = await axios({
-      method: 'GET',
-      url: '/api/empresas/get',
-    });
-    setDados(response.data.data);
-  };
 
   useEffect(() => {
     get();
   }, []);
+
+  const get = async () => {
+    const response = await axios({
+      method: 'GET',
+      url: '/api/empresas/DB/get',
+    });
+    setDados(response.data.data);
+  };
 
   const render = dados.map((item) => {
     const data = () => {
@@ -87,12 +88,14 @@ export default function CardEmpresa() {
       item.attributes.cidade +
       ' - ' +
       item.attributes.uf;
-    const rela = item.attributes.pessoa.data
+    const rela = item.attributes.responsavel.data
+    console.log(rela)
     return (
       <Box
         mx="auto"
         px={8}
         py={5}
+        mb={5}
         rounded="lg"
         shadow="lg"
         boxShadow="dark-lg"
@@ -273,5 +276,5 @@ export default function CardEmpresa() {
     );
   });
   const display = !dados ? null : render;
-  return <>{display}</>;
+  return <><Box h={'95%'}>{ display }</Box></>;
 }

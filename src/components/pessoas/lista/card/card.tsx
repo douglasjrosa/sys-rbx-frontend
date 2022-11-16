@@ -6,17 +6,18 @@ import { useEffect, useState } from 'react';
 export default function CardPessoas() {
   const [dados, setDados] = useState([]);
   const router = useRouter();
-  const get = async () => {
-    const response = await axios({
-      method: 'GET',
-      url: '/api/pessoas/Get',
-    });
-    setDados(response.data.data);
-  };
 
   useEffect(() => {
     get();
   }, []);
+
+  const get = async () => {
+    const response = await axios({
+      method: 'GET',
+      url: '/api/pessoas/DB/Get',
+    });
+    setDados(response.data.data);
+  };
 
   const render = dados.map((item) => {
     const data = () => {
@@ -75,6 +76,10 @@ export default function CardPessoas() {
       item.attributes.cidade +
       ' - ' +
       item.attributes.uf;
+
+    const empresas = item.attributes.empresas.data === null ? '' : item.attributes.empresas.data
+    const emplist = empresas.length === 0? 'não tem': empresas.map((m: { attributes: { nome: any; }; }) => m.attributes.nome)
+    console.log(emplist)
 
     return (
       <Box
@@ -234,7 +239,7 @@ export default function CardPessoas() {
                 color: 'gray.300',
               }}
             >
-              {item.attributes.empresa.data === null ? 'não tem' : item.attributes.empresa.data.attributes.nome}
+              {emplist}
             </chakra.p>
 
           </Box>
@@ -245,7 +250,8 @@ export default function CardPessoas() {
   const display = !dados ? null : render;
   return (
     <>
-      <Box h={'95%'}>{display}</Box>
+      <Box h={'95%'}>{ display }</Box>
+
     </>
   );
 }
