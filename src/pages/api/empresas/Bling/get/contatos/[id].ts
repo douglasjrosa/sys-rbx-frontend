@@ -10,9 +10,10 @@ export default async function ContatoId(
   if (req.method === 'GET') {
     console.log(id);
 
-    const key: string =
-      '17c44bbb5be5327ec478211689446ccbe853f0701ea80e2f7a9289e8d8c3d8aa5604290a';
-    const url = `https://bling.com.br/Api/v2/contato/${id}/json`;
+    // const key: string =
+    //   '17c44bbb5be5327ec478211689446ccbe853f0701ea80e2f7a9289e8d8c3d8aa5604290a';
+    const key: string = process.env.BLING_KEY_API;
+    const url = process.env.BLING_API_URL+`/contato/${id}/json`;
     const response = await axios({
       method: 'GET',
       url: url,

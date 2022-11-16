@@ -12,7 +12,6 @@ export default function CardPessoas() {
       url: '/api/pessoas/Get',
     });
     setDados(response.data.data);
-    console.log(response.data.data);
   };
 
   useEffect(() => {
@@ -77,14 +76,12 @@ export default function CardPessoas() {
       ' - ' +
       item.attributes.uf;
 
-    const empresaLink = item.attributes.empresas.data[0].attributes.nome;
-    console.log(item.attributes.empresas.data[0].attributes.nome);
-
     return (
       <Box
         mx="auto"
         px={8}
         py={5}
+        mb={5}
         rounded="lg"
         shadow="lg"
         boxShadow="dark-lg"
@@ -147,8 +144,8 @@ export default function CardPessoas() {
               }}
               onClick={async () => {
                 localStorage.setItem('atid', item.id);
-                const id = item.id
-                await router.push('/pessoas/atualizar/'+id);
+                const id = item.id;
+                await router.push('/pessoas/atualizar/' + id);
               }}
             >
               editar
@@ -237,34 +234,18 @@ export default function CardPessoas() {
                 color: 'gray.300',
               }}
             >
-              {empresaLink === null ? 'não tem' : empresaLink}
+              {item.attributes.empresa.data === null ? 'não tem' : item.attributes.empresa.data.attributes.nome}
             </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={5}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              Quant compra:
-            </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={2}
-              fontSize={'3xl'}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              7
-            </chakra.p>
+
           </Box>
         </Box>
       </Box>
     );
   });
   const display = !dados ? null : render;
-  return <>{display}</>;
+  return (
+    <>
+      <Box h={'95%'}>{display}</Box>
+    </>
+  );
 }

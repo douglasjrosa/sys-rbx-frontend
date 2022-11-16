@@ -115,34 +115,24 @@ export default function Cadastro(): JSX.Element {
             ? true
             : false;
         setSimples(cheksimples);
+        const ICMSisent =
+          response.data.simples !== null &&
+          response.data.simples.mei === 'sim' &&
+          response.data.estabelecimento.inscricoes_estaduais[0].ativo === true
+            ? true
+            : false;
+        const ICMSncomtrib =
+          response.data.simples !== null &&
+          response.data.simples.mei === 'sim' &&
+          response.data.estabelecimento.inscricoes_estaduais[0].ativo === false
+            ? true
+            : false;
+
       })
       .catch(function (error) {
         console.log(error);
       });
   };
-
-  const resprazao = nome.length !== 0 ? true : false;
-  const respemail = !email ? false : email.length !== 0 ? true : false;
-  const respStatus =
-    ieStatus === true && nome.length !== 0
-      ? true
-      : ieStatus === false && nome.length !== 0
-      ? true
-      : false;
-  const respCNAE = CNAE.length !== 0 ? true : false;
-  const respend = endereco.length !== 0 ? true : false;
-  const respnuber = numero.length !== 0 ? true : false;
-  const respbairro = bairro.length !== 0 ? true : false;
-  const respcomplemento = !complemento
-    ? false
-    : complemento.length !== 0
-    ? true
-    : false;
-  const respcidade = cidade.length !== 0 ? true : false;
-  const respuf = uf.length !== 0 ? true : false;
-  const respcep = cep.length !== 0 ? true : false;
-  const resppais = pais.length !== 0 ? true : false;
-  const respcodpais = codpais.length !== 0 ? true : false;
 
   const reload = () => {
     // window.location.reload;
@@ -193,59 +183,60 @@ export default function Cadastro(): JSX.Element {
     setFrete('');
   };
 
-  const save = async () => {
-    const data = {
-      data: {
-        nome: nome,
-        fantasia: fantasia,
-        tipoPessoa: tipoPessoa,
-        endereco: endereco,
-        numero: numero,
-        complemento: complemento,
-        bairro: bairro,
-        cep: cep,
-        cidade: cidade,
-        uf: uf,
-        fone: fone,
-        celular: celular,
-        email: email,
-        emailNfe: emailNfe,
-        site: site,
-        CNPJ: CNPJ,
-        Ie: Ie,
-        pais: pais,
-        codpais: codpais,
-        CNAE: CNAE,
-        porte: porte,
-        simples: simples,
-        ieStatus: ieStatus,
-        status: true,
-        adFrailLat: adFrailLat,
-        adFrailCab: adFrailCab,
-        adEspecialLat: adEspecialLat,
-        adEspecialCab: adEspecialCab,
-        latFCab: latFCab,
-        cabChao: cabChao,
-        cabTop: cabTop,
-        cxEco: cxEco,
-        cxEst: cxEst,
-        cxLev: cxLev,
-        cxRef: cxRef,
-        cxSupRef: cxSupRef,
-        platSMed: platSMed,
-        cxResi: cxResi,
-        engEco: engEco,
-        engLev: engLev,
-        engRef: engRef,
-        engResi: engResi,
-        tablecalc: tablecalc,
-        maxPg: maxPg,
-        forpg: forpg,
-        frete: frete,
-      },
-    };
+  const data = {
+    data: {
+      nome: nome,
+      fantasia: fantasia,
+      tipoPessoa: tipoPessoa,
+      endereco: endereco,
+      numero: numero,
+      complemento: complemento,
+      bairro: bairro,
+      cep: cep,
+      cidade: cidade,
+      uf: uf,
+      fone: fone,
+      celular: celular,
+      email: email,
+      emailNfe: emailNfe,
+      site: site,
+      CNPJ: CNPJ,
+      Ie: Ie,
+      pais: pais,
+      codpais: codpais,
+      CNAE: CNAE,
+      porte: porte,
+      simples: simples,
+      ieStatus: ieStatus,
+      status: true,
+      adFrailLat: adFrailLat,
+      adFrailCab: adFrailCab,
+      adEspecialLat: adEspecialLat,
+      adEspecialCab: adEspecialCab,
+      latFCab: latFCab,
+      cabChao: cabChao,
+      cabTop: cabTop,
+      cxEco: cxEco,
+      cxEst: cxEst,
+      cxLev: cxLev,
+      cxRef: cxRef,
+      cxSupRef: cxSupRef,
+      platSMed: platSMed,
+      cxResi: cxResi,
+      engEco: engEco,
+      engLev: engLev,
+      engRef: engRef,
+      engResi: engResi,
+      tablecalc: tablecalc,
+      maxPg: maxPg,
+      forpg: forpg,
+      frete: frete,
+    },
+  };
 
-    const url = '/api/empresas/post';
+
+  const strapi = async () => {
+    const url = '/api/empresas/DB/post';
 
     axios({
       method: 'POST',
@@ -253,12 +244,31 @@ export default function Cadastro(): JSX.Element {
       data: data,
     })
       .then((response) => {
-        console.log(response.data);
-        reload();
         return response.data;
       })
       .catch((err) => console.log(err));
   };
+  const bling = async () => {
+    const url = '/api/empresas/Bling/post/contato';
+    axios({
+      method: 'POST',
+      url: url,
+      data: data,
+    })
+      .then((response) => {
+        console.log(response.data);
+
+        return response.data;
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const save = async () => {
+    await bling();
+    // await strapi();
+    // reload();
+  };
+  
 
   return (
     <>
@@ -379,7 +389,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={resprazao}
                         value={nome}
                       />
                     </FormControl>
@@ -407,7 +416,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respemail}
                         value={email}
                       />
                     </FormControl>
@@ -434,7 +442,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respCNAE}
                         value={CNAE}
                       />
                     </FormControl>
@@ -462,7 +469,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respStatus}
                         value={Ie}
                       />
                     </FormControl>
@@ -490,7 +496,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respStatus}
                         value={(() => {
                           const val =
                             ieStatus === true && nome.length !== 0
@@ -528,7 +533,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={resppais}
                         value={pais}
                       />
                     </FormControl>
@@ -556,7 +560,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respcodpais}
                         value={codpais}
                       />
                     </FormControl>
@@ -584,7 +587,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respend}
                         value={endereco}
                       />
                     </FormControl>
@@ -612,7 +614,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respnuber}
                         value={numero}
                       />
                     </FormControl>
@@ -640,7 +641,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respcomplemento}
                         value={complemento}
                       />
                     </FormControl>
@@ -668,7 +668,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respbairro}
                         value={bairro}
                       />
                     </FormControl>
@@ -696,7 +695,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respcep}
                         value={cep}
                       />
                     </FormControl>
@@ -724,7 +722,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respcidade}
                         value={cidade}
                       />
                     </FormControl>
@@ -752,7 +749,6 @@ export default function Cadastro(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respuf}
                         value={uf}
                       />
                     </FormControl>
@@ -1008,7 +1004,7 @@ export default function Cadastro(): JSX.Element {
                             <Flex alignItems="center" h={5}>
                               <Switch
                                 colorScheme="green"
-                                borderColor="gray.400"
+                                borderColor="gray.900"
                                 rounded="md"
                                 isChecked={val}
                                 onChange={(e) => {

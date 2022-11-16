@@ -1,0 +1,33 @@
+{
+  "contato": {
+    "nome": "Contato Teste",
+    "fantasia": "CT",
+    "tipoPessoa": "F",
+    "contribuinte": 9,
+    "cpf_cnpj": "999.999.999-99",
+    "ie_rg": "999/9999999",
+    "endereco": "Rua Visconde de São Gabriel",
+    "numero": 123,
+    "complemento": "Sala 123",
+    "bairro": "Centro",
+    "cep": "95.700-000",
+    "cidade": "Bento Gonçalves",
+    "uf": "RS",
+    "fone": "(99) 9999-9999",
+    "celular": "(99) 99999-9999",
+    "email": "teste@mail.com.br",
+    "emailNfe": "testeNfe@mail.com.br",
+    "informacaoContato": "Informações adicionais do contato",
+    "limiteCredito": 9999.99,
+    "tipos_contatos": {
+      "tipo_contato": [
+        {
+          "descricao": "Transportador"
+        },
+        {
+          "descricao": "Fornecedor"
+        }
+      ]
+    }
+  }
+}
