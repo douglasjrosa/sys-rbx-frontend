@@ -11,7 +11,7 @@ export default async function PostEmpresa(
 
     await axios({
       method: 'POST',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/empresas',
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/empresas',
       data:data,
       headers: {
         'Authorization': `Bearer ${token}`,

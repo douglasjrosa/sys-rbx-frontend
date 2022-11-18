@@ -17,9 +17,11 @@ export default function CardEmpresa() {
       url: '/api/empresas/DB/get',
     });
     setDados(response.data.data);
+    console.log(response.data.data)
   };
 
   const render = dados.map((item) => {
+
     const data = () => {
       const ano = item.attributes.createdAt.substr(0, 4);
       const mes = item.attributes.createdAt.substr(5, 2);
@@ -89,7 +91,6 @@ export default function CardEmpresa() {
       ' - ' +
       item.attributes.uf;
     const rela = item.attributes.responsavel.data
-    console.log(rela)
     return (
       <Box
         mx="auto"
@@ -157,8 +158,8 @@ export default function CardEmpresa() {
                 bg: 'gray.500',
               }}
               onClick={async () => {
-                localStorage.setItem('atid', item.id);
-                await router.push('/empresas/cadastro');
+                const id = item.id
+                await router.push('/empresas/atualizar/'+ id);
               }}
             >
               editar
@@ -248,27 +249,6 @@ export default function CardEmpresa() {
               }}
             >
               {rela === null? "não tem":rela.attributes.nome}
-            </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={5}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              Quant compra:
-            </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={2}
-              fontSize={'3xl'}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              7
             </chakra.p>
           </Box>
         </Box>

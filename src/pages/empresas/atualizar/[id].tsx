@@ -2,7 +2,6 @@ import {
   chakra,
   Box,
   Button,
-  Checkbox,
   Flex,
   FormControl,
   FormLabel,
@@ -13,14 +12,17 @@ import {
   SimpleGrid,
   Stack,
   Switch,
+  Text,
 } from '@chakra-ui/react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
+import { useRouter } from 'next/router';
 
-export default function Atualizar(): JSX.Element {
+export default function EmpresaId(): JSX.Element {
+  const router = useRouter();
   const [CNPJ, setCNPJ] = useState('');
   const [nome, setNome] = useState('');
   const [fantasia, setFantasia] = useState('');
@@ -54,7 +56,7 @@ export default function Atualizar(): JSX.Element {
   const [cxEco, setCxEco] = useState(false);
   const [cxEst, setCxEst] = useState(false);
   const [cxLev, setCxLev] = useState(false);
-  const [cxRef, setCxRef] = useState(null);
+  const [cxRef, setCxRef] = useState(false);
   const [cxSupRef, setCxSupRef] = useState(false);
   const [platSMed, setPlatSMed] = useState(false);
   const [cxResi, setCxResi] = useState(false);
@@ -66,6 +68,103 @@ export default function Atualizar(): JSX.Element {
   const [maxPg, setMaxpg] = useState('');
   const [forpg, setForpg] = useState('');
   const [frete, setFrete] = useState('');
+  const [status, setStatus] = useState(false);
+  const [ID, setID] = useState('');
+
+  useEffect(() => {
+    const getempresa = async () => {
+      const id = router.query.id;
+
+      const url = `/api/empresas/DB/getId/${id}`;
+      const response = await axios(url);
+      const empresa = await response.data.data;
+
+      setID(empresa.id)
+      setCNPJ(empresa.attributes.CNPJ === null ? '' : empresa.attributes.CNPJ);
+      setNome(empresa.attributes.nome === null ? '' : empresa.attributes.nome);
+      setFantasia(
+        empresa.attributes.fantasia === null ? '' : empresa.attributes.fantasia,
+      );
+      setTipoPessoa(
+        empresa.attributes.tipoPessoa === null
+          ? ''
+          : empresa.attributes.tipoPessoa,
+      );
+      setFone(empresa.attributes.fone === null ? '' : empresa.attributes.fone);
+      setCelular(
+        empresa.attributes.celular === null ? '' : empresa.attributes.celular,
+      );
+      setEmail(
+        empresa.attributes.email === null ? '' : empresa.attributes.email,
+      );
+      setEmailNfe(
+        empresa.attributes.emailNfe === null ? '' : empresa.attributes.emailNfe,
+      );
+      setIeStatus(empresa.attributes.ieStatus);
+      setCNAE(empresa.attributes.CNAE === null ? '' : empresa.attributes.CNAE);
+      setIE(empresa.attributes.Ie === null ? '' : empresa.attributes.Ie);
+      setPorte(
+        empresa.attributes.porte === null ? '' : empresa.attributes.porte,
+      );
+      setSimples(empresa.attributes.simples);
+      setSite(empresa.attributes.site === null ? '' : empresa.attributes.site);
+      setEndereco(
+        empresa.attributes.endereco === null ? '' : empresa.attributes.endereco,
+      );
+      setNumero(
+        empresa.attributes.numero === null ? '' : empresa.attributes.numero,
+      );
+      setBairro(
+        empresa.attributes.bairro === null ? '' : empresa.attributes.bairro,
+      );
+      setComplemento(
+        empresa.attributes.complemento === null
+          ? ''
+          : empresa.attributes.complemento,
+      );
+      setCidade(
+        empresa.attributes.cidade === null ? '' : empresa.attributes.cidade,
+      );
+      setUf(empresa.attributes.uf === null ? '' : empresa.attributes.uf);
+      setCep(empresa.attributes.cep === null ? '' : empresa.attributes.cep);
+      setPais(empresa.attributes.pais === null ? '' : empresa.attributes.pais);
+      setCodpais(
+        empresa.attributes.codpais === null ? '' : empresa.attributes.codpais,
+      );
+      setAdFragilLat(empresa.attributes.adFragilLat);
+      setAdFragilCab(empresa.attributes.adFrailCab);
+      setAdEspecialLat(empresa.attributes.adEspecialLat);
+      setAdEspecialCab(empresa.attributes.adEspecialCab);
+      setLatFCab(empresa.attributes.latFCab);
+      setCabChao(empresa.attributes.cabChao);
+      setCabTop(empresa.attributes.cabTop);
+      setCxEco(empresa.attributes.cxEco);
+      setCxEst(empresa.attributes.cxEst);
+      setCxLev(empresa.attributes.cxLev);
+      setCxRef(empresa.attributes.cxRef);
+      setCxSupRef(empresa.attributes.cxSupRef);
+      setPlatSMed(empresa.attributes.platSMed);
+      setCxResi(empresa.attributes.cxResi);
+      setEngEco(empresa.attributes.engEco);
+      setEngLev(empresa.attributes.engLev);
+      setEngRef(empresa.attributes.engRef);
+      setEngResi(empresa.attributes.engResi);
+      setTablecalc(empresa.attributes.tablecalc);
+      setMaxpg(
+        empresa.attributes.maxPg === null ? '' : empresa.attributes.maxPg,
+      );
+      setForpg(
+        empresa.attributes.forpg === null ? '' : empresa.attributes.forpg,
+      );
+      setFrete(
+        empresa.attributes.frete === null ? '' : empresa.attributes.frete,
+      );
+      setStatus(
+        empresa.attributes.status === null ? '' : empresa.attributes.status,
+      );
+    };
+    getempresa();
+  }, []);
 
   const consulta = () => {
     console.log(CNPJ);
@@ -115,34 +214,23 @@ export default function Atualizar(): JSX.Element {
             ? true
             : false;
         setSimples(cheksimples);
+        const ICMSisent =
+          response.data.simples !== null &&
+          response.data.simples.mei === 'sim' &&
+          response.data.estabelecimento.inscricoes_estaduais[0].ativo === true
+            ? true
+            : false;
+        const ICMSncomtrib =
+          response.data.simples !== null &&
+          response.data.simples.mei === 'sim' &&
+          response.data.estabelecimento.inscricoes_estaduais[0].ativo === false
+            ? true
+            : false;
       })
       .catch(function (error) {
         console.log(error);
       });
   };
-
-  const resprazao = nome.length !== 0 ? true : false;
-  const respemail = !email ? false : email.length !== 0 ? true : false;
-  const respStatus =
-    ieStatus === true && nome.length !== 0
-      ? true
-      : ieStatus === false && nome.length !== 0
-      ? true
-      : false;
-  const respCNAE = CNAE.length !== 0 ? true : false;
-  const respend = endereco.length !== 0 ? true : false;
-  const respnuber = numero.length !== 0 ? true : false;
-  const respbairro = bairro.length !== 0 ? true : false;
-  const respcomplemento = !complemento
-    ? false
-    : complemento.length !== 0
-    ? true
-    : false;
-  const respcidade = cidade.length !== 0 ? true : false;
-  const respuf = uf.length !== 0 ? true : false;
-  const respcep = cep.length !== 0 ? true : false;
-  const resppais = pais.length !== 0 ? true : false;
-  const respcodpais = codpais.length !== 0 ? true : false;
 
   const reload = () => {
     // window.location.reload;
@@ -179,7 +267,7 @@ export default function Atualizar(): JSX.Element {
     setCxEco(false);
     setCxEst(false);
     setCxLev(false);
-    setCxRef(null);
+    setCxRef(false);
     setCxSupRef(false);
     setPlatSMed(false);
     setCxResi(false);
@@ -193,60 +281,72 @@ export default function Atualizar(): JSX.Element {
     setFrete('');
   };
 
-  const save = async () => {
-    const data = {
-      data: {
-        nome: nome,
-        fantasia: fantasia,
-        tipoPessoa: tipoPessoa,
-        endereco: endereco,
-        numero: numero,
-        complemento: complemento,
-        bairro: bairro,
-        cep: cep,
-        cidade: cidade,
-        uf: uf,
-        fone: fone,
-        celular: celular,
-        email: email,
-        emailNfe: emailNfe,
-        site: site,
-        CNPJ: CNPJ,
-        Ie: Ie,
-        pais: pais,
-        codpais: codpais,
-        CNAE: CNAE,
-        porte: porte,
-        simples: simples,
-        ieStatus: ieStatus,
-        status: true,
-        adFrailLat: adFrailLat,
-        adFrailCab: adFrailCab,
-        adEspecialLat: adEspecialLat,
-        adEspecialCab: adEspecialCab,
-        latFCab: latFCab,
-        cabChao: cabChao,
-        cabTop: cabTop,
-        cxEco: cxEco,
-        cxEst: cxEst,
-        cxLev: cxLev,
-        cxRef: cxRef,
-        cxSupRef: cxSupRef,
-        platSMed: platSMed,
-        cxResi: cxResi,
-        engEco: engEco,
-        engLev: engLev,
-        engRef: engRef,
-        engResi: engResi,
-        tablecalc: tablecalc,
-        maxPg: maxPg,
-        forpg: forpg,
-        frete: frete,
-      },
-    };
+  const data = {
+    data: {
+      nome: nome,
+      fantasia: fantasia,
+      tipoPessoa: tipoPessoa,
+      endereco: endereco,
+      numero: numero,
+      complemento: complemento,
+      bairro: bairro,
+      cep: cep,
+      cidade: cidade,
+      uf: uf,
+      fone: fone,
+      celular: celular,
+      email: email,
+      emailNfe: emailNfe,
+      site: site,
+      CNPJ: CNPJ,
+      Ie: Ie,
+      pais: pais,
+      codpais: codpais,
+      CNAE: CNAE,
+      porte: porte,
+      simples: simples,
+      ieStatus: ieStatus,
+      status: true,
+      adFrailLat: adFrailLat,
+      adFrailCab: adFrailCab,
+      adEspecialLat: adEspecialLat,
+      adEspecialCab: adEspecialCab,
+      latFCab: latFCab,
+      cabChao: cabChao,
+      cabTop: cabTop,
+      cxEco: cxEco,
+      cxEst: cxEst,
+      cxLev: cxLev,
+      cxRef: cxRef,
+      cxSupRef: cxSupRef,
+      platSMed: platSMed,
+      cxResi: cxResi,
+      engEco: engEco,
+      engLev: engLev,
+      engRef: engRef,
+      engResi: engResi,
+      tablecalc: tablecalc,
+      maxPg: maxPg,
+      forpg: forpg,
+      frete: frete,
+    },
+  };
 
-    const url = '/api/empresas/post';
+  const strapi = async () => {
+    const url = '/api/empresas/DB/atualizacao/'+ ID;
 
+    axios({
+      method: 'PUT',
+      url: url,
+      data: data,
+    })
+      .then((response) => {
+        return response.data;
+      })
+      .catch((err) => console.log(err));
+  };
+  const bling = async () => {
+    const url = '/api/empresas/Bling/post/contato';
     axios({
       method: 'POST',
       url: url,
@@ -254,10 +354,16 @@ export default function Atualizar(): JSX.Element {
     })
       .then((response) => {
         console.log(response.data);
-        reload();
+
         return response.data;
       })
       .catch((err) => console.log(err));
+  };
+
+  const save = async () => {
+    // await bling();
+    await strapi();
+    // reload();
   };
 
   return (
@@ -312,48 +418,62 @@ export default function Atualizar(): JSX.Element {
                       Cadastro de Empresa
                     </Heading>
                   </SimpleGrid>
-                  <SimpleGrid columns={12} spacing={3}>
-                    <Heading as={GridItem} colSpan={12} size="sd">
-                      Dados da empresa
-                    </Heading>
-                    <FormControl as={GridItem} colSpan={[8, 5, null, 2]}>
-                      <FormLabel
-                        htmlFor="cnpj"
-                        fontSize="xs"
-                        fontWeight="md"
-                        color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
+                  <Flex>
+                    <SimpleGrid columns={1} spacing={3}>
+                      <Heading as={GridItem} colSpan={12} size="sd">
+                        Dados da empresa
+                      </Heading>
+                      <FormControl as={GridItem} colSpan={[12, 5, null, 8]}>
+                        <FormLabel
+                          htmlFor="cnpj"
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Cnpj
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          name="cnpj"
+                          id="cnpj"
+                          autoComplete="family-name"
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          maxLength={14}
+                          onChange={(e) => setCNPJ(e.target.value)}
+                        />
+                      </FormControl>
+                      <Button
+                        as={GridItem}
+                        colSpan={[8, 4, null, 2]}
+                        h={8}
+                        mt={5}
+                        colorScheme="messenger"
+                        onClick={consulta}
                       >
-                        Cnpj
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        name="cnpj"
-                        id="cnpj"
-                        autoComplete="family-name"
-                        borderColor="gray.600"
-                        focusBorderColor="brand.400"
-                        shadow="sm"
-                        size="xs"
-                        w="full"
+                        Buscar dados
+                      </Button>
+                    </SimpleGrid>
+                    <Box ms={20} mt={'auto'}>
+                      <Text>Status</Text>
+                    </Box>
+                    <Box ms={5} mt={'auto'}>
+                      <Switch
+                        colorScheme="green"
+                        borderColor="gray.900"
                         rounded="md"
-                        maxLength={14}
-                        onChange={(e) => setCNPJ(e.target.value)}
+                        isChecked={status}
+                        onChange={(e) => setStatus(e.target.checked)}
                       />
-                    </FormControl>
-                    <Button
-                      as={GridItem}
-                      colSpan={[8, 4, null, 2]}
-                      h={8}
-                      mt={5}
-                      colorScheme="messenger"
-                      onClick={consulta}
-                    >
-                      Buscar dados
-                    </Button>
-                  </SimpleGrid>
+                    </Box>
+                  </Flex>
 
                   <SimpleGrid columns={9} spacing={3}>
                     <FormControl as={GridItem} colSpan={[5, 2]}>
@@ -379,7 +499,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={resprazao}
                         value={nome}
                       />
                     </FormControl>
@@ -407,7 +526,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respemail}
                         value={email}
                       />
                     </FormControl>
@@ -434,7 +552,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respCNAE}
                         value={CNAE}
                       />
                     </FormControl>
@@ -462,7 +579,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respStatus}
                         value={Ie}
                       />
                     </FormControl>
@@ -490,7 +606,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respStatus}
                         value={(() => {
                           const val =
                             ieStatus === true && nome.length !== 0
@@ -528,7 +643,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={resppais}
                         value={pais}
                       />
                     </FormControl>
@@ -556,7 +670,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respcodpais}
                         value={codpais}
                       />
                     </FormControl>
@@ -584,7 +697,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respend}
                         value={endereco}
                       />
                     </FormControl>
@@ -612,7 +724,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respnuber}
                         value={numero}
                       />
                     </FormControl>
@@ -640,7 +751,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respcomplemento}
                         value={complemento}
                       />
                     </FormControl>
@@ -668,7 +778,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respbairro}
                         value={bairro}
                       />
                     </FormControl>
@@ -696,7 +805,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respcep}
                         value={cep}
                       />
                     </FormControl>
@@ -724,7 +832,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respcidade}
                         value={cidade}
                       />
                     </FormControl>
@@ -752,7 +859,6 @@ export default function Atualizar(): JSX.Element {
                         size="xs"
                         w="full"
                         rounded="md"
-                        disabled={respuf}
                         value={uf}
                       />
                     </FormControl>
@@ -869,9 +975,14 @@ export default function Atualizar(): JSX.Element {
                         onChange={(e) => setTablecalc(e.target.value)}
                         value={tablecalc}
                       >
-                        <option value="Vip">Vip</option>
-                        <option value="option2">Option 2</option>
-                        <option value="option3">Option 3</option>
+                        <option value="0.30">Balcão</option>
+                        <option value="0.26" selected>
+                          vip
+                        </option>
+                        <option value="0.23">Bronze</option>
+                        <option value="0.20">Prata</option>
+                        <option value="0.17">Ouro</option>
+                        <option value="0.14">Platinum</option>
                       </Select>
                     </FormControl>
 
@@ -1008,7 +1119,7 @@ export default function Atualizar(): JSX.Element {
                             <Flex alignItems="center" h={5}>
                               <Switch
                                 colorScheme="green"
-                                borderColor="gray.400"
+                                borderColor="gray.900"
                                 rounded="md"
                                 isChecked={val}
                                 onChange={(e) => {
@@ -1052,7 +1163,6 @@ export default function Atualizar(): JSX.Element {
                       Modelos de Caixas
                     </Heading>
                     {modCaix.map((item) => {
-                      console.log(cxEco);
                       const val =
                         item.id === '1'
                           ? cxEco

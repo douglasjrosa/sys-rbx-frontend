@@ -1,7 +1,5 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
-import { Filtro } from "../../controlers/filtroStatus";
-import { SimplesRetur } from "../../controlers/simple";
 
 
 export default async function GetEmpresa(
@@ -13,17 +11,15 @@ export default async function GetEmpresa(
 
     await axios({
       method: 'GET',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/empresas?filters[status][$eq]=true',
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/empresas?filters[status][$eq]=true',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
       .then(async Response => {
-        const resp = await Filtro(Response.data)
-        const simples= await SimplesRetur(resp)
-        console.log(simples)
-      res.status(200).json(simples)
+        console.log(Response.data)
+      res.status(200).json(Response.data)
     })
     .catch(err => {
       res.status(400).json({

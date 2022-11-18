@@ -2,7 +2,6 @@ import {
   chakra,
   Box,
   Button,
-  Checkbox,
   Flex,
   FormControl,
   FormLabel,
@@ -268,7 +267,7 @@ export default function Cadastro(): JSX.Element {
     // await strapi();
     // reload();
   };
-  
+
 
   return (
     <>
@@ -865,9 +864,12 @@ export default function Cadastro(): JSX.Element {
                         onChange={(e) => setTablecalc(e.target.value)}
                         value={tablecalc}
                       >
-                        <option value="Vip">Vip</option>
-                        <option value="option2">Option 2</option>
-                        <option value="option3">Option 3</option>
+                        <option value="0.30">Balcão</option>
+                        <option value="0.26"selected>vip</option>
+                        <option value="0.23">Bronze</option>
+                        <option value="0.20">Prata</option>
+                        <option value="0.17">Ouro</option>
+                        <option value="0.14">Platinum</option>
                       </Select>
                     </FormControl>
 

@@ -16,7 +16,7 @@ export default async function getId(
 
     await axios({
       method: 'PUT',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/empresas/' + id,
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/empresas/' + id,
       data:update,
       headers: {
         'Authorization': `Bearer ${token}`,

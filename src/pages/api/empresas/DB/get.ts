@@ -10,7 +10,7 @@ export default async function GetEmpresa(
 
     await axios({
       method: 'GET',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/empresas?filters[status][$eq]=true&populate=%2A',
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/empresas?filters[status][$eq]=true&populate=%2A',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
