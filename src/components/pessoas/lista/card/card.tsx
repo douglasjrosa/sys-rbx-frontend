@@ -14,9 +14,10 @@ export default function CardPessoas() {
   const get = async () => {
     const response = await axios({
       method: 'GET',
-      url: '/api/pessoas/DB/Get',
+      url: '/api/db/pessoas/Get',
     });
     setDados(response.data.data);
+    console.log(dados)
   };
 
   const render = dados.map((item) => {

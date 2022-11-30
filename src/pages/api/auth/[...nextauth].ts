@@ -26,7 +26,7 @@ export default NextAuth({
         };
 
         const res = await axios({
-          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/auth/local',
+          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/auth/local',
           method: 'POST',
           data: data,
           headers: { 'Content-Type': 'application/json' },

@@ -6,23 +6,22 @@ export default async function Contato(
   res: NextApiResponse,
 ) {
   try {
-    const key: string =
-      '17c44bbb5be5327ec478211689446ccbe853f0701ea80e2f7a9289e8d8c3d8aa5604290a';
+    const key: string = process.env.BLING_KEY_API;
     const url = 'https://bling.com.br/Api/v2/contatos/json';
-    const response = await axios({
+    await axios({
       method: 'GET',
       url: url,
-      responseType: 'json',
       params: {
         apikey: key,
       },
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    });
-    const resp = response.data.retorno.contatos;
-
-   return res.status(200).json(resp)
+    })
+      .then(response => {
+        console.log(response)
+        res.status(200).json(response)
+      })
+      .catch(err => {
+        res.status(400).json(err.response.data.retorno.erros.erro.msg)
+      });
   } catch (error) {
     console.warn(error);
   }

@@ -75,11 +75,11 @@ export default function EmpresaId(): JSX.Element {
     const getempresa = async () => {
       const id = router.query.id;
 
-      const url = `/api/empresas/DB/getId/${id}`;
+      const url = `/api/db/empresas/getId/${id}`;
       const response = await axios(url);
       const empresa = await response.data.data;
 
-      setID(empresa.id)
+      setID(empresa.id);
       setCNPJ(empresa.attributes.CNPJ === null ? '' : empresa.attributes.CNPJ);
       setNome(empresa.attributes.nome === null ? '' : empresa.attributes.nome);
       setFantasia(
@@ -333,7 +333,7 @@ export default function EmpresaId(): JSX.Element {
   };
 
   const strapi = async () => {
-    const url = '/api/empresas/DB/atualizacao/'+ ID;
+    const url = '/api/db/empresas/atualizacao/' + ID;
 
     axios({
       method: 'PUT',
@@ -346,7 +346,7 @@ export default function EmpresaId(): JSX.Element {
       .catch((err) => console.log(err));
   };
   const bling = async () => {
-    const url = '/api/empresas/Bling/post/contato';
+    const url = '/api/db_bling/empresas/put/' + CNPJ;
     axios({
       method: 'POST',
       url: url,

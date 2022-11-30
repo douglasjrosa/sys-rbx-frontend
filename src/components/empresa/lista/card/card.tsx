@@ -14,7 +14,7 @@ export default function CardEmpresa() {
   const get = async () => {
     const response = await axios({
       method: 'GET',
-      url: '/api/empresas/DB/get',
+      url: '/api/db/empresas/get',
     });
     setDados(response.data.data);
     console.log(response.data.data)
