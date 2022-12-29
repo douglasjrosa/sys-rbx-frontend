@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Search2Icon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
 import {
@@ -9,8 +10,9 @@ import {
   InputRightElement,
 } from '@chakra-ui/react';
 import CardEmpresa from '../../components/empresa/lista/card/card';
+import CardEmpresaRibermax from '../../components/empresa/lista/ribermax/card';
 
-export default function Empresas(): JSX.Element {
+export default function Empresas() {
   const router = useRouter();
   return (
     <Flex h="100%" w="100%" flexDir={'column'} justifyContent="center">
@@ -46,10 +48,13 @@ export default function Empresas(): JSX.Element {
           h="100%"
           justifyContent={'space-evenly'}
         >
-          <Button h={{ md: '40%', sm: '70%' }} colorScheme="whatsapp" onClick={()=> router.push('/empresas/cadastro') }>
+          <Button
+            h={{ md: '40%', sm: '70%' }}
+            colorScheme="whatsapp"
+            onClick={() => router.push('/empresas/cadastro')}
+          >
             Cadastrar Empresa
           </Button>
-
         </Box>
       </Flex>
       <Box h={'85%'} overflow={'auto'}>
@@ -66,6 +71,7 @@ export default function Empresas(): JSX.Element {
           gap={5}
         >
           <CardEmpresa />
+          <CardEmpresaRibermax />
         </Flex>
       </Box>
     </Flex>

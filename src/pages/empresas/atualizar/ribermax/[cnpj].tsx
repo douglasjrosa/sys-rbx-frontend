@@ -19,10 +19,12 @@ import {
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
-import { confgEnb } from '../../../components/data/confgEnb';
-import { modCaix } from '../../../components/data/modCaix';
 import { useRouter } from 'next/router';
-import { cnpj } from 'cpf-cnpj-validator';
+import { confgEnb } from '../../../../components/data/confgEnb';
+import { modCaix } from '../../../../components/data/modCaix';
+import { useSession } from 'next-auth/react';
+import Loading from '../../../../components/elements/loading';
+import { cnpj, cpf } from 'cpf-cnpj-validator';
 
 export default function EmpresaId() {
   const router = useRouter();
@@ -75,97 +77,131 @@ export default function EmpresaId() {
   const [status, setStatus] = useState(false);
   const [ID, setID] = useState('');
 
+  const SetEmail = localStorage.getItem('email');
+  const Email = JSON.parse(SetEmail);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const getempresa = async () => {
-      const id = router.query.id;
+      const cnpj = router.query.cnpj;
+      console.log(cnpj);
 
-      const url = `/api/db/empresas/getId/${id}`;
-      const response = await axios(url);
-      const empresa = await response.data.data;
+      const url = `/api/ribermax/empresas/get/cnpj/${cnpj}`;
+      await fetch(url, {
+        method: 'POST',
+        body: Email,
+      })
+        .then((resp) => resp.json())
+        .then((json) => {
+          const empresa = json.data;
+          setLoading(!empresa ? false : true);
 
-      setID(empresa.id);
-      setCNPJ(empresa.attributes.CNPJ === null ? '' : empresa.attributes.CNPJ);
-      setNome(empresa.attributes.nome === null ? '' : empresa.attributes.nome);
-      setFantasia(
-        empresa.attributes.fantasia === null ? '' : empresa.attributes.fantasia,
-      );
-      setTipoPessoa(
-        empresa.attributes.tipoPessoa === null
-          ? ''
-          : empresa.attributes.tipoPessoa,
-      );
-      setFone(empresa.attributes.fone === null ? '' : empresa.attributes.fone);
-      setCelular(
-        empresa.attributes.celular === null ? '' : empresa.attributes.celular,
-      );
-      setEmail(
-        empresa.attributes.email === null ? '' : empresa.attributes.email,
-      );
-      setEmailNfe(
-        empresa.attributes.emailNfe === null ? '' : empresa.attributes.emailNfe,
-      );
-      setIeStatus(empresa.attributes.ieStatus);
-      setCNAE(empresa.attributes.CNAE === null ? '' : empresa.attributes.CNAE);
-      setIE(empresa.attributes.Ie === null ? '' : empresa.attributes.Ie);
-      setPorte(
-        empresa.attributes.porte === null ? '' : empresa.attributes.porte,
-      );
-      setSimples(empresa.attributes.simples);
-      setSite(empresa.attributes.site === null ? '' : empresa.attributes.site);
-      setEndereco(
-        empresa.attributes.endereco === null ? '' : empresa.attributes.endereco,
-      );
-      setNumero(
-        empresa.attributes.numero === null ? '' : empresa.attributes.numero,
-      );
-      setBairro(
-        empresa.attributes.bairro === null ? '' : empresa.attributes.bairro,
-      );
-      setComplemento(
-        empresa.attributes.complemento === null
-          ? ''
-          : empresa.attributes.complemento,
-      );
-      setCidade(
-        empresa.attributes.cidade === null ? '' : empresa.attributes.cidade,
-      );
-      setUf(empresa.attributes.uf === null ? '' : empresa.attributes.uf);
-      setCep(empresa.attributes.cep === null ? '' : empresa.attributes.cep);
-      setPais(empresa.attributes.pais === null ? '' : empresa.attributes.pais);
-      setCodpais(
-        empresa.attributes.codpais === null ? '' : empresa.attributes.codpais,
-      );
-      setAdFragilLat(empresa.attributes.adFragilLat);
-      setAdFragilCab(empresa.attributes.adFrailCab);
-      setAdEspecialLat(empresa.attributes.adEspecialLat);
-      setAdEspecialCab(empresa.attributes.adEspecialCab);
-      setLatFCab(empresa.attributes.latFCab);
-      setCabChao(empresa.attributes.cabChao);
-      setCabTop(empresa.attributes.cabTop);
-      setCxEco(empresa.attributes.cxEco);
-      setCxEst(empresa.attributes.cxEst);
-      setCxLev(empresa.attributes.cxLev);
-      setCxRef(empresa.attributes.cxRef);
-      setCxSupRef(empresa.attributes.cxSupRef);
-      setPlatSMed(empresa.attributes.platSMed);
-      setCxResi(empresa.attributes.cxResi);
-      setEngEco(empresa.attributes.engEco);
-      setEngLev(empresa.attributes.engLev);
-      setEngRef(empresa.attributes.engRef);
-      setEngResi(empresa.attributes.engResi);
-      setTablecalc(empresa.attributes.tablecalc);
-      setMaxpg(
-        empresa.attributes.maxPg === null ? '' : empresa.attributes.maxPg,
-      );
-      setForpg(
-        empresa.attributes.forpg === null ? '' : empresa.attributes.forpg,
-      );
-      setFrete(
-        empresa.attributes.frete === null ? '' : empresa.attributes.frete,
-      );
-      setStatus(
-        empresa.attributes.status === null ? '' : empresa.attributes.status,
-      );
+          setID(empresa.id);
+          setCNPJ(
+            empresa.attributes.CNPJ === null ? '' : empresa.attributes.CNPJ,
+          );
+          setNome(
+            empresa.attributes.nome === null ? '' : empresa.attributes.nome,
+          );
+          setFantasia(
+            empresa.attributes.fantasia === null
+              ? ''
+              : empresa.attributes.fantasia,
+          );
+          setTipoPessoa(
+            empresa.attributes.tipoPessoa === null
+              ? ''
+              : empresa.attributes.tipoPessoa,
+          );
+          setFone(
+            empresa.attributes.fone === null ? '' : empresa.attributes.fone,
+          );
+          setCelular(
+            empresa.attributes.celular === null
+              ? ''
+              : empresa.attributes.celular,
+          );
+          setEmail(
+            empresa.attributes.email === null ? '' : empresa.attributes.email,
+          );
+          setEmailNfe(
+            empresa.attributes.emailNfe === null
+              ? ''
+              : empresa.attributes.emailNfe,
+          );
+          setIeStatus(empresa.attributes.ieStatus);
+          setCNAE(
+            empresa.attributes.CNAE === null ? '' : empresa.attributes.CNAE,
+          );
+          setIE(empresa.attributes.Ie === null ? '' : empresa.attributes.Ie);
+          setPorte(
+            empresa.attributes.porte === null ? '' : empresa.attributes.porte,
+          );
+          setSimples(empresa.attributes.simples);
+          setSite(
+            empresa.attributes.site === null ? '' : empresa.attributes.site,
+          );
+          setEndereco(
+            empresa.attributes.endereco === null
+              ? ''
+              : empresa.attributes.endereco,
+          );
+          setNumero(
+            empresa.attributes.numero === null ? '' : empresa.attributes.numero,
+          );
+          setBairro(
+            empresa.attributes.bairro === null ? '' : empresa.attributes.bairro,
+          );
+          setComplemento(
+            empresa.attributes.complemento === null
+              ? ''
+              : empresa.attributes.complemento,
+          );
+          setCidade(
+            empresa.attributes.cidade === null ? '' : empresa.attributes.cidade,
+          );
+          setUf(empresa.attributes.uf === null ? '' : empresa.attributes.uf);
+          setCep(empresa.attributes.cep === null ? '' : empresa.attributes.cep);
+          setPais(
+            empresa.attributes.pais === null ? '' : empresa.attributes.pais,
+          );
+          setCodpais(
+            empresa.attributes.codpais === null
+              ? ''
+              : empresa.attributes.codpais,
+          );
+          setAdFragilLat(empresa.attributes.adFragilLat);
+          setAdFragilCab(empresa.attributes.adFrailCab);
+          setAdEspecialLat(empresa.attributes.adEspecialLat);
+          setAdEspecialCab(empresa.attributes.adEspecialCab);
+          setLatFCab(empresa.attributes.latFCab);
+          setCabChao(empresa.attributes.cabChao);
+          setCabTop(empresa.attributes.cabTop);
+          setCxEco(empresa.attributes.cxEco);
+          setCxEst(empresa.attributes.cxEst);
+          setCxLev(empresa.attributes.cxLev);
+          setCxRef(empresa.attributes.cxRef);
+          setCxSupRef(empresa.attributes.cxSupRef);
+          setPlatSMed(empresa.attributes.platSMed);
+          setCxResi(empresa.attributes.cxResi);
+          setEngEco(empresa.attributes.engEco);
+          setEngLev(empresa.attributes.engLev);
+          setEngRef(empresa.attributes.engRef);
+          setEngResi(empresa.attributes.engResi);
+          setTablecalc(empresa.attributes.tablecalc);
+          setMaxpg(
+            empresa.attributes.maxPg === null ? '' : empresa.attributes.maxPg,
+          );
+          setForpg(
+            empresa.attributes.forpg === null ? '' : empresa.attributes.forpg,
+          );
+          setFrete(
+            empresa.attributes.frete === null ? '' : empresa.attributes.frete,
+          );
+          setStatus(
+            empresa.attributes.status === null ? '' : empresa.attributes.status,
+          );
+        });
     };
     getempresa();
   }, []);
@@ -193,8 +229,7 @@ export default function EmpresaId() {
         isClosable: true,
       });
     } else {
-      console.log(CNPJ);
-      let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
+      const url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
 
       axios({
         method: 'GET',
@@ -361,10 +396,10 @@ export default function EmpresaId() {
   };
 
   const strapi = async () => {
-    const url = '/api/db/empresas/atualizacao/' + ID;
+    const url = '/api/db/empresas/getcnpj_cpf';
 
     axios({
-      method: 'PUT',
+      method: 'POST',
       url: url,
       data: data,
     })
@@ -373,18 +408,66 @@ export default function EmpresaId() {
       })
       .catch((err) => console.log(err));
   };
-
   const bling = async () => {
-    const url = '/api/db_bling/empresas/PUT/' + CNPJ;
+    const url = '/api/db_bling/empresas/Post';
     axios({
       method: 'POST',
       url: url,
       data: data,
     })
       .then((response) => {
-        console.log(response.data);
-
-        return response.data;
+        if (response.data.retorno.erros[0].erro.cod === 60) {
+          Toast({
+            title: 'erro no registro',
+            description: 'A empresa não pode ser cadastrada sem nome',
+            status: 'error',
+            duration: 7000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log('O pessoa não pode ser cadastrado sem nome');
+        }
+        if (response.data.retorno.erros[0].erro.cod === 62) {
+          Toast({
+            title: 'erro no registro',
+            description:
+              'A empresa não pode ser cadastrada sem CNPJ, ou CNPJ esta incorreto',
+            status: 'error',
+            duration: 7000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log(
+            'A empresa não pode ser cadastrada sem CPF, ou CPF esta incorreto',
+          );
+        }
+        if (response.data.retorno.erros[0].erro.cod === 68) {
+          Toast({
+            title: 'erro no registro',
+            description:
+              'A empresa esta com CNPJ esta incorreto, favor verificar',
+            status: 'error',
+            duration: 7000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log(
+            'A empresa esta com CNPJ esta incorreto, favor verificar',
+          );
+        }
+        if (response.data.retorno.erros[0].erro.cod === 70) {
+          Toast({
+            title: 'erro no registro',
+            description: 'A empresa já esta cadastrada',
+            status: 'error',
+            duration: 7000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log('A empresa já esta cadastrada');
+        } else {
+          return response.data;
+        }
       })
       .catch((err) => console.log(err));
   };
@@ -392,8 +475,12 @@ export default function EmpresaId() {
   const save = async () => {
     await bling();
     await strapi();
-    // reload();
+    reload();
   };
+
+  if (!loading) {
+    return <Loading size="200px">Carregando...</Loading>;
+  }
 
   return (
     <>
@@ -477,6 +564,7 @@ export default function EmpresaId() {
                           rounded="md"
                           maxLength={14}
                           onChange={(e) => setCNPJ(e.target.value)}
+                          value={CNPJ}
                         />
                       </FormControl>
                       <Button

@@ -4,14 +4,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export default async function Get(req: NextApiRequest, res: NextApiResponse) {
 
   const token = process.env.ATORIZZATION_TOKEN_BLING;
+  const CNPJ_CPF = req.query.cnpj_cpf
   if(req.method === 'GET'){
-    const url = 'https://bling.com.br/Api/v2/contatos/json';
+    const url = `https://bling.com.br/Api/v2/contato/${CNPJ_CPF}/json?apikey=${token}`;
     await axios({
       method: 'GET',
       url: url,
-      params: {
-        apikey: token,
-      },
     })
       .then((response) => {
         console.log(response);
@@ -25,6 +23,3 @@ export default async function Get(req: NextApiRequest, res: NextApiResponse) {
     return res.status(405).send({ message: 'Only GET requests are allowed' });
   }
 }
-
-
-// 'https://bling.com.br/Api/v2/contatos/json?apikey='

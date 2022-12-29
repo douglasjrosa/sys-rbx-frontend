@@ -29,8 +29,8 @@ const NavMenuItems = [
   },
   {
     id: '4',
-    url: '/orcamentos',
-    text: 'Orçamentos',
+    url: '/Propostas',
+    text: 'Propostas',
     icon: AiOutlineCodepen,
     iconComponent: <AiOutlineCodepen />,
   },

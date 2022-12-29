@@ -1,20 +1,23 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Box, Flex, chakra, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-export default function CardEmpresa() {
+export default function CardEmpresaRibermax() {
   const [dados, setDados] = useState([]);
   const router = useRouter();
+  const SetEmail = localStorage.getItem('email');
+  const Email = JSON.parse(SetEmail);
 
   useEffect(() => {
     get();
   }, []);
 
   const get = async () => {
-    await fetch('/api/db/empresas/get', {
-      method: 'GET',
+    await fetch('/api/ribermax/empresas/get', {
+      method: 'POST',
+      body: Email,
     })
       .then((resp) => resp.json())
       .then((json) => {
@@ -23,75 +26,34 @@ export default function CardEmpresa() {
   };
 
   const render = dados.map((item) => {
-    const data = () => {
-      const ano = item.attributes.createdAt.substr(0, 4);
-      const mes = item.attributes.createdAt.substr(5, 2);
-      const dia = item.attributes.createdAt.substr(8, 2);
-      const mesesLieral =
-        mes === '1'
-          ? 'Jan'
-          : mes === '2'
-          ? 'Fev'
-          : mes === '3'
-          ? 'Mar'
-          : mes === '4'
-          ? 'Abr'
-          : mes === '5'
-          ? 'Mai'
-          : mes === '6'
-          ? 'Jun'
-          : mes === '7'
-          ? 'Jul'
-          : mes === '8'
-          ? 'Ago'
-          : mes === '9'
-          ? 'Set'
-          : mes === '10'
-          ? 'Out'
-          : mes === '11'
-          ? 'Nov'
-          : 'Dez';
-      const date = mesesLieral + ' ' + dia + ', ' + ano + ' date add';
-
-      return date;
-    };
+    console.log(item.data.attributes.nome);
 
     const cnpj = () => {
       const dig01 =
-        item.attributes.CNPJ === null
+        item.data.attributes.CNPJ === null
           ? '00'
-          : item.attributes.CNPJ.substr(0, 2);
+          : item.data.attributes.CNPJ.substr(0, 2);
       const dig02 =
-        item.attributes.CNPJ === null
+        item.data.attributes.CNPJ === null
           ? '000'
-          : item.attributes.CNPJ.substr(2, 3);
+          : item.data.attributes.CNPJ.substr(2, 3);
       const dig03 =
-        item.attributes.CNPJ === null
+        item.data.attributes.CNPJ === null
           ? '000'
-          : item.attributes.CNPJ.substr(5, 3);
+          : item.data.attributes.CNPJ.substr(5, 3);
       const dig04 =
-        item.attributes.CNPJ === null
+        item.data.attributes.CNPJ === null
           ? '0000'
-          : item.attributes.CNPJ.substr(8, 4);
+          : item.data.attributes.CNPJ.substr(8, 4);
       const dig05 =
-        item.attributes.CNPJ === null
+        item.data.attributes.CNPJ === null
           ? '00'
-          : item.attributes.CNPJ.substr(12, 2);
+          : item.data.attributes.CNPJ.substr(12, 2);
       const result =
         dig01 + '.' + dig02 + '.' + dig03 + '/' + dig04 + '-' + dig05;
       return result;
     };
-    const end =
-      item.attributes.endereco +
-      ', ' +
-      item.attributes.numero +
-      ' - ' +
-      item.attributes.bairro +
-      ', ' +
-      item.attributes.cidade +
-      ' - ' +
-      item.attributes.uf;
-    const rela = item.attributes.responsavel.data;
+
     return (
       <Box
         mx="auto"
@@ -116,9 +78,7 @@ export default function CardEmpresa() {
             _dark={{
               color: 'gray.400',
             }}
-          >
-            {data()}
-          </chakra.span>
+          ></chakra.span>
           <Flex
             justifyContent="space-between"
             alignItems="center"
@@ -138,15 +98,10 @@ export default function CardEmpresa() {
                 bg: 'gray.500',
               }}
               onClick={async () => {
-                const id = item.id;
-                const doc= item.attributes.CNPJ
+                const cnpj = item.data.attributes.CNPJ;
                 await axios({
                   method: 'PUT',
-                  url: '/api/empresas/delete/' + id,
-                });
-                await axios({
-                  method: 'PUT',
-                  url: '/api/db_bling/empresas/Delet/' + doc,
+                  url: '/api/empresas/delete/' + cnpj,
                 });
               }}
             >
@@ -164,8 +119,8 @@ export default function CardEmpresa() {
                 bg: 'gray.500',
               }}
               onClick={async () => {
-                const id = item.id;
-                await router.push('/empresas/atualizar/' + id);
+                const cnpj = item.data.attributes.CNPJ;
+                await router.push('/empresas/atualizar/ribermax/' + cnpj);
               }}
             >
               editar
@@ -189,7 +144,7 @@ export default function CardEmpresa() {
               textDecor: 'underline',
             }}
           >
-            {item.attributes.nome}
+            {item.data.attributes.nome}
           </Link>
           <Box
             mt={2}
@@ -232,9 +187,7 @@ export default function CardEmpresa() {
               _dark={{
                 color: 'gray.300',
               }}
-            >
-              {end}
-            </chakra.p>
+            ></chakra.p>
           </Box>
           <Box display={'flex'} alignItems={'center'}>
             <chakra.p
@@ -254,7 +207,7 @@ export default function CardEmpresa() {
                 color: 'gray.300',
               }}
             >
-              {rela === null ? 'não tem' : rela.attributes.nome}
+              não tem
             </chakra.p>
           </Box>
         </Box>

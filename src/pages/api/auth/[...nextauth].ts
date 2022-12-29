@@ -2,7 +2,6 @@ import axios from 'axios';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-
 export default NextAuth({
   jwt: {
     secret: process.env.JWT_SIGNING_PRIVATE_KEY,
@@ -107,10 +106,11 @@ export default NextAuth({
         id: token.id,
         name: token.name,
         email: token.email,
+        confirmed: token.confirmed,
+        blocked: token.blocked,
       };
-      session.token = token.twt;
+      session.token = token.jwt;
       session.user = dataUser;
-
       return session;
     },
   },

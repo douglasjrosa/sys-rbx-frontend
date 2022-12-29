@@ -12,14 +12,16 @@ import {
   SimpleGrid,
   Stack,
   Switch,
+  Toast,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
+import { cnpj } from 'cpf-cnpj-validator';
 
-export default function Cadastro(): JSX.Element {
+export default function Cadastro() {
   const [CNPJ, setCNPJ] = useState('');
   const [nome, setNome] = useState('');
   const [fantasia, setFantasia] = useState('');
@@ -43,6 +45,7 @@ export default function Cadastro(): JSX.Element {
   const [cep, setCep] = useState('');
   const [pais, setPais] = useState('');
   const [codpais, setCodpais] = useState('');
+  const [contribuinte, setContribuinte] = useState('');
   const [adFrailLat, setAdFragilLat] = useState(false);
   const [adFrailCab, setAdFragilCab] = useState(false);
   const [adEspecialLat, setAdEspecialLat] = useState(false);
@@ -68,73 +71,95 @@ export default function Cadastro(): JSX.Element {
 
   const consulta = () => {
     console.log(CNPJ);
-    let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
-
-    axios({
-      method: 'GET',
-      url: url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(function (response) {
-        setNome(response.data.razao_social);
-        setFantasia(response.data.estabelecimento.nome_fantasia);
-        setTipoPessoa('cnpj');
-        setIE(
-          response.data.estabelecimento.inscricoes_estaduais[0]
-            .inscricao_estadual,
-        );
-        setIeStatus(
-          response.data.estabelecimento.inscricoes_estaduais[0].ativo,
-        );
-        setEndereco(
-          response.data.estabelecimento.tipo_logradouro +
-            ' ' +
-            response.data.estabelecimento.logradouro,
-        );
-        setNumero(response.data.estabelecimento.numero);
-        setComplemento(response.data.estabelecimento.complemento);
-        setBairro(response.data.estabelecimento.bairro);
-        setCep(response.data.estabelecimento.cep);
-        setCidade(response.data.estabelecimento.cidade.nome);
-        setUf(response.data.estabelecimento.estado.sigla);
-        let ddd = response.data.estabelecimento.ddd1;
-        let tel1 = response.data.estabelecimento.telefone1;
-        setFone(ddd + tel1);
-        setEmail(response.data.estabelecimento.email);
-        setPais(response.data.estabelecimento.pais.nome);
-        setCodpais(response.data.estabelecimento.pais.id);
-        setCNAE(response.data.estabelecimento.atividade_principal.id);
-        setPorte(response.data.porte.descricao);
-        const cheksimples =
-          response.data.simples === null
-            ? false
-            : response.data.simples.simples === 'Sim'
-            ? true
-            : false;
-        setSimples(cheksimples);
-        const ICMSisent =
-          response.data.simples !== null &&
-          response.data.simples.mei === 'sim' &&
-          response.data.estabelecimento.inscricoes_estaduais[0].ativo === true
-            ? true
-            : false;
-        const ICMSncomtrib =
-          response.data.simples !== null &&
-          response.data.simples.mei === 'sim' &&
-          response.data.estabelecimento.inscricoes_estaduais[0].ativo === false
-            ? true
-            : false;
-
-      })
-      .catch(function (error) {
-        console.log(error);
+    const validCnpj = cnpj.isValid(CNPJ);
+    if (CNPJ.length < 13) {
+      Toast({
+        title: 'erro no CNPJ',
+        description: 'CNPJ incorreto',
+        status: 'error',
+        duration: 7000,
+        position: 'top-right',
+        isClosable: true,
       });
+    }
+    if (validCnpj === false) {
+      Toast({
+        title: 'erro no CNPJ',
+        description: 'CNPJ incorreto',
+        status: 'error',
+        duration: 7000,
+        position: 'top-right',
+        isClosable: true,
+      });
+    } else {
+      console.log(CNPJ);
+      let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
+
+      axios({
+        method: 'GET',
+        url: url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(function (response) {
+          setNome(response.data.razao_social);
+          setFantasia(response.data.estabelecimento.nome_fantasia);
+          setTipoPessoa('cnpj');
+          setIE(
+            response.data.estabelecimento.inscricoes_estaduais[0]
+              .inscricao_estadual,
+          );
+          setIeStatus(
+            response.data.estabelecimento.inscricoes_estaduais[0].ativo,
+          );
+          setEndereco(
+            response.data.estabelecimento.tipo_logradouro +
+              ' ' +
+              response.data.estabelecimento.logradouro,
+          );
+          setNumero(response.data.estabelecimento.numero);
+          setComplemento(response.data.estabelecimento.complemento);
+          setBairro(response.data.estabelecimento.bairro);
+          setCep(response.data.estabelecimento.cep);
+          setCidade(response.data.estabelecimento.cidade.nome);
+          setUf(response.data.estabelecimento.estado.sigla);
+          let ddd = response.data.estabelecimento.ddd1;
+          let tel1 = response.data.estabelecimento.telefone1;
+          setFone(ddd + tel1);
+          setEmail(response.data.estabelecimento.email);
+          setPais(response.data.estabelecimento.pais.nome);
+          setCodpais(response.data.estabelecimento.pais.id);
+          setCNAE(response.data.estabelecimento.atividade_principal.id);
+          setPorte(response.data.porte.descricao);
+          const cheksimples =
+            response.data.simples === null
+              ? false
+              : response.data.simples.simples === 'Sim'
+              ? true
+              : false;
+          setSimples(cheksimples);
+          const ICMSisent =
+            response.data.simples !== null &&
+            response.data.simples.mei === 'sim' &&
+            response.data.estabelecimento.inscricoes_estaduais[0].ativo === true
+              ? true
+              : false;
+          const ICMSncomtrib =
+            response.data.simples !== null &&
+            response.data.simples.mei === 'sim' &&
+            response.data.estabelecimento.inscricoes_estaduais[0].ativo ===
+              false
+              ? true
+              : false;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
 
   const reload = () => {
-    // window.location.reload;
     setCNPJ('');
     setNome('');
     setFantasia('');
@@ -230,12 +255,12 @@ export default function Cadastro(): JSX.Element {
       maxPg: maxPg,
       forpg: forpg,
       frete: frete,
+      contribuinte: contribuinte,
     },
   };
 
-
   const strapi = async () => {
-    const url = '/api/empresas/DB/post';
+    const url = '/api/db/empresas/post';
 
     axios({
       method: 'POST',
@@ -248,26 +273,74 @@ export default function Cadastro(): JSX.Element {
       .catch((err) => console.log(err));
   };
   const bling = async () => {
-    const url = '/api/empresas/Bling/post/contato';
+    const url = '/api/db_bling/empresas/Post';
     axios({
       method: 'POST',
       url: url,
       data: data,
     })
       .then((response) => {
-        console.log(response.data);
-
-        return response.data;
+        if (response.data.retorno.erros[0].erro.cod === 60) {
+          Toast({
+            title: 'erro no registro',
+            description: 'A empresa não pode ser cadastrada sem nome',
+            status: 'error',
+            duration: 7000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log('O pessoa não pode ser cadastrado sem nome');
+        }
+        if (response.data.retorno.erros[0].erro.cod === 62) {
+          Toast({
+            title: 'erro no registro',
+            description:
+              'A empresa não pode ser cadastrada sem CNPJ, ou CNPJ esta incorreto',
+            status: 'error',
+            duration: 7000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log(
+            'A empresa não pode ser cadastrada sem CPF, ou CPF esta incorreto',
+          );
+        }
+        if (response.data.retorno.erros[0].erro.cod === 68) {
+          Toast({
+            title: 'erro no registro',
+            description:
+              'A empresa esta com CNPJ esta incorreto, favor verificar',
+            status: 'error',
+            duration: 7000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log(
+            'A empresa esta com CNPJ esta incorreto, favor verificar',
+          );
+        }
+        if (response.data.retorno.erros[0].erro.cod === 70) {
+          Toast({
+            title: 'erro no registro',
+            description: 'A empresa já esta cadastrada',
+            status: 'error',
+            duration: 7000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log('A empresa já esta cadastrada');
+        } else {
+          return response.data;
+        }
       })
       .catch((err) => console.log(err));
   };
 
   const save = async () => {
     await bling();
-    // await strapi();
-    // reload();
+    await strapi();
+    reload();
   };
-
 
   return (
     <>
@@ -671,7 +744,7 @@ export default function Cadastro(): JSX.Element {
                       />
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                    <FormControl as={GridItem} colSpan={[6, 3, null, 1]}>
                       <FormLabel
                         htmlFor="cep"
                         fontSize="xs"
@@ -824,6 +897,35 @@ export default function Cadastro(): JSX.Element {
                         onChange={(e) => setCelular(e.target.value)}
                       />
                     </FormControl>
+                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                      <FormLabel
+                        htmlFor="tabela de calculo"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        Contribuinte
+                      </FormLabel>
+                      <Select
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        fontSize="xs"
+                        rounded="md"
+                        placeholder="selecine uma opção"
+                        onChange={(e) => setContribuinte(e.target.value)}
+                        value={contribuinte}
+                      >
+                        <option value="1">Contribuinte ICMS</option>
+                        <option value="2">Contribuinte isento do ICMS</option>
+                        <option value="9">Não contribuinte</option>
+                      </Select>
+                    </FormControl>
                   </SimpleGrid>
                 </Stack>
                 <Stack
@@ -865,7 +967,9 @@ export default function Cadastro(): JSX.Element {
                         value={tablecalc}
                       >
                         <option value="0.30">Balcão</option>
-                        <option value="0.26"selected>vip</option>
+                        <option value="0.26" selected>
+                          vip
+                        </option>
                         <option value="0.23">Bronze</option>
                         <option value="0.20">Prata</option>
                         <option value="0.17">Ouro</option>

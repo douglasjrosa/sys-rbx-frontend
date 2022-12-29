@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-key */
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   chakra,
   Box,
@@ -12,6 +14,7 @@ import {
   Stack,
   Textarea,
   Flex,
+  Toast,
 } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
@@ -19,17 +22,28 @@ import axios from 'axios';
 import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 import { useRouter } from 'next/router';
 import ListaEmpresaAt from '../../../components/pessoas/listaEmpresaAt';
+import { cpf } from 'cpf-cnpj-validator';
 
 export default function PessoaId() {
   const router = useRouter();
   const [ID, setId] = useState('');
+
   const [nome, setNome] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [obs, setObs] = useState('');
   const [empresa, setEmpresa] = useState('');
+  const [CPF, setCPF] = useState('');
+  const [cep, setCep] = useState('');
+  const [endereco, setEndereco] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
+
   const [Empresas, setEmpresas] = useState([]);
+
   const [work, setWork] = useState([]);
   const [workId, setWorkId] = useState('');
   const [workNome, setWorkNome] = useState('');
@@ -71,8 +85,20 @@ export default function PessoaId() {
     }
   }, []);
 
+  const checkCep = async () => {
+    const url = `https://viacep.com.br/ws/${cep}/json/`;
+    await axios(url)
+      .then((res) => {
+        setEndereco(res.data.logradouro);
+        setCidade(res.data.localidade);
+        setBairro(res.data.bairro);
+        setUf(res.data.uf);
+      })
+      .catch((err) => console.log(err));
+  };
+
   const consultaEmpresa = () => {
-    let url = '/api/db/empresas/getEmpresas/get';
+    let url = '/db/empresas/getEmpresas/get';
     axios({
       method: 'GET',
       url: url,
@@ -153,13 +179,21 @@ export default function PessoaId() {
   };
 
   const save = async () => {
-    const id = Empresas.map((item) => item.id)
+    const id = Empresas.map((item) => item.id);
     const idemp = [...id, parseInt(empresa)];
     const data = {
       data: {
         nome: nome,
-        whatsapp: whatsapp,
+        celular: whatsapp,
         telefone: telefone,
+        email: email,
+        CPF: CPF,
+        CEP: cep,
+        uf: uf,
+        endereco: endereco,
+        numero: numero,
+        bairro: bairro,
+        cidade: cidade,
         obs: obs,
         status: true,
         empresas: idemp,
@@ -170,6 +204,38 @@ export default function PessoaId() {
       method: 'PUT',
       url: url,
       data: data,
+    })
+      .then((response) => {
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    const data1 = {
+      data: {
+        nome: nome,
+        celular: whatsapp,
+        telefone: telefone,
+        email: email,
+        CPF: CPF,
+        CEP: cep,
+        uf: uf,
+        endereco: endereco,
+        numero: numero,
+        bairro: bairro,
+        cidade: cidade,
+        obs: obs,
+        status: true,
+        empresas: idemp,
+      },
+    };
+
+    const urlBg = '/api/db_bling/pessoas/PUT/' + CPF;
+    await axios({
+      method: 'POST',
+      url: urlBg,
+      data: data1,
     })
       .then((response) => {
         return response.data;
@@ -260,6 +326,242 @@ export default function PessoaId() {
                           textTransform={'uppercase'}
                           onChange={(e) => setNome(e.target.value)}
                           value={nome}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          CPF
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          placeholder="CPF"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          textTransform={'uppercase'}
+                          maxLength={11}
+                          onChange={(e) => {
+                            const cpfv = e.target.value.replace(
+                              /[a-zA-Z]+/g,
+                              '',
+                            );
+
+                            setCPF(cpfv);
+                          }}
+                          onBlur={(e) => {
+                            const cpfv = e.target.value.replace(
+                              /[a-zA-Z]+/g,
+                              '',
+                            );
+                            const validcpf = cpf.isValid(cpfv);
+
+                            if (cpfv.length < 11) {
+                              Toast({
+                                title: 'erro no CPF',
+                                description: 'CPF menor que esperado',
+                                status: 'error',
+                                duration: 7000,
+                                position: 'top-right',
+                                isClosable: true,
+                              });
+                            }
+                            if (cpfv.length > 11) {
+                              Toast({
+                                title: 'erro no CPF',
+                                description: 'CPF imcompativel',
+                                status: 'error',
+                                duration: 7000,
+                                position: 'top-right',
+                                isClosable: true,
+                              });
+                            }
+
+                            if (validcpf === false) {
+                              Toast({
+                                title: 'erro no CPF',
+                                description: 'CPF incorreto',
+                                status: 'error',
+                                duration: 7000,
+                                position: 'top-right',
+                                isClosable: true,
+                              });
+                            }
+                          }}
+                          value={CPF}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          cep
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          placeholder="cep"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          textTransform={'uppercase'}
+                          onChange={(e) => {
+                            const data = e.target.value.replace(
+                              /[a-zA-Z]+/g,
+                              '',
+                            );
+                            setCep(data);
+                          }}
+                          onBlur={checkCep}
+                          value={cep}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Endereço
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          textTransform={'uppercase'}
+                          value={endereco}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Nº
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          onChange={(e) => {
+                            const data = e.target.value.replace(
+                              /[a-zA-Z]+/g,
+                              '',
+                            );
+                            setNumero(data);
+                          }}
+                          value={numero}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Cidade
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          value={cidade}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Bairro
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          value={bairro}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          uf
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          value={uf}
                         />
                       </FormControl>
 

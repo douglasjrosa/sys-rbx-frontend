@@ -20,6 +20,7 @@
     "autoprefixer": "^9",
     "axios": "^0.21.3",
     "classnames": "^2.2.6",
+    "cpf-cnpj-validator": "^1.0.3",
     "date-fns": "2.14.0",
     "fast-xml-parser": "^4.0.9",
     "formik": "^2.2.6",
@@ -35,12 +36,15 @@
     "react-icons": "^3.10.0",
     "react-markdown": "^6.0.2",
     "remask": "^0.1.0-alpha.5",
+    "xml": "^1.0.1",
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@types/dompurify": "^2.4.0",
     "@types/node": "18.7.14",
     "@types/react": "18.0.18",
     "@types/react-dom": "18.0.6",
+    "@types/xml": "^1.0.8",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "eslint": "^8.0.1",
     "eslint-config-next": "12.2.5",

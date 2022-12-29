@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   chakra,
   Box,
@@ -12,12 +14,14 @@ import {
   Stack,
   Textarea,
   Flex,
+  Toast,
 } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 import { mask, unMask } from 'remask';
 import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
+import { cpf } from 'cpf-cnpj-validator';
 
 export default function Cadastro() {
   //cru
@@ -27,6 +31,13 @@ export default function Cadastro() {
   const [email, setEmail] = useState('');
   const [obs, setObs] = useState('');
   const [empresa, setEmpresa] = useState('');
+  const [CPF, setCPF] = useState('');
+  const [cep, setCep] = useState('');
+  const [endereco, setEndereco] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
 
   const [work, setWork] = useState([]);
 
@@ -52,14 +63,14 @@ export default function Cadastro() {
   const [workCNPJ, setWorkCNPJ] = useState('');
 
   const consultaEmpresa = () => {
-    let url = '/api/empresas/getEmpresas/get';
+    let url = '/api/db/empresas/getEmpresas/get';
     axios({
       method: 'GET',
       url: url,
     })
       .then(function (response) {
-        console.log(response);
-        setWork(response.data);
+        console.log(response.data);
+        setWork(response.data.data);
       })
       .catch(function (error) {
         console.log(error);
@@ -90,7 +101,7 @@ export default function Cadastro() {
   const consultaEmpresaId = async (e) => {
     const id = e.target.value;
     console.log(id);
-    let url = '/api/empresas/consulta/' + id;
+    let url = '/api/db/empresas/consulta/' + id;
     await axios({
       method: 'GET',
       url: url,
@@ -123,13 +134,13 @@ export default function Cadastro() {
   const consultaEmp = async () => {
     const id = empresa;
     console.log(id);
-    let url = '/api/empresas/consulta/' + id;
+    let url = '/api/db/empresas/consulta/' + id ;
     await axios({
       method: 'GET',
       url: url,
     })
       .then(function (response) {
-        console.log(response.data);
+        console.log(response.data.data);
         setEmpresa(response.data.data.id);
         setWorkId(response.data.data.id);
         setWorkNome(response.data.data.attributes.nome);
@@ -153,37 +164,137 @@ export default function Cadastro() {
       });
   };
 
-  const Db =async () => {
-    const data = {
+  const resent = () => {
+    setNome('');
+    setWhatsapp('');
+    setTelefone('');
+    setEmail('');
+    setObs('');
+    setEmpresa('');
+    setWork([]);
+    setWhatsappMask('');
+    setTelefoneMask('');
+    setWorkId('');
+    setWorkNome('');
+    setWorkfantasia('');
+    setWorkEndereco('');
+    setWorkNumero('');
+    setWorkComplemento('');
+    setWorkBairro('');
+    setWorkCep('');
+    setWorkCidade('');
+    setWorkUf('');
+    setWorkFone('');
+    setWorkCelular('');
+    setWorkSite('');
+    setWorkEmail('');
+    setWorkEmailNfe('');
+    setWorkCNPJ('');
+  };
+
+  const CEP = (e) => {
+    const data = e.target.value.replace(/[a-zA-Z]+/g, '');
+    setCep(data);
+  };
+
+  const NUMERO = (e) => {
+    const data = e.target.value.replace(/[a-zA-Z]+/g, '');
+    setNumero(data);
+  };
+
+  const checkCep = async () => {
+    const url = `https://viacep.com.br/ws/${cep}/json/`;
+    await axios(url)
+      .then((res) => {
+        setEndereco(res.data.logradouro);
+        setCidade(res.data.localidade);
+        setBairro(res.data.bairro);
+        setUf(res.data.uf);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const save = async () => {
+    const data1 = {
       data: {
         nome: nome,
-        whatsapp: whatsapp,
+        celular: whatsapp,
         telefone: telefone,
         email: email,
+        CPF: CPF,
+        CEP: cep,
+        uf: uf,
+        endereco: endereco,
+        numero: numero,
+        bairro: bairro,
+        cidade: cidade,
         obs: obs,
-        status: true,
-        empresas: [parseInt(empresa)],
+        status: 'true',
+        empresas: workfantasia,
       },
     };
 
-    const url = '/api/pessoas/Post';
-
+    const UrlRb = '/api/db_bling/pessoas/Post';
     await axios({
       method: 'POST',
-      url: url,
-      data: data,
+      url: UrlRb,
+      data: data1,
     })
-      .then((response) => {
+      .then(async (response) => {
         console.log(response);
-        return response.data;
+        if (response.data.retorno.erros[0].erro.cod === 60) {
+          console.log('O pessoa não pode ser cadastrado sem nome');
+        }
+        if (response.data.retorno.erros[0].erro.cod === 62) {
+          console.log(
+            'O pessoa não pode ser cadastrado CPF, ou CPF esta incorreto',
+          );
+        }
+        if (response.data.retorno.erros[0].erro.cod === 68) {
+          console.log('O pessoa com CPF esta incorreto, favor verificar');
+        }
+        if (response.data.retorno.erros[0].erro.cod === 70) {
+          console.log('O pessoa já cadastrado');
+        } else {
+          const data = {
+            data: {
+              nome: nome,
+              celular: whatsapp,
+              telefone: telefone,
+              email: email,
+              CPF: CPF,
+              CEP: cep,
+              uf: uf,
+              endereco: endereco,
+              numero: numero,
+              bairro: bairro,
+              cidade: cidade,
+              obs: obs,
+              status: true,
+              empresas: [parseInt(empresa)],
+            },
+          };
+
+          const url = '/api/pessoas/Post';
+
+          await axios({
+            method: 'POST',
+            url: url,
+            data: data,
+          })
+            .then((response) => {
+              console.log(response);
+              resent();
+              return response.data;
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
       })
       .catch((err) => {
         console.log(err);
       });
-  }
-
-  const save = async () => {
-
   };
 
   return (
@@ -267,6 +378,230 @@ export default function Cadastro() {
                           textTransform={'uppercase'}
                           onChange={(e) => setNome(e.target.value)}
                           value={nome}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          CPF
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          placeholder="CPF"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          textTransform={'uppercase'}
+                          maxLength={11}
+                          onChange={(e) => {
+                            const cpfv = e.target.value.replace(
+                              /[a-zA-Z]+/g,
+                              '',
+                            );
+
+                            setCPF(cpfv);
+                          }}
+                          onBlur={(e) => {
+                            const cpfv = e.target.value.replace(
+                              /[a-zA-Z]+/g,
+                              '',
+                            );
+                            const validcpf = cpf.isValid(cpfv);
+
+                            if (cpfv.length < 11) {
+                              Toast({
+                                title: 'erro no CPF',
+                                description: 'CPF menor que esperado',
+                                status: 'error',
+                                duration: 7000,
+                                position: 'top-right',
+                                isClosable: true,
+                              });
+                            }
+                            if (cpfv.length > 11) {
+                              Toast({
+                                title: 'erro no CPF',
+                                description: 'CPF imcompativel',
+                                status: 'error',
+                                duration: 7000,
+                                position: 'top-right',
+                                isClosable: true,
+                              });
+                            }
+
+                            if (validcpf === false) {
+                              Toast({
+                                title: 'erro no CPF',
+                                description: 'CPF incorreto',
+                                status: 'error',
+                                duration: 7000,
+                                position: 'top-right',
+                                isClosable: true,
+                              });
+                            }
+                          }}
+                          value={CPF}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          cep
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          placeholder="cep"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          textTransform={'uppercase'}
+                          onChange={CEP}
+                          onBlur={checkCep}
+                          value={cep}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Endereço
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          textTransform={'uppercase'}
+                          value={endereco}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Nº
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          onChange={NUMERO}
+                          value={numero}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Cidade
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          value={cidade}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Bairro
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          value={bairro}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          uf
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          value={uf}
                         />
                       </FormControl>
 

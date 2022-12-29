@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable prettier/prettier */
 import { Box, Flex, chakra, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -79,7 +81,7 @@ export default function CardPessoas() {
       item.attributes.uf;
 
     const empresas = item.attributes.empresas.data === null ? '' : item.attributes.empresas.data
-    const emplist = empresas.length === 0? 'não tem': empresas.map((m: { attributes: { nome: any; }; }) => m.attributes.nome)
+    const emplist = empresas.length === 0? 'não tem': empresas.map((m) => m.attributes.nome)
     console.log(emplist)
 
     return (
@@ -129,9 +131,14 @@ export default function CardPessoas() {
               }}
               onClick={async () => {
                 const id = item.id;
+                const doc= item.attributes.CPF
                 await axios({
                   method: 'PUT',
                   url: '/api/pessoas/delete/' + id,
+                });
+                await axios({
+                  method: 'PUT',
+                  url: '/api/db_bling/pessoas/Delet/' + doc,
                 });
               }}
             >

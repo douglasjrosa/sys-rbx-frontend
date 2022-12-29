@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 
 function Layout({ children }) {
-  const toast = useToast()
+  const toast = useToast();
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -15,7 +15,7 @@ function Layout({ children }) {
     return <Loading size="200px">Carregando...</Loading>;
   }
   if (!session && router.asPath !== '/auth/signin') {
-      router.push('/auth/signin');
+    router.push('/auth/signin');
   }
   if (!status && router.asPath !== '/auth/signin') {
     router.push('/auth/signin');
@@ -48,12 +48,15 @@ function Layout({ children }) {
     router.push('/auth/signin');
     return <Loading size="200px">Carregando...</Loading>;
   }
-  if (session && router.asPath === '/auth/signin' || status && router.asPath === '/auth/signin') {
+  if (
+    (session && router.asPath === '/auth/signin') ||
+    (status && router.asPath === '/auth/signin')
+  ) {
     router.push('/');
     return <Loading size="200px">Redirecionando...</Loading>;
   }
-console.log(status)
-console.log(session)
+  console.log(status);
+  console.log(session);
 
   return (
     <Flex

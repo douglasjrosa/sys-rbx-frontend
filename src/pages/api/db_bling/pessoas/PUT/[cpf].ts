@@ -1,39 +1,126 @@
-import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function putCPF(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  const { cpf } = req.query;
-  const dataAt = req.body
-
-  console.log(cpf)
+export default async function PUT(req: NextApiRequest, res: NextApiResponse) {
+  const token = process.env.ATORIZZATION_TOKEN_BLING;
+  const CNPJ_CPF = req.query.cpf;
+  console.log(CNPJ_CPF);
   if (req.method === 'PUT') {
-    const UrlCheck = `/api/db_bling/Bling/contato/GET/CNPJ/${cpf}`;
-    const checkDb = await axios({
-      method: 'GET',
-      url: UrlCheck,
-    });
+    const url = `https://bling.com.br/Api/v2/contato/${CNPJ_CPF}/json?apikey=${token}`;
+    const ClienteIdetfic = await fetch(url);
+    const RespCliente = await ClienteIdetfic.json();
+    const ClienteId = RespCliente.retorno.contatos[0].contato.id;
+    const Cliente = RespCliente.retorno.contatos[0].contato;
+    console.log(Cliente);
 
-    if (checkDb.status === 200) {
-      const IdBling = checkDb.data.retorno.contatos.contato.id;
-      const UrlUpdate = `/api/db_bling/Bling/contato/PUT/${IdBling}`;
-      const updateDb = await axios({
+    if (ClienteId !== '') {
+      const getClinet = req.body;
+
+      var formdata = new FormData();
+      formdata.append('apikey', `${token}`);
+      formdata.append(
+        'xml',
+        `<?xml version="1.0" encoding="UTF-8"?>\n<contato>\n   <nome>${
+          getClinet.data.nome
+        }</nome>\n   <fantasia>${
+          getClinet.data.fantasia
+        }</fantasia>\n   <tipoPessoa>F</tipoPessoa>\n   <contribuinte>9</contribuinte>\n   <cpf_cnpj>${CNPJ_CPF}</cpf_cnpj>\n   <ie_rg></ie_rg>\n   <endereco>${
+          getClinet.data.endereco
+        }</endereco>\n   <numero>${
+          getClinet.data.numero
+        }</numero>\n   <complemento>${
+          getClinet.data.complemento
+        }</complemento>\n   <bairro>${
+          getClinet.data.bairro
+        }</bairro>\n   <cep>${getClinet.data.cep}</cep>\n   <cidade>${
+          getClinet.data.cidade
+        }</cidade>\n   <uf>${getClinet.data.uf}</uf>\n   <fone>${
+          getClinet.data.fone
+        }</fone>\n   <celular>${getClinet.data.celular}</celular>\n   <email>${
+          getClinet.data.email
+        }</email>\n   <situacao>${
+          getClinet.data.status === true ? 'A' : 'E'
+        }</situacao>\n   <emailNfe>${
+          getClinet.data.emailNfe
+        }</emailNfe>\n   <informacaoContato>Informações adicionais do contato</informacaoContato>\n   <limiteCredito></limiteCredito>\n   <paisOrigem>${
+          getClinet.data.pais
+        }</paisOrigem>\n   <obs>${getClinet.data.obs}</obs>\n</contato>`,
+      );
+
+      console.log(formdata);
+
+      var requestOptions: any = {
         method: 'PUT',
-        url: UrlUpdate,
-        data:dataAt
-      });
-      if (updateDb.status === 200) {
-        res.status(201).send('Dados alterado com sucesso')
-      } else {
-        res.status(400).send('Alguma informação enviada está incorreta')
-      }
+        body: formdata,
+        redirect: 'follow',
+      };
+
+      fetch(
+        `https://bling.com.br/Api/v2/contato/${ClienteId}/json`,
+        requestOptions,
+      )
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result);
+          res.status(201).json(result);
+        })
+        .catch((error) => {
+          console.log('error', error);
+          res.status(400).send({ error: error });
+        });
     } else {
-      res.status(404).send('Cliente não encontrado na base de dados')
+      const getClinet = req.body;
+
+      var formdata = new FormData();
+      formdata.append('apikey', `${token}`);
+      formdata.append(
+        'xml',
+        `<?xml version="1.0" encoding="UTF-8"?>\n<contato>\n   <nome>${
+          getClinet.data.nome
+        }</nome>\n   <fantasia>${
+          getClinet.data.fantasia
+        }</fantasia>\n   <tipoPessoa>F</tipoPessoa>\n   <contribuinte>9</contribuinte>\n   <cpf_cnpj>${CNPJ_CPF}</cpf_cnpj>\n   <ie_rg></ie_rg>\n   <endereco>${
+          getClinet.data.endereco
+        }</endereco>\n   <numero>${
+          getClinet.data.numero
+        }</numero>\n   <complemento>${
+          getClinet.data.complemento
+        }</complemento>\n   <bairro>${
+          getClinet.data.bairro
+        }</bairro>\n   <cep>${getClinet.data.cep}</cep>\n   <cidade>${
+          getClinet.data.cidade
+        }</cidade>\n   <uf>${getClinet.data.uf}</uf>\n   <fone>${
+          getClinet.data.fone
+        }</fone>\n   <celular>${getClinet.data.celular}</celular>\n   <email>${
+          getClinet.data.email
+        }</email>\n   <situacao>${
+          getClinet.data.status === true ? 'A' : 'E'
+        }</situacao>\n   <emailNfe>${
+          getClinet.data.emailNfe
+        }</emailNfe>\n   <informacaoContato>Informações adicionais do contato</informacaoContato>\n   <limiteCredito></limiteCredito>\n   <paisOrigem>${
+          getClinet.data.pais
+        }</paisOrigem>\n   <obs>${getClinet.data.obs}</obs>\n</contato>`,
+      );
+
+      console.log(formdata);
+
+      var requestOptions: any = {
+        method: 'POST',
+        body: formdata,
+        redirect: 'follow',
+      };
+
+      fetch('https://bling.com.br/Api/v2/contato/json', requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result);
+          res.status(201).json(result);
+        })
+        .catch((error) => {
+          console.log('error', error);
+          res.status(400).send({ error: error });
+        });
     }
-  }else {
+  } else {
     return res.status(405).send({ message: 'Only PUT requests are allowed' });
   }
-
 }
