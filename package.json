@@ -11,6 +11,7 @@
   "browser": {
     "html-pdf": false
   },
+  
   "dependencies": {
     "@chakra-ui/icons": "^1.0.15",
     "@chakra-ui/react": "^2.3.4",
