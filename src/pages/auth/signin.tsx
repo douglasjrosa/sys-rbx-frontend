@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { getCsrfToken } from 'next-auth/react';
 import { CtxOrReq } from 'next-auth/client/_utils';
 import {
@@ -14,8 +15,6 @@ import {
 } from '@chakra-ui/react';
 
 const SignIn = ({ csrfToken }) => {
-
-
   return (
     <Stack
       minH={'100vh'}
@@ -25,10 +24,7 @@ const SignIn = ({ csrfToken }) => {
       <Flex p={8} flex={1} align={'center'} justify={'center'}>
         <Stack spacing={4} w={'full'} maxW={'md'}>
           <Heading fontSize={'2xl'}>Sign in to your account</Heading>
-          <form
-            method="post"
-            action="/api/auth/callback/credentials"
-          >
+          <form method="post" action="/api/auth/callback/credentials">
             <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
             <FormControl>
               <FormLabel htmlFor="email">Email address</FormLabel>
@@ -46,11 +42,7 @@ const SignIn = ({ csrfToken }) => {
               >
                 <Link color={'blue.500'}>Forgot password?</Link>
               </Stack>
-              <Button
-                colorScheme={'blue'}
-                variant={'solid'}
-                type="submit"
-              >
+              <Button colorScheme={'blue'} variant={'solid'} type="submit">
                 Sign in
               </Button>
             </Stack>

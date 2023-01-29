@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { Search2Icon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
 import {
@@ -9,7 +10,6 @@ import {
   InputRightElement,
 } from '@chakra-ui/react';
 import CardPessoas from '../../components/pessoas/lista/card/card';
-
 
 export default function Pessoas(): JSX.Element {
   const router = useRouter();
@@ -28,11 +28,7 @@ export default function Pessoas(): JSX.Element {
       >
         <Box>
           <InputGroup size="md">
-            <Input
-              pr="6rem"
-              w={{ md: '26rem', sm: '30rem' }}
-              type={'text'}
-            />
+            <Input pr="6rem" w={{ md: '26rem', sm: '30rem' }} type={'text'} />
             <InputRightElement width="4.5rem">
               <Button h="1.75rem" size="sm">
                 <Search2Icon />
@@ -46,10 +42,13 @@ export default function Pessoas(): JSX.Element {
           h="100%"
           justifyContent={'space-evenly'}
         >
-          <Button h={{ md: '40%', sm: '70%' }} colorScheme="whatsapp" onClick={()=> router.push('/pessoas/cadastro') }>
+          <Button
+            h={{ md: '40%', sm: '70%' }}
+            colorScheme="whatsapp"
+            onClick={() => router.push('/pessoas/cadastro')}
+          >
             Cadastrar Pessoas
           </Button>
-
         </Box>
       </Flex>
       <Box h={'85%'} overflow={'auto'}>
@@ -60,7 +59,7 @@ export default function Pessoas(): JSX.Element {
           }}
           py={50}
           w="full"
-          h='full'
+          h="full"
           alignItems="center"
           justifyContent="center"
           flexDirection="column"
