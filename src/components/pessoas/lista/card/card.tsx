@@ -4,9 +4,11 @@ import { Box, Flex, chakra, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import Loading from '../../../elements/loading';
 
 export default function CardPessoas() {
   const [dados, setDados] = useState([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,8 +21,16 @@ export default function CardPessoas() {
       url: '/api/db/pessoas/Get',
     });
     setDados(response.data.data);
-    console.log(dados)
+    setLoading(false);
   };
+
+  if (!dados) {
+    return (
+      <>
+        <Box></Box>
+      </>
+    );
+  }
 
   const render = dados.map((item) => {
     const data = () => {
@@ -80,9 +90,15 @@ export default function CardPessoas() {
       ' - ' +
       item.attributes.uf;
 
-    const empresas = item.attributes.empresas.data === null ? '' : item.attributes.empresas.data
-    const emplist = empresas.length === 0? 'não tem': empresas.map((m) => m.attributes.nome)
-    console.log(emplist)
+    const empresas =
+      item.attributes.empresas.data === null
+        ? ''
+        : item.attributes.empresas.data;
+    const emplist =
+      empresas.length === 0
+        ? 'não tem'
+        : empresas.map((m: any) => m.attributes.nome);
+    console.log(emplist);
 
     return (
       <Box
@@ -131,7 +147,7 @@ export default function CardPessoas() {
               }}
               onClick={async () => {
                 const id = item.id;
-                const doc= item.attributes.CPF
+                const doc = item.attributes.CPF;
                 await axios({
                   method: 'PUT',
                   url: '/api/pessoas/delete/' + id,
@@ -249,17 +265,19 @@ export default function CardPessoas() {
             >
               {emplist}
             </chakra.p>
-
           </Box>
         </Box>
       </Box>
     );
   });
+
+  if (loading) {
+    return <Loading size="200px">Carregando...</Loading>;
+  }
   const display = !dados ? null : render;
   return (
     <>
-      <Box h={'95%'}>{ display }</Box>
-
+      <Box h={'95%'}>{display}</Box>
     </>
   );
 }

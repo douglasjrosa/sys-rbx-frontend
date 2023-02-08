@@ -3,9 +3,11 @@ import { Box, Flex, chakra, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import Loading from '../../../elements/loading';
 
 export default function CardEmpresaRibermax() {
   const [dados, setDados] = useState([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
   const SetEmail = localStorage.getItem('email');
   const Email = JSON.parse(SetEmail);
@@ -22,8 +24,17 @@ export default function CardEmpresaRibermax() {
       .then((resp) => resp.json())
       .then((json) => {
         setDados(json);
+        setLoading(false);
       });
   };
+
+  if (!dados) {
+    return (
+      <>
+        <Box></Box>
+      </>
+    );
+  }
 
   const render = dados.map((item) => {
     console.log(item.data.attributes.nome);
@@ -214,7 +225,10 @@ export default function CardEmpresaRibermax() {
       </Box>
     );
   });
-  const display = !dados ? '' : render;
+  if (loading) {
+    return <Loading size="200px">Carregando...</Loading>;
+  }
+  const display = !dados ? null : render;
   return (
     <>
       <Box h={'95%'}>{display}</Box>

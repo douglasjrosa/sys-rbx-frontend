@@ -3,9 +3,11 @@ import { Box, Flex, chakra, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import Loading from '../../../elements/loading';
 
 export default function CardEmpresa() {
   const [dados, setDados] = useState([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,11 +21,19 @@ export default function CardEmpresa() {
       .then((resp) => resp.json())
       .then((json) => {
         setDados(json);
-        console.log(json);
+        setLoading(false);
       });
   };
 
-  const render = dados.map((item) => {
+  if (!dados) {
+    return (
+      <>
+        <Box></Box>
+      </>
+    );
+  }
+
+  const render = dados.map((item: any) => {
     const data = () => {
       const ano = item.attributes.createdAt.substr(0, 4);
       const mes = item.attributes.createdAt.substr(5, 2);
@@ -140,7 +150,7 @@ export default function CardEmpresa() {
               }}
               onClick={async () => {
                 const id = item.id;
-                const doc= item.attributes.CNPJ
+                const doc = item.attributes.CNPJ;
                 await axios({
                   method: 'PUT',
                   url: '/api/empresas/delete/' + id,
@@ -262,7 +272,11 @@ export default function CardEmpresa() {
       </Box>
     );
   });
-  const display = !dados ? '' : render;
+
+  if (loading) {
+    return <Loading size="200px">Carregando...</Loading>;
+  }
+  const display = dados.length === 0 ? null : render;
   return (
     <>
       <Box h={'95%'}>{display}</Box>

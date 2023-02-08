@@ -34,27 +34,27 @@ export default function ListaEmpresa(props: any) {
   return (
     <>
       <Box>
-      <Heading mb={3} size="xs">
-        dados da empresa
-      </Heading>
-      <List spacing={3} mb={5}>
-        <ListItem>
-          <ListIcon as={MdSettings} color="green.500" />
-          {nome}
-        </ListItem>
-        <ListItem fontSize={'xs'}>
-          <ListIcon as={MdCheckCircle} color="green.500" />
-          {end}
-        </ListItem>
-        <ListItem fontSize={'xs'}>
-          <ListIcon as={MdCheckCircle} color="green.500" />
-          {fone} {celular}
-        </ListItem>
-        <ListItem>
-          <ListIcon as={MdCheckCircle} color="green.500" />
-          {email}
-        </ListItem>
-      </List>
+        <Heading mb={3} size="xs">
+          dados da empresa
+        </Heading>
+        <List spacing={3} mb={5}>
+          <ListItem>
+            <ListIcon as={MdSettings} color="green.500" />
+            {nome}
+          </ListItem>
+          <ListItem fontSize={'xs'}>
+            <ListIcon as={MdCheckCircle} color="green.500" />
+            {end}
+          </ListItem>
+          <ListItem fontSize={'xs'}>
+            <ListIcon as={MdCheckCircle} color="green.500" />
+            {fone} {celular}
+          </ListItem>
+          <ListItem>
+            <ListIcon as={MdCheckCircle} color="green.500" />
+            {email}
+          </ListItem>
+        </List>
       </Box>
     </>
   );

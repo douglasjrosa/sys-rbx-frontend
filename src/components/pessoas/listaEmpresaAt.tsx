@@ -47,7 +47,7 @@ export default function ListaEmpresaAt(props: any) {
     const url = `/api/db/pessoas/consulta/${props.idPessoa}`;
     const response = await axios(url);
     const pessoa = response.data.data.attributes.empresas.data;
-    const DataPessoa = response.data.data
+    const DataPessoa = response.data.data;
     const idempresa = pessoa.map((item: { id: any }) => item.id);
     const filter = idempresa.filter((item: any) => item !== props.id);
     console.log(filter);

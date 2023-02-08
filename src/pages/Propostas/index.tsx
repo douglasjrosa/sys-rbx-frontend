@@ -364,6 +364,62 @@ export default function Proposta() {
               value={responsavel}
             />
           </Box>
+          <Box>
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: 'gray.50',
+              }}
+            >
+              Condição de pagamento
+            </FormLabel>
+            <Select
+              shadow="sm"
+              size="xs"
+              w="full"
+              fontSize="xs"
+              rounded="md"
+              placeholder="Selecione uma Empresa"
+              onChange={(e) => setCnpj(e.target.value)}
+              value={cnpj}
+            >
+              <option value="5%">Antecipado</option>
+            </Select>
+          </Box>
+          <Box>
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: 'gray.50',
+              }}
+            >
+              Loja
+            </FormLabel>
+            <Select
+              shadow="sm"
+              size="xs"
+              w="full"
+              fontSize="xs"
+              rounded="md"
+              placeholder="Selecione uma Empresa"
+              // onChange={(e) => setCnpj(e.target.value)}
+              // value={cnpj}
+            >
+              <option value="Ribermax Embalagens de Madeira">
+                RIBERMAX EMBALAGENS DE MADEIRA
+              </option>
+              <option value="Renato">{}</option>
+              <option value="Bragheto Paletes e Embalagens">
+                BRAGHETO PALETES E EMBALAGENS
+              </option>
+            </Select>
+          </Box>
         </Box>
         <Box mt={12}>
           <Heading size="md">Itens da proposta comercial</Heading>
