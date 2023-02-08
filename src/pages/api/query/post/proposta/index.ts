@@ -14,6 +14,7 @@ export default async function Get(req: NextApiRequest, res: NextApiResponse) {
     const Loja = d.loja;
     const CondPg = d.CondPg;
     const email = d.email;
+    const celular = d.celular;
     const verification: any = await VerifiqueProd(d.itens);
     const FilterNegative = verification.filter(
       (item: any) => item.db === false,
@@ -35,6 +36,7 @@ export default async function Get(req: NextApiRequest, res: NextApiResponse) {
         Loja,
         CondPg,
         email,
+        celular,
       );
     }
     return res.status(200).json(verification);
