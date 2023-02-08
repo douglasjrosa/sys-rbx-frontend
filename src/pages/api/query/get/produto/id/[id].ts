@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function GetEmpresa(

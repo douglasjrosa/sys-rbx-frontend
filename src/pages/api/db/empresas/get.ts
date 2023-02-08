@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function GetEmpresa(
@@ -19,7 +20,7 @@ export default async function GetEmpresa(
     })
       .then((resp) => resp.json())
       .then((json) => {
-        console.log(json.data)
+        console.log(json.data);
         return res.status(200).json(json.data);
       })
       .catch((err) => {

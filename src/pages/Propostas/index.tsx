@@ -25,20 +25,23 @@ import {
 import { useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
 import { BsTrash } from 'react-icons/bs';
+import { DateIso } from '../../components/data/Date';
 import Loading from '../../components/elements/loading';
+import { useSession } from 'next-auth/react';
+
+const tempo = DateIso;
 
 export default function Proposta() {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState<boolean>(true);
-  const [check, setCheck] = useState([{ index: 0, isstatus: false }]);
   const [Enpresa, setEmpresa] = useState([]);
   const [Produtos, SetProdutos] = useState([]);
   const [ListItens, setItens] = useState([]);
-  const [ListItensEnvio, setItensEnvio] = useState([]);
   const [itenId, setItenId] = useState('');
-  const [search, setSearch] = useState('');
+  const [date, setDate] = useState(tempo);
   const [cnpj, setCnpj] = useState('');
   const [email, setEmail] = useState('');
-  const [searchName, setSearchName] = useState('');
+  const [responsavel, setResponsavel] = useState('');
   const toast = useToast();
 
   useEffect(() => {
@@ -87,26 +90,45 @@ export default function Proposta() {
   };
 
   const addItens = async () => {
-    setLoading(true);
-    const url = '/api/query/get/produto/id/' + itenId;
-    await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(email),
-    })
-      .then((resp) => resp.json())
-      .then((resposta) => {
-        console.log(ListItens);
-        if (ListItens.length !== 0) {
-          const intero = [...ListItens, resposta];
-          setItens(intero);
-          setLoading(false);
-        } else {
-          setItens([resposta]);
-          setLoading(false);
-        }
-        setItenId('');
+    const filter = ListItens.filter((i) => i.prodId === itenId);
+    if (itenId.length === 0) {
+      toast({
+        title: 'Selecione um Produto',
+        position: 'top-right',
+        status: 'warning',
+        isClosable: true,
+      });
+      setLoading(false);
+    } else if (filter.length !== 0) {
+      toast({
+        title: 'Iten já adicionado',
+        position: 'top-right',
+        status: 'warning',
+        isClosable: true,
+      });
+      setLoading(false);
+    } else {
+      setLoading(true);
+      const url = '/api/query/get/produto/id/' + itenId;
+      await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(email),
       })
-      .catch((err) => console.log(err));
+        .then((resp) => resp.json())
+        .then((resposta) => {
+          console.log(ListItens);
+          if (ListItens.length !== 0) {
+            const intero = [...ListItens, resposta];
+            setItens(intero);
+            setLoading(false);
+          } else {
+            setItens([resposta]);
+            setLoading(false);
+          }
+          setItenId('');
+        })
+        .catch((err) => console.log(err));
+    }
   };
 
   const handleAdd = (Obj: any, Id: number) => {
@@ -122,32 +144,25 @@ export default function Proposta() {
 
   const lista = () => {
     const resp = ListItens.map((i, x) => {
-      let data = { ...i };
       const Id = i.prodId;
       const remove = () => {
         DelPrudutos(Id);
       };
-      const handleSalve = (Id: number) => {};
 
-      const disable = () => {
-        const filterCheck = check.filter((i) => i.index === x);
-        const [result] = filterCheck.map(
-          (obj: { isstatus: any }) => obj.isstatus,
-        );
-        return result;
-      };
       const total = () => {
         if (!i.unid || i.unid === '') {
           return '0,00';
         }
         if (!i.desconto || i.desconto === '') {
           const valor1: number = i.unid;
-          const valor2: number = Number(i.vFinal.replace(',', '.'));
+          const valor2Original = i.vFinal.replace('.', '');
+          const valor2: number = Number(valor2Original.replace(',', '.'));
           const multplica = valor1 * valor2;
           return multplica.toFixed(2);
         } else {
           const valor1: number = i.unid;
-          const valor2: number = Number(i.vFinal.replace(',', '.'));
+          const valor2Original = i.vFinal.replace('.', '');
+          const valor2: number = Number(valor2Original.replace(',', '.'));
           const descontoOriginal = i.desconto;
           const teste = descontoOriginal.indexOf(',') !== -1 ? true : false;
           if (teste == true) {
@@ -155,13 +170,22 @@ export default function Proposta() {
             const desc = Number(descontoOriginal.replace(',', '.'));
             const resp = multplica * (1 - desc / 100);
             return resp.toFixed(2);
+          } else {
+            const multplica = valor1 * valor2;
+            const resp = multplica * (1 - descontoOriginal / 100);
+            return resp.toFixed(2);
           }
-          const multplica = valor1 * valor2;
-          const resp = multplica * (1 - descontoOriginal / 100);
-          return resp.toFixed(2);
         }
       };
-      console.log(i);
+
+      const codig = () => {
+        if (!i.codg || i.codg === '') {
+          const dt = { codg: Id };
+          handleAdd(dt, Id);
+          return Id;
+        }
+        return Id;
+      };
 
       return (
         <>
@@ -172,23 +196,8 @@ export default function Proposta() {
             <Td px={3} py={2} ps={8}>
               {i.nomeProd}
             </Td>
-            <Td px={2} py={2}>
-              <Input
-                type={'text'}
-                size="xs"
-                borderColor="whatsapp.600"
-                rounded="md"
-                focusBorderColor="whatsapp.400"
-                _hover={{
-                  borderColor: 'whatsapp.600',
-                }}
-                isDisabled={disable()}
-                onChange={(e) => {
-                  const valor = e.target.value;
-                  const dt = { codg: valor };
-                  handleAdd(dt, Id);
-                }}
-              />
+            <Td px={2} py={2} textAlign={'center'}>
+              {codig()}
             </Td>
             <Td px={2} py={2}>
               <Input
@@ -200,7 +209,6 @@ export default function Proposta() {
                 _hover={{
                   borderColor: 'whatsapp.600',
                 }}
-                isDisabled={disable()}
                 onChange={(e) => {
                   const valor = e.target.value;
                   const dt = { unid: valor };
@@ -221,7 +229,6 @@ export default function Proposta() {
                 _hover={{
                   borderColor: 'whatsapp.600',
                 }}
-                isDisabled={disable()}
                 onChange={(e) => {
                   const valor = e.target.value;
                   const dt = { desconto: valor };
@@ -232,7 +239,7 @@ export default function Proposta() {
             <Td textAlign={'center'}>{i.vFinal}</Td>
             <Td textAlign={'center'}>{total()}</Td>
             <Td>
-              <Button isDisabled={disable()} onClick={remove}>
+              <Button onClick={remove}>
                 <BsTrash />
               </Button>
             </Td>
@@ -249,9 +256,12 @@ export default function Proposta() {
     setItens(filterItens);
   };
 
-  const SalvarProdutos = async (ListItens: any, cnpj: number) => {
-    const data = {
+  const SalvarProdutos = async () => {
+    const data: any = {
       empresa: cnpj,
+      periodo: date,
+      vendedor: session.user.name,
+      responsavel: responsavel,
       itens: ListItens,
     };
     const url = '/api/query/post/proposta';
@@ -264,6 +274,7 @@ export default function Proposta() {
       .then((resp) => console.log(resp))
       .catch((err) => console.log(err));
   };
+  console.log(Produtos);
 
   if (loading) {
     return <Loading size="200px">Carregando...</Loading>;
@@ -326,8 +337,8 @@ export default function Proposta() {
               fontSize="xs"
               rounded="md"
               placeholder="Selecione uma Empresa"
-              onChange={(e) => setSearch(e.target.value)}
-              value={search}
+              onChange={(e) => setDate(e.target.value)}
+              value={date}
             />
           </Box>
           <Box>
@@ -349,8 +360,8 @@ export default function Proposta() {
               fontSize="xs"
               rounded="md"
               placeholder="Selecione uma Empresa"
-              // onChange={(e) => setSearch(e.target.value)}
-              // value={search}
+              onChange={(e) => setResponsavel(e.target.value)}
+              value={responsavel}
             />
           </Box>
         </Box>
@@ -439,7 +450,9 @@ export default function Proposta() {
           <chakra.p>
             Total de itens: {ListItens.length === 0 ? '' : ListItens.length}
           </chakra.p>
-          <Button colorScheme={'whatsapp'}>Salvar Proposta</Button>
+          <Button colorScheme={'whatsapp'} onClick={SalvarProdutos}>
+            Salvar Proposta
+          </Button>
         </Box>
       </Flex>
     </>

@@ -11,7 +11,6 @@
   "browser": {
     "html-pdf": false
   },
-  
   "dependencies": {
     "@chakra-ui/icons": "^1.0.15",
     "@chakra-ui/react": "^2.3.4",
@@ -34,7 +33,7 @@
     "prop-types": "^15.8.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-icons": "^3.10.0",
+    "react-icons": "^3.11.0",
     "react-markdown": "^6.0.2",
     "remask": "^0.1.0-alpha.5",
     "xml": "^1.0.1",

@@ -214,7 +214,7 @@ export default function CardEmpresaRibermax() {
       </Box>
     );
   });
-  const display = !dados ? null : render;
+  const display = !dados ? '' : render;
   return (
     <>
       <Box h={'95%'}>{display}</Box>

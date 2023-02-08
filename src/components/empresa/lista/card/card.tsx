@@ -19,6 +19,7 @@ export default function CardEmpresa() {
       .then((resp) => resp.json())
       .then((json) => {
         setDados(json);
+        console.log(json);
       });
   };
 
@@ -261,7 +262,7 @@ export default function CardEmpresa() {
       </Box>
     );
   });
-  const display = !dados ? null : render;
+  const display = !dados ? '' : render;
   return (
     <>
       <Box h={'95%'}>{display}</Box>

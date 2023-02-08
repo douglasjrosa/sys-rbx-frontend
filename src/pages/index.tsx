@@ -9,6 +9,7 @@ export default function Painel() {
     <>
       <h1>Painel</h1>
       <pre>{session && JSON.stringify(session, null, 2)}</pre>
+      <pre>{session && JSON.stringify(session.user.name, null, 2)}</pre>
       <pre>{JSON.stringify(status, null, 2)}</pre>
       <pre>{JSON.stringify(JSON.parse(Token), null, 2)}</pre>
     </>

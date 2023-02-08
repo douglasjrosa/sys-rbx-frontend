@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function GetEmpresa(
@@ -30,19 +31,26 @@ export default async function GetEmpresa(
     });
     const respostaDb = await db.json();
     const Db = respostaDb.data;
-    const DbData = Db.map((item: { attributes: { fantasia: any; CNPJ: any; }; })=>{
-      return{
-        nome: item.attributes.fantasia,
-        CNPJ: item.attributes.CNPJ
-      }
-    })
+    const DbData = !Db
+      ? null
+      : Db.map((item: { attributes: { fantasia: any; CNPJ: any } }) => {
+          return {
+            nome: item.attributes.fantasia,
+            CNPJ: item.attributes.CNPJ,
+          };
+        });
 
-
-    const retorno = [...DbData,...RibermaxData]
-
-    console.log(retorno);
-    return res.status(200).json(retorno)
-
+    if (DbData === null) {
+      const retorno = RibermaxData;
+      return res.status(200).json(retorno);
+    }
+    if (RibermaxData.length === 0) {
+      const retorno = DbData;
+      return res.status(200).json(retorno);
+    } else {
+      const retorno = RibermaxData.concat(DbData);
+      return res.status(200).json(retorno);
+    }
   } else {
     return res.status(405).send({ message: 'Only GET requests are allowed' });
   }
