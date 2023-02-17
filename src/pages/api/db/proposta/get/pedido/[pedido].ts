@@ -6,19 +6,22 @@ export default async function GetEmpresa(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method === 'PUT') {
-    const id = req.query;
+  if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN;
+    const { pedido } = req.query;
 
     await axios({
-      method: 'PUT',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/empresas/' + id,
+      method: 'GET',
+      url:
+        process.env.NEXT_PUBLIC_STRAPI_API_URL +
+        '/pedidos?populate=*&filters[nPedido][$eq]=' +
+        pedido,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
-      .then((Response) => {
+      .then(async (Response) => {
         res.status(200).json(Response.data);
       })
       .catch((err) => {
