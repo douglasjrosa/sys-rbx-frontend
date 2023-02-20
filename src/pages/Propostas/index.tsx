@@ -31,7 +31,6 @@ import { BsTrash } from 'react-icons/bs';
 import { DateIso } from '../../components/data/Date';
 import Loading from '../../components/elements/loading';
 import { useSession } from 'next-auth/react';
-import { number } from 'yup';
 
 const tempo = DateIso;
 
@@ -145,6 +144,7 @@ export default function Proposta() {
           );
           resposta.total = valor.toFixed(2);
           resposta.expo = false;
+          resposta.Qtd = 1;
           resposta.mont = false;
           const intero = [...ListItens, resposta];
           setItens(intero);
@@ -159,6 +159,7 @@ export default function Proposta() {
             resposta.vFinal.replace('.', '').replace(',', '.'),
           );
           resposta.total = valor.toFixed(2);
+          resposta.Qtd = 1;
           resposta.expo = false;
           resposta.mont = false;
           setItens([resposta]);
@@ -185,7 +186,7 @@ export default function Proposta() {
     const resp = ListItens.map((i, x) => {
       const Id = i.prodId;
       const remove = () => {
-        DelPrudutos(i.id);
+        DelPrudutos(i.id, i.total);
       };
 
       const valor2Original = i.vFinal.replace('.', '');
@@ -208,12 +209,14 @@ export default function Proposta() {
           const multplica = valor2 * valor1;
           return multplica.toFixed(2);
         }
-        if (i.mont === true && i.expo === false) {
-          const valor1: number = i.Qtd;
-          const valor2: number = ValorGeral * 1.1;
-          const multplica = valor2 * valor1;
-          return multplica.toFixed(2);
-        }
+        // if (i.mont === false && i.expo === false) {
+        //   const valor1: number = i.Qtd;
+        //   const valor2Original = i.vFinal.replace('.', '');
+        //   const ValorProd = Number(valor2Original.replace(',', '.'));
+        //   const valor2: number = ValorProd * 0.05;
+        //   const multplica = valor2 * valor1;
+        //   return multplica.toFixed(2);
+        // }
         if (i.mont === true && i.expo === true) {
           const valor1: number = i.Qtd;
           const valor2: number = ValorGeral * 1.2;
@@ -313,9 +316,10 @@ export default function Proposta() {
                     const total = ListItens.map((i) => i.total).reduce(
                       (acc, valorAtual) => acc + valorAtual,
                     );
+                    setTotalGeral(total);
                   }
-                  setTotalGeral(total);
                   const filter = paymentExpiration.filter((f) => f.id === i.id);
+                  console.log(filter);
                   if (filter.length === 0) {
                     const dt2 = { id: i.id, desconto: desc };
                     setPaymentExpiration([dt2]);
@@ -327,16 +331,18 @@ export default function Proposta() {
                       ),
                     );
                   }
-                  if (paymentExpiration.length === 1) {
-                    const [total] = paymentExpiration.map((i) => i.desconto);
-                    setDesconto(total);
-                  }
-                  if (paymentExpiration.length > 1) {
-                    const total = paymentExpiration
-                      .map((i) => i.desconto)
-                      .reduce((acc, valorAtual) => acc + valorAtual);
-                    setDesconto(total);
-                  }
+                  setTimeout(() => {
+                    if (paymentExpiration.length === 1) {
+                      const [total] = paymentExpiration.map((i) => i.desconto);
+                      setDesconto(total);
+                    }
+                    if (paymentExpiration.length > 1) {
+                      const total = paymentExpiration
+                        .map((i) => i.desconto)
+                        .reduce((acc, valorAtual) => acc + valorAtual);
+                      setDesconto(total);
+                    }
+                  }, 150);
                   handleAdd(dt, i.id);
                 }}
                 value={total()}
@@ -353,9 +359,26 @@ export default function Proposta() {
     });
     return resp;
   };
-  const DelPrudutos = (x: any) => {
+  const DelPrudutos = (x: any, total: any) => {
     const filterItens = ListItens.filter((i) => i.id !== x);
     setItens(filterItens);
+    setTimeout(() => {
+      console.log(ListItens);
+      console.log(ListItens.length);
+      if (ListItens.length === 0 || ListItens === undefined) {
+        setTotalGeral(null);
+      }
+      if (ListItens.length === 1) {
+        const [total] = ListItens.map((i) => total);
+        setTotalGeral(total);
+      }
+      if (ListItens.length > 1) {
+        const total = ListItens.map((i) => total).reduce(
+          (acc, valorAtual) => acc + valorAtual,
+        );
+        setTotalGeral(total);
+      }
+    }, 200);
   };
 
   const SalvarProdutos = async () => {
@@ -478,7 +501,7 @@ export default function Proposta() {
     );
   };
 
-  console.log(totalGeral);
+  console.log(desconto);
 
   return (
     <>
@@ -767,7 +790,12 @@ export default function Proposta() {
             <chakra.p>Frete: {freteCifMask}</chakra.p>
             <chakra.p>Desconto: {!desconto ? 'R$ 0,00' : desconto}</chakra.p>
             <chakra.p>
-              Valor Total: {!totalGeral ? 'R$ 0,00' : totalGeral}
+              Valor Total:{' '}
+              {!totalGeral
+                ? 'R$ 0,00'
+                : totalGeral === 0
+                ? 'R$ 0,00'
+                : totalGeral}
             </chakra.p>
           </Flex>
           <Button colorScheme={'whatsapp'} onClick={SalvarProdutos}>

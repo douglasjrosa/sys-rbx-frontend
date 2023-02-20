@@ -48,7 +48,7 @@ export default async function GetEmpresa(
       const retorno = DbData;
       return res.status(200).json(retorno);
     } else {
-      const retorno = RibermaxData.concat(DbData);
+      const retorno = [...DbData, ...RibermaxData];
       return res.status(200).json(retorno);
     }
   } else {
