@@ -31,6 +31,7 @@ import { BsTrash } from 'react-icons/bs';
 import { DateIso } from '../../components/data/Date';
 import Loading from '../../components/elements/loading';
 import { useSession } from 'next-auth/react';
+import { any } from 'prop-types';
 
 const tempo = DateIso;
 
@@ -54,7 +55,7 @@ export default function Proposta() {
   const [tipoprazo, setTipoPrazo] = useState('');
   const [totalGeral, setTotalGeral] = useState([]);
   const [totalGeralM, setTotalGeralM] = useState('');
-  const [desconto, setDesconto] = useState([]);
+  const [Desconto, setDesconto] = useState([]);
   const [descontoM, setDescontoM] = useState('');
   const [paymentExpiration, setPaymentExpiration] = useState([]);
   const toast = useToast();
@@ -146,14 +147,41 @@ export default function Proposta() {
           resposta.total = ValorGeral.toFixed(2);
           resposta.expo = false;
           resposta.mont = false;
+          const descont = prazo === 'Antecipado' ? valor * 0.05 : 0;
+          const somaDescontMin = parseInt(descont.toFixed(2));
+          const TotalDesc = valor - somaDescontMin;
           const intero = [...ListItens, resposta];
           setItens(intero);
           setLoadingTable(false);
           const totaldata = [
             ...totalGeral,
-            { id: resposta.id, total: resposta.total },
+            { id: resposta.id, total: TotalDesc },
           ];
           setTotalGeral(totaldata);
+
+          const descontodata = [
+            ...Desconto,
+            { id: resposta.id, desconto: somaDescontMin },
+          ];
+          setDesconto(descontodata);
+          setTimeout(() => {
+            const descontoA = Desconto.reduce(
+              (acc: any, i: any) => acc + i.desconto,
+              0,
+            ).toLocaleString('pt-br', {
+              style: 'currency',
+              currency: 'BRL',
+            });
+            setDescontoM(descontoA);
+
+            const TotalA = totalGeral
+              .reduce((acc, i) => acc + i.total, 0)
+              .toLocaleString('pt-br', {
+                style: 'currency',
+                currency: 'BRL',
+              });
+            setTotalGeralM(TotalA);
+          }, 350);
         } else {
           resposta.id = 1;
           const valor = Number(
@@ -163,10 +191,27 @@ export default function Proposta() {
           resposta.total = ValorGeral.toFixed(2);
           resposta.expo = false;
           resposta.mont = false;
+          const descont = prazo === 'Antecipado' ? valor * 0.05 : 0;
+          const somaDescontMin = parseInt(descont.toFixed(2));
+          const TotalDesc = valor - somaDescontMin;
           setItens([resposta]);
           setLoadingTable(false);
-          const totaldata = [{ id: resposta.id, total: resposta.total }];
+          const totaldata = [{ id: resposta.id, total: TotalDesc }];
           setTotalGeral(totaldata);
+          const descontodata = [{ id: resposta.id, desconto: somaDescontMin }];
+          setDesconto(descontodata);
+          setTotalGeralM(
+            TotalDesc.toLocaleString('pt-br', {
+              style: 'currency',
+              currency: 'BRL',
+            }),
+          );
+          setDescontoM(
+            somaDescontMin.toLocaleString('pt-br', {
+              style: 'currency',
+              currency: 'BRL',
+            }),
+          );
         }
         setItenId('');
       })
@@ -184,43 +229,66 @@ export default function Proposta() {
     });
   };
 
-  const GetTotal = (id: number, total: number) => {
-    const FilterTotal = totalGeral.filter((item) => item.id === id);
-    if (FilterTotal.length !== 0) {
+  const GetTotal = (id: any, total: any) => {
+    console.log('entrou aki' + id + ',' + total);
+    const FilterTotal = totalGeral.filter((item: any) => item.id === id);
+    if (FilterTotal.length > 1) {
       setTotalGeral(
-        totalGeral.map((f) => (f.id === id ? { ...f, total: total } : f)),
+        totalGeral.map((f: any) => (f.id === id ? { ...f, total: total } : f)),
       );
-    } else {
+      setTimeout(() => {
+        const TotalA = totalGeral
+          .reduce((acc, i) => acc + i.total, 0)
+          .toLocaleString('pt-br', {
+            style: 'currency',
+            currency: 'BRL',
+          });
+        setTotalGeralM(TotalA);
+      }, 150);
+    }
+    if (FilterTotal.length === 1) {
+      console.log('aki');
       setTotalGeral([{ id: id, total: total }]);
+      const TotalA = total.toLocaleString('pt-br', {
+        style: 'currency',
+        currency: 'BRL',
+      });
+      setTotalGeralM(TotalA);
     }
   };
 
-  const GetDesconto = (id: number, desconto: number) => {
-    const FilterDesconto = totalGeral.filter((item) => item.id === id);
+  const GetDesconto = (id: any, desconto: any) => {
+    const FilterDesconto = Desconto.filter((item: any) => item.id === id);
 
     if (FilterDesconto.length !== 0) {
       setDesconto(
-        desconto.map((f) =>
-          f.id === i.id ? { ...f, desconto: desconto } : f,
+        Desconto.map((f: any) =>
+          f.id === id ? { ...f, desconto: desconto } : f,
         ),
       );
+      setTimeout(() => {
+        const descontoA = Desconto.reduce(
+          (acc: any, i: any) => acc + i.desconto,
+          0,
+        ).toLocaleString('pt-br', {
+          style: 'currency',
+          currency: 'BRL',
+        });
+        setDescontoM(descontoA);
+      }, 150);
+    } else {
+      setDesconto([{ id: id, desconto: desconto }]);
+      setTimeout(() => {
+        const descontoA = Desconto.reduce(
+          (acc: any, i: any) => acc + i.desconto,
+          0,
+        ).toLocaleString('pt-br', {
+          style: 'currency',
+          currency: 'BRL',
+        });
+        setDescontoM(descontoA);
+      }, 150);
     }
-    setTimeout(() => {
-      const TotalA = totalGeral
-        .reduce((acc, i) => acc + i.total, 0)
-        .toLocaleString('pt-br', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-      const descontoA = desconto
-        .reduce((acc, i) => acc + i.desconto, 0)
-        .toLocaleString('pt-br', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-      setDescontoM(descontoA);
-      setTotalGeralM(TotalA);
-    }, 150);
   };
 
   const lista = () => {
@@ -232,7 +300,8 @@ export default function Proposta() {
 
       const valor2Original = i.vFinal.replace('.', '');
       const ValorProd = Number(valor2Original.replace(',', '.'));
-      const desc = prazo === 'Antecipado' ? ValorProd * 0.05 : 0;
+      const somaDescont = ValorProd * i.Qtd;
+      const somaDescontMin = parseInt(somaDescont.toFixed(2));
 
       if (!i.Qtd) {
         i.Qtd = 1;
@@ -255,7 +324,8 @@ export default function Proposta() {
         const somaAcrescimo =
           acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
         const somaDescont = descont * i.Qtd;
-        const TotalItem = somaAcrescimo - somaDescont;
+        const somaDescontMin = parseInt(somaDescont.toFixed(2));
+        const TotalItem = somaAcrescimo - somaDescontMin;
         return TotalItem;
       };
 
@@ -290,6 +360,9 @@ export default function Proposta() {
                 onChange={(e) => {
                   const valor = e.target.value;
                   const dt = { Qtd: valor };
+                  const ValorSubT = total();
+                  GetTotal(i.id, ValorSubT);
+                  if (prazo === 'Antecipado') GetDesconto(i.id, somaDescontMin);
                   handleAdd(dt, i.id);
                 }}
               />
@@ -304,6 +377,9 @@ export default function Proposta() {
                 px="3"
                 onChange={(e) => {
                   const valor = e.target.checked;
+                  const ValorSubT = total();
+                  GetTotal(i.id, ValorSubT);
+                  if (prazo === 'Antecipado') GetDesconto(i.id, somaDescontMin);
                   const dt = { mont: valor };
                   handleAdd(dt, i.id);
                 }}
@@ -316,6 +392,9 @@ export default function Proposta() {
                 px="3"
                 onChange={(e) => {
                   const valor = e.target.checked;
+                  const ValorSubT = total();
+                  GetTotal(i.id, ValorSubT);
+                  if (prazo === 'Antecipado') GetDesconto(i.id, somaDescontMin);
                   const dt = { expo: valor };
                   handleAdd(dt, i.id);
                 }}
@@ -338,6 +417,11 @@ export default function Proposta() {
                   const valor = e.target.value;
                   const dt = { total: valor };
                   handleAdd(dt, i.id);
+                  // if (totalGeral.length === 1) {
+                  //   const [itens] = totalGeral;
+                  //   const valor = itens.Valor;
+                  // }
+                  // setTotalGeralM();
                 }}
                 value={total()}
               />
@@ -494,6 +578,9 @@ export default function Proposta() {
       </>
     );
   };
+
+  console.log(totalGeralM);
+  console.log(totalGeral);
 
   return (
     <>
@@ -780,8 +867,12 @@ export default function Proposta() {
               Total de itens: {ListItens.length === 0 ? '' : ListItens.length}
             </chakra.p>
             <chakra.p>Frete: {freteCifMask}</chakra.p>
-            <chakra.p>Desconto: {!desconto ? 'R$ 0,00' : descontoM}</chakra.p>
-            <chakra.p>Valor Total: {totalGeralM}</chakra.p>
+            <chakra.p>
+              Desconto: {Desconto.length === 0 ? 'R$ 0,00' : descontoM}
+            </chakra.p>
+            <chakra.p>
+              Valor Total: {totalGeral.length === 0 ? 'R$ 0,00' : totalGeralM}
+            </chakra.p>
           </Flex>
           <Button colorScheme={'whatsapp'} onClick={SalvarProdutos}>
             Salvar Proposta
