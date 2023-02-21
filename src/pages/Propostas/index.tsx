@@ -20,9 +20,6 @@ import {
   Tr,
   useToast,
   Checkbox,
-  ListItem,
-  Center,
-  WrapItem,
   Spinner,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
@@ -31,7 +28,6 @@ import { BsTrash } from 'react-icons/bs';
 import { DateIso } from '../../components/data/Date';
 import Loading from '../../components/elements/loading';
 import { useSession } from 'next-auth/react';
-import { any } from 'prop-types';
 
 const tempo = DateIso;
 
@@ -100,34 +96,6 @@ export default function Proposta() {
     })();
   }, []);
 
-  const ConsultProd = async () => {
-    // setLoading(true);
-    const url = '/api/query/get/produto/cnpj/' + cnpj;
-    await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(email),
-    })
-      .then((resp) => resp.json())
-      .then((resposta) => {
-        const retonoIdeal = resposta.status === false ? [] : resposta;
-        SetProdutos(retonoIdeal);
-        if (resposta.status !== false) {
-          setLoading(false);
-        }
-        if (resposta.status === false) {
-          toast({
-            title: 'opss.',
-            description: 'Esta empresa não possui produtos.',
-            status: 'warning',
-            duration: 9000,
-            isClosable: true,
-          });
-          setLoading(false);
-        }
-      })
-      .catch((err) => console.log(err));
-  };
-
   const addItens = async () => {
     setLoadingTable(true);
     const url = '/api/query/get/produto/id/' + itenId;
@@ -138,84 +106,146 @@ export default function Proposta() {
       .then((resp) => resp.json())
       .then((resposta) => {
         if (ListItens.length !== 0) {
-          const maxSum = Math.max(...ListItens.map((obj) => obj.id + 1));
+          const maxSum = Math.max(...ListItens.map((obj: any) => obj.id + 1));
           resposta.id = maxSum;
-          const valor = Number(
+          const valor1 = Number(
             resposta.vFinal.replace('.', '').replace(',', '.'),
           );
-          const ValorGeral = valor;
-          resposta.total = ValorGeral.toFixed(2);
+          const ValorGeral = valor1;
+          const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
+          resposta.total =
+            Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
           resposta.expo = false;
           resposta.mont = false;
+          resposta.Qtd = 1;
           const descont = prazo === 'Antecipado' ? valor * 0.05 : 0;
-          const somaDescontMin = parseInt(descont.toFixed(2));
+          const somaDescontMin =
+            Math.round(parseFloat(descont.toFixed(2)) * 100) / 100;
           const TotalDesc = valor - somaDescontMin;
-          const intero = [...ListItens, resposta];
-          setItens(intero);
-          setLoadingTable(false);
-          const totaldata = [
-            ...totalGeral,
-            { id: resposta.id, total: TotalDesc },
-          ];
-          setTotalGeral(totaldata);
-
-          const descontodata = [
-            ...Desconto,
-            { id: resposta.id, desconto: somaDescontMin },
-          ];
-          setDesconto(descontodata);
+          const retorno = {
+            ...resposta,
+            desconto: somaDescontMin,
+            total: TotalDesc,
+          };
+          setItens(
+            ListItens.map((f) => {
+              f.expo = false;
+              f.mont = false;
+              f.Qtd = 1;
+              const data = { ...f };
+              return data;
+            }),
+          );
           setTimeout(() => {
-            const descontoA = Desconto.reduce(
-              (acc: any, i: any) => acc + i.desconto,
-              0,
-            ).toLocaleString('pt-br', {
-              style: 'currency',
-              currency: 'BRL',
-            });
-            setDescontoM(descontoA);
-
-            const TotalA = totalGeral
-              .reduce((acc, i) => acc + i.total, 0)
-              .toLocaleString('pt-br', {
-                style: 'currency',
-                currency: 'BRL',
-              });
-            setTotalGeralM(TotalA);
-          }, 350);
+            const ListaRetorno = [...ListItens, retorno];
+            setItens(ListaRetorno);
+            setLoadingTable(false);
+          }, 50);
         } else {
           resposta.id = 1;
-          const valor = Number(
+          const valor1 = Number(
             resposta.vFinal.replace('.', '').replace(',', '.'),
           );
-          const ValorGeral = valor;
-          resposta.total = ValorGeral.toFixed(2);
+          const ValorGeral = valor1;
+          const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
+          resposta.total =
+            Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
           resposta.expo = false;
           resposta.mont = false;
+          resposta.Qtd = 1;
           const descont = prazo === 'Antecipado' ? valor * 0.05 : 0;
-          const somaDescontMin = parseInt(descont.toFixed(2));
+          const somaDescontMin =
+            Math.round(parseFloat(descont.toFixed(2)) * 100) / 100;
           const TotalDesc = valor - somaDescontMin;
-          setItens([resposta]);
+          const retorno = {
+            ...resposta,
+            desconto: somaDescontMin,
+            total: TotalDesc,
+          };
+          const ListaRetorno = [retorno];
+          setItens(ListaRetorno);
           setLoadingTable(false);
-          const totaldata = [{ id: resposta.id, total: TotalDesc }];
-          setTotalGeral(totaldata);
-          const descontodata = [{ id: resposta.id, desconto: somaDescontMin }];
-          setDesconto(descontodata);
-          setTotalGeralM(
-            TotalDesc.toLocaleString('pt-br', {
-              style: 'currency',
-              currency: 'BRL',
-            }),
-          );
-          setDescontoM(
-            somaDescontMin.toLocaleString('pt-br', {
-              style: 'currency',
-              currency: 'BRL',
-            }),
-          );
         }
-        setItenId('');
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoadingTable(false);
+        toast({
+          title: 'opss.',
+          description: err,
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+        });
+      });
+  };
+
+  useEffect(() => {
+    setTotalGeralM(TotalGreal());
+    setDescontoM(DescontoGeral());
+  }, [ListItens]);
+
+  useEffect(() => {
+    if (ListItens.length > 0 && prazo === 'Antecipado') {
+      setItens(
+        ListItens.map((f) => {
+          const valor = Number(f.vFinal.replace('.', '').replace(',', '.'));
+          const ValorGeral =
+            Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
+          const descont = ValorGeral * 0.05;
+          const somaDescontMin =
+            Math.round(parseFloat(descont.toFixed(2)) * 100) / 100;
+          const TotalDesc = ValorGeral - somaDescontMin;
+          f.total = TotalDesc;
+          f.desconto = somaDescontMin;
+          const data = { ...f };
+          return data;
+        }),
+      );
+    } else {
+      setItens(
+        ListItens.map((f) => {
+          const valor = Number(f.vFinal.replace('.', '').replace(',', '.'));
+          const ValorGeral =
+            Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
+          f.total = ValorGeral;
+          f.desconto = 0;
+          const data = { ...f };
+          return data;
+        }),
+      );
+    }
+  }, [prazo]);
+
+  const ConsultProd = async () => {
+    const url = '/api/query/get/produto/cnpj/' + cnpj;
+    await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(email),
+    })
+      .then((resp) => resp.json())
+      .then((resposta) => {
+        const retonoIdeal = resposta.length === 0 ? false : true;
+        if (retonoIdeal) {
+          SetProdutos(resposta);
+        } else {
+          toast({
+            title: 'opss.',
+            description: 'Esta empresa não possui produtos.',
+            status: 'warning',
+            duration: 9000,
+            isClosable: true,
+          });
+        }
       })
       .catch((err) => console.log(err));
+  };
+
+  const DelPrudutos = (x: any) => {
+    setLoadingTable(true);
+    const filterItens = ListItens.filter((i) => i.id !== x);
+    setItens(filterItens);
+    setLoadingTable(false);
   };
 
   const handleAdd = (Obj: any, id: number) => {
@@ -229,235 +259,140 @@ export default function Proposta() {
     });
   };
 
-  const GetTotal = (id: any, total: any) => {
-    console.log('entrou aki' + id + ',' + total);
-    const FilterTotal = totalGeral.filter((item: any) => item.id === id);
-    if (FilterTotal.length > 1) {
-      setTotalGeral(
-        totalGeral.map((f: any) => (f.id === id ? { ...f, total: total } : f)),
-      );
-      setTimeout(() => {
-        const TotalA = totalGeral
-          .reduce((acc, i) => acc + i.total, 0)
-          .toLocaleString('pt-br', {
-            style: 'currency',
-            currency: 'BRL',
-          });
-        setTotalGeralM(TotalA);
-      }, 150);
-    }
-    if (FilterTotal.length === 1) {
-      console.log('aki');
-      setTotalGeral([{ id: id, total: total }]);
-      const TotalA = total.toLocaleString('pt-br', {
-        style: 'currency',
-        currency: 'BRL',
-      });
-      setTotalGeralM(TotalA);
-    }
-  };
+  const TableItens =
+    ListItens.length === 0
+      ? null
+      : ListItens.map((i, x) => {
+          const Id = i.prodId;
+          const remove = () => {
+            DelPrudutos(i.id);
+          };
 
-  const GetDesconto = (id: any, desconto: any) => {
-    const FilterDesconto = Desconto.filter((item: any) => item.id === id);
+          const valor2Original = i.vFinal.replace('.', '');
+          const ValorProd = Number(valor2Original.replace(',', '.'));
+          const somaDescont = ValorProd * i.Qtd;
+          const somaDescontMin = parseInt(somaDescont.toFixed(2));
 
-    if (FilterDesconto.length !== 0) {
-      setDesconto(
-        Desconto.map((f: any) =>
-          f.id === id ? { ...f, desconto: desconto } : f,
-        ),
-      );
-      setTimeout(() => {
-        const descontoA = Desconto.reduce(
-          (acc: any, i: any) => acc + i.desconto,
-          0,
-        ).toLocaleString('pt-br', {
-          style: 'currency',
-          currency: 'BRL',
+          if (!i.Qtd) {
+            i.Qtd = 1;
+          }
+
+          const total = () => {
+            if (i.Qtd === 1) {
+              return i.total;
+            }
+            const ValorOriginal = ValorProd;
+            const acrec =
+              i.mont === true && i.expo === true
+                ? 1.2
+                : i.expo === true && i.mont === false
+                ? 1.1
+                : i.expo === false && i.mont === true
+                ? 1.1
+                : 0;
+            const descont = prazo === 'Antecipado' ? ValorOriginal * 0.05 : 0;
+            const somaAcrescimo =
+              acrec === 0
+                ? ValorOriginal * i.Qtd
+                : ValorOriginal * acrec * i.Qtd;
+            const somaDescont = descont * i.Qtd;
+            const somaDescontMin = parseInt(somaDescont.toFixed(2));
+            const TotalItem = somaAcrescimo - somaDescontMin;
+            return TotalItem;
+          };
+
+          const codig = () => {
+            if (!i.codg || i.codg === '') {
+              const dt = { codg: Id };
+              handleAdd(dt, i.id);
+              return Id;
+            }
+            return Id;
+          };
+
+          return (
+            <>
+              <Tr h={3} key={i.id}>
+                <Td isNumeric>{x + 1}</Td>
+                <Td>{i.nomeProd}</Td>
+                <Td textAlign={'center'}>{codig()}</Td>
+                <Td px={12}>
+                  <Input
+                    type={'text'}
+                    size="xs"
+                    w="2.9rem"
+                    me={0}
+                    borderColor="whatsapp.600"
+                    rounded="md"
+                    focusBorderColor="whatsapp.400"
+                    _hover={{
+                      borderColor: 'whatsapp.600',
+                    }}
+                    maxLength={4}
+                    onChange={(e) => {
+                      const valor = e.target.value;
+                      const dt = { Qtd: valor };
+                      handleAdd(dt, i.id);
+                    }}
+                  />
+                </Td>
+                <Td textAlign={'center'}>{i.altura}</Td>
+                <Td textAlign={'center'}>{i.largura}</Td>
+                <Td textAlign={'center'}>{i.comprimento}</Td>
+                <Td>
+                  <Checkbox
+                    borderColor="whatsapp.600"
+                    rounded="md"
+                    px="3"
+                    onChange={(e) => {
+                      const valor = e.target.checked;
+                      const dt = { mont: valor };
+                      handleAdd(dt, i.id);
+                    }}
+                  />
+                </Td>
+                <Td>
+                  <Checkbox
+                    borderColor="whatsapp.600"
+                    rounded="md"
+                    px="3"
+                    onChange={(e) => {
+                      const valor = e.target.checked;
+                      const dt = { expo: valor };
+                      handleAdd(dt, i.id);
+                    }}
+                  />
+                </Td>
+                <Td textAlign={'center'}>{i.vFinal}</Td>
+                <Td>
+                  R$ {''}
+                  <Input
+                    type={'text'}
+                    size="xs"
+                    borderColor="whatsapp.600"
+                    rounded="md"
+                    w="16"
+                    focusBorderColor="whatsapp.400"
+                    _hover={{
+                      borderColor: 'whatsapp.600',
+                    }}
+                    onChange={(e) => {
+                      const valor = e.target.value;
+                      const dt = { total: valor };
+                      handleAdd(dt, i.id);
+                    }}
+                    value={total()}
+                  />
+                </Td>
+                <Td>
+                  <Button onClick={remove}>
+                    <BsTrash />
+                  </Button>
+                </Td>
+              </Tr>
+            </>
+          );
         });
-        setDescontoM(descontoA);
-      }, 150);
-    } else {
-      setDesconto([{ id: id, desconto: desconto }]);
-      setTimeout(() => {
-        const descontoA = Desconto.reduce(
-          (acc: any, i: any) => acc + i.desconto,
-          0,
-        ).toLocaleString('pt-br', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-        setDescontoM(descontoA);
-      }, 150);
-    }
-  };
-
-  const lista = () => {
-    const resp = ListItens.map((i, x) => {
-      const Id = i.prodId;
-      const remove = () => {
-        DelPrudutos(i.id, i.total);
-      };
-
-      const valor2Original = i.vFinal.replace('.', '');
-      const ValorProd = Number(valor2Original.replace(',', '.'));
-      const somaDescont = ValorProd * i.Qtd;
-      const somaDescontMin = parseInt(somaDescont.toFixed(2));
-
-      if (!i.Qtd) {
-        i.Qtd = 1;
-      }
-
-      const total = () => {
-        if (!i.Qtd || i.Qtd === '') {
-          return i.total;
-        }
-        const ValorOriginal = ValorProd;
-        const acrec =
-          i.mont === true && i.expo === true
-            ? 1.2
-            : i.expo === true && i.mont === false
-            ? 1.1
-            : i.expo === false && i.mont === true
-            ? 1.1
-            : 0;
-        const descont = prazo === 'Antecipado' ? ValorOriginal * 0.05 : 0;
-        const somaAcrescimo =
-          acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
-        const somaDescont = descont * i.Qtd;
-        const somaDescontMin = parseInt(somaDescont.toFixed(2));
-        const TotalItem = somaAcrescimo - somaDescontMin;
-        return TotalItem;
-      };
-
-      const codig = () => {
-        if (!i.codg || i.codg === '') {
-          const dt = { codg: Id };
-          handleAdd(dt, i.id);
-          return Id;
-        }
-        return Id;
-      };
-
-      return (
-        <>
-          <Tr h={3} key={i.id}>
-            <Td isNumeric>{x + 1}</Td>
-            <Td>{i.nomeProd}</Td>
-            <Td textAlign={'center'}>{codig()}</Td>
-            <Td px={12}>
-              <Input
-                type={'text'}
-                size="xs"
-                w="2.9rem"
-                me={0}
-                borderColor="whatsapp.600"
-                rounded="md"
-                focusBorderColor="whatsapp.400"
-                _hover={{
-                  borderColor: 'whatsapp.600',
-                }}
-                maxLength={4}
-                onChange={(e) => {
-                  const valor = e.target.value;
-                  const dt = { Qtd: valor };
-                  const ValorSubT = total();
-                  GetTotal(i.id, ValorSubT);
-                  if (prazo === 'Antecipado') GetDesconto(i.id, somaDescontMin);
-                  handleAdd(dt, i.id);
-                }}
-              />
-            </Td>
-            <Td textAlign={'center'}>{i.altura}</Td>
-            <Td textAlign={'center'}>{i.largura}</Td>
-            <Td textAlign={'center'}>{i.comprimento}</Td>
-            <Td>
-              <Checkbox
-                borderColor="whatsapp.600"
-                rounded="md"
-                px="3"
-                onChange={(e) => {
-                  const valor = e.target.checked;
-                  const ValorSubT = total();
-                  GetTotal(i.id, ValorSubT);
-                  if (prazo === 'Antecipado') GetDesconto(i.id, somaDescontMin);
-                  const dt = { mont: valor };
-                  handleAdd(dt, i.id);
-                }}
-              />
-            </Td>
-            <Td>
-              <Checkbox
-                borderColor="whatsapp.600"
-                rounded="md"
-                px="3"
-                onChange={(e) => {
-                  const valor = e.target.checked;
-                  const ValorSubT = total();
-                  GetTotal(i.id, ValorSubT);
-                  if (prazo === 'Antecipado') GetDesconto(i.id, somaDescontMin);
-                  const dt = { expo: valor };
-                  handleAdd(dt, i.id);
-                }}
-              />
-            </Td>
-            <Td textAlign={'center'}>{i.vFinal}</Td>
-            <Td>
-              R$ {''}
-              <Input
-                type={'text'}
-                size="xs"
-                borderColor="whatsapp.600"
-                rounded="md"
-                w="16"
-                focusBorderColor="whatsapp.400"
-                _hover={{
-                  borderColor: 'whatsapp.600',
-                }}
-                onChange={(e) => {
-                  const valor = e.target.value;
-                  const dt = { total: valor };
-                  handleAdd(dt, i.id);
-                  // if (totalGeral.length === 1) {
-                  //   const [itens] = totalGeral;
-                  //   const valor = itens.Valor;
-                  // }
-                  // setTotalGeralM();
-                }}
-                value={total()}
-              />
-            </Td>
-            <Td>
-              <Button onClick={remove}>
-                <BsTrash />
-              </Button>
-            </Td>
-          </Tr>
-        </>
-      );
-    });
-    return resp;
-  };
-  const DelPrudutos = (x: any, total: any) => {
-    const filterItens = ListItens.filter((i) => i.id !== x);
-    setItens(filterItens);
-    setTimeout(() => {
-      console.log(ListItens);
-      console.log(ListItens.length);
-      if (ListItens.length === 0 || ListItens === undefined) {
-        setTotalGeral(null);
-      }
-      if (ListItens.length === 1) {
-        const [total] = ListItens.map((i) => i.total);
-        setTotalGeral(total);
-      }
-      if (ListItens.length > 1) {
-        const total = ListItens.map((i) => i.total).reduce(
-          (acc, valorAtual) => acc + valorAtual,
-        );
-        setTotalGeral(total);
-      }
-    }, 200);
-  };
 
   const SalvarProdutos = async () => {
     const Date5 = new Date(date);
@@ -504,9 +439,96 @@ export default function Proposta() {
       .catch((err) => console.log(err));
   };
 
-  if (loading) {
-    return <Loading size="200px">Carregando...</Loading>;
-  }
+  const TotalGreal = () => {
+    if (ListItens.length === 0) return 'R$ 0,00';
+    if (ListItens.length === 1) {
+      const [valor]: any = ListItens.map((i) => i.total);
+      const [ValorP]: any = ListItens.map((i) => i.vFinal);
+      const ValorOriginal = ValorP.replace('.', '').replace(',', '.');
+      const [Qtd]: any = ListItens.map((i) => i.Qtd);
+      const [mont]: any = ListItens.map((i) => i.mont);
+      const [expo]: any = ListItens.map((i) => i.expo);
+      const total = valor * Qtd;
+      const acrec =
+        mont === true && expo === true
+          ? 1.2
+          : expo === true && mont === false
+          ? 1.1
+          : expo === false && mont === true
+          ? 1.1
+          : 0;
+
+      const somaAcrescimo =
+        acrec === 0 ? 0 : (ValorOriginal * acrec - ValorOriginal) * Qtd;
+      const TotalItem = total + somaAcrescimo;
+      return TotalItem.toLocaleString('pt-br', {
+        style: 'currency',
+        currency: 'BRL',
+      });
+    }
+    if (ListItens.length > 1) {
+      const lista: any = ListItens.map((i) => {
+        const valor: any = i.total;
+        const ValorOriginal: any = i.vFinal.replace('.', '').replace(',', '.');
+        const Qtd: any = i.Qtd;
+        const mont: any = i.mont;
+        const expo: any = i.expo;
+        const total = valor * Qtd;
+        const acrec =
+          mont === true && expo === true
+            ? 1.2
+            : expo === true && mont === false
+            ? 1.1
+            : expo === false && mont === true
+            ? 1.1
+            : 0;
+        console.log(acrec);
+        const somaAcrescimo =
+          acrec === 0 ? 0 : (ValorOriginal * acrec - ValorOriginal) * Qtd;
+        const TotalItem = total + somaAcrescimo;
+        return TotalItem;
+      });
+
+      return lista
+        .reduce((acc: number, valorAtual: number) => acc + valorAtual)
+        .toLocaleString('pt-br', {
+          style: 'currency',
+          currency: 'BRL',
+        });
+    }
+  };
+
+  const DescontoGeral = () => {
+    if (ListItens.length === 0) return 'R$ 0,00';
+    if (ListItens.length === 1) {
+      const valor: any = ListItens.map((i) => i.desconto);
+      const Qtd: any = ListItens.map((i) => i.Qtd);
+      const total = Qtd * valor;
+      return total.toLocaleString('pt-br', {
+        style: 'currency',
+        currency: 'BRL',
+      });
+    }
+    if (ListItens.length > 1) {
+      const list: any = ListItens.map((i) => {
+        const valor: any = i.desconto;
+        const Qtd: any = i.Qtd;
+        const total = Qtd * valor;
+        return total;
+      });
+      return list
+        .reduce((acc: number, valorAtual: number) => acc + valorAtual)
+        .toLocaleString('pt-br', {
+          style: 'currency',
+          currency: 'BRL',
+        });
+    }
+  };
+
+  if (ListItens.length > 0 && prazo === 'A')
+    if (loading) {
+      return <Loading size="200px">Carregando...</Loading>;
+    }
 
   const loadDiv = () => {
     return (
@@ -578,9 +600,6 @@ export default function Proposta() {
       </>
     );
   };
-
-  console.log(totalGeralM);
-  console.log(totalGeral);
 
   return (
     <>
@@ -845,7 +864,7 @@ export default function Proposta() {
                         </Th>
                       </Tr>
                     </Thead>
-                    <Tbody overflowY={'auto'}>{lista()}</Tbody>
+                    <Tbody overflowY={'auto'}>{TableItens}</Tbody>
                   </Table>
                 </TableContainer>
               </>
@@ -867,12 +886,8 @@ export default function Proposta() {
               Total de itens: {ListItens.length === 0 ? '' : ListItens.length}
             </chakra.p>
             <chakra.p>Frete: {freteCifMask}</chakra.p>
-            <chakra.p>
-              Desconto: {Desconto.length === 0 ? 'R$ 0,00' : descontoM}
-            </chakra.p>
-            <chakra.p>
-              Valor Total: {totalGeral.length === 0 ? 'R$ 0,00' : totalGeralM}
-            </chakra.p>
+            <chakra.p>Desconto: {descontoM}</chakra.p>
+            <chakra.p>Valor Total: {totalGeralM}</chakra.p>
           </Flex>
           <Button colorScheme={'whatsapp'} onClick={SalvarProdutos}>
             Salvar Proposta
