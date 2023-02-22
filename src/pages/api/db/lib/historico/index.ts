@@ -19,7 +19,7 @@ export const Historico = async (txt: any, url: string) => {
       SalesHistory: [...SalesHistory, txt],
     },
   };
-  const response = await axiosRequet
+  await axiosRequet
     .put(url, data)
     .then((response) => {
       const resp = `Aleteração do cliente id: ${response.data.data.id}, nome: ${response.data.data.attributes.nome}, foi registrada!`;

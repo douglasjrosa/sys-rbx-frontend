@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-undef */
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -10,7 +11,7 @@ export default async function GetEmpresa(
     const token = process.env.ATORIZZATION_TOKEN;
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
-      '/empresas?fields[0]=fantasia&fields[1]=CNPJ';
+      '/empresas?fields[0]=nome&fields[1]=CNPJ';
 
     const ribermaxDb = await fetch(process.env.RIBERMAX_API_URL + '/empresas', {
       method: 'GET',
@@ -33,9 +34,9 @@ export default async function GetEmpresa(
     const Db = respostaDb.data;
     const DbData = !Db
       ? null
-      : Db.map((item: { attributes: { fantasia: any; CNPJ: any } }) => {
+      : Db.map((item: { attributes: { nome: any; CNPJ: any } }) => {
           return {
-            nome: item.attributes.fantasia,
+            nome: item.attributes.nome,
             CNPJ: item.attributes.CNPJ,
           };
         });

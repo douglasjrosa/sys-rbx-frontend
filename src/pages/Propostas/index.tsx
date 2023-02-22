@@ -21,6 +21,9 @@ import {
   useToast,
   Checkbox,
   Spinner,
+  Slide,
+  useDisclosure,
+  Text,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
@@ -28,10 +31,13 @@ import { BsTrash } from 'react-icons/bs';
 import { DateIso } from '../../components/data/Date';
 import Loading from '../../components/elements/loading';
 import { useSession } from 'next-auth/react';
+import axios from 'axios';
 
 const tempo = DateIso;
 
 export default function Proposta() {
+  // const { Alerterro, setAlerterro } = useState(false);
+  // const { msg, setMsg } = useState('');
   const [reqPrazo, setReqPrazo] = useState([]);
   const { data: session } = useSession();
   const [loading, setLoading] = useState<boolean>(true);
@@ -45,15 +51,12 @@ export default function Proposta() {
   const [email, setEmail] = useState('');
   const [frete, setFrete] = useState('');
   const [freteCif, setFreteCif] = useState('');
-  const [freteCifMask, setFreteCifMask] = useState('R$ 0,00');
+  const [freteCifMask, setFreteCifMask] = useState('');
   const [Loja, setLoja] = useState('');
   const [prazo, setPrazo] = useState('');
   const [tipoprazo, setTipoPrazo] = useState('');
-  const [totalGeral, setTotalGeral] = useState([]);
-  const [totalGeralM, setTotalGeralM] = useState('');
-  const [Desconto, setDesconto] = useState([]);
-  const [descontoM, setDescontoM] = useState('');
-  const [paymentExpiration, setPaymentExpiration] = useState([]);
+  const [totalGeral, setTotalGeral] = useState('');
+  const [Desconto, setDesconto] = useState('');
   const toast = useToast();
 
   const disablefrete = () => {
@@ -124,8 +127,9 @@ export default function Proposta() {
           const TotalDesc = valor - somaDescontMin;
           const retorno = {
             ...resposta,
-            desconto: somaDescontMin,
-            total: TotalDesc,
+            desconto:
+              Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
+            total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
           };
           setItens(
             ListItens.map((f) => {
@@ -159,8 +163,9 @@ export default function Proposta() {
           const TotalDesc = valor - somaDescontMin;
           const retorno = {
             ...resposta,
-            desconto: somaDescontMin,
-            total: TotalDesc,
+            desconto:
+              Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
+            total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
           };
           const ListaRetorno = [retorno];
           setItens(ListaRetorno);
@@ -181,8 +186,8 @@ export default function Proposta() {
   };
 
   useEffect(() => {
-    setTotalGeralM(TotalGreal());
-    setDescontoM(DescontoGeral());
+    setTotalGeral(TotalGreal());
+    setDesconto(DescontoGeral());
   }, [ListItens]);
 
   useEffect(() => {
@@ -196,8 +201,9 @@ export default function Proposta() {
           const somaDescontMin =
             Math.round(parseFloat(descont.toFixed(2)) * 100) / 100;
           const TotalDesc = ValorGeral - somaDescontMin;
-          f.total = TotalDesc;
-          f.desconto = somaDescontMin;
+          f.total = Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100;
+          f.desconto =
+            Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100;
           const data = { ...f };
           return data;
         }),
@@ -208,7 +214,7 @@ export default function Proposta() {
           const valor = Number(f.vFinal.replace('.', '').replace(',', '.'));
           const ValorGeral =
             Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
-          f.total = ValorGeral;
+          f.total = Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
           f.desconto = 0;
           const data = { ...f };
           return data;
@@ -281,7 +287,8 @@ export default function Proposta() {
             if (i.Qtd === 1) {
               return i.total;
             }
-            const ValorOriginal = ValorProd;
+            const ValorOriginal =
+              Math.round(parseFloat(ValorProd.toFixed(2)) * 100) / 100;
             const acrec =
               i.mont === true && i.expo === true
                 ? 1.2
@@ -296,9 +303,10 @@ export default function Proposta() {
                 ? ValorOriginal * i.Qtd
                 : ValorOriginal * acrec * i.Qtd;
             const somaDescont = descont * i.Qtd;
-            const somaDescontMin = parseInt(somaDescont.toFixed(2));
+            const somaDescontMin =
+              Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
             const TotalItem = somaAcrescimo - somaDescontMin;
-            return TotalItem;
+            return Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
           };
 
           const codig = () => {
@@ -396,6 +404,7 @@ export default function Proposta() {
 
   const SalvarProdutos = async () => {
     const Date5 = new Date(date);
+    Date5.setDate(Date5.getDate() + 5);
     const VencDate = `${Date5.getUTCFullYear()}-${
       Date5.getUTCMonth() + 1 < 10
         ? '0' + (Date5.getUTCMonth() + 1)
@@ -412,7 +421,6 @@ export default function Proposta() {
         : Date5.getUTCMonth() + 1
     }/${Date5.getUTCFullYear()}`;
 
-    const mapItens = ListItens.map((i) => {});
     const data: any = {
       cliente: cnpj,
       itens: ListItens,
@@ -422,21 +430,37 @@ export default function Proposta() {
       vencPrint: VencDatePrint,
       condi: prazo,
       prazo: tipoprazo,
-      totalGeral: 7000.0,
+      totalGeral: totalGeral,
+      deconto: Desconto,
       vendedor: session.user.name,
       vendedorId: session.user.id,
       frete: frete,
       valorFrete: freteCif,
     };
-    const url = '/api/query/post/proposta';
-
-    await fetch(url, {
+    const url = 'api/db/proposta/post';
+    await axios({
       method: 'POST',
-      // body: JSON.stringify(data),
+      url: url,
+      data: data,
     })
-      .then((res) => res.json)
-      .then((resp) => console.log(resp))
-      .catch((err) => console.log(err));
+      .then((res) => {
+        console.error(res.data.message);
+        toast({
+          title: 'Proposta Criada',
+          description: res.data.message,
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        setTimeout(() => {
+          window.history.back;
+        }, 3100);
+      })
+      .catch((err) => {
+        console.error(err.data);
+        const desc = err.data;
+        const msg = desc;
+      });
   };
 
   const TotalGreal = () => {
@@ -482,7 +506,6 @@ export default function Proposta() {
             : expo === false && mont === true
             ? 1.1
             : 0;
-        console.log(acrec);
         const somaAcrescimo =
           acrec === 0 ? 0 : (ValorOriginal * acrec - ValorOriginal) * Qtd;
         const TotalItem = total + somaAcrescimo;
@@ -600,6 +623,23 @@ export default function Proposta() {
       </>
     );
   };
+
+  function formatarValor(freteCif) {
+    if (!freteCif) {
+      return '';
+    }
+
+    freteCif = freteCif.replace(/\D/g, '');
+    freteCif = freteCif.replace(/(\d{1,2})$/, ',$1');
+    freteCif = freteCif.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+
+    return 'R$ ' + freteCif;
+  }
+
+  function handleInputChange(event: any) {
+    setFreteCifMask(formatarValor(event.target.value));
+    setFreteCif(event.target.value);
+  }
 
   return (
     <>
@@ -792,20 +832,7 @@ export default function Proposta() {
               w={'7rem'}
               fontSize="xs"
               rounded="md"
-              onChange={(e) => {
-                const value = e.target.value;
-                const regex = /[^0-9,.]/g;
-                () => {
-                  const sanitizedValue = value.replace(regex, '');
-                  const numericValue = Number(sanitizedValue.replace(',', '.'));
-                  setFreteCif(numericValue.toString());
-                  const Mask: string = numericValue.toLocaleString('pt-br', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  });
-                  setFreteCifMask(Mask);
-                };
-              }}
+              onChange={handleInputChange}
               value={freteCifMask}
             />
           </Box>
@@ -886,8 +913,8 @@ export default function Proposta() {
               Total de itens: {ListItens.length === 0 ? '' : ListItens.length}
             </chakra.p>
             <chakra.p>Frete: {freteCifMask}</chakra.p>
-            <chakra.p>Desconto: {descontoM}</chakra.p>
-            <chakra.p>Valor Total: {totalGeralM}</chakra.p>
+            <chakra.p>Desconto: {Desconto}</chakra.p>
+            <chakra.p>Valor Total: {totalGeral}</chakra.p>
           </Flex>
           <Button colorScheme={'whatsapp'} onClick={SalvarProdutos}>
             Salvar Proposta

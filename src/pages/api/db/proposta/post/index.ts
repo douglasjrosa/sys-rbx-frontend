@@ -2,12 +2,14 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Historico } from '../../lib/historico';
+import { Populate } from './populate';
 
 export default async function PostEmpresa(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   if (req.method === 'POST') {
+    // const data = JSON.parse(req.body);
     const data = req.body;
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
@@ -22,29 +24,56 @@ export default async function PostEmpresa(
       '/pedidos?fields[0]=id&fields[1]=nPedido&sort=id%3Adesc',
     );
     const [request] = response.data.data;
-    const FalsePrimeiro = {
-      nPedido: process.env.PEDIDO,
-    };
     const primeiro =
-      !request || request === undefined ? FalsePrimeiro : request.attributes;
-    const { nPedido } = primeiro;
+      !request || request === undefined
+        ? process.env.PEDIDO
+        : request.attributes.nPedido;
+    const nPedido = primeiro;
 
     const getfornecdor = await axiosRequet.get(
       `/fornecedores?filters[titulo][$containsi]=${data.empresa}&fields[0]=id&fields[1]=titulo`,
     );
     const [retorno] = getfornecdor.data.data;
-    const idFornecedor = retorno.id;
+    const idFornecedor: number = retorno.id;
+    const FornecedorTitulo = retorno.attributes.titulo;
 
     const getclinete = await axiosRequet.get(
       `/empresas?filters[titulo][$containsi]=${data.cliente}&fields[0]=id&fields[1]=titulo`,
     );
-    const [retorno2] = getclinete.data.data;
-    const idCliente = retorno2.id;
-    const ClienteTitle = retorno2.attributes.titulo;
+    const getclinete2 = await axiosRequet.get(
+      `/empresas?filters[CNPJ][$containsi]=${data.cliente}&fields[0]=id&fields[1]=titulo`,
+    );
+    const retorno2 = getclinete.data.data;
+    const retornoclinete2 = getclinete2.data.data;
 
+    const dadosfornecedores = {
+      vendedor: data.vendedor,
+      vendedorId: data.vendedorId,
+      fornecedor: FornecedorTitulo,
+      fornecedorId: idFornecedor,
+    };
+
+    const retornoCliente = [
+      {
+        id: '',
+        attributes: { titulo: '' },
+      },
+    ];
+
+    const identfi =
+      retorno2.length !== 0
+        ? getclinete.data.data
+        : retornoclinete2.length !== 0
+        ? getclinete2.data.data
+        : await Populate(data.cliente, dadosfornecedores);
+
+    const [retor] = identfi;
+    const idCliente = retor.id;
+    const ClienteTitle = retor.attributes.titulo;
+    const pedidonomero = parseInt(nPedido) + 1;
     const DataPost = {
       data: {
-        nPedido: parseInt(nPedido) + 1,
+        nPedido: pedidonomero.toString,
         itens: data.itens,
         matriz: data.empresa,
         dataPedido: data.dataPedido,
@@ -59,11 +88,13 @@ export default async function PostEmpresa(
         vendedor: data.vendedor,
         vendedorId: data.vendedorId,
         totalGeral: data.totalGeral,
+        desconto: data.desconto,
       },
     };
     await axiosRequet
-      .post(`/pedidos`, DataPost)
+      .post(`/pedidoss`, DataPost)
       .then(async (response) => {
+        console.log(response.data);
         const now = new Date();
         const VisibliDateTime = `${
           now.getDate() < 10 ? '0' + now.getDate() : now.getDate()
@@ -89,7 +120,10 @@ export default async function PostEmpresa(
         });
       })
       .catch(async (error) => {
-        console.log(error.data);
+        console.log(error.response.data);
+        // console.log(error.response.data.error);
+        // console.log(error.response.data.error.details);
+        // console.log(error.response.data.error.details.errors);
 
         const now = new Date();
         const isoDateTime = now.toISOString();
@@ -97,14 +131,15 @@ export default async function PostEmpresa(
           date: isoDateTime,
           vendedors: data.vendedor,
           msg: 'Proposta não foi criada devido a erro',
-          error: error.data,
+          error: error.response.data,
         };
         const url = `empresas/${idCliente}`;
         const Register = await Historico(txt, url);
 
-        res.json({
+        res.status(500).json({
           historico: Register,
-          error: error.data,
+          error: error.response.data,
+          message: error.response.data,
         });
       });
   } else {
