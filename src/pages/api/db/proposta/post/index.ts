@@ -21,7 +21,7 @@ export default async function PostEmpresa(
     });
 
     const response = await axiosRequet.get(
-      '/pedidos?fields[0]=id&fields[1]=nPedido&sort=id%3Adesc',
+      '/pedidos?filters[nPedido][$notIn]=null&fields[0]=id&fields[1]=nPedido&sort=id%3Adesc',
     );
     const [request] = response.data.data;
     const primeiro =
@@ -71,9 +71,10 @@ export default async function PostEmpresa(
     const idCliente = retor.id;
     const ClienteTitle = retor.attributes.titulo;
     const pedidonomero = parseInt(nPedido) + 1;
+    const NpedidoConvert = pedidonomero.toString();
     const DataPost = {
       data: {
-        nPedido: pedidonomero.toString,
+        nPedido: NpedidoConvert,
         itens: data.itens,
         matriz: data.empresa,
         dataPedido: data.dataPedido,
@@ -89,10 +90,15 @@ export default async function PostEmpresa(
         vendedorId: data.vendedorId,
         totalGeral: data.totalGeral,
         desconto: data.desconto,
+        CNPJClinet: data.cliente,
+        status: true,
+        andamento: 'Proposta criada',
+        valorFrete: data.valorFrete,
+        vencPrint: data.vencPrint,
       },
     };
     await axiosRequet
-      .post(`/pedidoss`, DataPost)
+      .post(`/pedidos`, DataPost)
       .then(async (response) => {
         console.log(response.data);
         const now = new Date();

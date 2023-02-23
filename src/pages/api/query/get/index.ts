@@ -8,6 +8,7 @@ export default async function GetEmpresa(
 ) {
   if (req.method === 'POST') {
     const Email = JSON.parse(req.body);
+
     const token = process.env.ATORIZZATION_TOKEN;
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
