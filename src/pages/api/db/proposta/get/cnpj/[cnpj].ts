@@ -8,10 +8,14 @@ export default async function GetEmpresa(
 ) {
   if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN;
+    const { cnpj } = req.query;
 
     await axios({
       method: 'GET',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/pedidos?populate=*',
+      url:
+        process.env.NEXT_PUBLIC_STRAPI_API_URL +
+        '/pedidos?populate=*&filters[CNPJClinet][$eq]=' +
+        cnpj,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',

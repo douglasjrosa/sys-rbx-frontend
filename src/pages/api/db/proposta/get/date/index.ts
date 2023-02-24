@@ -8,10 +8,13 @@ export default async function GetEmpresa(
 ) {
   if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN;
+    const data = req.query;
 
     await axios({
       method: 'GET',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/pedidos?populate=*',
+      url:
+        process.env.NEXT_PUBLIC_STRAPI_API_URL +
+        `/pedidos?populate=*&filters[dataPedido][$between][0]=${data.StartDate}&filters[dataPedido][$between][1]=${data.EndDate}`,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',

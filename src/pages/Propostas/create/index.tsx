@@ -4,40 +4,37 @@
 import {
   Box,
   Button,
+  chakra,
+  Checkbox,
   Flex,
   FormLabel,
   Heading,
   Icon,
   Input,
   Select,
+  Spinner,
   Table,
   TableContainer,
   Tbody,
   Td,
-  chakra,
   Th,
   Thead,
   Tr,
   useToast,
-  Checkbox,
-  Spinner,
-  Slide,
-  useDisclosure,
-  Text,
 } from '@chakra-ui/react';
+import axios from 'axios';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
 import { BsTrash } from 'react-icons/bs';
-import { DateIso } from '../../components/data/Date';
-import Loading from '../../components/elements/loading';
-import { useSession } from 'next-auth/react';
-import axios from 'axios';
+import { DateIso } from '../../../components/data/Date';
+import Loading from '../../../components/elements/loading';
 
 const tempo = DateIso;
 
 export default function Proposta() {
-  // const { Alerterro, setAlerterro } = useState(false);
-  // const { msg, setMsg } = useState('');
+  const router = useRouter();
   const [reqPrazo, setReqPrazo] = useState([]);
   const { data: session } = useSession();
   const [loading, setLoading] = useState<boolean>(true);
@@ -461,7 +458,7 @@ export default function Proposta() {
           isClosable: true,
         });
         setTimeout(() => {
-          window.history.back;
+          router.back();
         }, 3100);
       })
       .catch((err) => {

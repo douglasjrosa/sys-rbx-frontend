@@ -12,6 +12,7 @@
     "html-pdf": false
   },
   "dependencies": {
+    "@chakra-ui/card": "^2.1.6",
     "@chakra-ui/icons": "^1.0.15",
     "@chakra-ui/react": "^2.3.4",
     "@emotion/react": "^11.10.4",

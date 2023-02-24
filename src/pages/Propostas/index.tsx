@@ -36,8 +36,6 @@ import axios from 'axios';
 const tempo = DateIso;
 
 export default function Proposta() {
-  // const { Alerterro, setAlerterro } = useState(false);
-  // const { msg, setMsg } = useState('');
   const [reqPrazo, setReqPrazo] = useState([]);
   const { data: session } = useSession();
   const [loading, setLoading] = useState<boolean>(true);
@@ -912,7 +910,7 @@ export default function Proposta() {
             <chakra.p>
               Total de itens: {ListItens.length === 0 ? '' : ListItens.length}
             </chakra.p>
-            <chakra.p>Frete: {freteCifMask}</chakra.p>
+            <chakra.p>Frete: {freteCif === '' ? 'R$ 0,00' : freteCif}</chakra.p>
             <chakra.p>Desconto: {Desconto}</chakra.p>
             <chakra.p>Valor Total: {totalGeral}</chakra.p>
           </Flex>

@@ -13,6 +13,7 @@ import {
   Input,
   Select,
   Spinner,
+  Switch,
   Table,
   TableContainer,
   Tbody,
@@ -29,20 +30,17 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
 import { BsTrash } from 'react-icons/bs';
-import { DateIso } from '../../../components/data/Date';
 import Loading from '../../../components/elements/loading';
-
-const tempo = DateIso;
 
 export default function Proposta() {
   const { data: session } = useSession();
   const router = useRouter();
   const Email = session.user.email;
   const [reqPrazo, setReqPrazo] = useState([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
   const [NomeEnpresa, setNomeEmpresa] = useState('');
   const [RelatEnpresa, setRelatEmpresa] = useState([]);
+  const [RelatEnpresaId, setRelatEmpresaId] = useState('');
   const [Produtos, SetProdutos] = useState([]);
   const [ListItens, setItens] = useState([]);
   const [itenId, setItenId] = useState('');
@@ -50,40 +48,55 @@ export default function Proposta() {
   const [cnpj, setCnpj] = useState('');
   const [frete, setFrete] = useState('');
   const [freteCif, setFreteCif] = useState('');
-  const [freteCifMask, setFreteCifMask] = useState('');
   const [Loja, setLoja] = useState('');
   const [prazo, setPrazo] = useState('');
   const [tipoprazo, setTipoPrazo] = useState('');
   const [totalGeral, setTotalGeral] = useState('');
   const [Desconto, setDesconto] = useState('');
+  const [Andamento, setAndamento] = useState([]);
+  const [Status, setStatus] = useState(false);
+  const [Descriçao, setDescriçao] = useState([]);
+  const [Fornecedor, setFornecedor] = useState([]);
+  const [FornecedorId, setFornecedorId] = useState();
+
   const toast = useToast();
 
   useEffect(() => {
     (async () => {
       const PEDIDO = router.query.pedido;
-      console.log(Email);
       const request = await axios('/api/db/proposta/get/pedido/' + PEDIDO);
       const [resp]: any = request.data;
       console.log(resp);
       setCnpj(resp.attributes.CNPJClinet);
+      const retornoProd = await fetch(
+        '/api/query/get/produto/cnpj/' + resp.attributes.CNPJClinet,
+        {
+          method: 'POST',
+          body: JSON.stringify(Email),
+        },
+      );
+      const respProd = await retornoProd.json();
+      const requestPrazo = await fetch('/api/db/prazo/get');
+      const RespPrazoB: any = await requestPrazo.json();
+      setReqPrazo(RespPrazoB.data);
+      setAndamento(resp.attributes.andamento);
+      SetProdutos(respProd);
+      setDescriçao(resp.attributes.descriptStatus);
       setFrete(resp.attributes.frete);
+      setStatus(resp.attributes.status);
       setDate(resp.attributes.dataPedido);
       setItens(resp.attributes.itens);
       setPrazo(resp.attributes.condi);
-      setRelatEmpresa(resp.attributes.empresa);
+      setRelatEmpresa(resp.attributes.empresa.data);
+      setRelatEmpresaId(resp.attributes.empresaId);
       setLoja(resp.attributes.matriz);
       setFreteCif(resp.attributes.valorFrete);
+      setFornecedor(resp.attributes.fornecedor.data);
+      setFornecedorId(resp.attributes.fornecedorId);
       const nome = resp.attributes.empresa.data.attributes.nome;
       setNomeEmpresa(nome);
-      const retornoProd = await fetch('/api/query/get/produto/cnpj/' + cnpj, {
-        method: 'POST',
-        body: JSON.stringify(Email),
-      });
-      const respProd = await retornoProd.json();
-      SetProdutos(respProd);
     })();
   }, []);
-  console.log(NomeEnpresa);
   const disablefrete = () => {
     if (frete === 'CIF') return false;
     else {
@@ -428,12 +441,13 @@ export default function Proposta() {
       vendedorId: session.user.id,
       frete: frete,
       valorFrete: freteCif,
-      andamento: null,
-      empresaId: 12,
-      fornecedor: '',
-      fornecedorId: 2,
-      status: null,
+      andamento: Andamento,
+      empresaId: RelatEnpresaId,
+      fornecedor: Fornecedor,
+      fornecedorId: FornecedorId,
+      status: Status,
       matriz: Loja,
+      descriptStatus: Descriçao,
     };
     const url = 'api/db/proposta/post';
     await axios({
@@ -451,13 +465,19 @@ export default function Proposta() {
           isClosable: true,
         });
         setTimeout(() => {
-          window.history.back;
+          router.back();
         }, 3100);
       })
       .catch((err) => {
         console.error(err.data);
         const desc = err.data;
-        const msg = desc;
+        toast({
+          title: 'Proposta Criada',
+          description: desc,
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
       });
   };
 
@@ -546,11 +566,6 @@ export default function Proposta() {
     }
   };
 
-  if (ListItens.length > 0 && prazo === 'A')
-    if (loading) {
-      return <Loading size="200px">Carregando...</Loading>;
-    }
-
   const loadDiv = () => {
     return (
       <Box w={'320px'} display="flex" flexDir={'row'} justifyContent="center">
@@ -634,21 +649,35 @@ export default function Proposta() {
 
   function handleInputChange(event: any) {
     const valor = event.target.value;
-    setFreteCifMask(freteCif);
     setFreteCif(valor);
   }
 
-  const test = 'teste';
   const description = (e: any) => {
     const valor = e.target.value;
     const date = new Date();
     const dateString = date.toString();
-    const some =
-      test +
-      '\n' +
-      valor +
-      `\n (Comentario feito pro ${session.user.name} - ${dateString} )`;
+    if (Descriçao === null || !Descriçao) {
+      setDescriçao([
+        {
+          msg:
+            valor +
+            `(Comentario feito pro ${session.user.name} - ${dateString} )`,
+          log: `${session.user.name} - ${dateString}`,
+        },
+      ]);
+    } else {
+      setDescriçao([
+        ...Descriçao,
+        {
+          msg:
+            valor +
+            `(Comentario feito pro ${session.user.name} - ${dateString} )`,
+          log: `${session.user.name} - ${dateString}`,
+        },
+      ]);
+    }
   };
+
   return (
     <>
       <Flex h="100vh" px={20} w="100%" flexDir={'column'} mt="5">
@@ -862,16 +891,34 @@ export default function Proposta() {
                   w="full"
                   fontSize="xs"
                   rounded="md"
-                  placeholder="Selecione um Produto"
+                  placeholder=" "
                   onChange={(e) => setItenId(e.target.value)}
-                  value={itenId}
+                  value={Andamento}
                 >
-                  <option value="Proposta Gerada">Proposta Gerada</option>
+                  <option value="Proposta criada">Proposta Criada</option>
                   <option value="Proposta Enviada">Proposta Enviada</option>
                   <option value="Negociação">Negociação</option>
                   <option value="Concluida">Concluida</option>
                   <option value="Rejeitada">Rejeitada</option>
                 </Select>
+              </Box>
+              <Box>
+                <FormLabel
+                  htmlFor="cidade"
+                  fontSize="xs"
+                  fontWeight="md"
+                  color="gray.700"
+                  _dark={{
+                    color: 'gray.50',
+                  }}
+                >
+                  status
+                </FormLabel>
+                <Switch
+                  size="sm"
+                  isChecked={Status}
+                  onChange={(e) => setStatus(e.target.checked)}
+                />
               </Box>
             </Box>
           </Box>
@@ -968,7 +1015,13 @@ export default function Proposta() {
             <chakra.p>
               Total de itens: {ListItens.length === 0 ? '' : ListItens.length}
             </chakra.p>
-            <chakra.p>Frete: {freteCifMask}</chakra.p>
+            <chakra.p>
+              Frete:{' '}
+              {parseFloat(freteCif).toLocaleString('pt-br', {
+                style: 'currency',
+                currency: 'BRL',
+              })}
+            </chakra.p>
             <chakra.p>Desconto: {Desconto}</chakra.p>
             <chakra.p>Valor Total: {totalGeral}</chakra.p>
           </Flex>
