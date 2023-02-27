@@ -11,6 +11,7 @@ export default async function PostEmpresa(
   if (req.method === 'POST') {
     // const data = JSON.parse(req.body);
     const data = req.body;
+    console.log(data);
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
       baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,

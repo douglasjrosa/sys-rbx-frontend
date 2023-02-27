@@ -332,6 +332,12 @@ export default function Proposta() {
             handleAdd(dt, i.id);
           };
 
+          // const GetTotal = (e: any) => {
+          //   const valor = e.target.value;
+          //   const dt = { total: valor };
+          //   handleAdd(dt, i.id);
+          // };
+
           return (
             <>
               <Tr h={3} key={i.id}>
@@ -381,7 +387,7 @@ export default function Proposta() {
                   R$ {''}
                   <Input
                     type={'text'}
-                    size="xs"
+                    size="sm"
                     borderColor="whatsapp.600"
                     rounded="md"
                     w="16"
@@ -442,14 +448,14 @@ export default function Proposta() {
       frete: frete,
       valorFrete: freteCif,
     };
-    const url = 'api/db/proposta/post';
+    const url = '/api/db/proposta/post';
     await axios({
       method: 'POST',
       url: url,
       data: data,
     })
       .then((res) => {
-        console.error(res.data.message);
+        console.log(res.data.message);
         toast({
           title: 'Proposta Criada',
           description: res.data.message,
@@ -629,26 +635,13 @@ export default function Proposta() {
     );
   };
 
-  function formatarValor(freteCif) {
-    if (!freteCif) {
-      return '';
-    }
-
-    freteCif = freteCif.replace(/\D/g, '');
-    freteCif = freteCif.replace(/(\d{1,2})$/, ',$1');
-    freteCif = freteCif.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
-
-    return 'R$ ' + freteCif;
-  }
-
   function handleInputChange(event: any) {
-    setFreteCifMask(formatarValor(event.target.value));
     setFreteCif(event.target.value);
   }
 
   return (
     <>
-      <Flex h="100vh" px={20} w="100%" flexDir={'column'} mt="5">
+      <Flex h="100vh" px={10} w="100%" flexDir={'column'} mt="5">
         <Heading size="lg">Proposta comercial</Heading>
         <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
           <Box>
@@ -917,7 +910,13 @@ export default function Proposta() {
             <chakra.p>
               Total de itens: {ListItens.length === 0 ? '' : ListItens.length}
             </chakra.p>
-            <chakra.p>Frete: {freteCifMask}</chakra.p>
+            <chakra.p>
+              Frete:{' '}
+              {parseFloat(freteCif).toLocaleString('pt-br', {
+                style: 'currency',
+                currency: 'BRL',
+              })}
+            </chakra.p>
             <chakra.p>Desconto: {Desconto}</chakra.p>
             <chakra.p>Valor Total: {totalGeral}</chakra.p>
           </Flex>
