@@ -2,8 +2,6 @@
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 import puppeteer from 'puppeteer';
-import PDFDocument from 'pdfkit';
-import fs from 'fs';
 
 export default async function GetEmpresa(
   req: NextApiRequest,
@@ -46,8 +44,11 @@ export default async function GetEmpresa(
     const venc = inf.vencPrint;
     const totoalGeral = inf.totalGeral;
     const obs = inf.obs === null ? '' : inf.obs;
-    const business = inf.business.data.id === null ? '' : inf.business.data.id;
-    console.log(inf);
+    const business = !inf.business.data
+      ? ''
+      : inf.business.data.id === null
+      ? ''
+      : inf.business.data.id;
 
     const data = {
       nPedido,
@@ -63,9 +64,6 @@ export default async function GetEmpresa(
       obs,
       business,
     };
-
-    console.log('data');
-    console.log(data);
 
     const linkis = [];
 

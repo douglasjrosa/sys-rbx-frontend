@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import axios from 'axios';
 
-export const Historico = async (txt: any, url: string) => {
+export const IncidentRecord = async (txt: any, business: string) => {
   const token = process.env.ATORIZZATION_TOKEN;
   const axiosRequet = axios.create({
     baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
@@ -10,19 +10,20 @@ export const Historico = async (txt: any, url: string) => {
       Authorization: `Bearer ${token}`,
     },
   });
+  const url = '/businesses/' + business;
   const verifique = await axiosRequet.get(url);
   const respVerifique = verifique.data.data;
-  const { history } = respVerifique.attributes;
+  const { incidentRecord } = respVerifique.attributes;
 
   const data = {
     data: {
-      history: [...history, txt],
+      incidentRecord: [...incidentRecord, txt],
     },
   };
   await axiosRequet
     .put(url, data)
     .then((response) => {
-      const resp = `Aleteração do cliente id: ${response.data.data.id}, nome: ${response.data.data.attributes.nome}, foi registrada!`;
+      const resp = `acresentado mais 1 registro`;
       return resp;
     })
     .catch((error) => {

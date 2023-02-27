@@ -11,7 +11,6 @@ export default async function PostEmpresa(
   if (req.method === 'POST') {
     // const data = JSON.parse(req.body);
     const data = req.body;
-    console.log(data);
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
       baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
@@ -80,8 +79,8 @@ export default async function PostEmpresa(
         matriz: data.empresa,
         dataPedido: data.dataPedido,
         vencPedido: data.vencPedido,
-        condi: data.condi,
-        prazo: data.prazo,
+        condi: data.prazo,
+        prazo: data.condi,
         fornecedor: idFornecedor,
         fornecedorId: idFornecedor,
         frete: data.frete,
@@ -90,14 +89,17 @@ export default async function PostEmpresa(
         vendedor: data.vendedor,
         vendedorId: data.vendedorId,
         totalGeral: data.totalGeral,
-        desconto: data.desconto,
+        desconto: data.deconto,
         CNPJClinet: data.cliente,
         status: true,
         andamento: 'Proposta criada',
         valorFrete: data.valorFrete,
         vencPrint: data.vencPrint,
+        business: data.business,
+        obs: data.obs,
       },
     };
+    // console.log(DataPost);
     await axiosRequet
       .post(`/pedidos`, DataPost)
       .then(async (response) => {
@@ -116,10 +118,12 @@ export default async function PostEmpresa(
         const txt = {
           date: isoDateTime,
           vendedors: data.vendedor,
-          msg: 'Proposta criada',
+          msg: `Proposta comercial de numero: ${response.data.data.attributes.nPedido}, foi registrada para o cliente ${ClienteTitle} pelo vendedor ${data.vendedor} no dia ${VisibliDateTime}`,
         };
         const url = `empresas/${idCliente}`;
         const Register = await Historico(txt, url);
+        const url2 = `businesses/${data.business}`;
+        await Historico(txt, url2);
         res.status(200).json({
           status: 200,
           message: `Proposta comercial de numero: ${response.data.data.attributes.nPedido}, foi registrada para o cliente ${ClienteTitle} pelo vendedor ${data.vendedor} no dia ${VisibliDateTime}`,

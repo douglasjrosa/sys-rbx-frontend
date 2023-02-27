@@ -5,12 +5,11 @@ import {
   Flex,
   Link,
   SimpleGrid,
-  Stack,
   Text,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 export const CardList = (props: { url: string }) => {
   const router = useRouter();
@@ -170,7 +169,22 @@ export const CardList = (props: { url: string }) => {
                               </chakra.span>
                             </Flex>
                             <Box mt={3}>
-                              <Button p={7} w={'full'} colorScheme={'whatsapp'}>
+                              <Button
+                                p={7}
+                                w={'full'}
+                                colorScheme={'whatsapp'}
+                                // onClick={() =>
+                                //   router.push(
+                                //     `/api/db/proposta/pdf/${i.attributes.nPedido}`,
+                                //   )
+                                // }
+                                onClick={() =>
+                                  window.open(
+                                    `/api/db/proposta/pdf/${i.attributes.nPedido}`,
+                                    '_blank',
+                                  )
+                                }
+                              >
                                 Gerar PDF
                               </Button>
                             </Box>

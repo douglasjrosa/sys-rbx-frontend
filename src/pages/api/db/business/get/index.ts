@@ -11,16 +11,17 @@ export default async function GetEmpresa(
 
     await axios({
       method: 'GET',
-      url:
-        process.env.NEXT_PUBLIC_STRAPI_API_URL +
-        '/pedidos?populate=*&sort[0]=id%3Adesc',
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/businesses?populate=*',
+      //? inicio de setup /filters[status][$eq]=true fazendo um filtro que traz todo com status = treu  /&populate=%2A  é para popular os relacionamentos
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
       .then(async (Response) => {
-        res.status(200).json(Response.data.data);
+        console.log(Response.data.data);
+
+        res.status(200).json(Response.data);
       })
       .catch((err) => {
         res.status(400).json({

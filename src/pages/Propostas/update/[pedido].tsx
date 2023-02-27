@@ -13,7 +13,6 @@ import {
   Input,
   Select,
   Spinner,
-  Switch,
   Table,
   TableContainer,
   Tbody,
@@ -54,10 +53,12 @@ export default function Proposta() {
   const [totalGeral, setTotalGeral] = useState('');
   const [Desconto, setDesconto] = useState('');
   const [Andamento, setAndamento] = useState([]);
-  const [Status, setStatus] = useState(false);
-  const [Descriçao, setDescriçao] = useState([]);
+  const [negocio, setNegocio] = useState('');
   const [Fornecedor, setFornecedor] = useState([]);
   const [FornecedorId, setFornecedorId] = useState();
+  const [dados, setDados] = useState<any>([]);
+  const [obs, setObs] = useState('');
+  const [Id, setId] = useState('');
 
   const toast = useToast();
 
@@ -67,6 +68,7 @@ export default function Proposta() {
       const request = await axios('/api/db/proposta/get/pedido/' + PEDIDO);
       const [resp]: any = request.data;
       console.log(resp);
+      setId(resp.id);
       setCnpj(resp.attributes.CNPJClinet);
       const retornoProd = await fetch(
         '/api/query/get/produto/cnpj/' + resp.attributes.CNPJClinet,
@@ -80,10 +82,9 @@ export default function Proposta() {
       const RespPrazoB: any = await requestPrazo.json();
       setReqPrazo(RespPrazoB.data);
       setAndamento(resp.attributes.andamento);
+      setDados(resp.attributes);
       SetProdutos(respProd);
-      setDescriçao(resp.attributes.descriptStatus);
       setFrete(resp.attributes.frete);
-      setStatus(resp.attributes.status);
       setDate(resp.attributes.dataPedido);
       setItens(resp.attributes.itens);
       setPrazo(resp.attributes.condi);
@@ -93,10 +94,13 @@ export default function Proposta() {
       setFreteCif(resp.attributes.valorFrete);
       setFornecedor(resp.attributes.fornecedor.data);
       setFornecedorId(resp.attributes.fornecedorId);
+      setObs(resp.attributes.obs);
+      setNegocio(resp.attributes.business.data.attributes.nBusiness);
       const nome = resp.attributes.empresa.data.attributes.nome;
       setNomeEmpresa(nome);
     })();
   }, []);
+
   const disablefrete = () => {
     if (frete === 'CIF') return false;
     else {
@@ -427,6 +431,7 @@ export default function Proposta() {
     }/${Date5.getUTCFullYear()}`;
 
     const data: any = {
+      nPedido: router.query.pedido,
       cliente: cnpj,
       itens: ListItens,
       empresa: RelatEnpresa,
@@ -445,13 +450,16 @@ export default function Proposta() {
       empresaId: RelatEnpresaId,
       fornecedor: Fornecedor,
       fornecedorId: FornecedorId,
-      status: Status,
       matriz: Loja,
-      descriptStatus: Descriçao,
+      obs: obs,
+      CNPJClinet: cnpj,
+      business: dados.business.data.id,
     };
-    const url = 'api/db/proposta/post';
+    console.log(Id);
+    const origin = window.location.origin;
+    const url = origin + '/api/db/proposta/put/' + Id;
     await axios({
-      method: 'POST',
+      method: 'put',
       url: url,
       data: data,
     })
@@ -464,17 +472,17 @@ export default function Proposta() {
           duration: 3000,
           isClosable: true,
         });
-        setTimeout(() => {
-          router.back();
-        }, 3100);
+        // setTimeout(() => {
+        //   router.back();
+        // }, 3100);
       })
       .catch((err) => {
-        console.error(err.data);
+        console.error(err);
         const desc = err.data;
         toast({
-          title: 'Proposta Criada',
+          title: 'Proposta não pode ser criada Criada',
           description: desc,
-          status: 'success',
+          status: 'error',
           duration: 3000,
           isClosable: true,
         });
@@ -654,28 +662,7 @@ export default function Proposta() {
 
   const description = (e: any) => {
     const valor = e.target.value;
-    const date = new Date();
-    const dateString = date.toString();
-    if (Descriçao === null || !Descriçao) {
-      setDescriçao([
-        {
-          msg:
-            valor +
-            `(Comentario feito pro ${session.user.name} - ${dateString} )`,
-          log: `${session.user.name} - ${dateString}`,
-        },
-      ]);
-    } else {
-      setDescriçao([
-        ...Descriçao,
-        {
-          msg:
-            valor +
-            `(Comentario feito pro ${session.user.name} - ${dateString} )`,
-          log: `${session.user.name} - ${dateString}`,
-        },
-      ]);
-    }
+    setObs(valor);
   };
 
   return (
@@ -703,6 +690,28 @@ export default function Proposta() {
               rounded="md"
               placeholder="Selecione uma Empresa"
               value={NomeEnpresa}
+            />
+          </Box>
+          <Box>
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: 'gray.50',
+              }}
+            >
+              N° Business
+            </FormLabel>
+            <Input
+              textAlign={'center'}
+              size="xs"
+              w={'10rem'}
+              fontSize="xs"
+              rounded="md"
+              placeholder="Selecione uma Empresa"
+              value={negocio}
             />
           </Box>
 
@@ -871,57 +880,6 @@ export default function Proposta() {
         </Box>
         <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
           <Box>{disbleProd === true ? loadDiv() : ProdutiDiv()}</Box>
-          <Box>
-            <Box display="flex" gap={8} alignItems="center">
-              <Box>
-                <FormLabel
-                  htmlFor="cidade"
-                  fontSize="xs"
-                  fontWeight="md"
-                  color="gray.700"
-                  _dark={{
-                    color: 'gray.50',
-                  }}
-                >
-                  Andamento
-                </FormLabel>
-                <Select
-                  shadow="sm"
-                  size="sm"
-                  w="full"
-                  fontSize="xs"
-                  rounded="md"
-                  placeholder=" "
-                  onChange={(e) => setItenId(e.target.value)}
-                  value={Andamento}
-                >
-                  <option value="Proposta criada">Proposta Criada</option>
-                  <option value="Proposta Enviada">Proposta Enviada</option>
-                  <option value="Negociação">Negociação</option>
-                  <option value="Concluida">Concluida</option>
-                  <option value="Rejeitada">Rejeitada</option>
-                </Select>
-              </Box>
-              <Box>
-                <FormLabel
-                  htmlFor="cidade"
-                  fontSize="xs"
-                  fontWeight="md"
-                  color="gray.700"
-                  _dark={{
-                    color: 'gray.50',
-                  }}
-                >
-                  status
-                </FormLabel>
-                <Switch
-                  size="sm"
-                  isChecked={Status}
-                  onChange={(e) => setStatus(e.target.checked)}
-                />
-              </Box>
-            </Box>
-          </Box>
           <Box w={'30rem'}>
             <Box display="flex" gap={8} alignItems="center">
               <Box w="full">
@@ -934,19 +892,20 @@ export default function Proposta() {
                     color: 'gray.50',
                   }}
                 >
-                  Descrição
+                  obs
                 </FormLabel>
                 <Textarea
                   w="full"
                   onChange={description}
                   placeholder="Breve descrição sobre o andamento"
                   size="sm"
+                  value={obs}
                 />
               </Box>
             </Box>
           </Box>
         </Box>
-        <Box mt={16} w={'100%'} h={'48%'} overflowY={'auto'}>
+        <Box mt={16} w={'100%'} h={'46%'} overflowY={'auto'}>
           <Box>
             {loadingTable ? (
               LoadingTable()
@@ -1026,7 +985,7 @@ export default function Proposta() {
             <chakra.p>Valor Total: {totalGeral}</chakra.p>
           </Flex>
           <Button colorScheme={'whatsapp'} onClick={SalvarProdutos}>
-            Salvar Proposta
+            Atualizar Proposta
           </Button>
         </Box>
       </Flex>

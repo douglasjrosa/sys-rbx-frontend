@@ -17,6 +17,7 @@ import {
   TableContainer,
   Tbody,
   Td,
+  Textarea,
   Th,
   Thead,
   Tr,
@@ -54,6 +55,9 @@ export default function Proposta() {
   const [tipoprazo, setTipoPrazo] = useState('');
   const [totalGeral, setTotalGeral] = useState('');
   const [Desconto, setDesconto] = useState('');
+  const [negocio, setNegocio] = useState([]);
+  const [saveNegocio, setSaveNegocio] = useState('');
+  const [obs, setObs] = useState('');
   const toast = useToast();
 
   const disablefrete = () => {
@@ -61,7 +65,7 @@ export default function Proposta() {
     else {
       if (freteCif === '0,00') return true;
       else {
-        setFreteCif('0,00');
+        setFreteCif('R$ 0,00');
         return true;
       }
     }
@@ -84,7 +88,10 @@ export default function Proposta() {
       const Email = JSON.parse(Emaillocal);
       setEmail(Email);
       const requestPrazo = await fetch('/api/db/prazo/get');
+      const requestNegocio = await fetch('/api/db/business/get');
       const RespPrazoB: any = await requestPrazo.json();
+      const RespNegocio: any = await requestNegocio.json();
+      setNegocio(RespNegocio.data);
       setReqPrazo(RespPrazoB.data);
       const resposta = await fetch('/api/query/get', {
         method: 'POST',
@@ -332,12 +339,6 @@ export default function Proposta() {
             handleAdd(dt, i.id);
           };
 
-          // const GetTotal = (e: any) => {
-          //   const valor = e.target.value;
-          //   const dt = { total: valor };
-          //   handleAdd(dt, i.id);
-          // };
-
           return (
             <>
               <Tr h={3} key={i.id}>
@@ -442,11 +443,19 @@ export default function Proposta() {
       condi: prazo,
       prazo: tipoprazo,
       totalGeral: totalGeral,
-      deconto: Desconto,
+      deconto: !Desconto
+        ? 'R$ 0,00'
+        : Desconto === undefined
+        ? 'R$ 0,00'
+        : Desconto === ''
+        ? 'R$ 0,00'
+        : Desconto,
       vendedor: session.user.name,
       vendedorId: session.user.id,
       frete: frete,
       valorFrete: freteCif,
+      business: saveNegocio,
+      obs: obs,
     };
     const url = '/api/db/proposta/post';
     await axios({
@@ -455,7 +464,7 @@ export default function Proposta() {
       data: data,
     })
       .then((res) => {
-        console.log(res.data.message);
+        // console.log(res.data.message);
         toast({
           title: 'Proposta Criada',
           description: res.data.message,
@@ -579,7 +588,13 @@ export default function Proposta() {
 
   const ProdutiDiv = () => {
     return (
-      <Box display="flex" gap={8} alignItems="center" hidden={hidemPod}>
+      <Box
+        display="flex"
+        gap={8}
+        w={'320px'}
+        alignItems="center"
+        hidden={hidemPod}
+      >
         <Box>
           <FormLabel
             htmlFor="cidade"
@@ -671,6 +686,37 @@ export default function Proposta() {
                 return (
                   <>
                     <option value={item.CNPJ}>{item.nome}</option>
+                  </>
+                );
+              })}
+            </Select>
+          </Box>
+          <Box>
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: 'gray.50',
+              }}
+            >
+              N° Business
+            </FormLabel>
+            <Select
+              shadow="sm"
+              size="xs"
+              w="full"
+              fontSize="xs"
+              rounded="md"
+              placeholder="Selecione um Negocio"
+              onChange={(e) => setSaveNegocio(e.target.value)}
+              value={saveNegocio}
+            >
+              {negocio.map((item) => {
+                return (
+                  <>
+                    <option value={item.id}>{item.attributes.nBusiness}</option>
                   </>
                 );
               })}
@@ -839,9 +885,35 @@ export default function Proposta() {
           <Heading size="md">Itens da proposta comercial</Heading>
         </Box>
         <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
-          <Box>{disbleProd === true ? loadDiv() : ProdutiDiv()}</Box>
+          <Box gap={8} w={'320px'} alignItems="center">
+            {disbleProd === true ? loadDiv() : ProdutiDiv()}
+          </Box>
+          <Box w={'40rem'}>
+            <Box display="flex" gap={8} alignItems="center">
+              <Box w="full">
+                <FormLabel
+                  htmlFor="cidade"
+                  fontSize="xs"
+                  fontWeight="md"
+                  color="gray.700"
+                  _dark={{
+                    color: 'gray.50',
+                  }}
+                >
+                  Observação
+                </FormLabel>
+                <Textarea
+                  w="full"
+                  onChange={(e) => setObs(e.target.value)}
+                  placeholder="Breve descrição sobre o andamento"
+                  size="sm"
+                  value={obs}
+                />
+              </Box>
+            </Box>
+          </Box>
         </Box>
-        <Box mt={16} w={'100%'} h={'48%'} overflowY={'auto'}>
+        <Box mt={16} w={'100%'} h={'46%'} overflowY={'auto'}>
           <Box>
             {loadingTable ? (
               LoadingTable()

@@ -20,8 +20,10 @@ import axios from 'axios';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
 import { cnpj } from 'cpf-cnpj-validator';
+import { useSession } from 'next-auth/react';
 
 export default function Cadastro() {
+  const { data: session } = useSession();
   const [CNPJ, setCNPJ] = useState('');
   const [nome, setNome] = useState('');
   const [fantasia, setFantasia] = useState('');
@@ -68,6 +70,16 @@ export default function Cadastro() {
   const [maxPg, setMaxpg] = useState('');
   const [forpg, setForpg] = useState('');
   const [frete, setFrete] = useState('');
+  const [ListaEmpre, setListaEmpre] = useState([]);
+  const [Empresa, setEmpresa] = useState('');
+  const [listaResponsavel, setlistaResponsavel] = useState('');
+  const [Responsavel, setResponsavel] = useState('');
+
+  useEffect(() =>{
+    (async ()=>{
+      
+    })()
+  }, [])
 
   const consulta = () => {
     console.log(CNPJ);
@@ -256,6 +268,8 @@ export default function Cadastro() {
       forpg: forpg,
       frete: frete,
       contribuinte: contribuinte,
+      vendedor: session.user.name,
+      vendedorId: session.user.id,
     },
   };
 
@@ -578,6 +592,64 @@ export default function Cadastro() {
                           return val;
                         })()}
                       />
+                    </FormControl>
+                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                      <FormLabel
+                        htmlFor="tabela de calculo"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        Empresa relacionada
+                      </FormLabel>
+                      <Select
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        fontSize="xs"
+                        rounded="md"
+                        placeholder="selecine uma opção"
+                        onChange={(e) => setContribuinte(e.target.value)}
+                        value={contribuinte}
+                      >
+                        <option value="1">Contribuinte ICMS</option>
+                        <option value="2">Contribuinte isento do ICMS</option>
+                        <option value="9">Não contribuinte</option>
+                      </Select>
+                    </FormControl>
+                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                      <FormLabel
+                        htmlFor="tabela de calculo"
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                        _dark={{
+                          color: 'gray.50',
+                        }}
+                      >
+                        Responsavel
+                      </FormLabel>
+                      <Select
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        fontSize="xs"
+                        rounded="md"
+                        placeholder="selecine uma opção"
+                        onChange={(e) => setContribuinte(e.target.value)}
+                        value={contribuinte}
+                      >
+                        <option value="1">Contribuinte ICMS</option>
+                        <option value="2">Contribuinte isento do ICMS</option>
+                        <option value="9">Não contribuinte</option>
+                      </Select>
                     </FormControl>
                   </SimpleGrid>
 

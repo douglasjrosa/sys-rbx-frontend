@@ -5,7 +5,7 @@ export default async function GetEmpresa(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method === 'GET') {
+  if (req.method === 'POST') {
     const token = process.env.ATORIZZATION_TOKEN;
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
@@ -27,6 +27,6 @@ export default async function GetEmpresa(
         res.status(400).json(err);
       });
   } else {
-    return res.status(405).send({ message: 'Only GET requests are allowed' });
+    return res.status(405).send({ message: 'Only POST requests are allowed' });
   }
 }
