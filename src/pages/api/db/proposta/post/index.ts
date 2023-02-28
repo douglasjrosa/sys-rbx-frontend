@@ -31,9 +31,10 @@ export default async function PostEmpresa(
     const nPedido = primeiro;
 
     const getfornecdor = await axiosRequet.get(
-      `/fornecedores?filters[titulo][$containsi]=${data.empresa}&fields[0]=id&fields[1]=titulo`,
+      `/fornecedores/${data.empresa}?fields[0]=id&fields[1]=titulo`,
     );
-    const [retorno] = getfornecdor.data.data;
+    const retorno = getfornecdor.data.data;
+    // console.log(retorno);
     const idFornecedor: number = retorno.id;
     const FornecedorTitulo = retorno.attributes.titulo;
 
@@ -76,13 +77,13 @@ export default async function PostEmpresa(
       data: {
         nPedido: NpedidoConvert,
         itens: data.itens,
-        matriz: data.empresa,
+        matriz: FornecedorTitulo,
         dataPedido: data.dataPedido,
         vencPedido: data.vencPedido,
-        condi: data.prazo,
-        prazo: data.condi,
-        fornecedor: idFornecedor,
-        fornecedorId: idFornecedor,
+        condi: data.condi,
+        prazo: data.prazo,
+        fornecedor: data.empresa,
+        fornecedorId: data.empresa,
         frete: data.frete,
         empresa: idCliente,
         empresaId: idCliente,
@@ -92,8 +93,7 @@ export default async function PostEmpresa(
         desconto: data.deconto,
         CNPJClinet: data.cliente,
         status: true,
-        andamento: 'Proposta criada',
-        valorFrete: data.valorFrete,
+        valorFrete: data.valorFrete.toString(),
         vencPrint: data.vencPrint,
         business: data.business,
         obs: data.obs,

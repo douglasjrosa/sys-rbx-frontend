@@ -26,9 +26,11 @@ import {
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
 import { BsTrash } from 'react-icons/bs';
+import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
+import { CompPrazo } from '../../../components/elements/lista/prazo';
 import Loading from '../../../components/elements/loading';
 
 export default function Proposta() {
@@ -665,6 +667,14 @@ export default function Proposta() {
     setObs(valor);
   };
 
+  function getLoja(loja: SetStateAction<string>) {
+    setLoja(loja);
+  }
+
+  function getPrazo(prazo: SetStateAction<string>) {
+    setTipoPrazo(prazo);
+  }
+
   return (
     <>
       <Flex h="100vh" px={20} w="100%" flexDir={'column'} mt="5">
@@ -740,31 +750,7 @@ export default function Proposta() {
             />
           </Box>
           <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: 'gray.50',
-              }}
-            >
-              Loja
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder="Selecione uma Empresa"
-              onChange={(e) => setLoja(e.target.value)}
-              value={Loja}
-            >
-              <option value="Ribermax">RIBERMAX EMBALAGENS DE MADEIRA</option>
-              <option value="Renato">RENATO HUGO</option>
-              <option value="Bragheto">BRAGHETO PALETES E EMBALAGENS</option>
-            </Select>
+            <CompFornecedor Resp={Loja} onAddResp={getLoja} />
           </Box>
           <Box>
             <FormLabel
@@ -794,37 +780,7 @@ export default function Proposta() {
             </Select>
           </Box>
           <Box hidden={prazo === 'A Prazo' ? false : true}>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: 'gray.50',
-              }}
-            >
-              Tipos de prazo
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder=" "
-              onChange={(e) => setTipoPrazo(e.target.value)}
-              value={tipoprazo}
-            >
-              {reqPrazo.map((p) => {
-                return (
-                  <>
-                    <option key={p.id} value={p.attributes.valor}>
-                      {p.attributes.titulo}
-                    </option>
-                  </>
-                );
-              })}
-            </Select>
+            <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} />
           </Box>
           <Box>
             <FormLabel

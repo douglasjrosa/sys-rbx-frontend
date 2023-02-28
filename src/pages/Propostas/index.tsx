@@ -78,10 +78,6 @@ export default function ListaProposta() {
   useEffect(() => {
     if (!Data && !Pedido && !Cnpj) setRender(false);
   }, [Cnpj, Data, Pedido]);
-  console.log(Render);
-  console.log(Pedido);
-  console.log(Data);
-  console.log(Cnpj);
 
   return (
     <>

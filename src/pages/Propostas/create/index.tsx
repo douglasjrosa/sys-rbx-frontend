@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unknown-property */
-/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
   Box,
@@ -26,17 +24,20 @@ import {
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
 import { BsTrash } from 'react-icons/bs';
 import { DateIso } from '../../../components/data/Date';
+import { CompBusiness } from '../../../components/elements/lista/business';
+import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
+import { CompPrazo } from '../../../components/elements/lista/prazo';
+
 import Loading from '../../../components/elements/loading';
 
 const tempo = DateIso;
 
 export default function Proposta() {
   const router = useRouter();
-  const [reqPrazo, setReqPrazo] = useState([]);
   const { data: session } = useSession();
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
@@ -48,8 +49,7 @@ export default function Proposta() {
   const [cnpj, setCnpj] = useState('');
   const [email, setEmail] = useState('');
   const [frete, setFrete] = useState('');
-  const [freteCif, setFreteCif] = useState('');
-  const [freteCifMask, setFreteCifMask] = useState('');
+  const [freteCif, setFreteCif] = useState(0.0);
   const [Loja, setLoja] = useState('');
   const [prazo, setPrazo] = useState('');
   const [tipoprazo, setTipoPrazo] = useState('');
@@ -59,17 +59,6 @@ export default function Proposta() {
   const [saveNegocio, setSaveNegocio] = useState('');
   const [obs, setObs] = useState('');
   const toast = useToast();
-
-  const disablefrete = () => {
-    if (frete === 'CIF') return false;
-    else {
-      if (freteCif === '0,00') return true;
-      else {
-        setFreteCif('R$ 0,00');
-        return true;
-      }
-    }
-  };
 
   const disbleProd =
     prazo === ''
@@ -87,12 +76,6 @@ export default function Proposta() {
       const Emaillocal = localStorage.getItem('email');
       const Email = JSON.parse(Emaillocal);
       setEmail(Email);
-      const requestPrazo = await fetch('/api/db/prazo/get');
-      const requestNegocio = await fetch('/api/db/business/get');
-      const RespPrazoB: any = await requestPrazo.json();
-      const RespNegocio: any = await requestNegocio.json();
-      setNegocio(RespNegocio.data);
-      setReqPrazo(RespPrazoB.data);
       const resposta = await fetch('/api/query/get', {
         method: 'POST',
         body: JSON.stringify(Email),
@@ -105,94 +88,97 @@ export default function Proposta() {
 
   const addItens = async () => {
     setLoadingTable(true);
-    const url = '/api/query/get/produto/id/' + itenId;
-    await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(email),
-    })
-      .then((resp) => resp.json())
-      .then((resposta) => {
-        if (ListItens.length !== 0) {
-          const maxSum = Math.max(...ListItens.map((obj: any) => obj.id + 1));
-          resposta.id = maxSum;
-          const valor1 = Number(
-            resposta.vFinal.replace('.', '').replace(',', '.'),
-          );
-          const ValorGeral = valor1;
-          const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
-          resposta.total =
-            Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
-          resposta.expo = false;
-          resposta.mont = false;
-          resposta.Qtd = 1;
-          const descont = prazo === 'Antecipado' ? valor * 0.05 : 0;
-          const somaDescontMin =
-            Math.round(parseFloat(descont.toFixed(2)) * 100) / 100;
-          const TotalDesc = valor - somaDescontMin;
-          const retorno = {
-            ...resposta,
-            desconto:
-              Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
-            total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
-          };
-          setItens(
-            ListItens.map((f) => {
-              f.expo = false;
-              f.mont = false;
-              f.Qtd = 1;
-              const data = { ...f };
-              return data;
-            }),
-          );
-          setTimeout(() => {
-            const ListaRetorno = [...ListItens, retorno];
-            setItens(ListaRetorno);
-            setLoadingTable(false);
-          }, 50);
-        } else {
-          resposta.id = 1;
-          const valor1 = Number(
-            resposta.vFinal.replace('.', '').replace(',', '.'),
-          );
-          const ValorGeral = valor1;
-          const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
-          resposta.total =
-            Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
-          resposta.expo = false;
-          resposta.mont = false;
-          resposta.Qtd = 1;
-          const descont = prazo === 'Antecipado' ? valor * 0.05 : 0;
-          const somaDescontMin =
-            Math.round(parseFloat(descont.toFixed(2)) * 100) / 100;
-          const TotalDesc = valor - somaDescontMin;
-          const retorno = {
-            ...resposta,
-            desconto:
-              Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
-            total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
-          };
-          const ListaRetorno = [retorno];
-          setItens(ListaRetorno);
-          setLoadingTable(false);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoadingTable(false);
-        toast({
-          title: 'opss.',
-          description: err,
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-        });
+    const url = `/api/query/get/produto/id/${itenId}`;
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(email),
       });
+      const resposta = await resp.json();
+
+      const maxSum = Math.max(...ListItens.map((obj) => obj.id + 1));
+      resposta.id = maxSum || 1;
+
+      const valor1 = Number(resposta.vFinal.replace('.', '').replace(',', '.'));
+      const ValorGeral = valor1;
+      const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
+      resposta.total =
+        Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
+      resposta.expo = false;
+      resposta.mont = false;
+      resposta.Qtd = 1;
+      const desconto = prazo === 'Antecipado' ? valor * 0.05 : 0;
+      const somaDescontMin =
+        Math.round(parseFloat(desconto.toFixed(2)) * 100) / 100;
+      const TotalDesc = valor - somaDescontMin;
+      const retorno = {
+        ...resposta,
+        desconto: Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
+        total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
+      };
+
+      const newItens = ListItens.map((f) => ({
+        ...f,
+        expo: false,
+        mont: false,
+        Qtd: 1,
+      }));
+      const ListaRetorno = [...newItens, retorno];
+      setItens(ListaRetorno);
+
+      setLoadingTable(false);
+    } catch (err) {
+      console.log(err);
+      setLoadingTable(false);
+      toast({
+        title: 'opss.',
+        description: err,
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const TotalGreal = () => {
+    if (ListItens.length === 0) return 'R$ 0,00';
+
+    const totalItem = ListItens.reduce((acc, item) => {
+      const valor: number = item.total;
+      const valorOriginal: number = parseFloat(item.vFinal.replace(',', '.'));
+      const qtd: number = item.Qtd;
+      const mont: boolean = item.mont;
+      const expo: boolean = item.expo;
+      const acrec: number =
+        mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
+      const somaAcrescimo: number =
+        acrec === 0 ? 0 : (valorOriginal * acrec - valorOriginal) * qtd;
+      const total: number = valor * qtd + somaAcrescimo;
+      return acc + total;
+    }, 0);
+
+    return totalItem.toLocaleString('pt-br', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+  };
+
+  const DescontoGeral = () => {
+    if (ListItens.length === 0) return 'R$ 0,00';
+    const descontos = ListItens.map((i) => i.desconto * i.Qtd);
+    const total = descontos.reduce(
+      (acc: number, valorAtual: number) => acc + valorAtual,
+    );
+    return total.toLocaleString('pt-br', {
+      style: 'currency',
+      currency: 'BRL',
+    });
   };
 
   useEffect(() => {
     setTotalGeral(TotalGreal());
     setDesconto(DescontoGeral());
-  }, [ListItens]);
+  }, [DescontoGeral, ListItens, TotalGreal]);
 
   useEffect(() => {
     if (ListItens.length > 0 && prazo === 'Antecipado') {
@@ -225,7 +211,7 @@ export default function Proposta() {
         }),
       );
     }
-  }, [prazo]);
+  }, []);
 
   const ConsultProd = async () => {
     const url = '/api/query/get/produto/cnpj/' + cnpj;
@@ -415,160 +401,84 @@ export default function Proposta() {
         });
 
   const SalvarProdutos = async () => {
-    const Date5 = new Date(date);
-    Date5.setDate(Date5.getDate() + 5);
-    const VencDate = `${Date5.getUTCFullYear()}-${
-      Date5.getUTCMonth() + 1 < 10
-        ? '0' + (Date5.getUTCMonth() + 1)
-        : Date5.getUTCMonth() + 1
-    }-${
-      Date5.getUTCDate() < 10 ? '0' + Date5.getUTCDate() : Date5.getUTCDate()
-    }`;
+    if (!saveNegocio || saveNegocio === '') {
+      toast({
+        title: 'Esta Faltando informação',
+        description:
+          'Você deve vincular essa proposta a um n° Business ou negocio',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+    } else {
+      const Date5 = new Date(date);
+      Date5.setDate(Date5.getDate() + 5);
+      const VencDate = `${Date5.getUTCFullYear()}-${
+        Date5.getUTCMonth() + 1 < 10
+          ? '0' + (Date5.getUTCMonth() + 1)
+          : Date5.getUTCMonth() + 1
+      }-${
+        Date5.getUTCDate() < 10 ? '0' + Date5.getUTCDate() : Date5.getUTCDate()
+      }`;
 
-    const VencDatePrint = `${
-      Date5.getUTCDate() < 10 ? '0' + Date5.getUTCDate() : Date5.getUTCDate()
-    }/${
-      Date5.getUTCMonth() + 1 < 10
-        ? '0' + (Date5.getUTCMonth() + 1)
-        : Date5.getUTCMonth() + 1
-    }/${Date5.getUTCFullYear()}`;
+      const VencDatePrint = `${
+        Date5.getUTCDate() < 10 ? '0' + Date5.getUTCDate() : Date5.getUTCDate()
+      }/${
+        Date5.getUTCMonth() + 1 < 10
+          ? '0' + (Date5.getUTCMonth() + 1)
+          : Date5.getUTCMonth() + 1
+      }/${Date5.getUTCFullYear()}`;
 
-    const data: any = {
-      cliente: cnpj,
-      itens: ListItens,
-      empresa: Loja,
-      dataPedido: date,
-      vencPedido: VencDate,
-      vencPrint: VencDatePrint,
-      condi: prazo,
-      prazo: tipoprazo,
-      totalGeral: totalGeral,
-      deconto: !Desconto
-        ? 'R$ 0,00'
-        : Desconto === undefined
-        ? 'R$ 0,00'
-        : Desconto === ''
-        ? 'R$ 0,00'
-        : Desconto,
-      vendedor: session.user.name,
-      vendedorId: session.user.id,
-      frete: frete,
-      valorFrete: freteCif,
-      business: saveNegocio,
-      obs: obs,
-    };
-    const url = '/api/db/proposta/post';
-    await axios({
-      method: 'POST',
-      url: url,
-      data: data,
-    })
-      .then((res) => {
-        // console.log(res.data.message);
-        toast({
-          title: 'Proposta Criada',
-          description: res.data.message,
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-        setTimeout(() => {
-          router.back();
-        }, 3100);
+      const data: any = {
+        cliente: cnpj,
+        itens: ListItens,
+        empresa: Loja,
+        dataPedido: date,
+        vencPedido: VencDate,
+        vencPrint: VencDatePrint,
+        condi: prazo,
+        prazo: tipoprazo,
+        totalGeral: totalGeral,
+        deconto: !Desconto
+          ? 'R$ 0,00'
+          : Desconto === undefined
+          ? 'R$ 0,00'
+          : Desconto === ''
+          ? 'R$ 0,00'
+          : Desconto,
+        vendedor: session.user.name,
+        vendedorId: session.user.id,
+        frete: frete,
+        valorFrete: freteCif,
+        business: saveNegocio,
+        obs: obs,
+      };
+      const url = '/api/db/proposta/post';
+      await axios({
+        method: 'POST',
+        url: url,
+        data: data,
       })
-      .catch((err) => {
-        console.error(err.data);
-        const desc = err.data;
-        const msg = desc;
-      });
-  };
-
-  const TotalGreal = () => {
-    if (ListItens.length === 0) return 'R$ 0,00';
-    if (ListItens.length === 1) {
-      const [valor]: any = ListItens.map((i) => i.total);
-      const [ValorP]: any = ListItens.map((i) => i.vFinal);
-      const ValorOriginal = ValorP.replace('.', '').replace(',', '.');
-      const [Qtd]: any = ListItens.map((i) => i.Qtd);
-      const [mont]: any = ListItens.map((i) => i.mont);
-      const [expo]: any = ListItens.map((i) => i.expo);
-      const total = valor * Qtd;
-      const acrec =
-        mont === true && expo === true
-          ? 1.2
-          : expo === true && mont === false
-          ? 1.1
-          : expo === false && mont === true
-          ? 1.1
-          : 0;
-
-      const somaAcrescimo =
-        acrec === 0 ? 0 : (ValorOriginal * acrec - ValorOriginal) * Qtd;
-      const TotalItem = total + somaAcrescimo;
-      return TotalItem.toLocaleString('pt-br', {
-        style: 'currency',
-        currency: 'BRL',
-      });
-    }
-    if (ListItens.length > 1) {
-      const lista: any = ListItens.map((i) => {
-        const valor: any = i.total;
-        const ValorOriginal: any = i.vFinal.replace('.', '').replace(',', '.');
-        const Qtd: any = i.Qtd;
-        const mont: any = i.mont;
-        const expo: any = i.expo;
-        const total = valor * Qtd;
-        const acrec =
-          mont === true && expo === true
-            ? 1.2
-            : expo === true && mont === false
-            ? 1.1
-            : expo === false && mont === true
-            ? 1.1
-            : 0;
-        const somaAcrescimo =
-          acrec === 0 ? 0 : (ValorOriginal * acrec - ValorOriginal) * Qtd;
-        const TotalItem = total + somaAcrescimo;
-        return TotalItem;
-      });
-
-      return lista
-        .reduce((acc: number, valorAtual: number) => acc + valorAtual)
-        .toLocaleString('pt-br', {
-          style: 'currency',
-          currency: 'BRL',
+        .then((res) => {
+          // console.log(res.data.message);
+          toast({
+            title: 'Proposta Criada',
+            description: res.data.message,
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+          });
+          setTimeout(() => {
+            router.back();
+          }, 3100);
+        })
+        .catch((err) => {
+          console.error(err.data);
         });
     }
   };
 
-  const DescontoGeral = () => {
-    if (ListItens.length === 0) return 'R$ 0,00';
-    if (ListItens.length === 1) {
-      const valor: any = ListItens.map((i) => i.desconto);
-      const Qtd: any = ListItens.map((i) => i.Qtd);
-      const total = Qtd * valor;
-      return total.toLocaleString('pt-br', {
-        style: 'currency',
-        currency: 'BRL',
-      });
-    }
-    if (ListItens.length > 1) {
-      const list: any = ListItens.map((i) => {
-        const valor: any = i.desconto;
-        const Qtd: any = i.Qtd;
-        const total = Qtd * valor;
-        return total;
-      });
-      return list
-        .reduce((acc: number, valorAtual: number) => acc + valorAtual)
-        .toLocaleString('pt-br', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-    }
-  };
-
-  if (ListItens.length > 0 && prazo === 'A')
+  if (ListItens.length > 0 && prazo === 'A Prazo')
     if (loading) {
       return <Loading size="200px">Carregando...</Loading>;
     }
@@ -651,7 +561,18 @@ export default function Proposta() {
   };
 
   function handleInputChange(event: any) {
-    setFreteCif(event.target.value);
+    const valor = event.target.value;
+    setFreteCif(parseFloat(valor));
+  }
+
+  function getLoja(loja: SetStateAction<string>) {
+    setLoja(loja);
+  }
+  function getPrazo(prazo: SetStateAction<string>) {
+    setTipoPrazo(prazo);
+  }
+  function getNegocio(negocio: SetStateAction<string>) {
+    setSaveNegocio(negocio);
   }
 
   return (
@@ -692,35 +613,7 @@ export default function Proposta() {
             </Select>
           </Box>
           <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: 'gray.50',
-              }}
-            >
-              N° Business
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder="Selecione um Negocio"
-              onChange={(e) => setSaveNegocio(e.target.value)}
-              value={saveNegocio}
-            >
-              {negocio.map((item) => {
-                return (
-                  <>
-                    <option value={item.id}>{item.attributes.nBusiness}</option>
-                  </>
-                );
-              })}
-            </Select>
+            <CompBusiness Resp={saveNegocio} onAddResp={getNegocio} />
           </Box>
 
           <Box>
@@ -748,30 +641,7 @@ export default function Proposta() {
             />
           </Box>
           <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: 'gray.50',
-              }}
-            >
-              Loja
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder="Selecione uma Empresa"
-              onChange={(e) => setLoja(e.target.value)}
-            >
-              <option value="Ribermax">RIBERMAX EMBALAGENS DE MADEIRA</option>
-              <option value="Renato">RENATO HUGO</option>
-              <option value="Bragheto">BRAGHETO PALETES E EMBALAGENS</option>
-            </Select>
+            <CompFornecedor Resp={Loja} onAddResp={getLoja} />
           </Box>
           <Box>
             <FormLabel
@@ -801,37 +671,7 @@ export default function Proposta() {
             </Select>
           </Box>
           <Box hidden={prazo === 'A Prazo' ? false : true}>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: 'gray.50',
-              }}
-            >
-              Tipos de prazo
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder=" "
-              onChange={(e) => setTipoPrazo(e.target.value)}
-              value={tipoprazo}
-            >
-              {reqPrazo.map((p) => {
-                return (
-                  <>
-                    <option key={p.id} value={p.attributes.valor}>
-                      {p.attributes.titulo}
-                    </option>
-                  </>
-                );
-              })}
-            </Select>
+            <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} />
           </Box>
           <Box>
             <FormLabel
@@ -858,7 +698,7 @@ export default function Proposta() {
               <option value="FOB">FOB</option>
             </Select>
           </Box>
-          <Box hidden={disablefrete()}>
+          <Box hidden={frete === 'CIF' ? false : true}>
             <FormLabel
               htmlFor="cidade"
               fontSize="xs"
@@ -877,7 +717,7 @@ export default function Proposta() {
               fontSize="xs"
               rounded="md"
               onChange={handleInputChange}
-              value={freteCifMask}
+              value={freteCif}
             />
           </Box>
         </Box>
@@ -984,7 +824,7 @@ export default function Proposta() {
             </chakra.p>
             <chakra.p>
               Frete:{' '}
-              {parseFloat(freteCif).toLocaleString('pt-br', {
+              {freteCif.toLocaleString('pt-br', {
                 style: 'currency',
                 currency: 'BRL',
               })}

@@ -55,8 +55,6 @@ function Layout({ children }) {
     router.push('/');
     return <Loading size="200px">Redirecionando...</Loading>;
   }
-  console.log(status);
-  console.log(session);
 
   return (
     <Flex

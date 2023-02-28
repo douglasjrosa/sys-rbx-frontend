@@ -80,7 +80,7 @@ export const Populate = async (Cliente: string, dados: any) => {
       celular: rep.cel,
       CNAE: rep.CNAE,
       codpais: rep.cPais,
-      SalesHistory: dataHistory,
+      history: dataHistory,
       titulo: rep.nome,
       vendedor: dados.vendedor,
       vendedorId: dados.vendedorId,
