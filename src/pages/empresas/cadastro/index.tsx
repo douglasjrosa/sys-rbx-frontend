@@ -22,6 +22,7 @@ import { modCaix } from '../../../components/data/modCaix';
 import { cnpj } from 'cpf-cnpj-validator';
 import { useSession } from 'next-auth/react';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
+import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
 
 export default function Cadastro() {
   const { data: session } = useSession();
@@ -71,7 +72,6 @@ export default function Cadastro() {
   const [maxPg, setMaxpg] = useState('');
   const [forpg, setForpg] = useState('');
   const [frete, setFrete] = useState('');
-  const [ListaEmpre, setListaEmpre] = useState([]);
   const [Empresa, setEmpresa] = useState('');
   const [Responsavel, setResponsavel] = useState('');
 
@@ -211,6 +211,8 @@ export default function Cadastro() {
     setMaxpg('');
     setForpg('');
     setFrete('');
+    setResponsavel('');
+    setEmpresa('');
   };
 
   const data = {
@@ -265,6 +267,7 @@ export default function Cadastro() {
       vendedor: session.user.name,
       vendedorId: session.user.id,
       responsavel: Responsavel,
+      fornecedor: Empresa,
     },
   };
 
@@ -353,6 +356,9 @@ export default function Cadastro() {
 
   function getResponsavel(respons: React.SetStateAction<string>) {
     setResponsavel(respons);
+  }
+  function getFornecedor(fornecedor: React.SetStateAction<string>) {
+    setEmpresa(fornecedor);
   }
 
   return (
@@ -597,33 +603,10 @@ export default function Cadastro() {
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
-                      <FormLabel
-                        htmlFor="tabela de calculo"
-                        fontSize="xs"
-                        fontWeight="md"
-                        color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
-                      >
-                        Empresa relacionada
-                      </FormLabel>
-                      <Select
-                        borderColor="gray.600"
-                        focusBorderColor="brand.400"
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        fontSize="xs"
-                        rounded="md"
-                        placeholder="selecine uma opção"
-                        onChange={(e) => setContribuinte(e.target.value)}
-                        value={contribuinte}
-                      >
-                        <option value="1">Contribuinte ICMS</option>
-                        <option value="2">Contribuinte isento do ICMS</option>
-                        <option value="9">Não contribuinte</option>
-                      </Select>
+                      <CompFornecedor
+                        Resp={Empresa}
+                        onAddResp={getFornecedor}
+                      />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
                       <CompPessoa

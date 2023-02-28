@@ -48,6 +48,8 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any }) => {
         Responsavel
       </FormLabel>
       <Select
+        borderColor="gray.600"
+        focusBorderColor="brand.400"
         shadow="sm"
         size="xs"
         w="full"

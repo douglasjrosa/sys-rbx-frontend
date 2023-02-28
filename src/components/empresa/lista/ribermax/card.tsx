@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Box, Flex, chakra, Link } from '@chakra-ui/react';
+import { Box, chakra, Flex, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -37,8 +37,6 @@ export default function CardEmpresaRibermax() {
   }
 
   const render = dados.map((item) => {
-    console.log(item.data.attributes.nome);
-
     const cnpj = () => {
       const dig01 =
         item.data.attributes.CNPJ === null

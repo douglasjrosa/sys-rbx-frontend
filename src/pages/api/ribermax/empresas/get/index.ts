@@ -20,7 +20,6 @@ export default async function GetEmpresa(
     })
       .then((resp) => resp.json())
       .then((json) => {
-        console.log(json)
         const rep = json;
 
         const resposta = rep.map((iten: any) => {

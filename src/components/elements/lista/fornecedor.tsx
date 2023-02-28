@@ -55,7 +55,7 @@ export const CompFornecedor = (props: { Resp: string; onAddResp: any }) => {
         w="full"
         fontSize="xs"
         rounded="md"
-        placeholder="selecine um responsavel"
+        placeholder="selecine uma empresa"
         onChange={atualizarValor}
         value={valor}
       >

@@ -25,7 +25,6 @@ export default function CardEmpresa() {
     })
       .then((resp) => resp.json())
       .then((json) => {
-        console.log(json);
         setDados(json);
         setLoading(false);
       });
