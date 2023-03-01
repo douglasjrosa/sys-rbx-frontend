@@ -23,9 +23,11 @@ import { cnpj } from 'cpf-cnpj-validator';
 import { useSession } from 'next-auth/react';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
 import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
+import { useRouter } from 'next/router';
 
 export default function Cadastro() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [CNPJ, setCNPJ] = useState('');
   const [nome, setNome] = useState('');
   const [fantasia, setFantasia] = useState('');
@@ -213,6 +215,9 @@ export default function Cadastro() {
     setFrete('');
     setResponsavel('');
     setEmpresa('');
+    setTimeout(() => {
+      router.back();
+    }, 1000);
   };
 
   const data = {
@@ -394,6 +399,7 @@ export default function Cadastro() {
                 md: 2,
               }}
               rounded={20}
+              border={'1px solid #ccc'}
             >
               <chakra.form
                 method="POST"
@@ -1276,7 +1282,7 @@ export default function Cadastro() {
                     sm: 6,
                   }}
                   py={2}
-                  pb={[12, null, 0]}
+                  pb={[12, null, 5]}
                   bg="gray.50"
                   _dark={{
                     bg: '#121212',

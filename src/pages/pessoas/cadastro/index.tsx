@@ -14,6 +14,7 @@ import {
   Stack,
   Textarea,
   Flex,
+  Icon,
   Toast,
 } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
@@ -22,9 +23,11 @@ import axios from 'axios';
 import { mask, unMask } from 'remask';
 import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 import { cpf } from 'cpf-cnpj-validator';
+import { MdAddBusiness } from "react-icons/md";
+import { useRouter } from 'next/router';
 
 export default function Cadastro() {
-  //cru
+  const router = useRouter()
   const [nome, setNome] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -165,31 +168,9 @@ export default function Cadastro() {
   };
 
   const resent = () => {
-    setNome('');
-    setWhatsapp('');
-    setTelefone('');
-    setEmail('');
-    setObs('');
-    setEmpresa('');
-    setWork([]);
-    setWhatsappMask('');
-    setTelefoneMask('');
-    setWorkId('');
-    setWorkNome('');
-    setWorkfantasia('');
-    setWorkEndereco('');
-    setWorkNumero('');
-    setWorkComplemento('');
-    setWorkBairro('');
-    setWorkCep('');
-    setWorkCidade('');
-    setWorkUf('');
-    setWorkFone('');
-    setWorkCelular('');
-    setWorkSite('');
-    setWorkEmail('');
-    setWorkEmailNfe('');
-    setWorkCNPJ('');
+    setTimeout(() => {
+      router.back()
+    }, 500)
   };
 
   const CEP = (e) => {
@@ -738,9 +719,6 @@ export default function Cadastro() {
                       </FormControl>
 
                       <FormControl as={GridItem} colSpan={[12, 3]}>
-                        <Heading mb={3} size="xs">
-                          empresa
-                        </Heading>
                         <FormLabel
                           htmlFor="prazo pagamento"
                           fontSize="xs"
@@ -773,6 +751,10 @@ export default function Cadastro() {
                             );
                           })}
                         </Select>
+                        <Box mt={5}>
+
+                        <Button w={'100%'} colorScheme={'telegram'}>Adicionar{' '} <Icon as={MdAddBusiness} /></Button>
+                        </Box>
                       </FormControl>
                     </SimpleGrid>
                   </Stack>

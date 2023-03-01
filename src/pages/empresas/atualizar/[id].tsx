@@ -23,6 +23,8 @@ import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
 import { useRouter } from 'next/router';
 import { cnpj } from 'cpf-cnpj-validator';
+import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
+import { CompPessoa } from '../../../components/elements/lista/pessoas';
 
 export default function EmpresaId() {
   const router = useRouter();
@@ -74,6 +76,8 @@ export default function EmpresaId() {
   const [frete, setFrete] = useState('');
   const [status, setStatus] = useState(false);
   const [ID, setID] = useState('');
+  const [Empresa, setEmpresa] = useState('');
+  const [Responsavel, setResponsavel] = useState('');
 
   useEffect(() => {
     const getempresa = async () => {
@@ -82,7 +86,18 @@ export default function EmpresaId() {
       const url = `/api/db/empresas/getId/${id}`;
       const response = await axios(url);
       const empresa = await response.data.data;
+      console.log(empresa.attributes.CNPJ);
 
+      setResponsavel(
+        empresa.attributes.responsavel.data === null
+          ? null
+          : empresa.attributes.responsa.data.id,
+      );
+      setEmpresa(
+        empresa.attributes.fornecedor.data === null
+          ? null
+          : empresa.attributes.fornecedor.data.id,
+      );
       setID(empresa.id);
       setCNPJ(empresa.attributes.CNPJ === null ? '' : empresa.attributes.CNPJ);
       setNome(empresa.attributes.nome === null ? '' : empresa.attributes.nome);
@@ -306,6 +321,9 @@ export default function EmpresaId() {
     setMaxpg('');
     setForpg('');
     setFrete('');
+    setTimeout(() => {
+      router.back();
+    }, 1000);
   };
 
   const data = {
@@ -357,6 +375,8 @@ export default function EmpresaId() {
       forpg: forpg,
       frete: frete,
       contribuinte: contribuinte,
+      responsavel: Responsavel,
+      fornecedor: Empresa,
     },
   };
 
@@ -395,15 +415,27 @@ export default function EmpresaId() {
     // reload();
   };
 
+  function getResponsavel(respons: React.SetStateAction<string>) {
+    setResponsavel(respons);
+  }
+  function getFornecedor(fornecedor: React.SetStateAction<string>) {
+    setEmpresa(fornecedor);
+  }
+  console.log(CNPJ);
+
   return (
     <>
       <Box
+        h={'100%'}
         bg="#edf3f8"
         _dark={{
           bg: '#111',
         }}
         px={5}
         pt={3}
+        display={'flex'}
+        justifyContent={'center'}
+        alignItems={'center'}
       >
         <Box mt={[5, 0]}>
           <SimpleGrid
@@ -424,6 +456,7 @@ export default function EmpresaId() {
                 md: 2,
               }}
               rounded={20}
+              border={'1px solid #ccc'}
             >
               <chakra.form
                 method="POST"
@@ -436,7 +469,7 @@ export default function EmpresaId() {
                 <Stack
                   px={4}
                   py={3}
-                  bg="gray.100"
+                  bg="gray.50"
                   _dark={{
                     bg: '#141517',
                   }}
@@ -477,6 +510,7 @@ export default function EmpresaId() {
                           rounded="md"
                           maxLength={14}
                           onChange={(e) => setCNPJ(e.target.value)}
+                          value={CNPJ}
                         />
                       </FormControl>
                       <Button
@@ -644,6 +678,18 @@ export default function EmpresaId() {
                               : ' ';
                           return val;
                         })()}
+                      />
+                    </FormControl>
+                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                      <CompFornecedor
+                        Resp={Empresa}
+                        onAddResp={getFornecedor}
+                      />
+                    </FormControl>
+                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                      <CompPessoa
+                        Resp={Responsavel}
+                        onAddResp={getResponsavel}
                       />
                     </FormControl>
                   </SimpleGrid>
@@ -998,11 +1044,11 @@ export default function EmpresaId() {
                 <Stack
                   px={4}
                   py={3}
-                  bg="gray.100"
+                  bg="gray.50"
                   _dark={{
                     bg: '#141517',
                   }}
-                  spacing={3}
+                  spacing={6}
                 >
                   <SimpleGrid columns={12} spacing={3}>
                     <Heading as={GridItem} colSpan={12} size="sd">
@@ -1307,8 +1353,8 @@ export default function EmpresaId() {
                     sm: 6,
                   }}
                   py={2}
-                  pb={[12, null, 0]}
-                  bg="gray.100"
+                  pb={[12, null, 5]}
+                  bg="gray.50"
                   _dark={{
                     bg: '#121212',
                   }}
