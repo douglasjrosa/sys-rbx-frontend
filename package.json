@@ -41,6 +41,7 @@
     "react-dom": "18.2.0",
     "react-icons": "^3.11.0",
     "react-markdown": "^6.0.2",
+    "react-spinners": "^0.13.8",
     "remask": "^0.1.0-alpha.5",
     "xml": "^1.0.1",
     "yup": "^0.32.11"

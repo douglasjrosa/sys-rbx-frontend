@@ -8,19 +8,22 @@ export default async function GetEmpresa(
 ) {
   if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN;
+    const { id } = req.query;
 
     await axios({
       method: 'GET',
       url:
         process.env.NEXT_PUBLIC_STRAPI_API_URL +
-        '/empresas?filters[status][$eq]=true',
+        '/businesses/' +
+        id +
+        '?populate=*',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
-      .then((Response) => {
-        res.status(200).json(Response.data);
+      .then(async (Response) => {
+        res.status(200).json(Response.data.data);
       })
       .catch((err) => {
         res.status(400).json({

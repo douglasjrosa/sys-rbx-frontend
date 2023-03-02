@@ -64,7 +64,7 @@ export const RelaciomentoEmpr = (props: { onGetValue: any }) => {
         w="full"
         fontSize="xs"
         rounded="md"
-        placeholder="Selecione uma tabela"
+        placeholder="Selecione uma empresa"
         onChange={handleId}
       >
         {work.map((item) => {

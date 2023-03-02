@@ -1,31 +1,29 @@
 /* eslint-disable react/jsx-key */
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
-  chakra,
   Box,
   Button,
+  chakra,
+  Flex,
   FormControl,
   FormLabel,
   GridItem,
   Heading,
   Input,
-  Select,
   SimpleGrid,
   Stack,
   Textarea,
-  Flex,
   Toast,
   useToast,
 } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
-import { useState } from 'react';
 import axios from 'axios';
-import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
-import { useRouter } from 'next/router';
-import { mask, unMask } from 'remask';
 import { cpf } from 'cpf-cnpj-validator';
-import { RelaciomentoEmpr } from '../../../components/elements/lista/relacionamentoEmpresa';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { mask, unMask } from 'remask';
+import { RelaciomentoEmpr } from '../../../components/elements/lista/relacionamentoEmpresa';
+import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 
 export default function PessoaId() {
   const router = useRouter();

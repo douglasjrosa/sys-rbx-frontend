@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { BtCreate } from '../../components/negocios/component/butonCreate';
 
 export default function Negocios() {
   const router = useRouter();
@@ -77,10 +78,6 @@ export default function Negocios() {
   useEffect(() => {
     if (!Data && !Pedido && !Cnpj) setRender(false);
   }, [Cnpj, Data, Pedido]);
-  console.log(Render);
-  console.log(Pedido);
-  console.log(Data);
-  console.log(Cnpj);
 
   return (
     <>
@@ -131,13 +128,7 @@ export default function Negocios() {
             h="100%"
             justifyContent={'space-evenly'}
           >
-            <Button
-              h={{ md: '40%', sm: '70%' }}
-              colorScheme="whatsapp"
-              onClick={() => router.push('/negocios/create')}
-            >
-              Novo Negocio
-            </Button>
+            <BtCreate />
           </Box>
         </Flex>
         <Box h={'85%'} overflow={'auto'}>

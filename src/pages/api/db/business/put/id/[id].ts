@@ -6,21 +6,22 @@ export default async function GetEmpresa(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method === 'GET') {
+  if (req.method === 'PUT') {
     const token = process.env.ATORIZZATION_TOKEN;
+    const { id } = req.query;
+    const data = req.body;
 
     await axios({
-      method: 'GET',
-      url:
-        process.env.NEXT_PUBLIC_STRAPI_API_URL +
-        '/empresas?filters[status][$eq]=true',
+      method: 'PUT',
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/businesses/' + id,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      data: data,
     })
-      .then((Response) => {
-        res.status(200).json(Response.data);
+      .then(async (Response) => {
+        res.status(200).json(Response.data.data);
       })
       .catch((err) => {
         res.status(400).json({
@@ -30,6 +31,6 @@ export default async function GetEmpresa(
         });
       });
   } else {
-    return res.status(405).send({ message: 'Only GET requests are allowed' });
+    return res.status(405).send({ message: 'Only PUT requests are allowed' });
   }
 }

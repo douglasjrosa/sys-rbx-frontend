@@ -1,7 +1,25 @@
 import { Box, Flex, Icon, Input, Textarea } from '@chakra-ui/react';
+import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import { FaLocationArrow } from 'react-icons/fa';
 
-export const NegocioFooter = () => {
+export const NegocioFooter = (props: { onGetValue: any }) => {
+  const { data: session } = useSession();
+  const [valor, setValor] = useState('');
+
+  const addItens = () => {
+    const date = new Date();
+    const DateAtua = date.toISOString();
+
+    const data = {
+      usuario: session.user.name,
+      date: DateAtua,
+      msg: valor,
+    };
+
+    props.onGetValue(data);
+  };
+
   return (
     <>
       <Box bg={'#f0f2f5'} w={'100%'} h={'100%'}>
@@ -11,12 +29,6 @@ export const NegocioFooter = () => {
           justifyContent={'space-between'}
           alignItems={'center'}
         >
-          {/* <Input
-            bg={'white'}
-            w={'95%'}
-            rounded={115}
-            borderColor={'gray.300'}
-          /> */}
           <Textarea
             resize={'none'}
             overflowY={'hidden'}
@@ -28,16 +40,14 @@ export const NegocioFooter = () => {
             rounded={'5px'}
             borderColor={'gray.300'}
             rows={1}
-
+            onChange={(e: any) => setValor(e.target.value)}
           />
           <Icon
             as={FaLocationArrow}
             boxSize={6}
-            // mt={8}
-            // ms={5}
             color="gray.600"
             cursor="pointer"
-            // onClick={addItens}
+            onClick={addItens}
           />
         </Flex>
       </Box>
