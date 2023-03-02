@@ -96,9 +96,14 @@ export default function CardPessoas() {
         : item.attributes.empresas.data;
     const emplist =
       empresas.length === 0
-        ? 'não tem'
-        : empresas.map((m: any) => m.attributes.nome);
-    console.log(emplist);
+        ? 'não tem empresa vinculada.'
+        : empresas.map((m: any, x: number) => {
+          if (x === empresas.length - 1) {
+          return `${m.attributes.nome}.`
+          }else {
+            return `${m.attributes.nome}, `;
+          }
+        }).join('');
 
     return (
       <Box

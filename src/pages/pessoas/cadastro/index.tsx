@@ -1,39 +1,40 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
-  chakra,
   Box,
   Button,
+  chakra,
+  Flex,
   FormControl,
   FormLabel,
   GridItem,
   Heading,
   Input,
-  Select,
   SimpleGrid,
   Stack,
   Textarea,
-  Flex,
-  Icon,
   Toast,
+  useToast,
 } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
-import { useState } from 'react';
 import axios from 'axios';
-import { mask, unMask } from 'remask';
-import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 import { cpf } from 'cpf-cnpj-validator';
-import { MdAddBusiness } from "react-icons/md";
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { mask, unMask } from 'remask';
+import { RelaciomentoEmpr } from '../../../components/elements/lista/relacionamentoEmpresa';
+import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 
 export default function Cadastro() {
-  const router = useRouter()
+  const router = useRouter();
+  const { data: session } = useSession();
+  const toast = useToast();
   const [nome, setNome] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [obs, setObs] = useState('');
-  const [empresa, setEmpresa] = useState('');
+  const [Empresa, setEmpresa] = useState<any>([]);
   const [CPF, setCPF] = useState('');
   const [cep, setCep] = useState('');
   const [endereco, setEndereco] = useState('');
@@ -41,146 +42,54 @@ export default function Cadastro() {
   const [bairro, setBairro] = useState('');
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
-
   const [work, setWork] = useState([]);
-
-  //mask
   const [whatsappMask, setWhatsappMask] = useState('');
   const [telefoneMask, setTelefoneMask] = useState('');
-
-  const [workId, setWorkId] = useState('');
-  const [workNome, setWorkNome] = useState('');
-  const [workfantasia, setWorkfantasia] = useState('');
-  const [workEndereco, setWorkEndereco] = useState('');
-  const [workNumero, setWorkNumero] = useState('');
-  const [workComplemento, setWorkComplemento] = useState('');
-  const [workBairro, setWorkBairro] = useState('');
-  const [workCep, setWorkCep] = useState('');
-  const [workCidade, setWorkCidade] = useState('');
-  const [workUf, setWorkUf] = useState('');
-  const [workFone, setWorkFone] = useState('');
-  const [workCelular, setWorkCelular] = useState('');
-  const [workSite, setWorkSite] = useState('');
-  const [workEmail, setWorkEmail] = useState('');
-  const [workEmailNfe, setWorkEmailNfe] = useState('');
-  const [workCNPJ, setWorkCNPJ] = useState('');
-
-  const consultaEmpresa = () => {
-    let url = '/api/db/empresas/getEmpresas/get';
-    axios({
-      method: 'GET',
-      url: url,
-    })
-      .then(function (response) {
-        console.log(response.data);
-        setWork(response.data.data);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  };
+  const [CepMask, setCepMask] = useState('');
+  const [CpfMask, setCpfMask] = useState('');
 
   useEffect(() => {
-    consultaEmpresa();
-    if (empresa !== '' && workId === '') {
-      consultaEmp();
-    }
-  }, []);
+    setWork(Empresa.map((i: { id: any }) => i.id));
+  }, [Empresa]);
 
-  const MaskWhatsapp = (e) => {
+  const MaskWhatsapp = (e: any) => {
     const originalVelue = unMask(e.target.value);
     const maskedValue = mask(originalVelue, ['(99) 9 9999-9999']);
     setWhatsapp(originalVelue);
     setWhatsappMask(maskedValue);
   };
 
-  const MaskTel = (e) => {
+  const MaskTel = (e: any) => {
     const originalVelue = unMask(e.target.value);
     const maskedValue = mask(originalVelue, ['(99) 9999-9999']);
     setTelefone(originalVelue);
     setTelefoneMask(maskedValue);
   };
 
-  const consultaEmpresaId = async (e) => {
-    const id = e.target.value;
-    console.log(id);
-    let url = '/api/db/empresas/consulta/' + id;
-    await axios({
-      method: 'GET',
-      url: url,
-    })
-      .then(function (response) {
-        console.log(response.data.data.id);
-        setEmpresa(response.data.data.id);
-        setWorkId(response.data.data.id);
-        setWorkNome(response.data.data.attributes.nome);
-        setWorkfantasia(response.data.data.attributes.fantasia);
-        setWorkEndereco(response.data.data.attributes.endereco);
-        setWorkNumero(response.data.data.attributes.numero);
-        setWorkComplemento(response.data.data.attributes.complemento);
-        setWorkBairro(response.data.data.attributes.bairro);
-        setWorkCep(response.data.data.attributes.cep);
-        setWorkCidade(response.data.data.attributes.cidade);
-        setWorkUf(response.data.data.attributes.uf);
-        setWorkFone(response.data.data.attributes.fone);
-        setWorkCelular(response.data.data.attributes.celular);
-        setWorkSite(response.data.data.attributes.site);
-        setWorkEmail(response.data.data.attributes.email);
-        setWorkEmailNfe(response.data.data.attributes.emailNfe);
-        setWorkCNPJ(response.data.data.attributes.CNPJ);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  const MaskCpf = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ['999.999.999-99']);
+    setCPF(originalVelue);
+    setCpfMask(maskedValue);
   };
 
-  const consultaEmp = async () => {
-    const id = empresa;
-    console.log(id);
-    let url = '/api/db/empresas/consulta/' + id ;
-    await axios({
-      method: 'GET',
-      url: url,
-    })
-      .then(function (response) {
-        console.log(response.data.data);
-        setEmpresa(response.data.data.id);
-        setWorkId(response.data.data.id);
-        setWorkNome(response.data.data.attributes.nome);
-        setWorkfantasia(response.data.data.attributes.fantasia);
-        setWorkEndereco(response.data.data.attributes.endereco);
-        setWorkNumero(response.data.data.attributes.numero);
-        setWorkComplemento(response.data.data.attributes.complemento);
-        setWorkBairro(response.data.data.attributes.bairro);
-        setWorkCep(response.data.data.attributes.cep);
-        setWorkCidade(response.data.data.attributes.cidade);
-        setWorkUf(response.data.data.attributes.uf);
-        setWorkFone(response.data.data.attributes.fone);
-        setWorkCelular(response.data.data.attributes.celular);
-        setWorkSite(response.data.data.attributes.site);
-        setWorkEmail(response.data.data.attributes.email);
-        setWorkEmailNfe(response.data.data.attributes.emailNfe);
-        setWorkCNPJ(response.data.data.attributes.CNPJ);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  const CEP = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ['99.999-999']);
+    setCepMask(maskedValue);
+    setCep(originalVelue);
+  };
+
+
+  const NUMERO = (e: any) => {
+    const data = e.target.value.replace(/[a-zA-Z]+/g, '');
+    setNumero(data);
   };
 
   const resent = () => {
     setTimeout(() => {
-      router.back()
-    }, 500)
-  };
-
-  const CEP = (e) => {
-    const data = e.target.value.replace(/[a-zA-Z]+/g, '');
-    setCep(data);
-  };
-
-  const NUMERO = (e) => {
-    const data = e.target.value.replace(/[a-zA-Z]+/g, '');
-    setNumero(data);
+      router.back();
+    }, 1000);
   };
 
   const checkCep = async () => {
@@ -196,10 +105,17 @@ export default function Cadastro() {
   };
 
   const save = async () => {
-    const data1 = {
+    const date = new Date();
+    const dateIsso = date.toISOString();
+    const historico = {
+      date: dateIsso,
+      vendedor: session.user.name,
+      msg: `cinete ${nome} foi cadastrado`,
+    };
+    const data = {
       data: {
         nome: nome,
-        celular: whatsapp,
+        whatsapp: whatsapp,
         telefone: telefone,
         email: email,
         CPF: CPF,
@@ -210,73 +126,59 @@ export default function Cadastro() {
         bairro: bairro,
         cidade: cidade,
         obs: obs,
-        status: 'true',
-        empresas: workfantasia,
+        status: true,
+        empresas: work,
+        history: [historico],
       },
     };
+    console.log(data);
+    const url = '/api/db/pessoas/Post';
 
-    const UrlRb = '/api/db_bling/pessoas/Post';
-    await axios({
-      method: 'POST',
-      url: UrlRb,
-      data: data1,
-    })
-      .then(async (response) => {
-        console.log(response);
-        if (response.data.retorno.erros[0].erro.cod === 60) {
-          console.log('O pessoa não pode ser cadastrado sem nome');
-        }
-        if (response.data.retorno.erros[0].erro.cod === 62) {
-          console.log(
-            'O pessoa não pode ser cadastrado CPF, ou CPF esta incorreto',
-          );
-        }
-        if (response.data.retorno.erros[0].erro.cod === 68) {
-          console.log('O pessoa com CPF esta incorreto, favor verificar');
-        }
-        if (response.data.retorno.erros[0].erro.cod === 70) {
-          console.log('O pessoa já cadastrado');
-        } else {
-          const data = {
-            data: {
-              nome: nome,
-              celular: whatsapp,
-              telefone: telefone,
-              email: email,
-              CPF: CPF,
-              CEP: cep,
-              uf: uf,
-              endereco: endereco,
-              numero: numero,
-              bairro: bairro,
-              cidade: cidade,
-              obs: obs,
-              status: true,
-              empresas: [parseInt(empresa)],
-            },
-          };
-
-          const url = '/api/pessoas/Post';
-
-          await axios({
-            method: 'POST',
-            url: url,
-            data: data,
-          })
-            .then((response) => {
-              console.log(response);
-              resent();
-              return response.data;
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
+    if (!nome) {
+      toast({
+        title: 'Como devemos chamar esse cliente',
+        description:
+          'Não te disseram que  é falta de educação não chamar as pessoas pelo nome!',
+        status: 'warning',
+        duration: 6000,
+        isClosable: true,
       });
+    } else if (!telefone && !whatsapp) {
+      toast({
+        title: 'Sem numero de contato',
+        description:
+          'Desse jeito não tem como você ou a equipe entrar em contato com o cliente!',
+        status: 'warning',
+        duration: 6000,
+        isClosable: true,
+      });
+    } else {
+      await axios({
+        method: 'POST',
+        url: url,
+        data: data,
+      })
+        .then((response) => {
+          console.log(response);
+          resent();
+          toast({
+            title: 'salvo',
+            description: response.data,
+            status: 'warning',
+            duration: 6000,
+            isClosable: true,
+          });
+          return response.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   };
+
+  function getEmpresa(empresa: any) {
+    setEmpresa([...Empresa, empresa]);
+  }
 
   return (
     <>
@@ -357,7 +259,7 @@ export default function Cadastro() {
                           w="full"
                           rounded="md"
                           textTransform={'uppercase'}
-                          onChange={(e) => setNome(e.target.value)}
+                          onChange={(e: any) => setNome(e.target.value)}
                           value={nome}
                         />
                       </FormControl>
@@ -384,20 +286,9 @@ export default function Cadastro() {
                           w="full"
                           rounded="md"
                           textTransform={'uppercase'}
-                          maxLength={11}
-                          onChange={(e) => {
-                            const cpfv = e.target.value.replace(
-                              /[a-zA-Z]+/g,
-                              '',
-                            );
-
-                            setCPF(cpfv);
-                          }}
-                          onBlur={(e) => {
-                            const cpfv = e.target.value.replace(
-                              /[a-zA-Z]+/g,
-                              '',
-                            );
+                          onChange={MaskCpf}
+                          onBlur={(e: any) => {
+                            const cpfv = unMask(e.target.value);
                             const validcpf = cpf.isValid(cpfv);
 
                             if (cpfv.length < 11) {
@@ -432,7 +323,7 @@ export default function Cadastro() {
                               });
                             }
                           }}
-                          value={CPF}
+                          value={CpfMask}
                         />
                       </FormControl>
 
@@ -460,7 +351,7 @@ export default function Cadastro() {
                           textTransform={'uppercase'}
                           onChange={CEP}
                           onBlur={checkCep}
-                          value={cep}
+                          value={CepMask}
                         />
                       </FormControl>
 
@@ -607,7 +498,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={(e: any) => setEmail(e.target.value)}
                           value={email}
                         />
                       </FormControl>
@@ -685,7 +576,7 @@ export default function Cadastro() {
                           _placeholder={{ color: 'inherit' }}
                           size="sm"
                           resize={'none'}
-                          onChange={(e) => setObs(e.target.value)}
+                          onChange={(e: any) => setObs(e.target.value)}
                           value={obs}
                         />
                       </Box>
@@ -695,66 +586,42 @@ export default function Cadastro() {
                       <Heading as={GridItem} colSpan={12} mb={3} size="sd">
                         Empresas
                       </Heading>
-                      <FormControl as={GridItem} colSpan={[12, 9]}>
-                        {workNome === '' ? null : (
-                          <ListaEmpresa
-                            id={workId}
-                            nome={workNome}
-                            fantasia={workfantasia}
-                            endereco={workEndereco}
-                            numero={workNumero}
-                            complemento={workComplemento}
-                            bairro={workBairro}
-                            cep={workCep}
-                            cidade={workCidade}
-                            uf={workUf}
-                            fone={workFone}
-                            celular={workCelular}
-                            site={workSite}
-                            email={workEmail}
-                            emailNfe={workEmailNfe}
-                            CNPJ={workCNPJ}
-                          />
-                        )}
-                      </FormControl>
-
-                      <FormControl as={GridItem} colSpan={[12, 3]}>
-                        <FormLabel
-                          htmlFor="prazo pagamento"
-                          fontSize="xs"
-                          fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
+                      <FormControl as={GridItem} colSpan={[12, 8]}>
+                        <SimpleGrid
+                          p="1rem"
+                          columns={{ base: 1, md: 3 }}
+                          row={{ base: 1, md: 3 }}
+                          spacing={{ base: 3, md: 5 }}
                         >
-                          Empresa relacionada
-                        </FormLabel>
-                        <Select
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
-                          shadow="sm"
-                          size="xs"
-                          w="full"
-                          fontSize="xs"
-                          rounded="md"
-                          placeholder="Selecione uma tabela"
-                          onChange={consultaEmpresaId}
-                          value={workId}
-                        >
-                          {work.map((item) => {
+                          {Empresa.map((i: any, x: number) => {
                             return (
-                              // eslint-disable-next-line react/jsx-key
-                              <option value={item.id}>
-                                {item.attributes.nome}
-                              </option>
+                              <ListaEmpresa
+                                key={x}
+                                index={x}
+                                id={i.id}
+                                nome={i.attributes.nome}
+                                fantasia={i.attributes.fantasia}
+                                endereco={i.attributes.endereco}
+                                numero={i.attributes.numero}
+                                complemento={i.attributes.complemento}
+                                bairro={i.attributes.bairro}
+                                cep={i.attributes.cep}
+                                cidade={i.attributes.cidade}
+                                uf={i.attributes.uf}
+                                fone={i.attributes.fone}
+                                celular={i.attributes.celular}
+                                site={i.attributes.site}
+                                email={i.attributes.email}
+                                emailNfe={i.attributes.emailNfe}
+                                CNPJ={i.attributes.CNPJ}
+                              />
                             );
                           })}
-                        </Select>
-                        <Box mt={5}>
+                        </SimpleGrid>
+                      </FormControl>
 
-                        <Button w={'100%'} colorScheme={'telegram'}>Adicionar{' '} <Icon as={MdAddBusiness} /></Button>
-                        </Box>
+                      <FormControl ms={10} as={GridItem} colSpan={[12, 3]}>
+                        <RelaciomentoEmpr onGetValue={getEmpresa} />
                       </FormControl>
                     </SimpleGrid>
                   </Stack>
@@ -764,7 +631,7 @@ export default function Cadastro() {
                       sm: 6,
                     }}
                     py={5}
-                    pb={[12, null, 10]}
+                    pb={[12, null, 5]}
                     _dark={{
                       bg: '#121212',
                     }}
@@ -778,6 +645,7 @@ export default function Cadastro() {
                         shadow: '',
                       }}
                       fontWeight="md"
+                      onClick={() => router.back()}
                     >
                       Cancelar
                     </Button>

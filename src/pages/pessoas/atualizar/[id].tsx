@@ -15,25 +15,29 @@ import {
   Textarea,
   Flex,
   Toast,
+  useToast,
 } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
 import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 import { useRouter } from 'next/router';
-import ListaEmpresaAt from '../../../components/pessoas/listaEmpresaAt';
+import { mask, unMask } from 'remask';
 import { cpf } from 'cpf-cnpj-validator';
+import { RelaciomentoEmpr } from '../../../components/elements/lista/relacionamentoEmpresa';
+import { useSession } from 'next-auth/react';
 
 export default function PessoaId() {
   const router = useRouter();
-  const [ID, setId] = useState('');
-
+  const { data: session } = useSession();
+  const toast = useToast();
+  const id = router.query.id;
   const [nome, setNome] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [obs, setObs] = useState('');
-  const [empresa, setEmpresa] = useState('');
+  const [Empresa, setEmpresa] = useState<any>([]);
   const [CPF, setCPF] = useState('');
   const [cep, setCep] = useState('');
   const [endereco, setEndereco] = useState('');
@@ -41,49 +45,46 @@ export default function PessoaId() {
   const [bairro, setBairro] = useState('');
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
-
-  const [Empresas, setEmpresas] = useState([]);
-
   const [work, setWork] = useState([]);
-  const [workId, setWorkId] = useState('');
-  const [workNome, setWorkNome] = useState('');
-  const [workfantasia, setWorkfantasia] = useState('');
-  const [workEndereco, setWorkEndereco] = useState('');
-  const [workNumero, setWorkNumero] = useState('');
-  const [workComplemento, setWorkComplemento] = useState('');
-  const [workBairro, setWorkBairro] = useState('');
-  const [workCep, setWorkCep] = useState('');
-  const [workCidade, setWorkCidade] = useState('');
-  const [workUf, setWorkUf] = useState('');
-  const [workFone, setWorkFone] = useState('');
-  const [workCelular, setWorkCelular] = useState('');
-  const [workSite, setWorkSite] = useState('');
-  const [workEmail, setWorkEmail] = useState('');
-  const [workEmailNfe, setWorkEmailNfe] = useState('');
-  const [workCNPJ, setWorkCNPJ] = useState('');
-  const [empresaId, setEmpresaId] = useState([]);
+  const [whatsappMask, setWhatsappMask] = useState('');
+  const [telefoneMask, setTelefoneMask] = useState('');
+  const [CepMask, setCepMask] = useState('');
+  const [CpfMask, setCpfMask] = useState('');
 
   useEffect(() => {
-    const GetPessoas = async () => {
-      const id = router.query.id;
+    (async () => {
       const url = `/api/db/pessoas/consulta/${id}`;
       const response = await axios(url);
       const pessoa = await response.data.data;
+      console.log(pessoa.attributes);
 
-      setId(pessoa.id);
       setNome(pessoa.attributes.nome);
       setWhatsapp(pessoa.attributes.whatsapp);
+      const maskedValuezap = !pessoa.attributes.whatsapp
+        ? ''
+        : mask(pessoa.attributes.whatsapp, ['(99) 9 9999-9999']);
+      setWhatsappMask(maskedValuezap);
       setTelefone(pessoa.attributes.telefone);
       setEmail(pessoa.attributes.email);
       setObs(pessoa.attributes.obs);
-      setEmpresas(pessoa.attributes.empresas.data);
-    };
-    GetPessoas();
-    consultaEmpresa();
-    if (empresa !== '' && workId === '') {
-      consultaEmp();
-    }
+      setEmpresa(pessoa.attributes.empresas.data);
+      setCPF(pessoa.attributes.CPF);
+      const maskedValue = mask(pessoa.attributes.CPF, ['999.999.999-99']);
+      setCpfMask(maskedValue);
+      setCep(pessoa.attributes.CEP);
+      const maskedValuecep = mask(pessoa.attributes.CEP, ['99.999-999']);
+      setCepMask(maskedValuecep);
+      setEndereco(pessoa.attributes.endereco);
+      setNumero(pessoa.attributes.numero);
+      setBairro(pessoa.attributes.bairro);
+      setCidade(pessoa.attributes.cidade);
+      setUf(pessoa.attributes.uf);
+    })();
   }, []);
+
+  useEffect(() => {
+    setWork(Empresa.map((i: { id: any }) => i.id));
+  }, [Empresa]);
 
   const checkCep = async () => {
     const url = `https://viacep.com.br/ws/${cep}/json/`;
@@ -97,94 +98,51 @@ export default function PessoaId() {
       .catch((err) => console.log(err));
   };
 
-  const consultaEmpresa = () => {
-    let url = '/db/empresas/getEmpresas/get';
-    axios({
-      method: 'GET',
-      url: url,
-    })
-      .then(function (response) {
-        console.log(response.data.data);
-        setWork(response.data.data);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  const MaskWhatsapp = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ['(99) 9 9999-9999']);
+    setWhatsapp(originalVelue);
+    setWhatsappMask(maskedValue);
   };
 
-  const consultaEmpresaId = async (e) => {
-    const id = e.target.value;
-    console.log(id);
-    let url = '/api/db/empresas/consulta/' + id;
-    await axios({
-      method: 'GET',
-      url: url,
-    })
-      .then(function (response) {
-        console.log(response.data.data.id);
-        setEmpresa(response.data.data.id);
-        setWorkId(response.data.data.id);
-        setWorkNome(response.data.data.attributes.nome);
-        setWorkfantasia(response.data.data.attributes.fantasia);
-        setWorkEndereco(response.data.data.attributes.endereco);
-        setWorkNumero(response.data.data.attributes.numero);
-        setWorkComplemento(response.data.data.attributes.complemento);
-        setWorkBairro(response.data.data.attributes.bairro);
-        setWorkCep(response.data.data.attributes.cep);
-        setWorkCidade(response.data.data.attributes.cidade);
-        setWorkUf(response.data.data.attributes.uf);
-        setWorkFone(response.data.data.attributes.fone);
-        setWorkCelular(response.data.data.attributes.celular);
-        setWorkSite(response.data.data.attributes.site);
-        setWorkEmail(response.data.data.attributes.email);
-        setWorkEmailNfe(response.data.data.attributes.emailNfe);
-        setWorkCNPJ(response.data.data.attributes.CNPJ);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  const MaskTel = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ['(99) 9999-9999']);
+    setTelefone(originalVelue);
+    setTelefoneMask(maskedValue);
   };
 
-  const consultaEmp = async () => {
-    const id = empresa;
-    console.log(id);
-    let url = '/api/db/empresas/consulta/' + id;
-    await axios({
-      method: 'GET',
-      url: url,
-    })
-      .then(function (response) {
-        console.log(response.data);
-        setEmpresa(response.data.data.id);
-        setWorkId(response.data.data.id);
-        setWorkNome(response.data.data.attributes.nome);
-        setWorkfantasia(response.data.data.attributes.fantasia);
-        setWorkEndereco(response.data.data.attributes.endereco);
-        setWorkNumero(response.data.data.attributes.numero);
-        setWorkComplemento(response.data.data.attributes.complemento);
-        setWorkBairro(response.data.data.attributes.bairro);
-        setWorkCep(response.data.data.attributes.cep);
-        setWorkCidade(response.data.data.attributes.cidade);
-        setWorkUf(response.data.data.attributes.uf);
-        setWorkFone(response.data.data.attributes.fone);
-        setWorkCelular(response.data.data.attributes.celular);
-        setWorkSite(response.data.data.attributes.site);
-        setWorkEmail(response.data.data.attributes.email);
-        setWorkEmailNfe(response.data.data.attributes.emailNfe);
-        setWorkCNPJ(response.data.data.attributes.CNPJ);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+  const MaskCpf = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ['999.999.999-99']);
+    setCPF(originalVelue);
+    setCpfMask(maskedValue);
+  };
+
+  const CEP = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ['99.999-999']);
+    setCepMask(maskedValue);
+    setCep(originalVelue);
+  };
+
+  const NUMERO = (e: any) => {
+    const data = e.target.value.replace(/[a-zA-Z]+/g, '');
+    setNumero(data);
   };
 
   const save = async () => {
-    const id = Empresas.map((item) => item.id);
-    const idemp = [...id, parseInt(empresa)];
+    const date = new Date();
+    const dateIsso = date.toISOString();
+    const historico = {
+      date: dateIsso,
+      vendedor: session.user.name,
+      msg: `cinete ${nome} foi atualizado`,
+    };
     const data = {
       data: {
         nome: nome,
-        celular: whatsapp,
+        whatsapp: whatsapp,
         telefone: telefone,
         email: email,
         CPF: CPF,
@@ -196,54 +154,62 @@ export default function PessoaId() {
         cidade: cidade,
         obs: obs,
         status: true,
-        empresas: idemp,
-      },
-    };
-    const url = '/api/db/pessoas/atualizacao/' + ID;
-    await axios({
-      method: 'PUT',
-      url: url,
-      data: data,
-    })
-      .then((response) => {
-        return response.data;
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-    const data1 = {
-      data: {
-        nome: nome,
-        celular: whatsapp,
-        telefone: telefone,
-        email: email,
-        CPF: CPF,
-        CEP: cep,
-        uf: uf,
-        endereco: endereco,
-        numero: numero,
-        bairro: bairro,
-        cidade: cidade,
-        obs: obs,
-        status: true,
-        empresas: idemp,
+        empresas: work,
+        history: [historico],
       },
     };
 
-    const urlBg = '/api/db_bling/pessoas/PUT/' + CPF;
-    await axios({
-      method: 'POST',
-      url: urlBg,
-      data: data1,
-    })
-      .then((response) => {
-        return response.data;
-      })
-      .catch((err) => {
-        console.log(err);
+    if (!nome) {
+      toast({
+        title: 'Como devemos chamar esse cliente',
+        description:
+          'Não te disseram que  é falta de educação não chamar as pessoas pelo nome!',
+        status: 'warning',
+        duration: 6000,
+        isClosable: true,
       });
+    } else if (!telefone && !whatsapp) {
+      toast({
+        title: 'Sem numero de contato',
+        description:
+          'Desse jeito não tem como você ou a equipe entrar em contato com o cliente!',
+        status: 'warning',
+        duration: 6000,
+        isClosable: true,
+      });
+    } else {
+      const url = '/api/db/pessoas/atualizacao/' + id;
+      await axios({
+        method: 'PUT',
+        url: url,
+        data: data,
+      })
+        .then((response) => {
+          console.log(response);
+          toast({
+            title: 'salvo',
+            description: 'cliente atualizado',
+            status: 'success',
+            duration: 6000,
+            isClosable: true,
+          });
+          resent();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   };
+
+  const resent = () => {
+    setTimeout(() => {
+      router.back();
+    }, 1000);
+  };
+
+  function getEmpresa(empresa: any) {
+    setEmpresa([...Empresa, empresa]);
+  }
 
   return (
     <>
@@ -324,7 +290,7 @@ export default function PessoaId() {
                           w="full"
                           rounded="md"
                           textTransform={'uppercase'}
-                          onChange={(e) => setNome(e.target.value)}
+                          onChange={(e: any) => setNome(e.target.value)}
                           value={nome}
                         />
                       </FormControl>
@@ -351,20 +317,9 @@ export default function PessoaId() {
                           w="full"
                           rounded="md"
                           textTransform={'uppercase'}
-                          maxLength={11}
-                          onChange={(e) => {
-                            const cpfv = e.target.value.replace(
-                              /[a-zA-Z]+/g,
-                              '',
-                            );
-
-                            setCPF(cpfv);
-                          }}
-                          onBlur={(e) => {
-                            const cpfv = e.target.value.replace(
-                              /[a-zA-Z]+/g,
-                              '',
-                            );
+                          onChange={MaskCpf}
+                          onBlur={(e: any) => {
+                            const cpfv = unMask(e.target.value);
                             const validcpf = cpf.isValid(cpfv);
 
                             if (cpfv.length < 11) {
@@ -399,7 +354,7 @@ export default function PessoaId() {
                               });
                             }
                           }}
-                          value={CPF}
+                          value={CpfMask}
                         />
                       </FormControl>
 
@@ -425,15 +380,9 @@ export default function PessoaId() {
                           w="full"
                           rounded="md"
                           textTransform={'uppercase'}
-                          onChange={(e) => {
-                            const data = e.target.value.replace(
-                              /[a-zA-Z]+/g,
-                              '',
-                            );
-                            setCep(data);
-                          }}
+                          onChange={CEP}
                           onBlur={checkCep}
-                          value={cep}
+                          value={CepMask}
                         />
                       </FormControl>
 
@@ -482,13 +431,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => {
-                            const data = e.target.value.replace(
-                              /[a-zA-Z]+/g,
-                              '',
-                            );
-                            setNumero(data);
-                          }}
+                          onChange={NUMERO}
                           value={numero}
                         />
                       </FormControl>
@@ -586,7 +529,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={(e: any) => setEmail(e.target.value)}
                           value={email}
                         />
                       </FormControl>
@@ -612,8 +555,8 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => setTelefone(e.target.value)}
-                          value={telefone}
+                          onChange={MaskTel}
+                          value={telefoneMask}
                         />
                       </FormControl>
 
@@ -638,8 +581,8 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => setWhatsapp(e.target.value)}
-                          value={whatsapp}
+                          onChange={MaskWhatsapp}
+                          value={whatsappMask}
                         />
                       </FormControl>
                     </SimpleGrid>
@@ -664,7 +607,7 @@ export default function PessoaId() {
                           _placeholder={{ color: 'inherit' }}
                           size="sm"
                           resize={'none'}
-                          onChange={(e) => setObs(e.target.value)}
+                          onChange={(e: any) => setObs(e.target.value)}
                           value={obs}
                         />
                       </Box>
@@ -674,88 +617,42 @@ export default function PessoaId() {
                       <Heading as={GridItem} colSpan={12} mb={3} size="sd">
                         Empresas
                       </Heading>
-                      <FormControl as={GridItem} colSpan={[12, 9]}>
-                        {workNome === '' ? null : (
-                          <ListaEmpresa
-                            id={workId}
-                            nome={workNome}
-                            fantasia={workfantasia}
-                            endereco={workEndereco}
-                            numero={workNumero}
-                            complemento={workComplemento}
-                            bairro={workBairro}
-                            cep={workCep}
-                            cidade={workCidade}
-                            uf={workUf}
-                            fone={workFone}
-                            celular={workCelular}
-                            site={workSite}
-                            email={workEmail}
-                            emailNfe={workEmailNfe}
-                            CNPJ={workCNPJ}
-                          />
-                        )}
-                        {Empresas.map((item) => {
-                          return (
-                            <ListaEmpresaAt
-                              idPessoa={ID}
-                              id={item.id}
-                              nome={item.attributes.nome}
-                              fantasia={item.attributes.fantasia}
-                              endereco={item.attributes.endereco}
-                              numero={item.attributes.numero}
-                              complemento={item.attributes.complemento}
-                              bairro={item.attributes.bairro}
-                              cep={item.attributes.cep}
-                              cidade={item.attributes.cidade}
-                              uf={item.attributes.uf}
-                              fone={item.attributes.fone}
-                              celular={item.attributes.celular}
-                              site={item.attributes.site}
-                              email={item.attributes.email}
-                              emailNfe={item.attributes.emailNfe}
-                              CNPJ={item.attributes.CNPJ}
-                            />
-                          );
-                        })}
-                      </FormControl>
-
-                      <FormControl as={GridItem} colSpan={[12, 3]}>
-                        <Heading mb={3} size="xs">
-                          empresa
-                        </Heading>
-                        <FormLabel
-                          htmlFor="prazo pagamento"
-                          fontSize="xs"
-                          fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
+                      <FormControl as={GridItem} colSpan={[12, 8]}>
+                        <SimpleGrid
+                          p="1rem"
+                          columns={{ base: 1, md: 3 }}
+                          row={{ base: 1, md: 3 }}
+                          spacing={{ base: 3, md: 5 }}
                         >
-                          Empresa relacionada
-                        </FormLabel>
-                        <Select
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
-                          shadow="sm"
-                          size="xs"
-                          w="full"
-                          fontSize="xs"
-                          rounded="md"
-                          placeholder="Selecione uma tabela"
-                          onChange={consultaEmpresaId}
-                          value={workId}
-                        >
-                          {work.map((item) => {
+                          {Empresa.map((i: any, x: number) => {
                             return (
-                              // eslint-disable-next-line react/jsx-key
-                              <option value={item.id}>
-                                {item.attributes.nome}
-                              </option>
+                              <ListaEmpresa
+                                key={x}
+                                index={x}
+                                id={i.id}
+                                nome={i.attributes.nome}
+                                fantasia={i.attributes.fantasia}
+                                endereco={i.attributes.endereco}
+                                numero={i.attributes.numero}
+                                complemento={i.attributes.complemento}
+                                bairro={i.attributes.bairro}
+                                cep={i.attributes.cep}
+                                cidade={i.attributes.cidade}
+                                uf={i.attributes.uf}
+                                fone={i.attributes.fone}
+                                celular={i.attributes.celular}
+                                site={i.attributes.site}
+                                email={i.attributes.email}
+                                emailNfe={i.attributes.emailNfe}
+                                CNPJ={i.attributes.CNPJ}
+                              />
                             );
                           })}
-                        </Select>
+                        </SimpleGrid>
+                      </FormControl>
+
+                      <FormControl ms={10} as={GridItem} colSpan={[12, 3]}>
+                        <RelaciomentoEmpr onGetValue={getEmpresa} />
                       </FormControl>
                     </SimpleGrid>
                   </Stack>
@@ -765,7 +662,7 @@ export default function PessoaId() {
                       sm: 6,
                     }}
                     py={5}
-                    pb={[12, null, 10]}
+                    pb={[12, null, 5]}
                     _dark={{
                       bg: '#121212',
                     }}
@@ -779,6 +676,7 @@ export default function PessoaId() {
                         shadow: '',
                       }}
                       fontWeight="md"
+                      onClick={() => router.back()}
                     >
                       Cancelar
                     </Button>

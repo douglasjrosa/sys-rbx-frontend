@@ -33,9 +33,15 @@ export default function ListaEmpresa(props: any) {
 
   return (
     <>
-      <Box>
+      <Box
+        p={5}
+        border={'1px solid'}
+        borderColor={'green.300'}
+        rounded={15}
+        w={'20rem'}
+      >
         <Heading mb={3} size="xs">
-          dados da empresa
+          dados da empresa {props.index + 1}
         </Heading>
         <List spacing={3} mb={5}>
           <ListItem>

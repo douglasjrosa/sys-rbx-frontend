@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import { Box, FormLabel, Select } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
