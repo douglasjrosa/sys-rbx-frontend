@@ -132,9 +132,6 @@ export default async function PostEmpresa(
       })
       .catch(async (error) => {
         console.log(error.response.data);
-        // console.log(error.response.data.error);
-        // console.log(error.response.data.error.details);
-        // console.log(error.response.data.error.details.errors);
 
         const now = new Date();
         const isoDateTime = now.toISOString();

@@ -23,6 +23,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import { Session } from 'inspector';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { mask, unMask } from 'remask';
@@ -65,7 +67,8 @@ export const theme = extendTheme({
   },
 });
 
-export const BtCreate = () => {
+export const BtCreate = (props: { onLoading: any }) => {
+  const { data: session } = useSession();
   const [work, setWork] = useState([]);
   const [budgets, setBudgets] = useState('');
   const [budgetsMask, setBudgetsMask] = useState('');
@@ -116,14 +119,40 @@ export const BtCreate = () => {
     setBudgetsMask(maskedValue);
   };
 
-  const salve = () => {
+  const historico = {
+    vendedor: session.user.name,
+    date:
+      new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
+    msg: `Vendedor ${session.user.name}, criou esse Busines`,
+  };
+
+  const salve = async () => {
+    // props.onLoading(true);
     const data = {
       status: true,
       deadline: Deadline,
-      Budget: budgets,
+      Budget: parseFloat(budgets).toLocaleString('pt-br', {
+        style: 'currency',
+        currency: 'BRL',
+      }),
       Approach: Approach,
       empresa: Empresa,
+      history: historico,
+      user: session.user.id,
+      incidentRecord: [],
     };
+    const url = '/api/db/business/post';
+    await axios({
+      method: 'POST',
+      url: url,
+      data: data,
+    })
+      .then((res) => {
+        console.log(res);
+        props.onLoading(true);
+        Reset();
+      })
+      .catch((err) => console.error(err));
   };
 
   const Reset = () => {

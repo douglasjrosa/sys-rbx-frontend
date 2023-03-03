@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { BodyCard } from '../../components/negocios/component/boduCard';
 import { BtCreate } from '../../components/negocios/component/butonCreate';
 
 export default function Negocios() {
@@ -21,6 +22,7 @@ export default function Negocios() {
   const [DataEnd, setDataEnd] = useState('');
   const [Txt, setText] = useState('');
   const [Render, setRender] = useState(false);
+  const [load, setLoad] = useState<boolean>(false);
 
   const pesquisaTxt = () => {
     const txt = Pedido ? 'pelo numero do Pedido' : 'pelo numero do Cnpj';
@@ -79,6 +81,9 @@ export default function Negocios() {
     if (!Data && !Pedido && !Cnpj) setRender(false);
   }, [Cnpj, Data, Pedido]);
 
+  function tragetReload(Loading: boolean | ((prevState: boolean) => boolean)) {
+    setLoad(Loading);
+  }
   return (
     <>
       <Flex h="100%" w="100%" flexDir={'column'} justifyContent="center">
@@ -128,7 +133,7 @@ export default function Negocios() {
             h="100%"
             justifyContent={'space-evenly'}
           >
-            <BtCreate />
+            <BtCreate onLoading={tragetReload} />
           </Box>
         </Flex>
         <Box h={'85%'} overflow={'auto'}>
@@ -145,7 +150,9 @@ export default function Negocios() {
             justifyContent="center"
             flexDirection="column"
             gap={5}
-          ></Flex>
+          >
+            <BodyCard reload={load} />
+          </Flex>
         </Box>
       </Flex>
     </>

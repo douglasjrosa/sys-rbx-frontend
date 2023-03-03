@@ -8,20 +8,25 @@ export default async function GetEmpresa(
 ) {
   if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN;
+    const { id } = req.query;
+
+    const data = {
+      data: {
+        status: false,
+      },
+    };
 
     await axios({
-      method: 'GET',
-      url:
-        process.env.NEXT_PUBLIC_STRAPI_API_URL +
-        '/businesses?populate=*&filters[status][$eq]=true',
-      //? inicio de setup /filters[status][$eq]=true fazendo um filtro que traz todo com status = treu  /&populate=%2A  é para popular os relacionamentos
+      method: 'PUT',
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/businesses/' + id,
+      data: data,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
       .then(async (Response) => {
-        res.status(200).json(Response.data.data);
+        res.status(200).json(Response.data);
       })
       .catch((err) => {
         res.status(400).json({
