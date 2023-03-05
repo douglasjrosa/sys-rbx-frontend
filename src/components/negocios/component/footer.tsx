@@ -1,4 +1,4 @@
-import { Box, Flex, Icon, Input, Textarea } from '@chakra-ui/react';
+import { Box, Flex, Icon, IconButton, Input, Textarea } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { FaLocationArrow } from 'react-icons/fa';
@@ -40,15 +40,23 @@ export const NegocioFooter = (props: { onGetValue: any }) => {
             rounded={'5px'}
             borderColor={'gray.300'}
             rows={1}
+            boxShadow={'dark-lg'}
             onChange={(e: any) => setValor(e.target.value)}
           />
-          <Icon
+          <IconButton
+            aria-label="Send"
+            fontSize={'xl'}
+            icon={<FaLocationArrow />}
+            color="gray.600"
+            onClick={addItens}
+          />
+          {/* <Icon
             as={FaLocationArrow}
             boxSize={6}
             color="gray.600"
             cursor="pointer"
             onClick={addItens}
-          />
+          /> */}
         </Flex>
       </Box>
     </>

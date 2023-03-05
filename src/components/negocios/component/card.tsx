@@ -17,7 +17,7 @@ export default function CardBusiness(props: {
 }) {
   const router = useRouter();
   const empresa =
-    props.empresa.data === null ? '' : props.empresa.data.attributes.nome;
+  !props.empresa ? '' : props.empresa.data === null ? '' : props.empresa.data.attributes.nome;
 
   const soma = () => {
     const valores = props.pedidosQtd.map((i: any) =>
@@ -126,7 +126,7 @@ export default function CardBusiness(props: {
                 await router.push('/negocios/create/' + props.id);
               }}
             >
-              editar
+              History
             </Link>
           </Flex>
         </Flex>
