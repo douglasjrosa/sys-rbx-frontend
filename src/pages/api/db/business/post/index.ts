@@ -53,11 +53,12 @@ export default async function GetEmpresa(
     const dataAtualizado = {
       data: {
         status: true,
+        statusAnd: 'Ativo',
         deadline: data.deadline,
         nBusiness: nBusiness.toString(),
         Budget: data.budget,
         Approach: data.approach,
-        history: data.history,
+        history: [data.history],
         incidentRecord: data.incidentRecord,
         empresa: Number(data.empresa),
         user: data.user,

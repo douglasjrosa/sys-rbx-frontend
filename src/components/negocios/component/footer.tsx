@@ -1,23 +1,52 @@
-import { Box, Flex, Icon, IconButton, Input, Textarea } from '@chakra-ui/react';
+import { Box, Flex, IconButton, Textarea, useToast } from '@chakra-ui/react';
+import axios from 'axios';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { FaLocationArrow } from 'react-icons/fa';
 
-export const NegocioFooter = (props: { onGetValue: any }) => {
+export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
+  const router = useRouter();
+  const ID = router.query.id;
+  const toast = useToast();
   const { data: session } = useSession();
   const [valor, setValor] = useState('');
 
-  const addItens = () => {
+  const addItens = async () => {
     const date = new Date();
     const DateAtua = date.toISOString();
+    props.onGetValue(true);
 
-    const data = {
-      usuario: session.user.name,
+    const msg = {
       date: DateAtua,
+      usuario: session.user.name,
       msg: valor,
     };
 
-    props.onGetValue(data);
+    const record = [...props.data, msg];
+
+    const data = {
+      data: {
+        incidentRecord: record,
+      },
+    };
+
+    await axios({
+      method: 'PUT',
+      url: '/api/db/business/put/id/' + ID,
+      data: data,
+    })
+      .then((res) => console.log(res))
+      .catch((err) => {
+        console.error(err);
+        toast({
+          title: 'opss erro',
+          description: err,
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+        });
+      });
   };
 
   return (
@@ -50,13 +79,6 @@ export const NegocioFooter = (props: { onGetValue: any }) => {
             color="gray.600"
             onClick={addItens}
           />
-          {/* <Icon
-            as={FaLocationArrow}
-            boxSize={6}
-            color="gray.600"
-            cursor="pointer"
-            onClick={addItens}
-          /> */}
         </Flex>
       </Box>
     </>

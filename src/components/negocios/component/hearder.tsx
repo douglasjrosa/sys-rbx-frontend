@@ -5,72 +5,87 @@ import {
   Flex,
   FormLabel,
   Input,
-  Select,
-  Switch,
+  useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { Business } from '../../../types/Busines';
+import { SetStateAction, useState } from 'react';
+import { SelecAtendimento } from '../../elements/lista/atendimento';
+import { BtnStatus } from '../../elements/lista/status';
 
 export const NegocioHeader = (props: {
-  // nBusiness: string;
-  onNBusiness: any;
-  // Approach: string;
-  onApproach: any;
-  // Budget: string;
-  onBudget: any;
-  // Status: string;
-  onStatus: any;
-  // Deadline: string;
-  onDeadline: any;
+  nBusiness: string;
+  Approach: string;
+  Budget: string;
+  Status: string;
+  Deadline: string;
+  historia?: any;
 }) => {
   const router = useRouter();
-  const id = router.query.id;
-  const [Infos, setInfos] = useState<Business | any>([]);
+  const ID = router.query.id;
+  const toast = useToast();
+  const { data: session } = useSession();
+  const [Status, setStatus] = useState('');
+  const [Busines, setBusines] = useState('');
+  const [Approach, setApproach] = useState('');
+  const [Budget, setBudget] = useState('');
+  const [Deadline, setDeadline] = useState('');
 
   useEffect(() => {
-    (async () => {
-      const url = '/api/db/business/get/id/' + id;
-      console.log(url);
-      //cunsulta informaçoes geraris do cliente
-      await axios({
-        method: 'GET',
-        url: url,
-      })
-        .then((res) => {
-          console.log(res.data);
-          const resposta = res.data;
-          setInfos([resposta]);
-          // fim do loading
-          // setLoadingGeral(false);
-        })
-        .catch((err) => {
-          console.log(err);
-          // fim do loading
-          // setLoadingGeral(false);
-        });
-    })();
+    setStatus(props.Status);
+    setBudget(props.Budget);
+    setDeadline(props.Deadline);
+    setBusines(props.nBusiness);
+    setApproach(props.Approach);
   }, []);
 
-  function setBusines(e: any) {
-    const valor = e.target.value;
-    props.onNBusiness(valor);
+  const historicomsg = {
+    vendedor: session.user.name,
+    date: new Date().toLocaleString(),
+    msg: `Vendedor(a) ${session.user.name}, alterou as informaçoes desse Busines`,
+  };
+
+  const history = [...props.historia, historicomsg];
+
+  const Salve = async () => {
+    const data = {
+      data: {
+        deadline: Deadline,
+        nBusiness: Busines,
+        Budget: Budget,
+        Approach: Approach,
+        history: history,
+        statusAnd: Status,
+      },
+    };
+
+    await axios({
+      url: '/api/db/business/put/id/' + ID,
+      method: 'PUT',
+      data: data,
+    })
+      .then((res) => {
+        console.log(res);
+        toast({
+          title: 'Atualização feita',
+          description: 'Atualização das inforaçoes foi efetuada com sucesso',
+          status: 'success',
+          duration: 9000,
+          isClosable: true,
+        });
+      })
+      .catch((err) => console.error(err));
+  };
+
+  function getStatus(statusinf: SetStateAction<string>) {
+    setStatus(statusinf);
   }
-  function setBudget(e: any) {
-    props.onBudget(e.target.value);
-  }
-  function setApproach(e: any) {
-    props.onApproach(e.target.value);
-  }
-  function setStatus(e: any) {
-    props.onStatus(e.target.value);
-  }
-  function setDeadline(e: any) {
-    props.onDeadline(e.target.value);
+  function getAtendimento(atendimento: SetStateAction<string>) {
+    setApproach(atendimento);
   }
 
-  console.log(Infos);
   return (
     <>
       <Flex gap={8}>
@@ -92,35 +107,12 @@ export const NegocioHeader = (props: {
             w="full"
             fontSize="xs"
             rounded="md"
-            onChange={setBusines}
-            // value={Infos.attributes.nBusiness}
+            onChange={(e) => setBusines(e.target.value)}
+            value={props.nBusiness}
           />
         </Box>
         <Box>
-          <FormLabel
-            htmlFor="cidade"
-            fontSize="xs"
-            fontWeight="md"
-            color="gray.700"
-            _dark={{
-              color: 'gray.50',
-            }}
-          >
-            atendimento
-          </FormLabel>
-          <Select
-            shadow="sm"
-            size="sm"
-            w="full"
-            fontSize="xs"
-            rounded="md"
-            placeholder="Selecione um Produto"
-            onChange={setApproach}
-            // value={Infos.attributes.Approach}
-          >
-            <option value="interno">Cliente entrou em contato</option>
-            <option value="externo">vendedor entrou em contato</option>
-          </Select>
+          <SelecAtendimento Resp={props.Approach} onAddResp={getAtendimento} />
         </Box>
         <Box>
           <FormLabel
@@ -140,8 +132,8 @@ export const NegocioHeader = (props: {
             w="full"
             fontSize="xs"
             rounded="md"
-            onChange={setBudget}
-            // value={Infos.attributes.Budget}
+            onChange={(e) => setBudget(e.target.value)}
+            value={props.Budget}
           />
         </Box>
         <Box>
@@ -163,32 +155,18 @@ export const NegocioHeader = (props: {
             type={'date'}
             fontSize="xs"
             rounded="md"
-            onChange={setDeadline}
-            // value={Infos.attributes.deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            value={Deadline}
           />
         </Box>
         <Box>
-          <FormLabel
-            htmlFor="cidade"
-            fontSize="xs"
-            fontWeight="md"
-            color="gray.700"
-            _dark={{
-              color: 'gray.50',
-            }}
-          >
-            Status
-          </FormLabel>
-          <Switch
-            size="md"
-            colorScheme="whatsapp"
-            onChange={setStatus}
-            // value={Infos.attributes.status}
-          />
+          <BtnStatus Resp={props.Status} onAddResp={getStatus} />
         </Box>
-        <Box>
-          <Button colorScheme={'whatsapp'}>salve</Button>
-        </Box>
+        <Flex alignItems={'center'}>
+          <Button colorScheme={'whatsapp'} onClick={Salve}>
+            salve
+          </Button>
+        </Flex>
       </Flex>
     </>
   );

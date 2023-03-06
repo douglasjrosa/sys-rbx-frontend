@@ -14,10 +14,14 @@ export default function CardBusiness(props: {
   pedidos: string;
   pedidosQtd: any;
   onloading: any;
+  andamento: string;
 }) {
   const router = useRouter();
-  const empresa =
-  !props.empresa ? '' : props.empresa.data === null ? '' : props.empresa.data.attributes.nome;
+  const empresa = !props.empresa
+    ? ''
+    : props.empresa.data === null
+    ? ''
+    : props.empresa.data.attributes.nome;
 
   const soma = () => {
     const valores = props.pedidosQtd.map((i: any) =>
@@ -132,23 +136,51 @@ export default function CardBusiness(props: {
         </Flex>
 
         <Box mt={2}>
-          <Link
-            fontSize="2xl"
-            color="gray.700"
-            _dark={{
-              color: 'white',
-            }}
-            fontWeight="700"
-            _hover={{
-              color: 'gray.600',
-              _dark: {
-                color: 'gray.200',
-              },
-              textDecor: 'underline',
-            }}
-          >
-            {props.nBusiness}
-          </Link>
+          <Flex>
+          <Box w={'15rem'}>
+            <Link
+              fontSize="2xl"
+              color="gray.700"
+              _dark={{
+                color: 'white',
+              }}
+              fontWeight="700"
+              _hover={{
+                color: 'gray.600',
+                _dark: {
+                  color: 'gray.200',
+                },
+                textDecor: 'underline',
+              }}
+            >
+              {props.nBusiness}
+            </Link>
+          </Box>
+          <Flex>
+              <chakra.p
+                mt={2}
+                color="gray.600"
+                ms={5}
+                _dark={{
+                  color: 'gray.300',
+                }}
+              >
+                Andamento:
+              </chakra.p>
+              <chakra.p
+                mt={2}
+                color="gray.600"
+                ms={2}
+                _dark={{
+                  color: 'gray.300',
+                }}
+              >
+                {props.andamento}
+              </chakra.p>
+            </Flex>
+
+          </Flex>
+
           <Box
             mt={2}
             display={'flex'}

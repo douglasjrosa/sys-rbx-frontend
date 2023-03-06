@@ -84,15 +84,15 @@ export default async function PUTEmpresa(
               ? 'este item, deve ser enviado montado para cliente, e tambem feito o tratamento para exportação'
               : '';
 
-          const resp = `✔️ produto: ${prod}  medelo: ${noldProd}  quant.: ${quant}${
-            text !== '' ? ` observação: ${text}` : ''
-          }\n `;
+          const resp = `✔️ produto: ${prod}  medelo: ${noldProd}  quant.: ${quant},${
+            text !== '' ? ` observação: ${text},` : '\n'
+          }\n`;
           return resp;
         });
         const txtOcorrencia = {
           date: isoDateTime,
-          vendedors: data.vendedor,
-          msg: `Proposta comercial de numero: ${data.nPedido}, do cliente ${data.empresa.attributes.nome}, foi atualizada pelo vendedor ${data.vendedor} no dia ${VisibliDateTime},\n conteudo da proposta: \n\n ${mapItens} \n\n Observaçoes gerais: \n\n ${data.obs}`,
+          user: 'Sistema',
+          msg: `Proposta comercial de numero: ${data.nPedido}, do cliente ${data.empresa.attributes.nome},\nfoi atualizada pelo vendedor ${data.vendedor} no dia ${VisibliDateTime},\nconteudo da proposta: \n\n${mapItens} \n\nObservaçoes gerais: \n\n ${data.obs}`,
         };
 
         const url = `empresas/${data.empresa.id}`;

@@ -9,8 +9,6 @@ import CardBusiness from './card';
 export const BodyCard = (props: { reload: any }) => {
   const [dados, setDados] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const { data: session } = useSession();
-  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -94,6 +92,7 @@ export const BodyCard = (props: { reload: any }) => {
                         pedidosQtd={i.attributes.pedidos.data}
                         empresa={i.attributes.empresa}
                         criateed={i.attributes.createdAt}
+                        andamento={i.attributes.statusAnd}
                         onloading={reload}
                       />
                     </>
