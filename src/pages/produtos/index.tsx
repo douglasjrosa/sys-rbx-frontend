@@ -8,7 +8,7 @@ function Produtos() {
   return (
     <>
       <iframe
-        src={`http://ribermax.com/?token=b29cda672c7240256e46b7d68924e320&email=${email}`}
+        src={`http://ribermax.com/api/empresa/?Token=b29cda672c7240256e46b7d68924e320&Email=${email}`}
         height="100%"
         width={'100%'}
       />

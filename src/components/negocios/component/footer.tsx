@@ -1,8 +1,15 @@
-import { Box, Flex, IconButton, Textarea, useToast } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  IconButton,
+  Textarea,
+  useFocusEffect,
+  useToast,
+} from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaLocationArrow } from 'react-icons/fa';
 
 export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
@@ -10,17 +17,22 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
   const ID = router.query.id;
   const toast = useToast();
   const { data: session } = useSession();
-  const [valor, setValor] = useState('');
+  const [Valor, setValor] = useState('');
+
+  useEffect(() => {
+    setTimeout(() => {
+      props.onGetValue(false);
+    }, 500);
+  }, [props]);
 
   const addItens = async () => {
     const date = new Date();
     const DateAtua = date.toISOString();
-    props.onGetValue(true);
 
     const msg = {
       date: DateAtua,
-      usuario: session.user.name,
-      msg: valor,
+      user: session.user.name,
+      msg: Valor,
     };
 
     const record = [...props.data, msg];
@@ -30,23 +42,30 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
         incidentRecord: record,
       },
     };
-
-    await axios({
-      method: 'PUT',
-      url: '/api/db/business/put/id/' + ID,
-      data: data,
-    })
-      .then((res) => console.log(res))
-      .catch((err) => {
-        console.error(err);
-        toast({
-          title: 'opss erro',
-          description: err,
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
+    console.log(Valor);
+    if (Valor.trim() !== '') {
+      await axios({
+        method: 'PUT',
+        url: '/api/db/business/put/id/' + ID,
+        data: data,
+      })
+        .then((res) => {
+          props.onGetValue(true);
+          setValor('');
+          console.log(res);
+        })
+        .catch((err) => {
+          props.onGetValue(true);
+          console.error(err);
+          toast({
+            title: 'opss erro',
+            description: err,
+            status: 'error',
+            duration: 9000,
+            isClosable: true,
+          });
         });
-      });
+    }
   };
 
   return (
@@ -71,6 +90,7 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
             rows={1}
             boxShadow={'dark-lg'}
             onChange={(e: any) => setValor(e.target.value)}
+            value={Valor}
           />
           <IconButton
             aria-label="Send"

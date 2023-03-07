@@ -32,66 +32,55 @@ export const BodyChat = (props: { conteudo: any; loading: boolean }) => {
 
   const estiloMensagem = {
     mensagemSistema: {
-      backgroundColor: '#A0AEC0',
+      backgroundColor: '#dcf8c6',
       color: '#2D3748',
       alignSelf: 'flex-start',
-      // width: 'auto',
-      // height: 'auto',
     },
     mensagemUsuario: {
       backgroundColor: '#EDF2F7',
       color: '#2D3748',
       alignSelf: 'flex-end',
-      // width: 'auto',
-      // height: 'auto',
     },
   };
 
   return (
-    <>
-      <Box>
-        <Box
-          display={'flex'}
-          flexDirection={'column'}
-          w={'100%'}
-          h={'100%'}
-          p={5}
-          overflow={'hidden'}
-        >
-          {data.map((mensagem, index) => {
-            const estilo =
-              mensagem.user === 'Sistema'
-                ? estiloMensagem.mensagemSistema
-                : estiloMensagem.mensagemUsuario;
+    <Box display={'flex'} flexDirection={'column'} w={'100%'} h={'100%'} p={5}>
+      {data.map((mensagem, index) => {
+        const estilo =
+          mensagem.user === 'Sistema'
+            ? estiloMensagem.mensagemSistema
+            : estiloMensagem.mensagemUsuario;
 
-            const dateFormate = new Date(mensagem.date).toLocaleString();
-            return (
-              <Box key={index} style={estilo} p={2} borderRadius="md" mb={2}>
-                <Box fontSize="15px" fontWeight="bold" mb={3}>
-                  {mensagem.user}
-                </Box>
-                <Textarea
-                  fontSize="13px"
-                  value={mensagem.msg}
-                  readOnly
-                  resize="none"
-                  ref={textareaRef}
-                  border="none"
-                  style={{ overflowY: 'hidden' }}
-                />
-                <Box
-                  fontSize="10px"
-                  mt={2}
-                  textDecoration={'underline'}
-                  textAlign={'end'}
-                >
-                  {dateFormate}
-                </Box>
-              </Box>
-            );
-          })}
-        </Box>
-      </Box>
-    </>
+        const dateFormate = new Date(mensagem.date).toLocaleString();
+        return (
+          <Box
+            key={index}
+            maxW={'65%'}
+            style={estilo}
+            p={2}
+            borderRadius="md"
+            mb={2}
+          >
+            <Box fontSize="13px" fontWeight="bold" mb={3}>
+              {mensagem.user}
+            </Box>
+            <Box
+              whiteSpace="pre-wrap"
+              w={'100%'}
+              fontSize="12px"
+              dangerouslySetInnerHTML={{ __html: mensagem.msg }}
+            ></Box>
+            <Box
+              fontSize="10px"
+              mt={2}
+              textDecoration={'underline'}
+              textAlign={'end'}
+            >
+              {dateFormate}
+            </Box>
+          </Box>
+        );
+      })}
+    </Box>
   );
 };

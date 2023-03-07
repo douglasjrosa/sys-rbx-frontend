@@ -2,7 +2,7 @@
 import { Box, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Loading from '../../../components/elements/loading';
 import { BodyChat } from '../../../components/negocios/component/bodychat';
 import { NegocioFooter } from '../../../components/negocios/component/footer';
@@ -13,6 +13,7 @@ export default function CreateNegocio() {
   const router = useRouter();
   const id = router.query.id;
   const toast = useToast();
+  const divRef = useRef(null);
   const [msg, setMsg] = useState([]);
   const [loadingGeral, setLoadingGeral] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,15 @@ export default function CreateNegocio() {
   const [Deadline, setDeadline] = useState('');
   const [Historia, setHistoria] = useState([]);
   const [ChatHistory, setChatHistory] = useState([]);
+
+  useEffect(() => {
+    const div = divRef.current;
+    if (div) {
+      setTimeout(() => {
+        div.scrollTop = div.scrollHeight;
+      }, 0);
+    }
+  }, [divRef, msg]);
 
   // recuperar infos do cliente
   useEffect(() => {
@@ -62,38 +72,41 @@ export default function CreateNegocio() {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const url = '/api/db/business/get/id/' + id;
-      console.log(url);
-      //cunsulta informaçoes geraris do cliente
-      await axios({
-        method: 'GET',
-        url: url,
-      })
-        .then((res) => {
-          console.log(res.data.attributes);
-          setChatHistory(res.data.attributes.incidentRecord);
-          // fim do loading
-          setLoading(false);
+    if (msg) {
+      (async () => {
+        setLoading(true);
+        const url = '/api/db/business/get/id/' + id;
+        console.log(url);
+        //cunsulta informaçoes geraris do cliente
+        await axios({
+          method: 'GET',
+          url: url,
         })
-        .catch((err) => {
-          console.log(err);
-          toast({
-            title: 'Opss',
-            description: 'erro ao recuperar as informaçoes',
-            status: 'error',
-            duration: 9000,
-            isClosable: true,
+          .then((res) => {
+            console.log(res.data.attributes);
+            setChatHistory(res.data.attributes.incidentRecord);
+            // fim do loading
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.log(err);
+            toast({
+              title: 'Opss',
+              description: 'erro ao recuperar as informaçoes',
+              status: 'error',
+              duration: 9000,
+              isClosable: true,
+            });
+            // fim do loading
+            setLoading(false);
           });
-          // fim do loading
-          setLoading(false);
-        });
-    })();
+      })();
+    }
   }, [msg]);
 
   function getMsg(menssage: React.SetStateAction<any>) {
     setMsg(menssage);
+    console.log(menssage);
   }
 
   if (loadingGeral) {
@@ -103,7 +116,7 @@ export default function CreateNegocio() {
   return (
     <>
       <Box w="full" h="full">
-        <Box bg={'yellow.400'} w="full" h="20%" p={5}>
+        <Box bg={'gray.200'} w="full" h="20%" p={5}>
           <NegocioHeader
             nBusiness={nBusiness}
             Approach={Approach}
@@ -113,7 +126,7 @@ export default function CreateNegocio() {
             historia={Historia}
           />
         </Box>
-        <Box bg="blue.300" w="full" h="70%" overflowX={'hidden'}>
+        <Box bg="#edeae6" w="full" h="70%" ref={divRef} overflowY={'auto'}>
           <BodyChat conteudo={ChatHistory} loading={loading} />
         </Box>
         <Box w="full" h="10%">

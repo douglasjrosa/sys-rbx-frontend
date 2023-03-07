@@ -53,7 +53,7 @@ export default async function PUTEmpresa(
     await axiosRequet
       .put(`/pedidos/` + ID, DataPost)
       .then(async (response) => {
-        console.log(response.data);
+        // console.log(response.data);
         const now = new Date();
         const VisibliDateTime = `${
           now.getDate() < 10 ? '0' + now.getDate() : now.getDate()
@@ -107,7 +107,7 @@ export default async function PUTEmpresa(
         });
       })
       .catch(async (error) => {
-        console.log(error.response);
+        // console.log(error.response);
         // console.log(error.response.data.error);
         // console.log(error.response.data.error.details);
         // console.log(error.response.data.error.details.errors);
