@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function PUT(req: NextApiRequest, res: NextApiResponse) {
@@ -19,7 +20,6 @@ export default async function PUT(req: NextApiRequest, res: NextApiResponse) {
     );
 
     if (ClienteId !== '') {
-
       var requestOptions: any = {
         method: 'PUT',
         body: formdata,
@@ -39,9 +39,7 @@ export default async function PUT(req: NextApiRequest, res: NextApiResponse) {
           console.log('error', error);
           res.status(400).send({ error: error });
         });
-      await fetch
-
-
+      await fetch;
     } else {
       res.status(500).send('cliente não encotrado');
     }

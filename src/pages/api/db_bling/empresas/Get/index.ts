@@ -1,10 +1,10 @@
+/* eslint-disable no-undef */
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function Get(req: NextApiRequest, res: NextApiResponse) {
-
   const token = process.env.ATORIZZATION_TOKEN_BLING;
-  if(req.method === 'GET'){
+  if (req.method === 'GET') {
     const url = 'https://bling.com.br/Api/v2/contatos/json';
     await axios({
       method: 'GET',
@@ -20,11 +20,9 @@ export default async function Get(req: NextApiRequest, res: NextApiResponse) {
       .catch((err) => {
         res.status(400).json(err);
       });
-
-  }else {
+  } else {
     return res.status(405).send({ message: 'Only GET requests are allowed' });
   }
 }
-
 
 // 'https://bling.com.br/Api/v2/contatos/json?apikey='

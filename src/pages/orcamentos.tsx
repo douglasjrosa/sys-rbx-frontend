@@ -113,7 +113,7 @@ class Orcamentos extends Component {
         <HStack>
           <Canvas>
             <QuadroH
-              escala={ escala }
+              escala={escala}
               comp={caixaComp}
               alt={caixaAlt}
               sarrafoLarg={sarrafoLarg}

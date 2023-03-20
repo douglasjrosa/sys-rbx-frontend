@@ -62,7 +62,6 @@ const NavMenuItems = [
     icon: GiCube,
     iconComponent: <GiCube />,
   },
-
 ];
 
 export default NavMenuItems;

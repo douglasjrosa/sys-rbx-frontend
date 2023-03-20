@@ -18,7 +18,7 @@ import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { signOut, useSession } from 'next-auth/react';
 
 const ProfilePopover = () => {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   return (
     <>

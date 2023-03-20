@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-redeclare */
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function PUT(req: NextApiRequest, res: NextApiResponse) {

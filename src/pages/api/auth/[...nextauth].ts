@@ -1,8 +1,23 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unreachable */
 /* eslint-disable no-undef */
 import axios from 'axios';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+
+interface Credentials {
+  email: string;
+  password: string;
+}
+
+interface User {
+  jwt: string;
+  id: number;
+  name: string;
+  email: string;
+  confirmed: boolean;
+  blocked: boolean;
+}
 
 export default NextAuth({
   jwt: {
@@ -64,18 +79,16 @@ export default NextAuth({
     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
   callbacks: {
-    async jwt({ token, user }) {
+    jwt: async ({ token, user }) => {
       const isSignIn = !!user;
       const actualDateInSeconds = Math.floor(Date.now() / 1000);
       const tokenExpirationInSeconds = Math.floor(4 * 60 * 60); // 4 hours
 
-      // se for login
       if (isSignIn) {
-        // se nao tiver user ou não ter jwt ou não ter nome ou não ter email
-        if (!user || !user.jwt || !user.name || !user.email) {
-          //  mate o prosseso e desconsidere tudo
-          return Promise.resolve({});
+        if (!user?.jwt || !user?.id || !user?.name || !user?.email) {
+          return null;
         }
+
         token.jwt = user.jwt;
         token.id = user.id;
         token.name = user.name;
@@ -83,15 +96,14 @@ export default NextAuth({
         token.confirmed = user.confirmed;
         token.blocked = user.blocked;
 
-        token.expiration = Math.floor(
-          //expiração do tokem
-          actualDateInSeconds + tokenExpirationInSeconds,
-        );
+        token.expiration = actualDateInSeconds + tokenExpirationInSeconds;
       } else {
-        if (!token?.expiration) return Promise.resolve({}); //se não exixtir o tmpo de expiração mate a navegação
-        if (actualDateInSeconds > token.expiration) return Promise.resolve({}); // se se a data atual for maior que o tmpo de expiração mate a navegação
+        if (!token?.expiration || actualDateInSeconds > token.expiration) {
+          return null;
+        }
       }
-      return Promise.resolve(token);
+
+      return token;
     },
     async session({ session, token }) {
       if (
@@ -101,18 +113,18 @@ export default NextAuth({
         !token?.email ||
         !token?.expiration
       ) {
-        //se não exixtir o mate a navegação
         return null;
       }
-      const dataUser: any = {
-        id: token.id,
-        name: token.name,
-        email: token.email,
-        confirmed: token.confirmed,
-        blocked: token.blocked,
+
+      session.user = {
+        id: token.id as string,
+        name: token.name as string,
+        email: token.email as string,
+        confirmed: token.confirmed as boolean,
+        blocked: token.blocked as boolean,
       };
-      session.token = token.jwt;
-      session.user = dataUser;
+
+      session.token = token.jwt as string;
       return session;
     },
   },

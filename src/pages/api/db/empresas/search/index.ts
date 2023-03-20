@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function GetEmpresa(
@@ -10,7 +11,7 @@ export default async function GetEmpresa(
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
       `/empresas/?filters[$or][0][nome][$containsi]=${search}&filters[$or][1][fantasia][$containsi]=${search}&populate=%2A`;
-      
+
     await fetch(url, {
       method: 'GET',
       headers: {

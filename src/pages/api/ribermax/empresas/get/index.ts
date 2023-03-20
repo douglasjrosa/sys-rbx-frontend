@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -23,7 +24,7 @@ export default async function GetEmpresa(
         const rep = json;
 
         const resposta = rep.map((iten: any) => {
-          console.log(JSON.stringify(iten.CNPJ))
+          console.log(JSON.stringify(iten.CNPJ));
           return {
             data: {
               id: '',
