@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable prettier/prettier */
-import { Box, Flex, Link, chakra, Toast } from '@chakra-ui/react';
+import { Box, chakra, Flex, Link, Toast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
@@ -137,26 +137,26 @@ export default function CardBusiness(props: {
 
         <Box mt={2}>
           <Flex>
-          <Box w={'15rem'}>
-            <Link
-              fontSize="2xl"
-              color="gray.700"
-              _dark={{
-                color: 'white',
-              }}
-              fontWeight="700"
-              _hover={{
-                color: 'gray.600',
-                _dark: {
-                  color: 'gray.200',
-                },
-                textDecor: 'underline',
-              }}
-            >
-              {props.nBusiness}
-            </Link>
-          </Box>
-          <Flex>
+            <Box w={'15rem'}>
+              <Link
+                fontSize="2xl"
+                color="gray.700"
+                _dark={{
+                  color: 'white',
+                }}
+                fontWeight="700"
+                _hover={{
+                  color: 'gray.600',
+                  _dark: {
+                    color: 'gray.200',
+                  },
+                  textDecor: 'underline',
+                }}
+              >
+                {props.nBusiness}
+              </Link>
+            </Box>
+            <Flex>
               <chakra.p
                 mt={2}
                 color="gray.600"
@@ -178,7 +178,6 @@ export default function CardBusiness(props: {
                 {props.andamento}
               </chakra.p>
             </Flex>
-
           </Flex>
 
           <Box

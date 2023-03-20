@@ -9,9 +9,8 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { SetStateAction, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import { SelecAtendimento } from '../../elements/lista/atendimento';
 import { BtnStatus } from '../../elements/lista/status';
 

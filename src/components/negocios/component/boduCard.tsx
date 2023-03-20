@@ -1,7 +1,5 @@
 import { Box, Flex, SimpleGrid } from '@chakra-ui/react';
 import axios from 'axios';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Loading from '../../elements/loading';
 import CardBusiness from './card';

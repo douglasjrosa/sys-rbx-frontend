@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
-  chakra,
   Box,
   Button,
+  chakra,
   Flex,
   FormControl,
   FormLabel,
@@ -16,15 +16,13 @@ import {
   Text,
   Toast,
 } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
-import { useState } from 'react';
 import axios from 'axios';
+import { cnpj } from 'cpf-cnpj-validator';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { confgEnb } from '../../../../components/data/confgEnb';
 import { modCaix } from '../../../../components/data/modCaix';
-import { useSession } from 'next-auth/react';
 import Loading from '../../../../components/elements/loading';
-import { cnpj, cpf } from 'cpf-cnpj-validator';
 
 export default function EmpresaId() {
   const router = useRouter();

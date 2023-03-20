@@ -1,4 +1,4 @@
-import { Box, Textarea } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import Loading from '../../elements/loading';
 

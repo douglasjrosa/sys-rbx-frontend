@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 import { Search2Icon } from '@chakra-ui/icons';
-import { useRouter } from 'next/router';
 import {
   Box,
   Button,
@@ -9,6 +8,7 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
 import CardPessoas from '../../components/pessoas/lista/card/card';
 
 export default function Pessoas(): JSX.Element {

@@ -1,16 +1,16 @@
-import { Component } from 'react';
-import { QuadroH, Canvas } from '../components/drawing-elements/quadro';
-import { getEscala } from '../utils/rbx';
 import {
-  Input,
   Button,
   FormControl,
-  FormLabel,
   FormErrorMessage,
-  VStack,
+  FormLabel,
   HStack,
+  Input,
+  VStack,
 } from '@chakra-ui/react';
-import { Formik, Field, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
+import { Component } from 'react';
+import { Canvas, QuadroH } from '../components/drawing-elements/quadro';
+import { getEscala } from '../utils/rbx';
 
 class Orcamentos extends Component {
   state = {

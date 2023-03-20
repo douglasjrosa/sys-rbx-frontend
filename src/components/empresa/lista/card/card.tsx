@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable prettier/prettier */
-import { Box, Flex, chakra, Link } from '@chakra-ui/react';
+import { Box, chakra, Flex, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
@@ -16,12 +16,12 @@ export default function CardEmpresa() {
   useEffect(() => {
     get();
   }, []);
-  const user: string = session.user.id
+  const user: string = session.user.id;
 
   const get = async () => {
     await fetch('/api/db/empresas/get', {
       method: 'POST',
-      body: JSON.stringify({user: user})
+      body: JSON.stringify({ user: user }),
     })
       .then((resp) => resp.json())
       .then((json) => {

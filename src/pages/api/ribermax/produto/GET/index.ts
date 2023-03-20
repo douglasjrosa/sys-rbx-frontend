@@ -9,7 +9,7 @@ export default async function GetEmpresa(
   if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN_RIBERMAX;
     const data = req.body;
-    const Email = data.EmailAdm;
+    const Email = 'kingdever88@gmail.com';
 
     await axios({
       method: 'GET',

@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function GetEmpresa(
@@ -9,7 +8,7 @@ export default async function GetEmpresa(
   if (req.method === 'POST') {
     const token = process.env.ATORIZZATION_TOKEN_RIBERMAX;
     const data = req.body;
-    const Email = data;
+    const Email = 'kingdever88@gmail.com';
     const cnpj = req.query.cnpj;
     console.log(cnpj);
     const url = process.env.RIBERMAX_API_URL + '/empresas/?CNPJ=' + cnpj;

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable prettier/prettier */
-import { Box, Flex, chakra, Link } from '@chakra-ui/react';
+import { Box, chakra, Flex, Link } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -97,13 +97,15 @@ export default function CardPessoas() {
     const emplist =
       empresas.length === 0
         ? 'não tem empresa vinculada.'
-        : empresas.map((m: any, x: number) => {
-          if (x === empresas.length - 1) {
-          return `${m.attributes.nome}.`
-          }else {
-            return `${m.attributes.nome}, `;
-          }
-        }).join('');
+        : empresas
+            .map((m: any, x: number) => {
+              if (x === empresas.length - 1) {
+                return `${m.attributes.nome}.`;
+              } else {
+                return `${m.attributes.nome}, `;
+              }
+            })
+            .join('');
 
     return (
       <Box

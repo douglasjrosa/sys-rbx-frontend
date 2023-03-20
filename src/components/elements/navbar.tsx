@@ -1,15 +1,15 @@
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
 import {
+  Center,
   Flex,
+  Image,
   Link,
-  Text,
-  ListItem,
   List,
   ListIcon,
-  Image,
-  Center,
+  ListItem,
+  Text,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 import NavMenuItems from './nav-menu-items';
 import ProfilePopover from './profile-popover';
 

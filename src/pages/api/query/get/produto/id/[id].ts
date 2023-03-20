@@ -6,7 +6,7 @@ export default async function GetEmpresa(
   res: NextApiResponse,
 ) {
   if (req.method === 'POST') {
-    const Email = JSON.parse(req.body);
+    const Email = 'kingdever88@gmail.com';
     const token = process.env.ATORIZZATION_TOKEN_RIBERMAX;
     const id = req.query.id;
     const url = process.env.RIBERMAX_API_URL + '/produtos?prodId=' + id;

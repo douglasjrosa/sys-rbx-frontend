@@ -1,20 +1,20 @@
-import { Flex, Text, Center } from '@chakra-ui/layout';
-import { GiHamburgerMenu } from 'react-icons/gi';
+import { Center, Flex, Text } from '@chakra-ui/layout';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
+import { GiHamburgerMenu } from 'react-icons/gi';
 import ProfilePopover from './profile-popover';
 
-import NavMenuItems from './nav-menu-items';
 import {
+  IconButton,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
-  IconButton,
-  Spacer,
+  MenuList,
   ResponsiveArray,
+  Spacer,
 } from '@chakra-ui/react';
 import { Property } from 'csstype';
+import NavMenuItems from './nav-menu-items';
 
 const MobileNavbar = () => {
   let fontColor:

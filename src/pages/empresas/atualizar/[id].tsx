@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
-  chakra,
   Box,
   Button,
+  chakra,
   Flex,
   FormControl,
   FormLabel,
@@ -16,13 +16,12 @@ import {
   Text,
   Toast,
 } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
-import { useState } from 'react';
 import axios from 'axios';
+import { cnpj } from 'cpf-cnpj-validator';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
-import { useRouter } from 'next/router';
-import { cnpj } from 'cpf-cnpj-validator';
 import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
 

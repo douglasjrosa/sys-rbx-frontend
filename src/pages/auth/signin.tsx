@@ -1,20 +1,33 @@
-/* eslint-disable react/prop-types */
-import { getCsrfToken } from 'next-auth/react';
-import { CtxOrReq } from 'next-auth/client/_utils';
+/* eslint-disable no-undef */
 import {
   Button,
-  Checkbox,
   Flex,
   FormControl,
   FormLabel,
   Heading,
+  Image,
   Input,
   Link,
   Stack,
-  Image,
 } from '@chakra-ui/react';
+import { NextPage } from 'next';
+import { signIn } from 'next-auth/react';
+import React, { FormEventHandler, useState } from 'react';
 
-const SignIn = ({ csrfToken }) => {
+const SignIn: NextPage = (): JSX.Element => {
+  const [user, setUser] = useState<string>('');
+  const [pass, setPass] = useState<string>('');
+
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    const res: any = await signIn('credentials', {
+      email: user,
+      password: pass,
+      redirect: true,
+    });
+    console.log(res.status);
+  };
+
   return (
     <Stack
       minH={'100vh'}
@@ -24,15 +37,24 @@ const SignIn = ({ csrfToken }) => {
       <Flex p={8} flex={1} align={'center'} justify={'center'}>
         <Stack spacing={4} w={'full'} maxW={'md'}>
           <Heading fontSize={'2xl'}>Sign in to your account</Heading>
-          <form method="post" action="/api/auth/callback/credentials">
-            <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+          <form onSubmit={handleSubmit}>
             <FormControl>
               <FormLabel htmlFor="email">Email address</FormLabel>
-              <Input borderColor="gray.400" name="email" type="text" />
+              <Input
+                borderColor="gray.400"
+                name="email"
+                type="text"
+                onChange={(e) => setUser(e.target.value)}
+              />
             </FormControl>
             <FormControl>
               <FormLabel htmlFor="password">Password</FormLabel>
-              <Input borderColor="gray.400" name="password" type="password" />
+              <Input
+                borderColor="gray.400"
+                name="password"
+                type="password"
+                onChange={(e) => setPass(e.target.value)}
+              />
             </FormControl>
             <Stack spacing={6}>
               <Stack
@@ -62,11 +84,3 @@ const SignIn = ({ csrfToken }) => {
   );
 };
 export default SignIn;
-
-export async function getServerSideProps(context: CtxOrReq) {
-  return {
-    props: {
-      csrfToken: await getCsrfToken(context),
-    },
-  };
-}

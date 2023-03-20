@@ -6,7 +6,7 @@ export default async function GetEmpresa(
   res: NextApiResponse,
 ) {
   if (req.method === 'POST') {
-    const Email = JSON.parse(req.body);
+    const Email = 'kingdever88@gmail.com';
     const token = process.env.ATORIZZATION_TOKEN;
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +

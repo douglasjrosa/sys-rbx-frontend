@@ -1,8 +1,7 @@
 /* eslint-disable react/prop-types */
-import React from 'react';
-import { jsPDF } from 'jspdf';
+import { Button, Center, Image } from '@chakra-ui/react';
 import { toPng } from 'html-to-image';
-import { Button, Image, Center } from '@chakra-ui/react';
+import { jsPDF } from 'jspdf';
 
 const GeneratePdf = ({ html, isAutoPrint, ...props }) => {
   const generateImage = async () => {

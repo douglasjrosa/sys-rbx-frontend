@@ -1,15 +1,8 @@
-import {
-  Box,
-  Flex,
-  IconButton,
-  Textarea,
-  useFocusEffect,
-  useToast,
-} from '@chakra-ui/react';
+import { Box, Flex, IconButton, Textarea, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FaLocationArrow } from 'react-icons/fa';
 
 export const NegocioFooter = (props: { onGetValue: any; data: any }) => {

@@ -1,9 +1,9 @@
-import { RiDashboardFill } from 'react-icons/ri';
+import { AiOutlineCodepen } from 'react-icons/ai';
 import { BsPeopleFill } from 'react-icons/bs';
 import { FaMoneyBillAlt, FaTasks } from 'react-icons/fa';
 import { GiCube } from 'react-icons/gi';
 import { MdBusiness } from 'react-icons/md';
-import { AiOutlineCodepen } from 'react-icons/ai';
+import { RiDashboardFill } from 'react-icons/ri';
 
 const NavMenuItems = [
   {

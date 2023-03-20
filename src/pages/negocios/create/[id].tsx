@@ -7,7 +7,6 @@ import Loading from '../../../components/elements/loading';
 import { BodyChat } from '../../../components/negocios/component/bodychat';
 import { NegocioFooter } from '../../../components/negocios/component/footer';
 import { NegocioHeader } from '../../../components/negocios/component/hearder';
-import { Business } from '../../../types/Busines';
 
 export default function CreateNegocio() {
   const router = useRouter();

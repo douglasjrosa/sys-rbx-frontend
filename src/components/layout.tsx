@@ -1,10 +1,11 @@
 /* eslint-disable react/prop-types */
-import Navbar from './elements/navbar';
-import Loading from './elements/loading';
-import MobileNavbar from './elements/mobile-navbar';
 import { Flex, useToast } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import Loading from './elements/loading';
+import MobileNavbar from './elements/mobile-navbar';
+import Navbar from './elements/navbar';
 
 function Layout({ children }) {
   const toast = useToast();
@@ -53,6 +54,10 @@ function Layout({ children }) {
     (status && router.asPath === '/auth/signin')
   ) {
     router.push('/');
+    return <Loading size="200px">Redirecionando...</Loading>;
+  }
+  if (router.asPath === '/auth/signin#') {
+    router.push('/auth/signin');
     return <Loading size="200px">Redirecionando...</Loading>;
   }
 

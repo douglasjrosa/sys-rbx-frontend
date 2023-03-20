@@ -1,14 +1,6 @@
 /* eslint-disable react/no-children-prop */
 /* eslint-disable react/prop-types */
-import {
-  VStack,
-  HStack,
-  Box,
-  Spacer,
-  Text,
-  Heading,
-  Divider,
-} from '@chakra-ui/react';
+import { Box, Heading, HStack, Spacer, Text, VStack } from '@chakra-ui/react';
 import { escalar } from '../../utils/rbx';
 
 export function Canvas({ children }) {

@@ -1,7 +1,7 @@
 import {
-  chakra,
   Box,
   Button,
+  chakra,
   Flex,
   FormControl,
   FormLabel,
@@ -14,16 +14,15 @@ import {
   Switch,
   Toast,
 } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
-import { useState } from 'react';
 import axios from 'axios';
-import { confgEnb } from '../../../components/data/confgEnb';
-import { modCaix } from '../../../components/data/modCaix';
 import { cnpj } from 'cpf-cnpj-validator';
 import { useSession } from 'next-auth/react';
-import { CompPessoa } from '../../../components/elements/lista/pessoas';
-import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
 import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import { confgEnb } from '../../../components/data/confgEnb';
+import { modCaix } from '../../../components/data/modCaix';
+import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
+import { CompPessoa } from '../../../components/elements/lista/pessoas';
 
 export default function Cadastro() {
   const { data: session } = useSession();
