@@ -162,8 +162,7 @@ export default function PessoaId() {
     if (!nome) {
       toast({
         title: 'Como devemos chamar esse cliente',
-        description:
-          'Não te disseram que  é falta de educação não chamar as pessoas pelo nome!',
+        description: 'Obrigatorio ter o nome do cliente!',
         status: 'warning',
         duration: 6000,
         isClosable: true,
@@ -171,8 +170,7 @@ export default function PessoaId() {
     } else if (!telefone && !whatsapp) {
       toast({
         title: 'Sem numero de contato',
-        description:
-          'Desse jeito não tem como você ou a equipe entrar em contato com o cliente!',
+        description: 'É nessesario o numero de WhatsApp!',
         status: 'warning',
         duration: 6000,
         isClosable: true,
@@ -193,18 +191,14 @@ export default function PessoaId() {
             duration: 6000,
             isClosable: true,
           });
-          resent();
+          setTimeout(() => {
+            router.push('/pessoas');
+          }, 1000);
         })
         .catch((err) => {
           console.log(err);
         });
     }
-  };
-
-  const resent = () => {
-    setTimeout(() => {
-      router.push('/pessoas');
-    }, 4000);
   };
 
   function getEmpresa(empresa: any) {
@@ -679,7 +673,7 @@ export default function PessoaId() {
                         shadow: '',
                       }}
                       fontWeight="md"
-                      onClick={() => router.back()}
+                      onClick={() => router.push('/pessoas')}
                     >
                       Cancelar
                     </Button>

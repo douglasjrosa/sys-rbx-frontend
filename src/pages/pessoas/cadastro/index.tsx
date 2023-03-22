@@ -135,7 +135,7 @@ export default function Cadastro() {
       toast({
         title: 'Como devemos chamar esse cliente',
         description:
-          'Não te disseram que  é falta de educação não chamar as pessoas pelo nome!',
+          'Obrigatorio o nome do cliente!',
         status: 'warning',
         duration: 6000,
         isClosable: true,
@@ -144,7 +144,7 @@ export default function Cadastro() {
       toast({
         title: 'Sem numero de contato',
         description:
-          'Desse jeito não tem como você ou a equipe entrar em contato com o cliente!',
+          'É nessesario o numero de whasApp!',
         status: 'warning',
         duration: 6000,
         isClosable: true,
