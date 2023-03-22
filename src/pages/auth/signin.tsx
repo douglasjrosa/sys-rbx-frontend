@@ -9,6 +9,7 @@ import {
   Input,
   Link,
   Stack,
+  useToast,
 } from '@chakra-ui/react';
 import { NextPage } from 'next';
 import { signIn } from 'next-auth/react';
@@ -17,6 +18,7 @@ import React, { FormEventHandler, useState } from 'react';
 const SignIn: NextPage = (): JSX.Element => {
   const [user, setUser] = useState<string>('');
   const [pass, setPass] = useState<string>('');
+  const toast = useToast()
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
@@ -26,6 +28,14 @@ const SignIn: NextPage = (): JSX.Element => {
       redirect: true,
     });
     console.log(res.status);
+    if (res.status !== 200){
+      toast({
+        title: 'Usuario ou Senha Incorreto',
+        status: 'error',
+        duration: 5000,
+        position: 'top-right',
+      });
+    }
   };
 
   return (
