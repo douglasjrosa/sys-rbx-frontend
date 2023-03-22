@@ -55,7 +55,6 @@ export default function PessoaId() {
       const url = `/api/db/pessoas/consulta/${id}`;
       const response = await axios(url);
       const pessoa = await response.data.data;
-      console.log(pessoa.attributes);
 
       setNome(pessoa.attributes.nome);
       setWhatsapp(pessoa.attributes.whatsapp);
@@ -183,7 +182,6 @@ export default function PessoaId() {
         data: data,
       })
         .then((response) => {
-          console.log(response);
           toast({
             title: 'salvo',
             description: 'cliente atualizado',

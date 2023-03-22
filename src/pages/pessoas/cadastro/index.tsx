@@ -156,7 +156,6 @@ export default function Cadastro() {
         data: data,
       })
         .then((response) => {
-          console.log(response);
           toast({
             title: 'salvo',
             description: 'Cliente salvo',
