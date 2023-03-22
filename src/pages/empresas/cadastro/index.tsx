@@ -1239,7 +1239,7 @@ export default function Cadastro() {
                       shadow: '',
                     }}
                     fontWeight="md"
-                    onClick={reload}
+                    onClick={() => router.push('/empresas')}
                   >
                     Cancelar
                   </Button>
