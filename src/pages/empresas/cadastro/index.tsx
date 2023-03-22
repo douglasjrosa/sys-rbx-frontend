@@ -36,6 +36,7 @@ export default function Cadastro() {
   const [tipoPessoa, setTipoPessoa] = useState('');
   const [fone, setFone] = useState('');
   const [celular, setCelular] = useState('');
+  const [WhatsMask, setWhatsMask] = useState('');
   const [email, setEmail] = useState('');
   const [emailNfe, setEmailNfe] = useState('');
   const [ieStatus, setIeStatus] = useState(false);
@@ -351,7 +352,15 @@ export default function Cadastro() {
     const valorLinpo = unMask(valor);
     const masked = mask(valorLinpo, ['99.999.999/9999-99']);
     setCNPJ(valorLinpo);
-    setMaskCNPJ(valorLinpo);
+    setMaskCNPJ(masked);
+  };
+
+  const WhatsAppMask = (e) => {
+    const valor = e.target.value;
+    const valorLinpo = unMask(valor);
+    const masked = mask(valorLinpo, ['(99) 9 9999-9999']);
+    setCelular(valorLinpo);
+    setWhatsMask(masked);
   };
 
   return (
@@ -923,7 +932,8 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={(e) => setCelular(e.target.value)}
+                        onChange={WhatsAppMask}
+                        value={WhatsMask}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
