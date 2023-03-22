@@ -279,27 +279,62 @@ export default function Cadastro() {
 
   const strapi = async () => {
     const url = '/api/db/empresas/post';
-
-    axios({
-      method: 'POST',
-      url: url,
-      data: data,
-    })
-      .then((response) => {
+    const validateString = [
+      { mudulo: nome, valor: 'Nome' },
+      { mudulo: CNPJ, valor: 'cnpj' },
+      { mudulo: celular, valor: 'WhatsApp' },
+      { mudulo: Empresa, valor: 'Fornecedor' },
+      { mudulo: Responsavel, valor: 'Responsavel' },
+    ];
+    const filter = validateString.filter((m) => m.mudulo === '');
+    if (tablecalc === '') {
+      toast({
+        title: `A Tabela de calculo deve ser definida`,
+        status: 'warning',
+        duration: 7000,
+        position: 'top-right',
+      });
+    }
+    if (filter.length > 1) {
+      const alert = filter.map((i) => {
         toast({
-          title: 'Cliente atualizado',
-          status: 'success',
-          duration: 9000,
-          isClosable: true,
+          title: `Favor verificar campo ${i.valor}`,
+          status: 'warning',
+          duration: 7000,
+          position: 'top-right',
         });
-        return response.data;
+      });
+      return alert;
+    } else if (filter.length !== 0 && filter.length < 2) {
+      const resp = filter.map((i) => i.valor);
+      toast({
+        title: `Favor verificar campo ${resp}`,
+        status: 'warning',
+        duration: 7000,
+        position: 'top-right',
+      });
+    } else {
+      axios({
+        method: 'POST',
+        url: url,
+        data: data,
       })
-      .catch((err) => console.log(err));
+        .then((response) => {
+          toast({
+            title: 'Cliente atualizado',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+          });
+          reload();
+          return response.data;
+        })
+        .catch((err) => console.log(err));
+    }
   };
 
   const save = async () => {
     await strapi();
-    reload();
   };
 
   function getResponsavel(respons: React.SetStateAction<string>) {
@@ -950,6 +985,7 @@ export default function Cadastro() {
                         onChange={(e) => setTablecalc(e.target.value)}
                         value={tablecalc}
                       >
+                        <option value=""></option>
                         <option value="0.30">Balcão</option>
                         <option value="0.26" selected>
                           vip
