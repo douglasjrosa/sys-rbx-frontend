@@ -24,11 +24,13 @@ import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
 import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
+import { mask, unMask } from 'remask';
 
 export default function Cadastro() {
   const { data: session } = useSession();
   const router = useRouter();
   const [CNPJ, setCNPJ] = useState('');
+  const [MaskCNPJ, setMaskCNPJ] = useState('');
   const [nome, setNome] = useState('');
   const [fantasia, setFantasia] = useState('');
   const [tipoPessoa, setTipoPessoa] = useState('');
@@ -344,6 +346,14 @@ export default function Cadastro() {
     setEmpresa(fornecedor);
   }
 
+  const maskCnpj = (e: any) => {
+    const valor = e.target.value;
+    const valorLinpo = unMask(valor);
+    const masked = mask(valorLinpo, ['99.999.999/9999-99']);
+    setCNPJ(valorLinpo);
+    setMaskCNPJ(valorLinpo);
+  };
+
   return (
     <>
       <Box
@@ -428,8 +438,8 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        maxLength={14}
-                        onChange={(e) => setCNPJ(e.target.value)}
+                        onChange={maskCnpj}
+                        value={MaskCNPJ}
                       />
                     </FormControl>
                     <Button
