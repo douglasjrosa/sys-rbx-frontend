@@ -7,12 +7,16 @@ export default async function GetEmpresa(
   res: NextApiResponse,
 ) {
   if (req.method === 'PUT') {
-    const id = req.query;
+    const id = req.query.put;
     const token = process.env.ATORIZZATION_TOKEN;
+    const data = req.body;
+    const cnpj = data.data.CNPJ;
+    const bodyData = data.data;
 
     await axios({
       method: 'PUT',
       url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/empresas/' + id,
+      data: data,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -28,6 +32,75 @@ export default async function GetEmpresa(
           detalhe: err.response.data.error.details,
         });
       });
+
+    const DataRbx = {
+      nome: bodyData.nome,
+      email: bodyData.email,
+      xNome: bodyData.fantasia,
+      CNPJ: bodyData.CNPJ,
+      IE: bodyData.Ie,
+      IM: '',
+      fone: bodyData.cidade,
+      indIEDest: '',
+      CNAE: bodyData.CNAE,
+      xLgr: bodyData.endereco,
+      nro: bodyData.numero,
+      xCpl: bodyData.complemento,
+      cMun: '',
+      cPais: bodyData.codpais,
+      xPais: bodyData.pais,
+      xBairro: bodyData.bairro,
+      CEP: bodyData.cep,
+      xMun: bodyData.cidade,
+      UF: bodyData.uf,
+      ativo:
+        bodyData.fornecedor === 2
+          ? 'Ribermax'
+          : bodyData.fornecedor === 1
+          ? 'Bragheto'
+          : 'Renato',
+      tabela: bodyData.tablecalc,
+      ultima_compra: '',
+      LatAdFrSN: bodyData.adFrailLat === true ? 'on' : 'off',
+      CabAdFrSN: bodyData.adFrailCab === true ? 'on' : 'off',
+      LatAdExSN: bodyData.adEspecialLat === true ? 'on' : 'off',
+      CabAdExSN: bodyData.adEspecialCab === true ? 'on' : 'off',
+      assDuplo: '',
+      LatForaSN: bodyData.latFCab === true ? 'on' : 'off',
+      CabChaoSN: bodyData.cabChao === true ? 'on' : 'off',
+      autoMail: '',
+      caixa_economica: bodyData.cxEco === true ? 'on' : 'off',
+      caixa_estruturada: bodyData.cxEst === true ? 'on' : 'off',
+      caixa_leve: bodyData.cxLev === true ? 'on' : 'off',
+      caixa_reforcada: bodyData.cxRef === true ? 'on' : 'off',
+      caixa_resistente: bodyData.cxResi === true ? 'on' : 'off',
+      caixa_super_reforcada: bodyData.cxSupRef === true ? 'on' : 'off',
+      engradado_economico: bodyData.engEco === true ? 'on' : 'off',
+      engradado_leve: bodyData.engLev === true ? 'on' : 'off',
+      engradado_reforcado: bodyData.engRef === true ? 'on' : 'off',
+      engradado_resistente: bodyData.engResi === true ? 'on' : 'off',
+      palete_sob_medida: bodyData.platSMed === true ? 'on' : 'off',
+      sarrafos_sob_medida: '',
+      formaPagto: bodyData.forpg,
+      prefPagto: bodyData.maxPg,
+      frete: bodyData.frete === '' ? 'fob' : bodyData.frete,
+    };
+
+    // await axios({
+    //   method: 'PUT',
+    //   url: process.env.RIBERMAX_API_URL + '/empresas?CNPJ=' + cnpj,
+    //   data: DataRbx,
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //     'Content-Type': 'application/json',
+    //   },
+    // })
+    //   .then((resp) => {
+    //     res.status(200).json(resp.data);
+    //   })
+    //   .catch((err) => {
+    //     res.status(400).json(err);
+    //   });
   } else {
     return res.status(405).send({ message: 'Only GET requests are allowed' });
   }

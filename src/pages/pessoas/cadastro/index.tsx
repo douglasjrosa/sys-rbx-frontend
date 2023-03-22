@@ -648,7 +648,7 @@ export default function Cadastro() {
                         shadow: '',
                       }}
                       fontWeight="md"
-                      onClick={() => router.push('/pessoas')}
+                      onClick={() => router.push('/pessoas/')}
                     >
                       Cancelar
                     </Button>

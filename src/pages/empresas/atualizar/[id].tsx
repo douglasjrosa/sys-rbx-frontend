@@ -83,6 +83,8 @@ export default function EmpresaId() {
   const [Responsavel, setResponsavel] = useState('');
   const toast = useToast();
 
+  console.log(cxRef);
+
   useEffect(() => {
     const getempresa = async () => {
       const id = router.query.id;
@@ -90,7 +92,7 @@ export default function EmpresaId() {
       const url = `/api/db/empresas/getId/${id}`;
       const response = await axios(url);
       const empresa = await response.data.data;
-      console.log(empresa.attributes.adFrailCab);
+      console.log(empresa.attributes);
       setResponsavel(
         empresa.attributes.responsavel.data === null
           ? null
@@ -326,72 +328,72 @@ export default function EmpresaId() {
     setFrete('');
     setTimeout(() => {
       router.back();
-    }, 1000);
-  };
-
-  const data = {
-    data: {
-      nome: nome,
-      fantasia: fantasia,
-      tipoPessoa: tipoPessoa,
-      endereco: endereco,
-      numero: numero,
-      complemento: complemento,
-      bairro: bairro,
-      cep: cep,
-      cidade: cidade,
-      uf: uf,
-      fone: fone,
-      celular: celular,
-      email: email,
-      emailNfe: emailNfe,
-      site: site,
-      CNPJ: CNPJ,
-      Ie: Ie,
-      pais: pais,
-      codpais: codpais,
-      CNAE: CNAE,
-      porte: porte,
-      simples: simples,
-      ieStatus: ieStatus,
-      status: true,
-      adFrailLat: adFrailLat,
-      adFrailCab: adFrailCab,
-      adEspecialLat: adEspecialLat,
-      adEspecialCab: adEspecialCab,
-      latFCab: latFCab,
-      cabChao: cabChao,
-      cabTop: cabTop,
-      cxEco: cxEco,
-      cxEst: cxEst,
-      cxLev: cxLev,
-      cxRef: cxRef,
-      cxSupRef: cxSupRef,
-      platSMed: platSMed,
-      cxResi: cxResi,
-      engEco: engEco,
-      engLev: engLev,
-      engRef: engRef,
-      engResi: engResi,
-      tablecalc: tablecalc,
-      maxPg: maxPg,
-      forpg: forpg,
-      frete: frete,
-      contribuinte: contribuinte,
-      responsavel: Responsavel,
-      fornecedor: Empresa,
-    },
+    }, 500);
   };
 
   const strapi = async () => {
+    const data = {
+      data: {
+        nome: nome,
+        fantasia: fantasia,
+        tipoPessoa: tipoPessoa,
+        endereco: endereco,
+        numero: numero,
+        complemento: complemento,
+        bairro: bairro,
+        cep: cep,
+        cidade: cidade,
+        uf: uf,
+        fone: fone,
+        celular: celular,
+        email: email,
+        emailNfe: emailNfe,
+        site: site,
+        CNPJ: CNPJ,
+        Ie: Ie,
+        pais: pais,
+        codpais: codpais,
+        CNAE: CNAE,
+        porte: porte,
+        simples: simples,
+        ieStatus: ieStatus,
+        status: true,
+        adFrailLat: adFrailLat,
+        adFrailCab: adFrailCab,
+        adEspecialLat: adEspecialLat,
+        adEspecialCab: adEspecialCab,
+        latFCab: latFCab,
+        cabChao: cabChao,
+        cabTop: cabTop,
+        cxEco: cxEco,
+        cxEst: cxEst,
+        cxLev: cxLev,
+        cxRef: cxRef,
+        cxSupRef: cxSupRef,
+        platSMed: platSMed,
+        cxResi: cxResi,
+        engEco: engEco,
+        engLev: engLev,
+        engRef: engRef,
+        engResi: engResi,
+        tablecalc: tablecalc,
+        maxPg: maxPg,
+        forpg: forpg,
+        frete: frete,
+        contribuinte: contribuinte,
+        responsavel: Responsavel,
+        fornecedor: Empresa,
+      },
+    };
+
     const url = '/api/db/empresas/atualizacao/' + ID;
 
-    axios({
+    await axios({
       method: 'PUT',
       url: url,
       data: data,
     })
-      .then(() => {
+      .then((response) => {
         toast({
           title: 'Cliente atualizado',
           status: 'success',
@@ -399,11 +401,12 @@ export default function EmpresaId() {
           position: 'top-right',
         });
         reload();
+        return response.data;
       })
       .catch((err) => console.log(err));
   };
-  const save = async () => {
-    await strapi();
+  const save = () => {
+    strapi();
   };
 
   function getResponsavel(respons: React.SetStateAction<string>) {
@@ -1384,7 +1387,7 @@ export default function EmpresaId() {
                       shadow: '',
                     }}
                     fontWeight="md"
-                    onClick={() => router.push('/empresasf/')}
+                    onClick={() => router.push('/empresas/')}
                   >
                     Cancelar
                   </Button>
