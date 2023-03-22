@@ -10,7 +10,6 @@ import {
   InputRightElement,
 } from '@chakra-ui/react';
 import CardEmpresa from '../../components/empresa/lista/card/card';
-import CardEmpresaRibermax from '../../components/empresa/lista/ribermax/card';
 
 export default function Empresas() {
   const router = useRouter();
@@ -71,7 +70,6 @@ export default function Empresas() {
           gap={5}
         >
           <CardEmpresa />
-          <CardEmpresaRibermax />
         </Flex>
       </Box>
     </Flex>
