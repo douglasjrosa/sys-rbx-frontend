@@ -26,14 +26,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any }) => {
   }
 
   useEffect(() => {
-    if (props.Resp && valor === '') {
-      const [filter] = dados.filter((objeto: any) =>
-        objeto.attributes.titulo
-          .toLowerCase()
-          .includes(props.Resp.toLowerCase()),
-      );
-      setValor(!filter ? props.Resp : filter.id);
-    }
+    setValor(props.Resp);
   }, [props.Resp, valor, dados]);
 
   return (

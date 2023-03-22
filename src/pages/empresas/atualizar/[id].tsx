@@ -25,15 +25,18 @@ import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
 import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
+import { mask, unMask } from 'remask';
 
 export default function EmpresaId() {
   const router = useRouter();
   const [CNPJ, setCNPJ] = useState('');
+  const [MaskCNPJ, setMaskCNPJ] = useState('');
   const [nome, setNome] = useState('');
   const [fantasia, setFantasia] = useState('');
   const [tipoPessoa, setTipoPessoa] = useState('');
   const [fone, setFone] = useState('');
   const [celular, setCelular] = useState('');
+  const [WhatsMask, setWhatsMask] = useState('');
   const [email, setEmail] = useState('');
   const [emailNfe, setEmailNfe] = useState('');
   const [ieStatus, setIeStatus] = useState(false);
@@ -87,12 +90,11 @@ export default function EmpresaId() {
       const url = `/api/db/empresas/getId/${id}`;
       const response = await axios(url);
       const empresa = await response.data.data;
-      console.log(empresa.attributes.CNPJ);
-
+      console.log(empresa.attributes.adFrailCab);
       setResponsavel(
         empresa.attributes.responsavel.data === null
           ? null
-          : empresa.attributes.responsa.data.id,
+          : empresa.attributes.responsavel.data.id,
       );
       setEmpresa(
         empresa.attributes.fornecedor.data === null
@@ -151,7 +153,7 @@ export default function EmpresaId() {
       setCodpais(
         empresa.attributes.codpais === null ? '' : empresa.attributes.codpais,
       );
-      setAdFragilLat(empresa.attributes.adFragilLat);
+      setAdFragilLat(empresa.attributes.adFrailLat);
       setAdFragilCab(empresa.attributes.adFrailCab);
       setAdEspecialLat(empresa.attributes.adEspecialLat);
       setAdEspecialCab(empresa.attributes.adEspecialCab);
@@ -185,7 +187,7 @@ export default function EmpresaId() {
     };
     getempresa();
   }, []);
-
+  console.log(adFrailLat);
   const consulta = () => {
     console.log(CNPJ);
     const validCnpj = cnpj.isValid(CNPJ);
@@ -324,7 +326,7 @@ export default function EmpresaId() {
     setFrete('');
     setTimeout(() => {
       router.back();
-    }, 2000);
+    }, 1000);
   };
 
   const data = {
@@ -389,20 +391,19 @@ export default function EmpresaId() {
       url: url,
       data: data,
     })
-      .then((response) => {
+      .then(() => {
         toast({
           title: 'Cliente atualizado',
           status: 'success',
           duration: 9000,
-          isClosable: true,
+          position: 'top-right',
         });
-        return response.data;
+        reload();
       })
       .catch((err) => console.log(err));
   };
   const save = async () => {
     await strapi();
-    reload();
   };
 
   function getResponsavel(respons: React.SetStateAction<string>) {
@@ -411,7 +412,29 @@ export default function EmpresaId() {
   function getFornecedor(fornecedor: React.SetStateAction<string>) {
     setEmpresa(fornecedor);
   }
-  console.log(CNPJ);
+
+  const maskCnpj = (e: any) => {
+    const valor = e.target.value;
+    const valorLinpo = unMask(valor);
+    const masked = mask(valorLinpo, ['99.999.999/9999-99']);
+    setCNPJ(valorLinpo);
+    setMaskCNPJ(masked);
+  };
+
+  const WhatsAppMask = (e) => {
+    const valor = e.target.value;
+    const valorLinpo = unMask(valor);
+    const masked = mask(valorLinpo, ['(99) 9 9999-9999']);
+    setCelular(valorLinpo);
+    setWhatsMask(masked);
+  };
+
+  setTimeout(() => {
+    const maskedCnpj = mask(CNPJ, ['99.999.999/9999-99']);
+    setMaskCNPJ(maskedCnpj);
+    const maskedCel = mask(celular, ['(99) 9 9999-9999']);
+    setWhatsMask(maskedCel);
+  }, 50);
 
   return (
     <>
@@ -499,8 +522,8 @@ export default function EmpresaId() {
                           w="full"
                           rounded="md"
                           maxLength={14}
-                          onChange={(e) => setCNPJ(e.target.value)}
-                          value={CNPJ}
+                          onChange={maskCnpj}
+                          value={MaskCNPJ}
                         />
                       </FormControl>
                       <Button
@@ -951,6 +974,7 @@ export default function EmpresaId() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setSite(e.target.value)}
+                        value={site}
                       />
                     </FormControl>
 
@@ -975,6 +999,7 @@ export default function EmpresaId() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setEmailNfe(e.target.value)}
+                        value={emailNfe}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
@@ -997,7 +1022,8 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={(e) => setCelular(e.target.value)}
+                        onChange={WhatsAppMask}
+                        value={WhatsMask}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
@@ -1069,6 +1095,7 @@ export default function EmpresaId() {
                         onChange={(e) => setTablecalc(e.target.value)}
                         value={tablecalc}
                       >
+                        <option value=""></option>
                         <option value="0.30">Balcão</option>
                         <option value="0.26" selected>
                           vip
@@ -1357,7 +1384,7 @@ export default function EmpresaId() {
                       shadow: '',
                     }}
                     fontWeight="md"
-                    onClick={reload}
+                    onClick={() => router.push('/empresasf/')}
                   >
                     Cancelar
                   </Button>

@@ -25,14 +25,7 @@ export const CompFornecedor = (props: { Resp: string; onAddResp: any }) => {
   }
 
   useEffect(() => {
-    if (props.Resp && valor === '') {
-      const [filter] = dados.filter((objeto: any) =>
-        objeto.attributes.fantasia
-          .toLowerCase()
-          .includes(props.Resp.toLowerCase()),
-      );
-      setValor(!filter ? props.Resp : filter.id);
-    }
+    setValor(props.Resp);
   }, [props.Resp, valor, dados]);
 
   return (
