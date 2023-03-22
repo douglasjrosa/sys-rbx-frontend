@@ -15,6 +15,7 @@ import {
   Switch,
   Text,
   Toast,
+  useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { cnpj } from 'cpf-cnpj-validator';
@@ -77,6 +78,7 @@ export default function EmpresaId() {
   const [ID, setID] = useState('');
   const [Empresa, setEmpresa] = useState('');
   const [Responsavel, setResponsavel] = useState('');
+  const toast = useToast();
 
   useEffect(() => {
     const getempresa = async () => {
@@ -322,7 +324,7 @@ export default function EmpresaId() {
     setFrete('');
     setTimeout(() => {
       router.back();
-    }, 1000);
+    }, 2000);
   };
 
   const data = {
@@ -388,30 +390,19 @@ export default function EmpresaId() {
       data: data,
     })
       .then((response) => {
+        toast({
+          title: 'Cliente atualizado',
+          status: 'success',
+          duration: 9000,
+          isClosable: true,
+        });
         return response.data;
       })
       .catch((err) => console.log(err));
   };
-
-  const bling = async () => {
-    const url = '/api/db_bling/empresas/PUT/' + CNPJ;
-    axios({
-      method: 'POST',
-      url: url,
-      data: data,
-    })
-      .then((response) => {
-        console.log(response.data);
-
-        return response.data;
-      })
-      .catch((err) => console.log(err));
-  };
-
   const save = async () => {
-    await bling();
     await strapi();
-    // reload();
+    reload();
   };
 
   function getResponsavel(respons: React.SetStateAction<string>) {

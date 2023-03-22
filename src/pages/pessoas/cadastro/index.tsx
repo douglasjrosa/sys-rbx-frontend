@@ -47,10 +47,11 @@ export default function Cadastro() {
   const [telefoneMask, setTelefoneMask] = useState('');
   const [CepMask, setCepMask] = useState('');
   const [CpfMask, setCpfMask] = useState('');
+  const [Reddata, setRendData] = useState([]);
 
   useEffect(() => {
     setWork(Empresa.map((i: { id: any }) => i.id));
-  }, [Empresa]);
+  }, []);
 
   const MaskWhatsapp = (e: any) => {
     const originalVelue = unMask(e.target.value);
@@ -80,17 +81,12 @@ export default function Cadastro() {
     setCep(originalVelue);
   };
 
-
   const NUMERO = (e: any) => {
     const data = e.target.value.replace(/[a-zA-Z]+/g, '');
     setNumero(data);
   };
 
-  const resent = () => {
-    setTimeout(() => {
-      router.back();
-    }, 1000);
-  };
+
 
   const checkCep = async () => {
     const url = `https://viacep.com.br/ws/${cep}/json/`;
@@ -112,6 +108,7 @@ export default function Cadastro() {
       vendedor: session.user.name,
       msg: `cinete ${nome} foi cadastrado`,
     };
+
     const data = {
       data: {
         nome: nome,
@@ -131,7 +128,7 @@ export default function Cadastro() {
         history: [historico],
       },
     };
-    console.log(data);
+
     const url = '/api/db/pessoas/Post';
 
     if (!nome) {
@@ -143,7 +140,7 @@ export default function Cadastro() {
         duration: 6000,
         isClosable: true,
       });
-    } else if (!telefone && !whatsapp) {
+    } else if (!whatsapp) {
       toast({
         title: 'Sem numero de contato',
         description:
@@ -160,15 +157,16 @@ export default function Cadastro() {
       })
         .then((response) => {
           console.log(response);
-          resent();
           toast({
             title: 'salvo',
-            description: response.data,
-            status: 'warning',
+            description: 'Cliente salvo',
+            status: 'success',
             duration: 6000,
-            isClosable: true,
+            position: 'top-right'
           });
-          return response.data;
+          setTimeout(() => {
+            router.push('/pessoas');
+          }, 1000);
         })
         .catch((err) => {
           console.log(err);
@@ -179,6 +177,10 @@ export default function Cadastro() {
   function getEmpresa(empresa: any) {
     setEmpresa([...Empresa, empresa]);
   }
+
+  useEffect(()=> {
+    setRendData(Empresa);
+  },[Empresa])
 
   return (
     <>
@@ -619,9 +621,11 @@ export default function Cadastro() {
                           })}
                         </SimpleGrid>
                       </FormControl>
-
                       <FormControl ms={10} as={GridItem} colSpan={[12, 3]}>
-                        <RelaciomentoEmpr onGetValue={getEmpresa} />
+                        <RelaciomentoEmpr
+                          onGetValue={getEmpresa}
+                          dados={Reddata}
+                        />
                       </FormControl>
                     </SimpleGrid>
                   </Stack>
@@ -645,7 +649,7 @@ export default function Cadastro() {
                         shadow: '',
                       }}
                       fontWeight="md"
-                      onClick={() => router.back()}
+                      onClick={() => router.push('/pessoas')}
                     >
                       Cancelar
                     </Button>

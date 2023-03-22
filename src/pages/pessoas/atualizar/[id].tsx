@@ -48,6 +48,7 @@ export default function PessoaId() {
   const [telefoneMask, setTelefoneMask] = useState('');
   const [CepMask, setCepMask] = useState('');
   const [CpfMask, setCpfMask] = useState('');
+  const [Dados, setDados] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -66,6 +67,7 @@ export default function PessoaId() {
       setEmail(pessoa.attributes.email);
       setObs(pessoa.attributes.obs);
       setEmpresa(pessoa.attributes.empresas.data);
+      setDados(pessoa.attributes.empresas.data);
       setCPF(pessoa.attributes.CPF);
       const maskedValue = mask(pessoa.attributes.CPF, ['999.999.999-99']);
       setCpfMask(maskedValue);
@@ -201,8 +203,8 @@ export default function PessoaId() {
 
   const resent = () => {
     setTimeout(() => {
-      router.back();
-    }, 1000);
+      router.push('/pessoas');
+    }, 4000);
   };
 
   function getEmpresa(empresa: any) {
@@ -650,7 +652,10 @@ export default function PessoaId() {
                       </FormControl>
 
                       <FormControl ms={10} as={GridItem} colSpan={[12, 3]}>
-                        <RelaciomentoEmpr onGetValue={getEmpresa} />
+                        <RelaciomentoEmpr
+                          onGetValue={getEmpresa}
+                          dados={Dados}
+                        />
                       </FormControl>
                     </SimpleGrid>
                   </Stack>

@@ -155,14 +155,9 @@ export default function CardEmpresa() {
               }}
               onClick={async () => {
                 const id = item.id;
-                const doc = item.attributes.CNPJ;
                 await axios({
                   method: 'PUT',
-                  url: '/api/empresas/delete/' + id,
-                });
-                await axios({
-                  method: 'PUT',
-                  url: '/api/db_bling/empresas/Delet/' + doc,
+                  url: '/api/db/empresas/delete/' + id,
                 });
               }}
             >

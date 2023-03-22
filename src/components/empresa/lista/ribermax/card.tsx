@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Box, chakra, Flex, Link } from '@chakra-ui/react';
+import { Box, chakra, Flex, Link, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -11,6 +11,7 @@ export default function CardEmpresaRibermax() {
   const router = useRouter();
   const SetEmail = localStorage.getItem('email');
   const Email = JSON.parse(SetEmail);
+  const toast = useToast();
 
   useEffect(() => {
     get();

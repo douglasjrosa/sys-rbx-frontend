@@ -13,6 +13,7 @@ import {
   Stack,
   Switch,
   Toast,
+  useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { cnpj } from 'cpf-cnpj-validator';
@@ -75,6 +76,7 @@ export default function Cadastro() {
   const [frete, setFrete] = useState('');
   const [Empresa, setEmpresa] = useState('');
   const [Responsavel, setResponsavel] = useState('');
+  const toast = useToast();
 
   const consulta = () => {
     console.log(CNPJ);
@@ -216,7 +218,7 @@ export default function Cadastro() {
     setEmpresa('');
     setTimeout(() => {
       router.back();
-    }, 1000);
+    }, 2000);
   };
 
   const data = {
@@ -284,76 +286,18 @@ export default function Cadastro() {
       data: data,
     })
       .then((response) => {
+        toast({
+          title: 'Cliente atualizado',
+          status: 'success',
+          duration: 9000,
+          isClosable: true,
+        });
         return response.data;
-      })
-      .catch((err) => console.log(err));
-  };
-  const bling = async () => {
-    const url = '/api/db_bling/empresas/Post';
-    axios({
-      method: 'POST',
-      url: url,
-      data: data,
-    })
-      .then((response) => {
-        if (response.data.retorno.erros[0].erro.cod === 60) {
-          Toast({
-            title: 'erro no registro',
-            description: 'A empresa não pode ser cadastrada sem nome',
-            status: 'error',
-            duration: 7000,
-            position: 'top-right',
-            isClosable: true,
-          });
-          console.log('O pessoa não pode ser cadastrado sem nome');
-        }
-        if (response.data.retorno.erros[0].erro.cod === 62) {
-          Toast({
-            title: 'erro no registro',
-            description:
-              'A empresa não pode ser cadastrada sem CNPJ, ou CNPJ esta incorreto',
-            status: 'error',
-            duration: 7000,
-            position: 'top-right',
-            isClosable: true,
-          });
-          console.log(
-            'A empresa não pode ser cadastrada sem CPF, ou CPF esta incorreto',
-          );
-        }
-        if (response.data.retorno.erros[0].erro.cod === 68) {
-          Toast({
-            title: 'erro no registro',
-            description:
-              'A empresa esta com CNPJ esta incorreto, favor verificar',
-            status: 'error',
-            duration: 7000,
-            position: 'top-right',
-            isClosable: true,
-          });
-          console.log(
-            'A empresa esta com CNPJ esta incorreto, favor verificar',
-          );
-        }
-        if (response.data.retorno.erros[0].erro.cod === 70) {
-          Toast({
-            title: 'erro no registro',
-            description: 'A empresa já esta cadastrada',
-            status: 'error',
-            duration: 7000,
-            position: 'top-right',
-            isClosable: true,
-          });
-          console.log('A empresa já esta cadastrada');
-        } else {
-          return response.data;
-        }
       })
       .catch((err) => console.log(err));
   };
 
   const save = async () => {
-    await bling();
     await strapi();
     reload();
   };

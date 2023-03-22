@@ -1,8 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable prettier/prettier */
-import { Box, chakra, Flex, Link } from '@chakra-ui/react';
+import { Box, chakra, Flex, Link, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { describe } from 'node:test';
 import { useEffect, useState } from 'react';
 import Loading from '../../../elements/loading';
 
@@ -10,19 +11,21 @@ export default function CardPessoas() {
   const [dados, setDados] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+  const toast = useToast();
 
   useEffect(() => {
-    get();
+    (async () => {
+      await axios({
+        method: 'GET',
+        url: '/api/db/pessoas/Get',
+      })
+        .then((res) => {
+          setDados(res.data.data);
+          setLoading(false);
+        })
+        .catch((err) => console.error(err));
+    })();
   }, []);
-
-  const get = async () => {
-    const response = await axios({
-      method: 'GET',
-      url: '/api/db/pessoas/Get',
-    });
-    setDados(response.data.data);
-    setLoading(false);
-  };
 
   if (!dados) {
     return (
@@ -31,6 +34,37 @@ export default function CardPessoas() {
       </>
     );
   }
+
+  const get = async () => {
+    await axios({
+      method: 'GET',
+      url: '/api/db/pessoas/Get',
+    })
+      .then((res) => {
+        setDados(res.data.data);
+        setLoading(false);
+      })
+      .catch((err) => console.error(err));
+  };
+
+  const Remove = async (id: number) => {
+    await axios({
+      method: 'PUT',
+      url: '/api/db/pessoas/delete/' + id,
+    })
+      .then(() => {
+        setLoading(true);
+        toast({
+          title: 'Contato Deletado',
+          description: 'duvidas procurar o Adm',
+          duration: 5000,
+          position: 'top-right',
+          status: 'success',
+        });
+        setTimeout(() => get(), 1000);
+      })
+      .catch((err) => console.error(err));
+  };
 
   const render = dados.map((item) => {
     const data = () => {
@@ -154,15 +188,7 @@ export default function CardPessoas() {
               }}
               onClick={async () => {
                 const id = item.id;
-                const doc = item.attributes.CPF;
-                await axios({
-                  method: 'PUT',
-                  url: '/api/pessoas/delete/' + id,
-                });
-                await axios({
-                  method: 'PUT',
-                  url: '/api/db_bling/pessoas/Delet/' + doc,
-                });
+                Remove(id);
               }}
             >
               Delete

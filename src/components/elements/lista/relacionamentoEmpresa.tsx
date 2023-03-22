@@ -4,9 +4,10 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { AiOutlineUsergroupAdd } from 'react-icons/ai';
 
-export const RelaciomentoEmpr = (props: { onGetValue: any }) => {
+export const RelaciomentoEmpr = (props: { onGetValue: any; dados: any }) => {
   const [work, setWork] = useState([]);
   const [id, setId] = useState('');
+  const [isDisabled, setIsDisabled] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -23,6 +24,8 @@ export const RelaciomentoEmpr = (props: { onGetValue: any }) => {
         });
     })();
   }, []);
+
+  console.log(props.dados);
 
   const consultaEmp = async () => {
     let url = '/api/db/empresas/consulta/' + id;
@@ -43,6 +46,14 @@ export const RelaciomentoEmpr = (props: { onGetValue: any }) => {
     const valor = e.target.value;
     setId(valor);
   };
+
+  console.log(props.dados);
+
+  useEffect(() => {
+    const dados = props.dados;
+    const disable = dados.length > 0 ? true : false;
+    setIsDisabled(disable);
+  }, [props.dados]);
 
   return (
     <>
@@ -76,7 +87,12 @@ export const RelaciomentoEmpr = (props: { onGetValue: any }) => {
         })}
       </Select>
       <Box mt={5}>
-        <Button w={'100%'} colorScheme={'telegram'} onClick={consultaEmp}>
+        <Button
+          w={'100%'}
+          colorScheme={'telegram'}
+          onClick={consultaEmp}
+          isDisabled={isDisabled}
+        >
           Adicionar <AiOutlineUsergroupAdd fontSize={26} />
         </Button>
       </Box>

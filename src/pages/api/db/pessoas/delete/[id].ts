@@ -14,7 +14,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
 
     await axios({
       method: 'PUT',
-      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/api/pessoas/' + id,
+      url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/pessoas/' + id,
       data: update,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -25,6 +25,9 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
         res.status(200).json(Response.data);
       })
       .catch((err) => {
+        console.log(err);
+        console.log(err.response.data);
+        console.log(err.response.data.error);
         res.status(400).json({
           error: err.response.data,
           mensage: err.response.data.error,
