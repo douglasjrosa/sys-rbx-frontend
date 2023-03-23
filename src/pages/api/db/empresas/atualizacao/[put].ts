@@ -34,73 +34,69 @@ export default async function GetEmpresa(
       });
 
     const DataRbx = {
-      nome: bodyData.nome,
-      email: bodyData.email,
-      xNome: bodyData.fantasia,
-      CNPJ: bodyData.CNPJ,
-      IE: bodyData.Ie,
+      nome: bodyData.nome as string,
+      email: bodyData.email as string,
+      xNome: bodyData.fantasia as string,
+      CNPJ: bodyData.CNPJ as string,
+      IE: bodyData.Ie as string,
       IM: '',
-      fone: bodyData.cidade,
+      fone: bodyData.cidade as string,
       indIEDest: '',
-      CNAE: bodyData.CNAE,
-      xLgr: bodyData.endereco,
-      nro: bodyData.numero,
-      xCpl: bodyData.complemento,
+      CNAE: bodyData.CNAE as string,
+      xLgr: bodyData.endereco as string,
+      nro: bodyData.numero as string,
+      xCpl: bodyData.complemento as string,
       cMun: '',
-      cPais: bodyData.codpais,
-      xPais: bodyData.pais,
-      xBairro: bodyData.bairro,
-      CEP: bodyData.cep,
-      xMun: bodyData.cidade,
-      UF: bodyData.uf,
-      ativo:
-        bodyData.fornecedor === 2
-          ? 'Ribermax'
-          : bodyData.fornecedor === 1
-          ? 'Bragheto'
-          : 'Renato',
-      tabela: bodyData.tablecalc,
+      cPais: bodyData.codpais as string,
+      xPais: bodyData.pais as string,
+      xBairro: bodyData.bairro as string,
+      CEP: bodyData.cep as string,
+      xMun: bodyData.cidade as string,
+      UF: bodyData.uf as string,
+      ativo: bodyData.status !== true ? '' : ('1' as string),
+      tabela: bodyData.tablecalc as string,
       ultima_compra: '',
-      LatAdFrSN: bodyData.adFrailLat === true ? 'on' : 'off',
-      CabAdFrSN: bodyData.adFrailCab === true ? 'on' : 'off',
-      LatAdExSN: bodyData.adEspecialLat === true ? 'on' : 'off',
-      CabAdExSN: bodyData.adEspecialCab === true ? 'on' : 'off',
+      LatAdFrSN: bodyData.adFrailLat === true ? '1' : ('' as string),
+      CabAdFrSN: bodyData.adFrailCab === true ? '1' : ('' as string),
+      LatAdExSN: bodyData.adEspecialLat === true ? '1' : ('' as string),
+      CabAdExSN: bodyData.adEspecialCab === true ? '1' : ('' as string),
       assDuplo: '',
-      LatForaSN: bodyData.latFCab === true ? 'on' : 'off',
-      CabChaoSN: bodyData.cabChao === true ? 'on' : 'off',
+      LatForaSN: bodyData.latFCab === true ? '1' : ('' as string),
+      CabChaoSN: bodyData.cabChao === true ? '1' : ('' as string),
       autoMail: '',
-      caixa_economica: bodyData.cxEco === true ? 'on' : 'off',
-      caixa_estruturada: bodyData.cxEst === true ? 'on' : 'off',
-      caixa_leve: bodyData.cxLev === true ? 'on' : 'off',
-      caixa_reforcada: bodyData.cxRef === true ? 'on' : 'off',
-      caixa_resistente: bodyData.cxResi === true ? 'on' : 'off',
-      caixa_super_reforcada: bodyData.cxSupRef === true ? 'on' : 'off',
-      engradado_economico: bodyData.engEco === true ? 'on' : 'off',
-      engradado_leve: bodyData.engLev === true ? 'on' : 'off',
-      engradado_reforcado: bodyData.engRef === true ? 'on' : 'off',
-      engradado_resistente: bodyData.engResi === true ? 'on' : 'off',
-      palete_sob_medida: bodyData.platSMed === true ? 'on' : 'off',
+      caixa_economica: bodyData.cxEco === true ? '1' : ('' as string),
+      caixa_estruturada: bodyData.cxEst === true ? '1' : ('' as string),
+      caixa_leve: bodyData.cxLev === true ? '1' : ('' as string),
+      caixa_reforcada: bodyData.cxRef === true ? '1' : ('' as string),
+      caixa_resistente: bodyData.cxResi === true ? '1' : ('' as string),
+      caixa_super_reforcada: bodyData.cxSupRef === true ? '1' : ('' as string),
+      engradado_economico: bodyData.engEco === true ? '1' : ('' as string),
+      engradado_leve: bodyData.engLev === true ? '1' : ('' as string),
+      engradado_reforcado: bodyData.engRef === true ? '1' : ('' as string),
+      engradado_resistente: bodyData.engResi === true ? '1' : ('' as string),
+      palete_sob_medida: bodyData.platSMed === true ? '1' : ('' as string),
       sarrafos_sob_medida: '',
-      formaPagto: bodyData.forpg,
-      prefPagto: bodyData.maxPg,
-      frete: bodyData.frete === '' ? 'fob' : bodyData.frete,
+      formaPagto: bodyData.forpg as string,
+      prefPagto: bodyData.maxPg as string,
+      frete: bodyData.frete === '' ? 'fob' : (bodyData.frete as string),
     };
 
-    // await axios({
-    //   method: 'PUT',
-    //   url: process.env.RIBERMAX_API_URL + '/empresas?CNPJ=' + cnpj,
-    //   data: DataRbx,
-    //   headers: {
-    //     Authorization: `Bearer ${token}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    // })
-    //   .then((resp) => {
-    //     res.status(200).json(resp.data);
-    //   })
-    //   .catch((err) => {
-    //     res.status(400).json(err);
-    //   });
+    await axios({
+      method: 'put',
+      url: process.env.RIBERMAX_API_URL + '/empresas?CNPJ=' + cnpj,
+      headers: {
+        Email: process.env.ATORIZZATION_EMAIL,
+        Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      data: new URLSearchParams(DataRbx).toString(),
+    })
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   } else {
     return res.status(405).send({ message: 'Only GET requests are allowed' });
   }

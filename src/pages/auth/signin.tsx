@@ -13,22 +13,22 @@ import {
 } from '@chakra-ui/react';
 import { NextPage } from 'next';
 import { signIn } from 'next-auth/react';
-import React, { FormEventHandler, useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 const SignIn: NextPage = (): JSX.Element => {
   const [user, setUser] = useState<string>('');
   const [pass, setPass] = useState<string>('');
-  const toast = useToast()
+  const toast = useToast();
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     const res: any = await signIn('credentials', {
       email: user,
       password: pass,
-      redirect: true,
+      redirect: false,
     });
-    console.log(res.status);
-    if (res.status !== 200){
+    console.log(res);
+    if (res.status !== 200) {
       toast({
         title: 'Usuario ou Senha Incorreto',
         status: 'error',

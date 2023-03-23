@@ -11,6 +11,7 @@ export const CompFornecedor = (props: { Resp: string; onAddResp: any }) => {
         const url = '/api/query/get/listaFornecedor';
         const get = await fetch(url);
         const response = await get.json();
+        console.log(response);
         setDados(response);
       } catch (error) {
         console.error(error);
@@ -52,12 +53,13 @@ export const CompFornecedor = (props: { Resp: string; onAddResp: any }) => {
         onChange={atualizarValor}
         value={valor}
       >
+        <option value=""></option>
         {!dados
           ? null
           : dados.map((i: any) => {
               return (
                 <option key={i.id} value={i.id}>
-                  {i.attributes.fantasia}
+                  {i.attributes.titulo}
                 </option>
               );
             })}

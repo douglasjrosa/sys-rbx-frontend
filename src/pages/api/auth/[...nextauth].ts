@@ -45,7 +45,6 @@ export default NextAuth({
           url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/auth/local',
           method: 'POST',
           data: data,
-          headers: { 'Content-Type': 'application/json' },
         });
         try {
           const { jwt, user } = await res.data;

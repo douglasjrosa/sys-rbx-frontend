@@ -6,6 +6,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
   if (req.method === 'PUT') {
     const token = process.env.ATORIZZATION_TOKEN;
+    const 
     const update = {
       data: {
         status: false,
@@ -30,6 +31,27 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
           mensage: err.response.data.error,
           detalhe: err.response.data.error.details,
         });
+      });
+
+    const DataRbx = {
+      ativo: '',
+    };
+
+    await axios({
+      method: 'post',
+      url: process.env.RIBERMAX_API_URL + '/empresas?CNPJ=' + cnpj,
+      headers: {
+        Email: process.env.ATORIZZATION_EMAIL,
+        Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      data: new URLSearchParams(DataRbx).toString(),
+    })
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
       });
   } else {
     return res.status(405).send({ message: 'Only GET requests are allowed' });
