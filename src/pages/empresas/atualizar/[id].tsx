@@ -23,7 +23,6 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
-import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
 import { mask, unMask } from 'remask';
 
@@ -694,12 +693,6 @@ export default function EmpresaId() {
                               : ' ';
                           return val;
                         })()}
-                      />
-                    </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
-                      <CompFornecedor
-                        Resp={Empresa}
-                        onAddResp={getFornecedor}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>

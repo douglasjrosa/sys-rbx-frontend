@@ -40,7 +40,6 @@ export default NextAuth({
           data: data,
         });
         try {
-          console.log(res.data);
           const { jwt, user } = await res.data;
           const { confirmed, blocked, username, id, email, pemission } =
             await user;

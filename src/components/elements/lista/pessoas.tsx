@@ -53,6 +53,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any }) => {
         onChange={atualizarValor}
         value={valor}
       >
+        <option value="1">não tem</option>
         {!dados
           ? null
           : dados.map((i: any) => {

@@ -22,7 +22,6 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
-import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
 import { mask, unMask } from 'remask';
 
@@ -172,53 +171,6 @@ export default function Cadastro() {
   };
 
   const reload = () => {
-    setCNPJ('');
-    setNome('');
-    setFantasia('');
-    setTipoPessoa('');
-    setFone('');
-    setCelular('');
-    setEmail('');
-    setEmailNfe('');
-    setIeStatus(false);
-    setCNAE('');
-    setIE('');
-    setPorte('');
-    setSimples(false);
-    setSite('');
-    setEndereco('');
-    setNumero('');
-    setBairro('');
-    setComplemento('');
-    setCidade('');
-    setUf('');
-    setCep('');
-    setPais('');
-    setCodpais('');
-    setAdFragilLat(false);
-    setAdFragilCab(false);
-    setAdEspecialLat(false);
-    setAdEspecialCab(false);
-    setLatFCab(false);
-    setCabChao(false);
-    setCabTop(false);
-    setCxEco(false);
-    setCxEst(false);
-    setCxLev(false);
-    setCxRef(null);
-    setCxSupRef(false);
-    setPlatSMed(false);
-    setCxResi(false);
-    setEngEco(false);
-    setEngLev(false);
-    setEngRef(false);
-    setEngResi(false);
-    setTablecalc('');
-    setMaxpg('');
-    setForpg('');
-    setFrete('');
-    setResponsavel('');
-    setEmpresa('');
     setTimeout(() => {
       router.back();
     }, 2000);
@@ -603,12 +555,6 @@ export default function Cadastro() {
                               : ' ';
                           return val;
                         })()}
-                      />
-                    </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
-                      <CompFornecedor
-                        Resp={Empresa}
-                        onAddResp={getFornecedor}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>

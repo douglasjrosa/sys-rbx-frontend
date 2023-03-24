@@ -11,7 +11,7 @@ export default async function GetEmpresa(
     const token = process.env.ATORIZZATION_TOKEN;
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
-      '/pessoas?fields[0]=id&fields[1]=nome';
+      '/pessoas?fields[0]=id&fields[1]=nome&filters[status][$eq]=true';
 
       await axios(url,{
         method: 'GET',
