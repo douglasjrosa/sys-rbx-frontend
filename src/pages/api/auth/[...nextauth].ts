@@ -2,22 +2,15 @@
 /* eslint-disable no-unreachable */
 /* eslint-disable no-undef */
 import axios from 'axios';
-import NextAuth from 'next-auth';
+import NextAuth, { DefaultUser } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-interface Credentials {
-  email: string;
-  password: string;
-}
-
-interface User {
-  jwt: string;
-  id: number;
-  name: string;
-  email: string;
+type ExtendedDefaultUser = DefaultUser & {
+  id: string;
   confirmed: boolean;
   blocked: boolean;
-}
+  pemission: string;
+};
 
 export default NextAuth({
   jwt: {
@@ -47,8 +40,10 @@ export default NextAuth({
           data: data,
         });
         try {
+          console.log(res.data);
           const { jwt, user } = await res.data;
-          const { confirmed, blocked, username, id, email } = await user;
+          const { confirmed, blocked, username, id, email, pemission } =
+            await user;
           const data = {
             jwt: jwt,
             id: id,
@@ -56,6 +51,7 @@ export default NextAuth({
             email: email,
             confirmed: confirmed,
             blocked: blocked,
+            pemission: pemission,
           };
 
           if (!jwt || !id || !username || !email) {
@@ -94,6 +90,7 @@ export default NextAuth({
         token.email = user.email;
         token.confirmed = user.confirmed;
         token.blocked = user.blocked;
+        token.pemission = user.pemission;
 
         token.expiration = actualDateInSeconds + tokenExpirationInSeconds;
       } else {
@@ -110,7 +107,8 @@ export default NextAuth({
         !token?.id ||
         !token?.name ||
         !token?.email ||
-        !token?.expiration
+        !token?.expiration ||
+        !token?.pemission
       ) {
         return null;
       }
@@ -119,9 +117,10 @@ export default NextAuth({
         id: token.id as string,
         name: token.name as string,
         email: token.email as string,
+        pemission: token.pemission as string,
         confirmed: token.confirmed as boolean,
         blocked: token.blocked as boolean,
-      };
+      } as ExtendedDefaultUser;
 
       session.token = token.jwt as string;
       return session;

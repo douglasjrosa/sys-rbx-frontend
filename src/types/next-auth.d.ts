@@ -9,6 +9,15 @@ declare module 'next-auth' {
     jwt?: string;
     confirmed?: boolean;
     blocked?: boolean;
+    pemission?: string;
+  }
+
+  interface DefaultUser {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    pemission?: string | null;
   }
 
   /**
@@ -23,6 +32,7 @@ declare module 'next-auth' {
     confirmed?: boolean;
     blocked?: boolean;
     expiration?: number;
+    pemission?: string;
   }
 
   /**
@@ -32,5 +42,12 @@ declare module 'next-auth' {
   interface Session {
     user: User;
     token: string;
+  }
+}
+declare module 'next-auth' {
+  interface User {
+    confirmed?: boolean;
+    blocked?: boolean;
+    permission?: string;
   }
 }

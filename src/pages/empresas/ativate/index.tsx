@@ -1,22 +1,22 @@
 /* eslint-disable prettier/prettier */
-import { Search2Icon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
 import {
   Box,
-  Button,
   Flex,
   Input,
   InputGroup,
-  InputRightElement,
 } from '@chakra-ui/react';
-import CardEmpresa from '../../components/empresa/lista/card/card';
+import CardExclud from '../../../components/empresa/lista/card/exclud';
 import { useSession } from 'next-auth/react';
-
+import { useEffect } from 'react';
 
 export default function Empresas() {
+  const {data: session} = useSession();
   const router = useRouter();
-  const { data: session } = useSession();
 
+  if(session.user.pemission !== "Adm"){
+    router.push('/empresas/')
+  }
   return (
     <Flex h="100%" w="100%" flexDir={'column'} justifyContent="center">
       <Flex
@@ -36,12 +36,8 @@ export default function Empresas() {
               pr="6rem"
               w={{ md: '26rem', sm: '30rem' }}
               type={'text'}
+              placeholder="Enter password"
             />
-            {/* <InputRightElement width="4.5rem">
-              <Button h="1.75rem" size="sm">
-                <Search2Icon />
-              </Button>
-            </InputRightElement> */}
           </InputGroup>
         </Box>
         <Box
@@ -50,22 +46,6 @@ export default function Empresas() {
           h="100%"
           justifyContent={'space-evenly'}
         >
-          <Button
-            h={{ md: '40%', sm: '70%' }}
-            colorScheme="whatsapp"
-            onClick={() => router.push('/empresas/cadastro')}
-          >
-            Cadastrar Empresa
-          </Button>
-          {session.user.pemission !== 'Adm'? null : (
-            <Button
-              h={{ md: '40%', sm: '70%' }}
-              colorScheme="telegram"
-              onClick={() => router.push('/empresas/ativate/')}
-            >
-              Ativar Cadastro
-            </Button>
-          )}
         </Box>
       </Flex>
       <Box h={'85%'} overflow={'auto'}>
@@ -81,7 +61,7 @@ export default function Empresas() {
           flexDirection="column"
           gap={5}
         >
-          <CardEmpresa />
+          <CardExclud />
         </Flex>
       </Box>
     </Flex>
