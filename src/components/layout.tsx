@@ -24,7 +24,7 @@ function Layout({ children }) {
   if (!session && router.asPath === '/auth/signin') {
     return children;
   }
-  if (session.user === null) {
+  if (!session.user) {
     router.push('/auth/signin');
   }
   if (!session.user && router.asPath !== '/auth/signin') {

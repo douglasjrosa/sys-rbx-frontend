@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable prettier/prettier */
-import { Box, chakra, Flex, Link } from '@chakra-ui/react';
+import { Box, chakra, Flex, Link, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
@@ -12,6 +12,7 @@ export default function CardEmpresa() {
   const [loading, setLoading] = useState<boolean>(true);
   const { data: session } = useSession();
   const router = useRouter();
+  const toast = useToast();
 
   useEffect(() => {
     get();
@@ -36,6 +37,25 @@ export default function CardEmpresa() {
         <Box></Box>
       </>
     );
+  }
+
+  const desativar = async(id: string, data: any) => {
+    await axios({
+      method: 'PUT',
+      data: data,
+      url: '/api/db/empresas/delete/' + id,
+    })
+    .then(() => {
+      toast({
+        title: 'Empresa desativada',
+        duration: 3000,
+        status: 'warning',
+        position: 'top-right',
+      })
+      setLoading(true);
+      get()
+    })
+    .catch((err) => console.log(err))
   }
 
   const render = dados.map((item: any) => {
@@ -155,10 +175,8 @@ export default function CardEmpresa() {
               }}
               onClick={async () => {
                 const id = item.id;
-                await axios({
-                  method: 'PUT',
-                  url: '/api/db/empresas/delete/' + id,
-                });
+                const data = { cnpj: item.attributes.CNPJ }
+                desativar(id, data)
               }}
             >
               Delete
