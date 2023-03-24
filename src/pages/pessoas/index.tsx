@@ -27,14 +27,14 @@ export default function Pessoas(): JSX.Element {
         flexDir={{ sm: 'column', md: 'row' }}
       >
         <Box>
-          <InputGroup size="md">
+          {/* <InputGroup size="md">
             <Input pr="6rem" w={{ md: '26rem', sm: '30rem' }} type={'text'} />
             <InputRightElement width="4.5rem">
               <Button h="1.75rem" size="sm">
                 <Search2Icon />
               </Button>
             </InputRightElement>
-          </InputGroup>
+          </InputGroup> */}
         </Box>
         <Box
           display={'flex'}

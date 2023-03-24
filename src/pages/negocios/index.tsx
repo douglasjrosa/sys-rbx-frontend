@@ -99,7 +99,7 @@ export default function Negocios() {
           flexDir={{ sm: 'column', md: 'row' }}
         >
           <Box>
-            <Box h={'3rem'} w="400px">
+            {/* <Box h={'3rem'} w="400px">
               {!Data && !Pedido && !Cnpj
                 ? null
                 : Data
@@ -125,7 +125,7 @@ export default function Negocios() {
               >
                 Data
               </Checkbox>
-            </Flex>
+            </Flex> */}
           </Box>
           <Box
             display={'flex'}

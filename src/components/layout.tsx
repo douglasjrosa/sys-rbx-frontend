@@ -2,7 +2,6 @@
 import { Flex, useToast } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
 import Loading from './elements/loading';
 import MobileNavbar from './elements/mobile-navbar';
 import Navbar from './elements/navbar';
@@ -24,12 +23,12 @@ function Layout({ children }) {
   if (!session && router.asPath === '/auth/signin') {
     return children;
   }
-  if (!session.user) {
+  if (!session && router.asPath !== '/auth/signin') {
     router.push('/auth/signin');
   }
-  if (!session.user && router.asPath !== '/auth/signin') {
-    router.push('/auth/signin');
-  }
+  // if (!session.user && router.asPath !== '/auth/signin') {
+  //   router.push('/auth/signin');
+  // }
   if (
     !session &&
     router.asPath ===

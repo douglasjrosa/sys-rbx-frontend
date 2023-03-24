@@ -39,24 +39,24 @@ export default function CardEmpresa() {
     );
   }
 
-  const desativar = async(id: string, data: any) => {
+  const desativar = async (id: string, data: any) => {
     await axios({
       method: 'PUT',
       data: data,
       url: '/api/db/empresas/delete/' + id,
     })
-    .then(() => {
-      toast({
-        title: 'Empresa desativada',
-        duration: 3000,
-        status: 'warning',
-        position: 'top-right',
+      .then(() => {
+        toast({
+          title: 'Empresa desativada',
+          duration: 3000,
+          status: 'warning',
+          position: 'top-right',
+        });
+        setLoading(true);
+        get();
       })
-      setLoading(true);
-      get()
-    })
-    .catch((err) => console.log(err))
-  }
+      .catch((err) => console.log(err));
+  };
 
   const render = dados.map((item: any) => {
     const data = () => {
@@ -175,8 +175,8 @@ export default function CardEmpresa() {
               }}
               onClick={async () => {
                 const id = item.id;
-                const data = { cnpj: item.attributes.CNPJ }
-                desativar(id, data)
+                const data = { cnpj: item.attributes.CNPJ };
+                desativar(id, data);
               }}
             >
               Delete

@@ -93,7 +93,7 @@ export default function ListaProposta() {
           alignItems={'center'}
           flexDir={{ sm: 'column', md: 'row' }}
         >
-          <Box>
+          {/* <Box>
             <Box h={'3rem'} w="400px">
               {!Data && !Pedido && !Cnpj
                 ? null
@@ -121,7 +121,7 @@ export default function ListaProposta() {
                 Data
               </Checkbox>
             </Flex>
-          </Box>
+          </Box> */}
           <Box
             display={'flex'}
             flexDir={{ md: 'column', sm: 'row' }}

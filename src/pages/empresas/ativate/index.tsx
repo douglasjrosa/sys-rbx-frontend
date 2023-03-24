@@ -31,14 +31,7 @@ export default function Empresas() {
         flexDir={{ sm: 'column', md: 'row' }}
       >
         <Box>
-          <InputGroup size="md">
-            <Input
-              pr="6rem"
-              w={{ md: '26rem', sm: '30rem' }}
-              type={'text'}
-              placeholder="Enter password"
-            />
-          </InputGroup>
+          
         </Box>
         <Box
           display={'flex'}

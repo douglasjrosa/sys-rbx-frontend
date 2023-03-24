@@ -35,11 +35,10 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
 
     const DataRbx = {
       CNPJ: cnpj,
-      ativo: '',
     };
 
     await axios({
-      method: 'post',
+      method: 'delete',
       url: process.env.RIBERMAX_API_URL + '/empresas',
       headers: {
         Email: process.env.ATORIZZATION_EMAIL,

@@ -12,7 +12,7 @@ export default function CardExclud() {
   const [loading, setLoading] = useState<boolean>(true);
   const { data: session } = useSession();
   const router = useRouter();
-  const toast = useToast()
+  const toast = useToast();
 
   useEffect(() => {
     get();
@@ -39,24 +39,24 @@ export default function CardExclud() {
     );
   }
 
-  const Ativate = async(id: string, data: any) => {
+  const Ativate = async (id: string, data: any) => {
     await axios({
       method: 'PUT',
       data: data,
       url: '/api/db/empresas/ativate/' + id,
     })
-    .then(() => {
-      toast({
-        title: 'Empresa reativada',
-        duration: 3000,
-        status: 'success',
-        position: 'top-right',
+      .then(() => {
+        toast({
+          title: 'Empresa reativada',
+          duration: 3000,
+          status: 'success',
+          position: 'top-right',
+        });
+        setLoading(true);
+        get();
       })
-      setLoading(true);
-      get()
-    })
-    .catch((err) => console.log(err))
-  }
+      .catch((err) => console.log(err));
+  };
 
   const render = dados.map((item: any) => {
     const data = () => {
@@ -175,8 +175,8 @@ export default function CardExclud() {
               }}
               onClick={async () => {
                 const id = item.id;
-                const data = { cnpj: item.attributes.CNPJ }
-                Ativate(id, data)
+                const data = { cnpj: item.attributes.CNPJ };
+                Ativate(id, data);
               }}
             >
               ativar
