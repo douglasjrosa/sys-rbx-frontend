@@ -12,7 +12,6 @@ import {
 import CardEmpresa from '../../components/empresa/lista/card/card';
 import { useSession } from 'next-auth/react';
 
-
 export default function Empresas() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -57,7 +56,7 @@ export default function Empresas() {
           >
             Cadastrar Empresa
           </Button>
-          {session.user.pemission !== 'Adm'? null : (
+          {session.user.pemission !== 'Adm' ? null : (
             <Button
               h={{ md: '40%', sm: '70%' }}
               colorScheme="telegram"
@@ -68,19 +67,8 @@ export default function Empresas() {
           )}
         </Box>
       </Flex>
-      <Box h={'85%'} overflow={'auto'}>
-        <Flex
-          bg="#edf3f8"
-          _dark={{
-            bg: '#3e3e3e',
-          }}
-          py={50}
-          w="full"
-          alignItems="center"
-          justifyContent="center"
-          flexDirection="column"
-          gap={5}
-        >
+      <Box h={'95%'} bg="#edf3f8" overflow={'auto'}>
+        <Flex py={50} px={5} w="full">
           <CardEmpresa />
         </Flex>
       </Box>

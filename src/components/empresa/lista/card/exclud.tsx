@@ -141,7 +141,7 @@ export default function CardExclud() {
         _dark={{
           bg: 'gray.900',
         }}
-        w={['xs', 'sm', 'lg', 'xl', '3xl', '5xl', '6xl']}
+        w={'sm'}
         key={item.id}
         fontSize="sm"
       >
@@ -179,7 +179,7 @@ export default function CardExclud() {
                 Ativate(id, data);
               }}
             >
-              ativar
+              Ativar
             </Link>
             <Link
               px={3}
@@ -244,26 +244,6 @@ export default function CardExclud() {
             >
               {cnpj()}
             </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={5}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              End:
-            </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={2}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              {end}
-            </chakra.p>
           </Box>
           <Box display={'flex'} alignItems={'center'}>
             <chakra.p
@@ -297,7 +277,7 @@ export default function CardExclud() {
   const display = dados.length === 0 ? null : render;
   return (
     <>
-      <Box h={'95%'}>{display}</Box>
+      <Box h={'100%'} display={'flex'} flexWrap={'wrap'} gap={3}>{display}</Box>
     </>
   );
 }

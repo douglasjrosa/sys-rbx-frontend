@@ -1,21 +1,16 @@
 /* eslint-disable prettier/prettier */
 import { useRouter } from 'next/router';
-import {
-  Box,
-  Flex,
-  Input,
-  InputGroup,
-} from '@chakra-ui/react';
+import { Box, Flex, Input, InputGroup } from '@chakra-ui/react';
 import CardExclud from '../../../components/empresa/lista/card/exclud';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 
 export default function Empresas() {
-  const {data: session} = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
 
-  if(session.user.pemission !== "Adm"){
-    router.push('/empresas/')
+  if (session.user.pemission !== 'Adm') {
+    router.push('/empresas/');
   }
   return (
     <Flex h="100%" w="100%" flexDir={'column'} justifyContent="center">
@@ -30,30 +25,16 @@ export default function Empresas() {
         alignItems={'center'}
         flexDir={{ sm: 'column', md: 'row' }}
       >
-        <Box>
-          
-        </Box>
+        <Box></Box>
         <Box
           display={'flex'}
           flexDir={{ md: 'column', sm: 'row' }}
           h="100%"
           justifyContent={'space-evenly'}
-        >
-        </Box>
+        ></Box>
       </Flex>
-      <Box h={'85%'} overflow={'auto'}>
-        <Flex
-          bg="#edf3f8"
-          _dark={{
-            bg: '#3e3e3e',
-          }}
-          py={50}
-          w="full"
-          alignItems="center"
-          justifyContent="center"
-          flexDirection="column"
-          gap={5}
-        >
+      <Box h={'85%'} bg="#edf3f8" overflow={'auto'}>
+        <Flex py={50} px={5} w="full">
           <CardExclud />
         </Flex>
       </Box>

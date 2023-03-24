@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable prettier/prettier */
-import { Box, chakra, Flex, Link, useToast } from '@chakra-ui/react';
+import { Box, chakra, Flex, Icon, Link, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { describe } from 'node:test';
+import { SiWhatsapp } from 'react-icons/si';
+import { FaRegBuilding } from 'react-icons/fa'
 import { useEffect, useState } from 'react';
 import Loading from '../../../elements/loading';
 
@@ -20,6 +21,7 @@ export default function CardPessoas() {
         url: '/api/db/pessoas/Get',
       })
         .then((res) => {
+          console.log(res.data.data);
           setDados(res.data.data);
           setLoading(false);
         })
@@ -41,6 +43,7 @@ export default function CardPessoas() {
       url: '/api/db/pessoas/Get',
     })
       .then((res) => {
+        console.log(res.data.data);
         setDados(res.data.data);
         setLoading(false);
       })
@@ -95,7 +98,7 @@ export default function CardPessoas() {
           : mes === '11'
           ? 'Nov'
           : 'Dez';
-      const date = mesesLieral + ' ' + dia + ', ' + ano + ' date add';
+      const date ='Criado em: ' + mesesLieral + ' ' + dia + ', ' + ano;
 
       return date;
     };
@@ -154,7 +157,7 @@ export default function CardPessoas() {
         _dark={{
           bg: 'gray.900',
         }}
-        w={['xs', 'sm', 'lg', 'xl', '3xl', '5xl', '6xl']}
+        w={'sm'}
         key={item.id}
         fontSize="sm"
       >
@@ -245,7 +248,7 @@ export default function CardPessoas() {
                 color: 'gray.300',
               }}
             >
-              CPF:
+              <Icon as={SiWhatsapp} />
             </chakra.p>
             <chakra.p
               mt={2}
@@ -255,27 +258,7 @@ export default function CardPessoas() {
                 color: 'gray.300',
               }}
             >
-              {cpf()}
-            </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={5}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              End:
-            </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={2}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              {end}
+              {item.attributes.whatsapp}
             </chakra.p>
           </Box>
           <Box display={'flex'} alignItems={'center'}>
@@ -286,7 +269,49 @@ export default function CardPessoas() {
                 color: 'gray.300',
               }}
             >
-              empresas:
+              Departamento:
+            </chakra.p>
+            <chakra.p
+              mt={2}
+              color="gray.600"
+              ms={2}
+              _dark={{
+                color: 'gray.300',
+              }}
+            >
+              {item.attributes.departamento}
+            </chakra.p>
+          </Box>
+          <Box display={'flex'} alignItems={'center'}>
+            <chakra.p
+              mt={2}
+              color="gray.600"
+              _dark={{
+                color: 'gray.300',
+              }}
+            >
+              Cargo:
+            </chakra.p>
+            <chakra.p
+              mt={2}
+              color="gray.600"
+              ms={2}
+              _dark={{
+                color: 'gray.300',
+              }}
+            >
+              {item.attributes.cargo}
+            </chakra.p>
+          </Box>
+          <Box display={'flex'} alignItems={'center'}>
+            <chakra.p
+              mt={2}
+              color="gray.600"
+              _dark={{
+                color: 'gray.300',
+              }}
+            >
+              <Icon as={FaRegBuilding} />
             </chakra.p>
             <chakra.p
               mt={2}
@@ -305,12 +330,23 @@ export default function CardPessoas() {
   });
 
   if (loading) {
-    return <Loading size="200px">Carregando...</Loading>;
+    return (
+      <Flex
+        w={'100%'}
+        h={'100%'}
+        justifyContent={'center'}
+        alignItems={'center'}
+      >
+        <Loading size="200px">Carregando...</Loading>
+      </Flex>
+    );
   }
   const display = !dados ? null : render;
   return (
     <>
-      <Box h={'95%'}>{display}</Box>
+      <Box h={'100%'} display={'flex'} flexWrap={'wrap'} gap={3}>
+        {display}
+      </Box>
     </>
   );
 }

@@ -51,20 +51,8 @@ export default function Pessoas(): JSX.Element {
           </Button>
         </Box>
       </Flex>
-      <Box h={'85%'} overflow={'auto'}>
-        <Flex
-          bg="#edf3f8"
-          _dark={{
-            bg: '#3e3e3e',
-          }}
-          py={50}
-          w="full"
-          h="full"
-          alignItems="center"
-          justifyContent="center"
-          flexDirection="column"
-          gap={5}
-        >
+      <Box h={'95%'} bg="#edf3f8" overflow={'auto'}>
+        <Flex py={50} px={5} w="full">
           <CardPessoas />
         </Flex>
       </Box>
