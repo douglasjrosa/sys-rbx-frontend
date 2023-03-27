@@ -8,13 +8,27 @@ import {
   ListItem,
   Text,
 } from '@chakra-ui/react';
+import { useSession } from 'next-auth/react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import NavMenuItems from './nav-menu-items';
 import ProfilePopover from './profile-popover';
+import React, { useState, useEffect } from 'react';
 
 function Navbar() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const [Dados, setDados] = useState<any>([]);
+
+  useEffect(() => {
+    if (session.user.pemission !== 'Adm') {
+      const filtro = NavMenuItems.filter((p) => p.permission !== 'Adm');
+      console.log(filtro);
+      setDados(filtro);
+    } else {
+      setDados(NavMenuItems);
+    }
+  }, [session.user.pemission]);
 
   return (
     <Flex
@@ -35,7 +49,7 @@ function Navbar() {
         />
         <Flex flexDir="column" m="10%">
           <List spacing={5}>
-            {NavMenuItems.map((navItem) => (
+            {Dados.map((navItem) => (
               <ListItem key={`navbar-${navItem.id}`}>
                 <Text fontSize="lg">
                   <ListIcon color="greenyellow" as={navItem.icon} />

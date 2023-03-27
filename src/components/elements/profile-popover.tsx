@@ -16,9 +16,11 @@ import NextLink from 'next/link';
 
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 const ProfilePopover = () => {
   const { data: session } = useSession();
+  const router = useRouter();
 
   return (
     <>
@@ -59,7 +61,7 @@ const ProfilePopover = () => {
                       <Button
                         bg="red.200"
                         rightIcon={<ExternalLinkIcon />}
-                        onClick={() => signOut()}
+                        onClick={() => router.push('/api/auth/signout')}
                       >
                         Sair
                       </Button>

@@ -12,6 +12,7 @@ const NavMenuItems = [
     text: 'Painel',
     icon: RiDashboardFill,
     iconComponent: <RiDashboardFill />,
+    permission: 'User',
   },
   {
     id: '2',
@@ -19,6 +20,7 @@ const NavMenuItems = [
     text: 'Negócios',
     icon: FaMoneyBillAlt,
     iconComponent: <FaMoneyBillAlt />,
+    permission: 'User',
   },
   {
     id: '3',
@@ -26,6 +28,7 @@ const NavMenuItems = [
     text: 'Tarefas',
     icon: FaTasks,
     iconComponent: <FaTasks />,
+    permission: 'Adm',
   },
   {
     id: '4',
@@ -33,6 +36,7 @@ const NavMenuItems = [
     text: 'Propostas',
     icon: AiOutlineCodepen,
     iconComponent: <AiOutlineCodepen />,
+    permission: 'User',
   },
   {
     id: '5',
@@ -40,6 +44,15 @@ const NavMenuItems = [
     text: 'Empresas',
     icon: MdBusiness,
     iconComponent: <MdBusiness />,
+    permission: 'User',
+  },
+  {
+    id: '6',
+    url: '/pessoas',
+    text: 'Pessoas',
+    icon: BsPeopleFill,
+    iconComponent: <BsPeopleFill />,
+    permission: 'Adm',
   },
   {
     id: '7',
@@ -47,13 +60,7 @@ const NavMenuItems = [
     text: 'Produtos',
     icon: GiCube,
     iconComponent: <GiCube />,
-  },
-  {
-    id: '88',
-    url: '/api/auth/signout',
-    text: 'Signout',
-    icon: GiCube,
-    iconComponent: <GiCube />,
+    permission: 'User',
   },
 ];
 
