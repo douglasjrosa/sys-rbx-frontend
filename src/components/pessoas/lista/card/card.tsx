@@ -4,8 +4,9 @@ import { Box, chakra, Flex, Icon, Link, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { SiWhatsapp } from 'react-icons/si';
-import { FaRegBuilding } from 'react-icons/fa'
+import { FaRegBuilding } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
+import { mask } from 'remask';
 import Loading from '../../../elements/loading';
 
 export default function CardPessoas() {
@@ -98,7 +99,7 @@ export default function CardPessoas() {
           : mes === '11'
           ? 'Nov'
           : 'Dez';
-      const date ='Criado em: ' + mesesLieral + ' ' + dia + ', ' + ano;
+      const date = 'Criado em: ' + mesesLieral + ' ' + dia + ', ' + ano;
 
       return date;
     };
@@ -258,7 +259,7 @@ export default function CardPessoas() {
                 color: 'gray.300',
               }}
             >
-              {item.attributes.whatsapp}
+              {mask(item.attributes.whatsapp, ['(99) 9 9999-9999'])}
             </chakra.p>
           </Box>
           <Box display={'flex'} alignItems={'center'}>
