@@ -48,14 +48,16 @@ export default function PessoaId() {
   const [telefoneMask, setTelefoneMask] = useState('');
   const [CepMask, setCepMask] = useState('');
   const [CpfMask, setCpfMask] = useState('');
+  const [Departamento, setDepartamento] = useState('');
+  const [Cargo, setCargo] = useState('');
   const [Dados, setDados] = useState([]);
+  const [historico, sethistorico] = useState([]);
 
   useEffect(() => {
     (async () => {
       const url = `/api/db/pessoas/consulta/${id}`;
       const response = await axios(url);
       const pessoa = await response.data.data;
-
       setNome(pessoa.attributes.nome);
       setWhatsapp(pessoa.attributes.whatsapp);
       const maskedValuezap = !pessoa.attributes.whatsapp
@@ -63,6 +65,10 @@ export default function PessoaId() {
         : mask(pessoa.attributes.whatsapp, ['(99) 9 9999-9999']);
       setWhatsappMask(maskedValuezap);
       setTelefone(pessoa.attributes.telefone);
+      const MaskedValueTel = !pessoa.attributes.telefone
+        ? ''
+        : mask(pessoa.attributes.telefone, ['(99) 9999-9999']);
+      setTelefoneMask(MaskedValueTel);
       setEmail(pessoa.attributes.email);
       setObs(pessoa.attributes.obs);
       setEmpresa(pessoa.attributes.empresas.data);
@@ -78,6 +84,9 @@ export default function PessoaId() {
       setBairro(pessoa.attributes.bairro);
       setCidade(pessoa.attributes.cidade);
       setUf(pessoa.attributes.uf);
+      setDepartamento(pessoa.attributes.departamento);
+      setCargo(pessoa.attributes.cargo);
+      sethistorico(pessoa.attributes.history);
     })();
   }, []);
 
@@ -133,10 +142,41 @@ export default function PessoaId() {
   const save = async () => {
     const date = new Date();
     const dateIsso = date.toISOString();
-    const historico = {
+
+    const url = `/api/db/pessoas/consulta/${id}`;
+    const response = await axios(url);
+    const pessoa = await response.data.data;
+    const Alteração =
+      nome !== pessoa.attributes.nome
+        ? 'O nome do cliente foi alterado'
+        : whatsapp !== pessoa.attributes.whatsapp
+        ? 'O WhatsApp do cliente foi alterado'
+        : telefone !== pessoa.attributes.telefone
+        ? 'O telefone do cliente foi alterado'
+        : email !== pessoa.attributes.email
+        ? 'O email do cliente'
+        : CPF !== pessoa.attributes.CPF
+        ? 'O CPF do cliente foi alterado'
+        : cep !== pessoa.attributes.CEP
+        ? 'O cep do cliente foi alterado'
+        : uf !== pessoa.attributes.uf
+        ? 'O Esado do cliente foi alterado'
+        : endereco !== pessoa.attributes.endereco
+        ? 'O endereco do cliente foi alterado'
+        : numero !== pessoa.attributes.numero
+        ? 'O numero do cliente foi alterado'
+        : work !== pessoa.attributes.empresas.data.id
+        ? 'O empresas do cliente foi alterado'
+        : Departamento !== pessoa.attributes.departamento
+        ? 'O departamento do cliente foi alteradp'
+        : Cargo !== pessoa.attributes.cargo
+        ? 'O Cargo do cliente foi alter'
+        : '';
+    const historicoAt = {
       date: dateIsso,
       vendedor: session.user.name,
       msg: `cinete ${nome} foi atualizado`,
+      alteração: Alteração,
     };
     const data = {
       data: {
@@ -154,7 +194,9 @@ export default function PessoaId() {
         obs: obs,
         status: true,
         empresas: work,
-        history: [historico],
+        history: [...historico, historicoAt],
+        departamento: Departamento,
+        cargo: Cargo,
       },
     };
 
@@ -200,7 +242,7 @@ export default function PessoaId() {
   };
 
   function getEmpresa(empresa: any) {
-    setEmpresa([...Empresa, empresa]);
+    setEmpresa([empresa]);
   }
 
   return (
@@ -253,7 +295,7 @@ export default function PessoaId() {
                   >
                     <SimpleGrid columns={12} spacing={3}>
                       <Heading as={GridItem} colSpan={12} size="lg">
-                        Cadastro de cliente
+                        Atualizar Cadastro de cliente
                       </Heading>
                     </SimpleGrid>
                     <Heading as={GridItem} colSpan={12} size="sd">
@@ -575,6 +617,54 @@ export default function PessoaId() {
                           rounded="md"
                           onChange={MaskWhatsapp}
                           value={whatsappMask}
+                        />
+                      </FormControl>
+                      <FormControl as={GridItem} colSpan={[12, 6, null, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Departamento
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          onChange={(e) => setDepartamento(e.target.value)}
+                          value={Departamento}
+                        />
+                      </FormControl>
+                      <FormControl as={GridItem} colSpan={[12, 6, null, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Cargo
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          onChange={(e) => setCargo(e.target.value)}
+                          value={Cargo}
                         />
                       </FormControl>
                     </SimpleGrid>

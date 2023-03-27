@@ -34,7 +34,7 @@ export default function Empresas() {
         ></Box>
       </Flex>
       <Box h={'85%'} bg="#edf3f8" overflow={'auto'}>
-        <Flex py={50} px={5} w="full">
+        <Flex py={50} px={5} justifyContent={'center'} w="full">
           <CardExclud />
         </Flex>
       </Box>

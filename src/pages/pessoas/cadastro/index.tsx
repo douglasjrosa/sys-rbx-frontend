@@ -48,6 +48,8 @@ export default function Cadastro() {
   const [CepMask, setCepMask] = useState('');
   const [CpfMask, setCpfMask] = useState('');
   const [Reddata, setRendData] = useState([]);
+  const [Departamento, setDepartamento] = useState('');
+  const [Cargo, setCargo] = useState('');
 
   useEffect(() => {
     setWork(Empresa.map((i: { id: any }) => i.id));
@@ -118,6 +120,7 @@ export default function Cadastro() {
         CPF: CPF,
         CEP: cep,
         uf: uf,
+        user: session.user.id,
         endereco: endereco,
         numero: numero,
         bairro: bairro,
@@ -126,6 +129,8 @@ export default function Cadastro() {
         status: true,
         empresas: work,
         history: [historico],
+        departamento: Departamento,
+        cargo: Cargo,
       },
     };
 
@@ -165,7 +170,7 @@ export default function Cadastro() {
           });
           setTimeout(() => {
             router.push('/pessoas');
-          }, 1000);
+          }, 500);
         })
         .catch((err) => {
           console.log(err);
@@ -174,7 +179,7 @@ export default function Cadastro() {
   };
 
   function getEmpresa(empresa: any) {
-    setEmpresa([...Empresa, empresa]);
+    setEmpresa([empresa]);
   }
 
   useEffect(()=> {
@@ -259,7 +264,6 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={'uppercase'}
                           onChange={(e: any) => setNome(e.target.value)}
                           value={nome}
                         />
@@ -553,6 +557,54 @@ export default function Cadastro() {
                           rounded="md"
                           onChange={MaskWhatsapp}
                           value={whatsappMask}
+                        />
+                      </FormControl>
+                      <FormControl as={GridItem} colSpan={[12, 6, null, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Departamento
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          onChange={(e) => setDepartamento(e.target.value)}
+                          value={Departamento}
+                        />
+                      </FormControl>
+                      <FormControl as={GridItem} colSpan={[12, 6, null, 2]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: 'gray.50',
+                          }}
+                        >
+                          Cargo
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          _placeholder={{ color: 'inherit' }}
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          onChange={(e) => setCargo(e.target.value)}
+                          value={Cargo}
                         />
                       </FormControl>
                     </SimpleGrid>

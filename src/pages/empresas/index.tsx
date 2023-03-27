@@ -68,7 +68,7 @@ export default function Empresas() {
         </Box>
       </Flex>
       <Box h={'95%'} bg="#edf3f8" overflow={'auto'}>
-        <Flex py={50} px={5} w="full">
+        <Flex py={50} justifyContent={'center'} px={5} w="full">
           <CardEmpresa />
         </Flex>
       </Box>

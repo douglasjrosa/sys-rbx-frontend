@@ -1,5 +1,12 @@
-/* eslint-disable react/no-unknown-property */
-import { Box, Button, FormLabel, Select } from '@chakra-ui/react';
+/* eslint-disable no-undef */
+import {
+  Box,
+  Button,
+  FormLabel,
+  position,
+  Select,
+  useToast,
+} from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { AiOutlineUsergroupAdd } from 'react-icons/ai';
@@ -8,6 +15,7 @@ export const RelaciomentoEmpr = (props: { onGetValue: any; dados: any }) => {
   const [work, setWork] = useState([]);
   const [id, setId] = useState('');
   const [isDisabled, setIsDisabled] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     (async () => {
@@ -49,11 +57,11 @@ export const RelaciomentoEmpr = (props: { onGetValue: any; dados: any }) => {
 
   console.log(props.dados);
 
-  useEffect(() => {
-    const dados = props.dados;
-    const disable = dados.length > 0 ? true : false;
-    setIsDisabled(disable);
-  }, [props.dados]);
+  // useEffect(() => {
+  //   const dados = props.dados;
+  //   const disable = dados.length > 0 ? true : false;
+  //   setIsDisabled(disable);
+  // }, [props.dados]);
 
   return (
     <>
