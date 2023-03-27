@@ -42,13 +42,6 @@ const NavMenuItems = [
     iconComponent: <MdBusiness />,
   },
   {
-    id: '6',
-    url: '/pessoas',
-    text: 'Pessoas',
-    icon: BsPeopleFill,
-    iconComponent: <BsPeopleFill />,
-  },
-  {
     id: '7',
     url: '/produtos',
     text: 'Produtos',

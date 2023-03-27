@@ -9,8 +9,9 @@ import { useEffect, useState } from 'react';
 import { mask } from 'remask';
 import Loading from '../../../elements/loading';
 
-export default function CardPessoas() {
+export default function CardPessoas(props: { getId: any }) {
   const [dados, setDados] = useState([]);
+  const [dadosEmpresa, setDadosEmpresa] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
   const toast = useToast();
@@ -19,11 +20,12 @@ export default function CardPessoas() {
     (async () => {
       await axios({
         method: 'GET',
-        url: '/api/db/pessoas/Get',
+        url: '/api/db/empresas/getId/' + props.getId,
       })
         .then((res) => {
-          console.log(res.data.data);
-          setDados(res.data.data);
+          console.log(res.data.data.attributes.responsavel.data);
+          setDados([res.data.data.attributes.responsavel.data]);
+          setDadosEmpresa(res.data.data);
           setLoading(false);
         })
         .catch((err) => console.error(err));
@@ -41,11 +43,12 @@ export default function CardPessoas() {
   const get = async () => {
     await axios({
       method: 'GET',
-      url: '/api/db/pessoas/Get',
+      url: '/api/db/empresas/getId/' + props.getId,
     })
       .then((res) => {
-        console.log(res.data.data);
-        setDados(res.data.data);
+        console.log(res.data.data.attributes.responsavel.data);
+        setDados([res.data.data.attributes.responsavel.data]);
+        setDadosEmpresa(res.data.data);
         setLoading(false);
       })
       .catch((err) => console.error(err));
@@ -104,46 +107,8 @@ export default function CardPessoas() {
       return date;
     };
 
-    const cpf = () => {
-      const dig01 =
-        item.attributes.cpf === null ? '000' : item.attributes.CPF.substr(0, 3);
-      const dig02 =
-        item.attributes.CPF === null ? '000' : item.attributes.CPF.substr(3, 3);
-      const dig03 =
-        item.attributes.CPF === null ? '000' : item.attributes.CPF.substr(6, 3);
-      const dig04 =
-        item.attributes.CPF === null ? '00' : item.attributes.CPF.substr(9, 2);
 
-      const result = dig01 + '.' + dig02 + '.' + dig03 + '-' + dig04;
-      return result;
-    };
-    const end =
-      item.attributes.endereco +
-      ', ' +
-      item.attributes.numero +
-      ' - ' +
-      item.attributes.bairro +
-      ', ' +
-      item.attributes.cidade +
-      ' - ' +
-      item.attributes.uf;
-
-    const empresas =
-      item.attributes.empresas.data === null
-        ? ''
-        : item.attributes.empresas.data;
-    const emplist =
-      empresas.length === 0
-        ? 'não tem empresa vinculada.'
-        : empresas
-            .map((m: any, x: number) => {
-              if (x === empresas.length - 1) {
-                return `${m.attributes.nome}.`;
-              } else {
-                return `${m.attributes.nome}, `;
-              }
-            })
-            .join('');
+    const emplist = dadosEmpresa.attributes.nome;
 
     return (
       <Box

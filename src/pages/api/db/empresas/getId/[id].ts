@@ -21,7 +21,7 @@ export default async function GetEmpresa(
       },
     })
       .then(async (Response) => {
-        console.log(Response.data.data);
+        console.log(Response.data);
         res.status(200).json(Response.data);
       })
       .catch((err) => {

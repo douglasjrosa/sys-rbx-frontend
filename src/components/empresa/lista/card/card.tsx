@@ -138,29 +138,26 @@ export default function CardEmpresa() {
         shadow="lg"
         boxShadow="dark-lg"
         bg="white"
-        _dark={{
-          bg: 'gray.900',
-        }}
-        w={'sm'}
+        w={'auto'}
         key={item.id}
         fontSize="sm"
       >
-        <Flex justifyContent="space-between" alignItems="center">
-          <chakra.span
-            fontSize="sm"
-            color="gray.600"
-            _dark={{
-              color: 'gray.400',
+        <Flex flexDirection={'column'}>
+        <Link
+            fontSize="xl"
+            color="gray.700"
+            fontWeight="700"
+            mr={3}
+            _hover={{
+              color: 'gray.600',
+              textDecor: 'underline',
             }}
+            mb={3}
           >
-            {data()}
-          </chakra.span>
+            {item.attributes.nome}
+          </Link>
           <Flex
-            justifyContent="space-between"
-            alignItems="center"
-            flexDirection={['column', 'row', 'row']}
-            w={36}
-            gap={5}
+            gap={3}
           >
             <Link
               px={3}
@@ -199,74 +196,23 @@ export default function CardEmpresa() {
             >
               editar
             </Link>
+            <Link
+              color="gray.700"
+              fontSize="sm"
+              ms={10}
+              _hover={{
+                color: 'gray.600',
+                textDecor: 'underline',
+              }}
+              onClick={async () => {
+                const id = item.id;
+                await router.push('/pessoas/' + id);
+              }}
+            >
+              Pessoas
+            </Link>
           </Flex>
         </Flex>
-
-        <Box mt={2}>
-          <Link
-            fontSize="2xl"
-            color="gray.700"
-            _dark={{
-              color: 'white',
-            }}
-            fontWeight="700"
-            _hover={{
-              color: 'gray.600',
-              _dark: {
-                color: 'gray.200',
-              },
-              textDecor: 'underline',
-            }}
-          >
-            {item.attributes.nome}
-          </Link>
-          <Box
-            mt={2}
-            display={'flex'}
-            flexDirection={['column', 'column', 'row', 'row']}
-          >
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              CNPJ:
-            </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={2}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              {cnpj()}
-            </chakra.p>
-          </Box>
-          <Box display={'flex'} alignItems={'center'}>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              Responsavel:
-            </chakra.p>
-            <chakra.p
-              mt={2}
-              color="gray.600"
-              ms={2}
-              _dark={{
-                color: 'gray.300',
-              }}
-            >
-              {rela === null ? 'não tem' : rela.attributes.nome}
-            </chakra.p>
-          </Box>
-        </Box>
       </Box>
     );
   });
@@ -277,7 +223,7 @@ export default function CardEmpresa() {
   const display = dados.length === 0 ? null : render;
   return (
     <>
-      <Box h={'100%'} display={'flex'} flexWrap={'wrap'} gap={3}>{display}</Box>
+      <Box h={'100%'} display={'flex'} flexWrap={'wrap'} gap={2}>{display}</Box>
     </>
   );
 }
