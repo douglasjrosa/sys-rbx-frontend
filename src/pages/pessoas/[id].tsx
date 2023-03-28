@@ -50,14 +50,18 @@ export default function Pessoas(): JSX.Element {
           <Button
             h={{ md: '40%', sm: '70%' }}
             colorScheme="whatsapp"
-            onClick={() => router.push('/pessoas/cadastro')}
+            onClick={() => {
+              const IdEmpresa: string = id.toString();
+              localStorage.setItem('id', IdEmpresa);
+              router.push('/pessoas/cadastro');
+            }}
           >
             Cadastrar Pessoas
           </Button>
         </Box>
       </Flex>
       <Box h={'95%'} bg="#edf3f8" overflow={'auto'}>
-        {/* <Heading>{dados.attributes.nome}</Heading> */}
+        <Heading size={'sm'}>{dados.attributes.nome}</Heading>
         <Flex py={50} px={5} justifyContent={'center'} w="full">
           <CardPessoas getId={id} />
         </Flex>

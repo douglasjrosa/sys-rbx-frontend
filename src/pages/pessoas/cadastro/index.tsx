@@ -22,8 +22,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { mask, unMask } from 'remask';
-import { RelaciomentoEmpr } from '../../../components/elements/lista/relacionamentoEmpresa';
-import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 
 export default function Cadastro() {
   const router = useRouter();
@@ -88,8 +86,6 @@ export default function Cadastro() {
     setNumero(data);
   };
 
-
-
   const checkCep = async () => {
     const url = `https://viacep.com.br/ws/${cep}/json/`;
     await axios(url)
@@ -111,6 +107,8 @@ export default function Cadastro() {
       msg: `cinete ${nome} foi cadastrado`,
     };
 
+    const IdEmpresa = localStorage.getItem('id');
+
     const data = {
       data: {
         nome: nome,
@@ -127,7 +125,7 @@ export default function Cadastro() {
         cidade: cidade,
         obs: obs,
         status: true,
-        empresas: work,
+        empresas: IdEmpresa,
         history: [historico],
         departamento: Departamento,
         cargo: Cargo,
@@ -139,8 +137,7 @@ export default function Cadastro() {
     if (!nome) {
       toast({
         title: 'Como devemos chamar esse cliente',
-        description:
-          'Obrigatorio o nome do cliente!',
+        description: 'Obrigatorio o nome do cliente!',
         status: 'warning',
         duration: 6000,
         isClosable: true,
@@ -148,8 +145,7 @@ export default function Cadastro() {
     } else if (!whatsapp) {
       toast({
         title: 'Sem numero de contato',
-        description:
-          'É nessesario o numero de whasApp!',
+        description: 'É nessesario o numero de whasApp!',
         status: 'warning',
         duration: 6000,
         isClosable: true,
@@ -166,10 +162,12 @@ export default function Cadastro() {
             description: 'Cliente salvo',
             status: 'success',
             duration: 6000,
-            position: 'top-right'
+            position: 'top-right',
           });
           setTimeout(() => {
-            router.push('/pessoas');
+            const Id = localStorage.getItem('id');
+            router.push('/pessoas/' + Id);
+            localStorage.removeItem('id');
           }, 500);
         })
         .catch((err) => {
@@ -182,9 +180,9 @@ export default function Cadastro() {
     setEmpresa([empresa]);
   }
 
-  useEffect(()=> {
+  useEffect(() => {
     setRendData(Empresa);
-  },[Empresa])
+  }, [Empresa]);
 
   return (
     <>
@@ -257,7 +255,6 @@ export default function Cadastro() {
                         <Input
                           type="text"
                           placeholder="nome completo"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -283,7 +280,6 @@ export default function Cadastro() {
                         <Input
                           type="text"
                           placeholder="CPF"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -346,7 +342,6 @@ export default function Cadastro() {
                         <Input
                           type="text"
                           placeholder="cep"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -373,7 +368,6 @@ export default function Cadastro() {
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -398,7 +392,6 @@ export default function Cadastro() {
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -423,7 +416,6 @@ export default function Cadastro() {
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -447,7 +439,6 @@ export default function Cadastro() {
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -471,7 +462,6 @@ export default function Cadastro() {
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -496,7 +486,6 @@ export default function Cadastro() {
                         <Input
                           type="text"
                           placeholder="email.email@email.com.br"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -522,7 +511,6 @@ export default function Cadastro() {
                         <Input
                           type="text"
                           placeholder="(00) 0000-0000"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -548,7 +536,6 @@ export default function Cadastro() {
                         <Input
                           type="text"
                           placeholder="(00) 0 0000-0000"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -572,7 +559,6 @@ export default function Cadastro() {
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -596,7 +582,6 @@ export default function Cadastro() {
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
                           borderColor="gray.600"
                           focusBorderColor="brand.400"
                           shadow="sm"
@@ -626,58 +611,12 @@ export default function Cadastro() {
                           w={['80vw', '70vw']}
                           borderColor="gray.500"
                           placeholder="Especifique aqui, todos os detalhes do cliente"
-                          _placeholder={{ color: 'inherit' }}
                           size="sm"
                           resize={'none'}
                           onChange={(e: any) => setObs(e.target.value)}
                           value={obs}
                         />
                       </Box>
-                    </SimpleGrid>
-
-                    <SimpleGrid columns={12} spacing={5}>
-                      <Heading as={GridItem} colSpan={12} mb={3} size="sd">
-                        Empresas
-                      </Heading>
-                      <FormControl as={GridItem} colSpan={[12, 8]}>
-                        <SimpleGrid
-                          p="1rem"
-                          columns={{ base: 1, md: 3 }}
-                          row={{ base: 1, md: 3 }}
-                          spacing={{ base: 3, md: 5 }}
-                        >
-                          {Empresa.map((i: any, x: number) => {
-                            return (
-                              <ListaEmpresa
-                                key={x}
-                                index={x}
-                                id={i.id}
-                                nome={i.attributes.nome}
-                                fantasia={i.attributes.fantasia}
-                                endereco={i.attributes.endereco}
-                                numero={i.attributes.numero}
-                                complemento={i.attributes.complemento}
-                                bairro={i.attributes.bairro}
-                                cep={i.attributes.cep}
-                                cidade={i.attributes.cidade}
-                                uf={i.attributes.uf}
-                                fone={i.attributes.fone}
-                                celular={i.attributes.celular}
-                                site={i.attributes.site}
-                                email={i.attributes.email}
-                                emailNfe={i.attributes.emailNfe}
-                                CNPJ={i.attributes.CNPJ}
-                              />
-                            );
-                          })}
-                        </SimpleGrid>
-                      </FormControl>
-                      <FormControl ms={10} as={GridItem} colSpan={[12, 3]}>
-                        <RelaciomentoEmpr
-                          onGetValue={getEmpresa}
-                          dados={Reddata}
-                        />
-                      </FormControl>
                     </SimpleGrid>
                   </Stack>
                   <Box
@@ -700,7 +639,11 @@ export default function Cadastro() {
                         shadow: '',
                       }}
                       fontWeight="md"
-                      onClick={() => router.push('/pessoas/')}
+                      onClick={() => {
+                        const Id = localStorage.getItem('id');
+                        router.push('/pessoas/' + Id);
+                        localStorage.removeItem('id');
+                      }}
                     >
                       Cancelar
                     </Button>
