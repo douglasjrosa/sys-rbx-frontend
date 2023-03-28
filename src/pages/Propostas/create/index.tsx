@@ -28,11 +28,12 @@ import { SetStateAction, useEffect, useState } from 'react';
 import { BiPlusCircle } from 'react-icons/bi';
 import { BsTrash } from 'react-icons/bs';
 import { DateIso } from '../../../components/data/Date';
-import { CompBusiness } from '../../../components/elements/lista/business';
-import { CompFornecedor } from '../../../components/elements/lista/fornecedor';
-import { CompPrazo } from '../../../components/elements/lista/prazo';
-
+import { ListFornecedor } from '../../../components/data/fornecedor';
 import Loading from '../../../components/elements/loading';
+import { CompBusiness } from '../component/business';
+import { ListaEmpresa } from '../component/ListaEmpresa';
+import { CompPrazo } from '../component/prazo';
+import { ProdutiList } from '../component/produt';
 
 const tempo = DateIso;
 
@@ -73,16 +74,11 @@ export default function Proposta() {
 
   useEffect(() => {
     (async () => {
-      const Emaillocal = localStorage.getItem('email');
-      const Email = JSON.parse(Emaillocal);
-      setEmail(Email);
-      const resposta = await fetch('/api/query/get', {
-        method: 'POST',
-        body: JSON.stringify(Email),
-      });
+      const id: any = localStorage.getItem('id');
+      const resposta = await fetch('/api/db/business/get/id/' + id);
       const resp = await resposta.json();
-      setEmpresa(resp);
-      setLoading(false);
+      // console.log(resp.attributes.nBusiness);
+      setSaveNegocio(resp.attributes.nBusiness);
     })();
   }, []);
 
@@ -142,7 +138,6 @@ export default function Proposta() {
 
   const TotalGreal = () => {
     if (ListItens.length === 0) return 'R$ 0,00';
-
     const totalItem = ListItens.reduce((acc, item) => {
       const valor: number = item.total;
       const valorOriginal: number = parseFloat(item.vFinal.replace(',', '.'));
@@ -263,7 +258,6 @@ export default function Proposta() {
           const remove = () => {
             DelPrudutos(i.id);
           };
-
           const valor2Original = i.vFinal.replace('.', '');
           const ValorProd = Number(valor2Original.replace(',', '.'));
           const somaDescont = ValorProd * i.Qtd;
@@ -327,7 +321,7 @@ export default function Proposta() {
 
           return (
             <>
-              <Tr h={3} key={i.id}>
+              <Tr key={i.id} fontSize={'xs'}>
                 <Td isNumeric>{x + 1}</Td>
                 <Td>{i.nomeProd}</Td>
                 <Td textAlign={'center'}>{codig()}</Td>
@@ -335,7 +329,7 @@ export default function Proposta() {
                   <Input
                     type={'text'}
                     size="xs"
-                    w="2.9rem"
+                    w="3rem"
                     me={0}
                     borderColor="whatsapp.600"
                     rounded="md"
@@ -369,27 +363,8 @@ export default function Proposta() {
                     value={i.expo}
                   />
                 </Td>
-                <Td textAlign={'center'}>{i.vFinal}</Td>
-                <Td>
-                  R$ {''}
-                  <Input
-                    type={'text'}
-                    size="sm"
-                    borderColor="whatsapp.600"
-                    rounded="md"
-                    w="16"
-                    focusBorderColor="whatsapp.400"
-                    _hover={{
-                      borderColor: 'whatsapp.600',
-                    }}
-                    onChange={(e) => {
-                      const valor = e.target.value;
-                      const dt = { total: valor };
-                      handleAdd(dt, i.id);
-                    }}
-                    value={total()}
-                  />
-                </Td>
+                <Td textAlign={'center'}>R$ {i.vFinal}</Td>
+                <Td textAlign={'center'}>R$ {total()}</Td>
                 <Td>
                   <Button onClick={remove}>
                     <BsTrash />
@@ -420,7 +395,6 @@ export default function Proposta() {
       }-${
         Date5.getUTCDate() < 10 ? '0' + Date5.getUTCDate() : Date5.getUTCDate()
       }`;
-
       const VencDatePrint = `${
         Date5.getUTCDate() < 10 ? '0' + Date5.getUTCDate() : Date5.getUTCDate()
       }/${
@@ -460,7 +434,6 @@ export default function Proposta() {
         data: data,
       })
         .then((res) => {
-          // console.log(res.data.message);
           toast({
             title: 'Proposta Criada',
             description: res.data.message,
@@ -565,14 +538,70 @@ export default function Proposta() {
     setFreteCif(parseFloat(valor));
   }
 
-  function getLoja(loja: SetStateAction<string>) {
-    setLoja(loja);
-  }
   function getPrazo(prazo: SetStateAction<string>) {
     setTipoPrazo(prazo);
   }
-  function getNegocio(negocio: SetStateAction<string>) {
-    setSaveNegocio(negocio);
+
+  function getCnpj(CNPJ: SetStateAction<string>) {
+    setCnpj(CNPJ);
+  }
+  function getIten(Item: SetStateAction<string>) {
+    (async () => {
+      setLoadingTable(true);
+      const url = `/api/query/get/produto/id/${Item}`;
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(email),
+        });
+        const resposta = await resp.json();
+
+        const maxSum = Math.max(...ListItens.map((obj) => obj.id + 1));
+        resposta.id = maxSum || 1;
+
+        const valor1 = Number(
+          resposta.vFinal.replace('.', '').replace(',', '.'),
+        );
+        const ValorGeral = valor1;
+        const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
+        resposta.total =
+          Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
+        resposta.expo = false;
+        resposta.mont = false;
+        resposta.Qtd = 1;
+        const desconto = prazo === 'Antecipado' ? valor * 0.05 : 0;
+        const somaDescontMin =
+          Math.round(parseFloat(desconto.toFixed(2)) * 100) / 100;
+        const TotalDesc = valor - somaDescontMin;
+        const retorno = {
+          ...resposta,
+          desconto:
+            Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
+          total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
+        };
+
+        const newItens = ListItens.map((f) => ({
+          ...f,
+          expo: false,
+          mont: false,
+          Qtd: 1,
+        }));
+        const ListaRetorno = [...newItens, retorno];
+        setItens(ListaRetorno);
+
+        setLoadingTable(false);
+      } catch (err) {
+        console.log(err);
+        setLoadingTable(false);
+        toast({
+          title: 'opss.',
+          description: err,
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+        });
+      }
+    })();
   }
 
   return (
@@ -581,41 +610,11 @@ export default function Proposta() {
         <Heading size="lg">Proposta comercial</Heading>
         <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
           <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: 'gray.50',
-              }}
-            >
-              Empresas
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder="Selecione uma Empresa"
-              onChange={(e) => setCnpj(e.target.value)}
-              onBlur={ConsultProd}
-              value={cnpj}
-            >
-              {Enpresa.map((item) => {
-                return (
-                  <>
-                    <option value={item.CNPJ}>{item.nome}</option>
-                  </>
-                );
-              })}
-            </Select>
+            <ListaEmpresa onChangeValue={getCnpj} />
           </Box>
           <Box>
-            <CompBusiness Resp={saveNegocio} onAddResp={getNegocio} />
+            <CompBusiness Resp={saveNegocio} />
           </Box>
-
           <Box>
             <FormLabel
               htmlFor="cidade"
@@ -641,7 +640,35 @@ export default function Proposta() {
             />
           </Box>
           <Box>
-            <CompFornecedor Resp={Loja} onAddResp={getLoja} />
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: 'gray.50',
+              }}
+            >
+              Fornecedor
+            </FormLabel>
+            <Select
+              shadow="sm"
+              size="xs"
+              w="full"
+              fontSize="xs"
+              rounded="md"
+              placeholder="Selecione um Fornecedor"
+              onChange={(e) => setLoja(e.target.value)}
+              value={Loja}
+            >
+              {ListFornecedor.map((item) => {
+                return (
+                  <option key={item.id} value={item.title}>
+                    {item.title}
+                  </option>
+                );
+              })}
+            </Select>
           </Box>
           <Box>
             <FormLabel
@@ -726,7 +753,8 @@ export default function Proposta() {
         </Box>
         <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
           <Box gap={8} w={'320px'} alignItems="center">
-            {disbleProd === true ? loadDiv() : ProdutiDiv()}
+            <ProdutiList onCnpj={cnpj} onResp={getIten} />
+            {/* {disbleProd === true ? loadDiv() : ProdutiDiv()} */}
           </Box>
           <Box w={'40rem'}>
             <Box display="flex" gap={8} alignItems="center">
@@ -753,7 +781,7 @@ export default function Proposta() {
             </Box>
           </Box>
         </Box>
-        <Box mt={16} w={'100%'} h={'46%'} overflowY={'auto'}>
+        <Box mt={12} w={'100%'} h={'46%'} overflowY={'auto'}>
           <Box>
             {loadingTable ? (
               LoadingTable()

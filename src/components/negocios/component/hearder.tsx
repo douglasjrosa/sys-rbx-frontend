@@ -70,7 +70,7 @@ export const NegocioHeader = (props: {
       data: data,
     })
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         toast({
           title: 'Atualização feita',
           description: 'Atualização das inforaçoes foi efetuada com sucesso',
@@ -196,7 +196,10 @@ export const NegocioHeader = (props: {
           <Button colorScheme={'whatsapp'} onClick={Salve}>
             salve
           </Button>
-          <Button colorScheme={'green'} onClick={Salve}>
+          <Button
+            colorScheme={'green'}
+            onClick={() => router.push('/Propostas/' + ID)}
+          >
             Propostas Comercial
           </Button>
           <Button colorScheme={'messenger'} onClick={Salve}>

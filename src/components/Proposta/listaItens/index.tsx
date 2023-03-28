@@ -11,16 +11,16 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-export const CardList = (props: { url: string }) => {
+export const CardList = (props: { id: string }) => {
   const router = useRouter();
-  const url = props.url;
+  const url = '/api/db/business/get/id/' + props.id;
   const [Data, setData] = useState([]);
   useEffect(() => {
     (async () => {
       const requeste = await axios(url);
       const response = requeste.data;
-      console.table(response);
-      setData(response);
+      console.table(response.attributes.pedidos.data);
+      setData(response.attributes.pedidos.data);
     })();
   }, [url]);
   return (

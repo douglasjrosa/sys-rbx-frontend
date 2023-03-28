@@ -8,23 +8,27 @@ import {
   InputGroup,
   InputRightElement,
 } from '@chakra-ui/react';
+import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { CardList } from '../../components/Proposta/listaItens';
 
 export default function ListaProposta() {
   const router = useRouter();
-  const [Cnpj, setCnpj] = useState(false);
+  const ID: any = router.query.id;
+  const [IdEmpresa, setIdEmpresa] = useState('');
   const [Pedido, setPedido] = useState(false);
   const [Data, setData] = useState(false);
-  const [DataStart, setDataStart] = useState('');
-  const [DataEnd, setDataEnd] = useState('');
-  const [Txt, setText] = useState('');
-  const [Render, setRender] = useState(false);
 
   useEffect(() => {
-    if (!Data && !Pedido && !Cnpj) setRender(false);
-  }, [Cnpj, Data, Pedido]);
+    (async () => {
+      await axios('/api/db/business/get/id/' + ID)
+        .then((res) => {
+          // console.log(res.data);
+        })
+        .catch((err) => console.error(err));
+    })();
+  }, [ID]);
 
   return (
     <>
@@ -49,7 +53,10 @@ export default function ListaProposta() {
             <Button
               h={{ md: '40%', sm: '70%' }}
               colorScheme="whatsapp"
-              onClick={() => router.push('/Propostas/create')}
+              onClick={() => {
+                localStorage.setItem('id', ID);
+                router.push('/Propostas/create');
+              }}
             >
               Gerar Proposta
             </Button>
@@ -70,7 +77,7 @@ export default function ListaProposta() {
             flexDirection="column"
             gap={5}
           >
-              <CardList url={'/api/db/proposta/get'} />
+            <CardList id={ID} />
           </Flex>
         </Box>
       </Flex>

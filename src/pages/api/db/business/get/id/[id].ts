@@ -9,7 +9,7 @@ export default async function GetEmpresa(
   if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN;
     const { id } = req.query;
-    console.log(id);
+    // console.log(id);
 
     await axios({
       method: 'GET',
@@ -24,7 +24,7 @@ export default async function GetEmpresa(
       },
     })
       .then(async (Response) => {
-        console.log(Response.data);
+        // console.log(Response.data);
         res.status(200).json(Response.data.data);
       })
       .catch((err) => {
