@@ -1,11 +1,22 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable prettier/prettier */
-import { Box, chakra, Flex, Link, useToast } from '@chakra-ui/react';
+import {
+  Box,
+  chakra,
+  Flex,
+  Icon,
+  Link,
+  position,
+  useToast,
+} from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { SiWhatsapp } from 'react-icons/si';
 import Loading from '../../../elements/loading';
+import { mask } from 'remask';
+import { RiPhoneFill } from 'react-icons/ri';
 
 export default function CardEmpresa() {
   const [dados, setDados] = useState([]);
@@ -26,6 +37,7 @@ export default function CardEmpresa() {
     })
       .then((resp) => resp.json())
       .then((json) => {
+        console.log(json);
         setDados(json);
         setLoading(false);
       });
@@ -143,7 +155,7 @@ export default function CardEmpresa() {
         fontSize="sm"
       >
         <Flex flexDirection={'column'}>
-        <Link
+          <Link
             fontSize="xl"
             color="gray.700"
             fontWeight="700"
@@ -156,9 +168,7 @@ export default function CardEmpresa() {
           >
             {item.attributes.nome}
           </Link>
-          <Flex
-            gap={3}
-          >
+          <Flex gap={3}>
             <Link
               px={3}
               py={1}
@@ -212,6 +222,41 @@ export default function CardEmpresa() {
               Pessoas
             </Link>
           </Flex>
+          {!item.attributes.celular ? null : (
+            <>
+              <Box mt={3}>
+                <Link
+                  href={'https://wa.me/55' + item.attributes.celular}
+                  isExternal
+                >
+                  <Icon as={SiWhatsapp} />{' '}
+                  {mask(item.attributes.celular, ['(99) 9 9999-9999'])}
+                </Link>
+              </Box>
+            </>
+          )}
+          {!item.attributes.fone ? null : (
+            <>
+              <Box mt={3}>
+                <Link
+                  onClick={() => {
+                    navigator.clipboard.writeText(item.attributes.fone);
+                    toast({
+                      title: 'Telefone copiado',
+                      position: 'top-right',
+                      duration: 1000,
+                    });
+                  }}
+                >
+                  <Icon as={RiPhoneFill} />{' '}
+                  {mask(item.attributes.fone, [
+                    '(99) 9999-9999',
+                    '(99) 9 9999-9999',
+                  ])}
+                </Link>
+              </Box>
+            </>
+          )}
         </Flex>
       </Box>
     );
@@ -223,7 +268,9 @@ export default function CardEmpresa() {
   const display = dados.length === 0 ? null : render;
   return (
     <>
-      <Box h={'100%'} display={'flex'} flexWrap={'wrap'} gap={2}>{display}</Box>
+      <Box h={'100%'} display={'flex'} flexWrap={'wrap'} gap={2}>
+        {display}
+      </Box>
     </>
   );
 }

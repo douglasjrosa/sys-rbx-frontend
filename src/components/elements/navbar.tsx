@@ -23,7 +23,6 @@ function Navbar() {
   useEffect(() => {
     if (session.user.pemission !== 'Adm') {
       const filtro = NavMenuItems.filter((p) => p.permission !== 'Adm');
-      console.log(filtro);
       setDados(filtro);
     } else {
       setDados(NavMenuItems);

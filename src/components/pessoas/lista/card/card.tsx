@@ -32,14 +32,6 @@ export default function CardPessoas(props: { getId: any }) {
     })();
   }, []);
 
-  if (!dados) {
-    return (
-      <>
-        <Box></Box>
-      </>
-    );
-  }
-
   const get = async () => {
     await axios({
       method: 'GET',
@@ -47,7 +39,10 @@ export default function CardPessoas(props: { getId: any }) {
     })
       .then((res) => {
         console.log(res.data.data.attributes.responsavel.data);
-        setDados([res.data.data.attributes.responsavel.data]);
+        const verifique = !res.data.data.attributes.responsavel.data
+          ? []
+          : [res.data.data.attributes.responsavel.data];
+        setDados(verifique);
         setDadosEmpresa(res.data.data);
         setLoading(false);
       })
@@ -72,6 +67,16 @@ export default function CardPessoas(props: { getId: any }) {
       })
       .catch((err) => console.error(err));
   };
+
+  const [data] = dados
+  console.log(data);
+  if (!data) {
+    return (
+      <>
+        <Box></Box>
+      </>
+    );
+  }
 
   const render = dados.map((item) => {
     const data = () => {
@@ -106,7 +111,6 @@ export default function CardPessoas(props: { getId: any }) {
 
       return date;
     };
-
 
     const emplist = dadosEmpresa.attributes.nome;
 

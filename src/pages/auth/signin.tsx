@@ -27,7 +27,6 @@ const SignIn: NextPage = (): JSX.Element => {
       password: pass,
       redirect: false,
     });
-    console.log(res);
     if (res.status !== 200) {
       toast({
         title: 'Usuario ou Senha Incorreto',
