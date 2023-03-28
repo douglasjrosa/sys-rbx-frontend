@@ -139,6 +139,7 @@ export const BtCreate = (props: { onLoading: any }) => {
       user: session.user.id,
       incidentRecord: [],
     };
+
     const url = '/api/db/business/post';
     await axios({
       method: 'POST',
@@ -210,6 +211,9 @@ export const BtCreate = (props: { onLoading: any }) => {
                 value={Approach}
               >
                 return (
+                <option style={{ backgroundColor: '#2A4365' }} value="">
+                  {' '}
+                </option>
                 <option style={{ backgroundColor: '#2A4365' }} value="interno">
                   Cliente entrou em contato
                 </option>

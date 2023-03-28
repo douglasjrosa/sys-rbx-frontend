@@ -60,8 +60,8 @@ export default async function GetEmpresa(
         statusAnd: 'Ativo',
         deadline: data.deadline,
         nBusiness: nBusiness.toString(),
-        Budget: data.budget,
-        Approach: data.approach,
+        Budget: data.Budget,
+        Approach: data.Approach,
         history: [data.history],
         incidentRecord: data.incidentRecord,
         empresa: Number(data.empresa),
@@ -72,7 +72,7 @@ export default async function GetEmpresa(
     await axiosRequet
       .post(`/businesses`, dataAtualizado)
       .then(async (response) => {
-        console.log(response.data);
+        // console.log(response.data);
         const isoDateTime = new Date().toISOString();
         const VisibliDateTime = new Date().toISOString();
 
@@ -92,7 +92,7 @@ export default async function GetEmpresa(
         });
       })
       .catch(async (error) => {
-        console.log(error.response);
+        // console.log(error.response);
         const isoDateTime = new Date().toISOString();
 
         const txt = {

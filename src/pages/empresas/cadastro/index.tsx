@@ -20,10 +20,10 @@ import { cnpj } from 'cpf-cnpj-validator';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
+import { mask, unMask } from 'remask';
 import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
-import { mask, unMask } from 'remask';
 
 export default function Cadastro() {
   const { data: session } = useSession();

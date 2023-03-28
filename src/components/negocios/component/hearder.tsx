@@ -21,6 +21,7 @@ export const NegocioHeader = (props: {
   Status: string;
   Deadline: string;
   historia?: any;
+  DataRetorno?: string;
 }) => {
   const router = useRouter();
   const ID = router.query.id;
@@ -31,6 +32,7 @@ export const NegocioHeader = (props: {
   const [Approach, setApproach] = useState('');
   const [Budget, setBudget] = useState('');
   const [Deadline, setDeadline] = useState('');
+  const [DataRetorno, setDataRetorno] = useState('');
 
   useEffect(() => {
     setStatus(props.Status);
@@ -38,6 +40,7 @@ export const NegocioHeader = (props: {
     setDeadline(props.Deadline);
     setBusines(props.nBusiness);
     setApproach(props.Approach);
+    setDataRetorno(props.DataRetorno);
   }, []);
 
   const historicomsg = {
@@ -57,6 +60,7 @@ export const NegocioHeader = (props: {
         Approach: Approach,
         history: history,
         statusAnd: Status,
+        DataRetorno: Status !== 'Retorno em' ? null : DataRetorno,
       },
     };
 
@@ -161,9 +165,42 @@ export const NegocioHeader = (props: {
         <Box>
           <BtnStatus Resp={props.Status} onAddResp={getStatus} />
         </Box>
-        <Flex alignItems={'center'}>
+        {Status !== 'Retorno em' ? null : (
+          <>
+            <Box>
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: 'gray.50',
+                }}
+              >
+                Data de retorno
+              </FormLabel>
+              <Input
+                shadow="sm"
+                size="sm"
+                w="full"
+                type={'date'}
+                fontSize="xs"
+                rounded="md"
+                onChange={(e) => setDataRetorno(e.target.value)}
+                value={DataRetorno}
+              />
+            </Box>
+          </>
+        )}
+        <Flex alignItems={'center'} justifyContent={'space-between'} w={'30%'}>
           <Button colorScheme={'whatsapp'} onClick={Salve}>
             salve
+          </Button>
+          <Button colorScheme={'green'} onClick={Salve}>
+            Propostas Comercial
+          </Button>
+          <Button colorScheme={'messenger'} onClick={Salve}>
+            Gerar pedido
           </Button>
         </Flex>
       </Flex>

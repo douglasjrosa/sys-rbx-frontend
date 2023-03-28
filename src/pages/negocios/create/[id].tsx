@@ -21,6 +21,7 @@ export default function CreateNegocio() {
   const [Budget, setBudget] = useState('');
   const [Status, setStatus] = useState('');
   const [Deadline, setDeadline] = useState('');
+  const [DataRetorno, setDataRetorno] = useState('');
   const [Historia, setHistoria] = useState([]);
   const [ChatHistory, setChatHistory] = useState([]);
 
@@ -50,6 +51,7 @@ export default function CreateNegocio() {
           setBudget(res.data.attributes.Budget);
           setStatus(res.data.attributes.statusAnd);
           setDeadline(res.data.attributes.deadline);
+          setDataRetorno(res.data.attributes.DataRetorno);
           setHistoria(res.data.attributes.history);
           setChatHistory(res.data.attributes.incidentRecord);
           // fim do loading
@@ -123,6 +125,7 @@ export default function CreateNegocio() {
             Status={Status}
             Deadline={Deadline}
             historia={Historia}
+            DataRetorno={DataRetorno}
           />
         </Box>
         <Box bg="#edeae6" w="full" h="70%" ref={divRef} overflowY={'auto'}>

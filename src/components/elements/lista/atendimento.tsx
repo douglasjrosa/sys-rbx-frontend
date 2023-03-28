@@ -50,15 +50,9 @@ export const SelecAtendimento = (props: { Resp: string; onAddResp: any }) => {
         onChange={atualizarValor}
         value={valor}
       >
-        {!dados
-          ? null
-          : dados.map((i: any) => {
-              return (
-                <option key={i.id} value={i.attributes.value}>
-                  {i.attributes.nome}
-                </option>
-              );
-            })}
+        <option value=""> </option>
+        <option value="interno">Cliente entrou em contato</option>
+        <option value="externo">vendedor entrou em contato</option>
       </Select>
     </Box>
   );

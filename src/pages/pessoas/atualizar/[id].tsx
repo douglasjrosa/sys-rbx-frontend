@@ -22,8 +22,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { mask, unMask } from 'remask';
-import { RelaciomentoEmpr } from '../../../components/elements/lista/relacionamentoEmpresa';
-import ListaEmpresa from '../../../components/pessoas/listaEmpresa';
 
 export default function PessoaId() {
   const router = useRouter();
@@ -178,6 +176,9 @@ export default function PessoaId() {
       msg: `cinete ${nome} foi atualizado`,
       alteração: Alteração,
     };
+
+    const IdEmpresa = localStorage.getItem('id');
+
     const data = {
       data: {
         nome: nome,
@@ -193,7 +194,7 @@ export default function PessoaId() {
         cidade: cidade,
         obs: obs,
         status: true,
-        empresas: work,
+        empresas: IdEmpresa,
         history: [...historico, historicoAt],
         departamento: Departamento,
         cargo: Cargo,
@@ -232,7 +233,9 @@ export default function PessoaId() {
             isClosable: true,
           });
           setTimeout(() => {
-            router.push('/pessoas');
+            const Id = localStorage.getItem('id');
+            router.push('/pessoas/' + Id);
+            localStorage.removeItem('id');
           }, 1000);
         })
         .catch((err) => {
@@ -694,52 +697,6 @@ export default function PessoaId() {
                         />
                       </Box>
                     </SimpleGrid>
-
-                    <SimpleGrid columns={12} spacing={5}>
-                      <Heading as={GridItem} colSpan={12} mb={3} size="sd">
-                        Empresas
-                      </Heading>
-                      <FormControl as={GridItem} colSpan={[12, 8]}>
-                        <SimpleGrid
-                          p="1rem"
-                          columns={{ base: 1, md: 3 }}
-                          row={{ base: 1, md: 3 }}
-                          spacing={{ base: 3, md: 5 }}
-                        >
-                          {Empresa.map((i: any, x: number) => {
-                            return (
-                              <ListaEmpresa
-                                key={x}
-                                index={x}
-                                id={i.id}
-                                nome={i.attributes.nome}
-                                fantasia={i.attributes.fantasia}
-                                endereco={i.attributes.endereco}
-                                numero={i.attributes.numero}
-                                complemento={i.attributes.complemento}
-                                bairro={i.attributes.bairro}
-                                cep={i.attributes.cep}
-                                cidade={i.attributes.cidade}
-                                uf={i.attributes.uf}
-                                fone={i.attributes.fone}
-                                celular={i.attributes.celular}
-                                site={i.attributes.site}
-                                email={i.attributes.email}
-                                emailNfe={i.attributes.emailNfe}
-                                CNPJ={i.attributes.CNPJ}
-                              />
-                            );
-                          })}
-                        </SimpleGrid>
-                      </FormControl>
-
-                      <FormControl ms={10} as={GridItem} colSpan={[12, 3]}>
-                        <RelaciomentoEmpr
-                          onGetValue={getEmpresa}
-                          dados={Dados}
-                        />
-                      </FormControl>
-                    </SimpleGrid>
                   </Stack>
                   <Box
                     px={{
@@ -761,7 +718,11 @@ export default function PessoaId() {
                         shadow: '',
                       }}
                       fontWeight="md"
-                      onClick={() => router.push('/pessoas/')}
+                      onClick={() => {
+                        const Id = localStorage.getItem('id');
+                        router.push('/pessoas/' + Id);
+                        localStorage.removeItem('id');
+                      }}
                     >
                       Cancelar
                     </Button>

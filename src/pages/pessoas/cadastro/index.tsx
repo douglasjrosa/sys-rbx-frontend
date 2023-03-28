@@ -176,10 +176,6 @@ export default function Cadastro() {
     }
   };
 
-  function getEmpresa(empresa: any) {
-    setEmpresa([empresa]);
-  }
-
   useEffect(() => {
     setRendData(Empresa);
   }, [Empresa]);

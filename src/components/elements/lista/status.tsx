@@ -6,27 +6,15 @@ export const BtnStatus = (props: { Resp: string; onAddResp: any }) => {
   const [valor, setValor] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const url = '/api/query/get/status';
-        const get = await fetch(url);
-        const response = await get.json();
-        setDados(response);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchData();
-  }, []);
+    setValor(props.Resp);
+  }, [props.Resp]);
 
   function atualizarValor(event: any) {
     setValor(event.target.value);
     props.onAddResp(event.target.value);
   }
 
-  useEffect(() => {
-    setValor(props.Resp);
-  }, [props.Resp]);
+  console.log(valor);
 
   return (
     <Box>
@@ -50,15 +38,10 @@ export const BtnStatus = (props: { Resp: string; onAddResp: any }) => {
         onChange={atualizarValor}
         value={valor}
       >
-        {!dados
-          ? null
-          : dados.map((i: any) => {
-              return (
-                <option key={i.id} value={i.attributes.value}>
-                  {i.attributes.nome}
-                </option>
-              );
-            })}
+        <option value="Ativo">Em contato com cliente</option>
+        <option value="Pause">Aguardando retorno</option>
+        <option value="Stop">Parado por tenpo indeterminado</option>
+        <option value="Retorno em">Retorno em</option>
       </Select>
     </Box>
   );
