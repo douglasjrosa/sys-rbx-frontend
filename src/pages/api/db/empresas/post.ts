@@ -25,6 +25,9 @@ export default async function PostEmpresa(
         res.status(200).json(Response.data);
       })
       .catch((err) => {
+        console.log(err.response.data);
+        console.log(err.response.data.error);
+        console.log(err.response.data.error.details);
         res.status(400).json({
           error: err.response.data,
           mensage: err.response.data.error,

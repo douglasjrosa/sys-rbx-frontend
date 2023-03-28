@@ -175,6 +175,15 @@ export default function Cadastro() {
       router.back();
     }, 2000);
   };
+  const date = new Date();
+  const dateIsso = date.toISOString();
+  const historico = [
+    {
+      date: dateIsso,
+      vendedor: session.user.name,
+      msg: `Empresa ${nome} foi cadastrado`,
+    },
+  ];
 
   const data = {
     data: {
@@ -228,7 +237,7 @@ export default function Cadastro() {
       vendedor: session.user.name,
       vendedorId: session.user.id,
       responsavel: Responsavel,
-      fornecedor: Empresa,
+      history: historico,
     },
   };
 
@@ -238,7 +247,6 @@ export default function Cadastro() {
       { mudulo: nome, valor: 'Nome' },
       { mudulo: CNPJ, valor: 'cnpj' },
       { mudulo: celular, valor: 'WhatsApp' },
-      { mudulo: Empresa, valor: 'Fornecedor' },
       { mudulo: Responsavel, valor: 'Responsavel' },
     ];
     const filter = validateString.filter((m) => m.mudulo === '');
@@ -276,7 +284,7 @@ export default function Cadastro() {
       })
         .then((response) => {
           toast({
-            title: 'Cliente atualizado',
+            title: 'Cliente criado com sucesso',
             status: 'success',
             duration: 9000,
             isClosable: true,
@@ -284,7 +292,7 @@ export default function Cadastro() {
           reload();
           return response.data;
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.error(err));
     }
   };
 

@@ -22,8 +22,13 @@ export default async function GetEmpresa(
     const consulta = await axiosRequet.get(
       '/businesses?fields[0]=id&fields[1]=nBusiness&sort=id%3Adesc',
     );
-    const [respostaConsulta] = consulta.data.data;
-    const resposta = respostaConsulta.attributes.nBusiness;
+    const [respostaConsulta] = !consulta.data.data ? null : consulta.data.data;
+    const resposta =
+      respostaConsulta === null
+        ? '001'
+        : respostaConsulta === undefined
+        ? '001'
+        : respostaConsulta.attributes.nBusiness;
     const dateNow = new Date();
     const anoVigente = dateNow.getFullYear();
     const resto = resposta.toString().replace(anoVigente, '');
@@ -48,7 +53,6 @@ export default async function GetEmpresa(
 
     const getCliente = await axiosRequet.get('/empresas/' + data.empresa);
     const respCliente = getCliente.data.data.attributes.nome;
-    console.log(respCliente);
 
     const dataAtualizado = {
       data: {
@@ -79,8 +83,8 @@ export default async function GetEmpresa(
         };
         const url = `empresas/${data.empresa}`;
         const Register = await Historico(txt, url);
-        const url2 = `businesses/${data.business}`;
-        await Historico(txt, url2);
+        // const url2 = `businesses/${response.data.data.attributes.nBusiness}`;
+        // await Historico(txt, url2);
         res.status(200).json({
           status: 200,
           message: `Business numero: ${nBusiness}, foi criado pelo vendedor ${respVendedor} para o cliente ${respCliente} no dia ${VisibliDateTime}`,
@@ -95,7 +99,7 @@ export default async function GetEmpresa(
           date: isoDateTime,
           vendedors: data.vendedor,
           msg: 'Proposta não foi criada devido a erro',
-          error: error.response.data,
+          error: error.response,
         };
         const url = `empresas/${data.empresa}`;
         const Register = await Historico(txt, url);

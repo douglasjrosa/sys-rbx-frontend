@@ -25,9 +25,11 @@ import { confgEnb } from '../../../components/data/confgEnb';
 import { modCaix } from '../../../components/data/modCaix';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
 import { mask, unMask } from 'remask';
+import { useSession } from 'next-auth/react';
 
 export default function EmpresaId() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [CNPJ, setCNPJ] = useState('');
   const [MaskCNPJ, setMaskCNPJ] = useState('');
   const [nome, setNome] = useState('');
@@ -78,7 +80,6 @@ export default function EmpresaId() {
   const [frete, setFrete] = useState('');
   const [status, setStatus] = useState(false);
   const [ID, setID] = useState('');
-  const [Empresa, setEmpresa] = useState('');
   const [Responsavel, setResponsavel] = useState('');
   const toast = useToast();
 
@@ -96,11 +97,6 @@ export default function EmpresaId() {
         empresa.attributes.responsavel.data === null
           ? null
           : empresa.attributes.responsavel.data.id,
-      );
-      setEmpresa(
-        empresa.attributes.fornecedor.data === null
-          ? null
-          : empresa.attributes.fornecedor.data.id,
       );
       setID(empresa.id);
       setCNPJ(empresa.attributes.CNPJ === null ? '' : empresa.attributes.CNPJ);
@@ -280,55 +276,20 @@ export default function EmpresaId() {
   };
 
   const reload = () => {
-    setCNPJ('');
-    setNome('');
-    setFantasia('');
-    setTipoPessoa('');
-    setFone('');
-    setCelular('');
-    setEmail('');
-    setEmailNfe('');
-    setIeStatus(false);
-    setCNAE('');
-    setIE('');
-    setPorte('');
-    setSimples(false);
-    setSite('');
-    setEndereco('');
-    setNumero('');
-    setBairro('');
-    setComplemento('');
-    setCidade('');
-    setUf('');
-    setCep('');
-    setPais('');
-    setCodpais('');
-    setAdFragilLat(false);
-    setAdFragilCab(false);
-    setAdEspecialLat(false);
-    setAdEspecialCab(false);
-    setLatFCab(false);
-    setCabChao(false);
-    setCabTop(false);
-    setCxEco(false);
-    setCxEst(false);
-    setCxLev(false);
-    setCxRef(false);
-    setCxSupRef(false);
-    setPlatSMed(false);
-    setCxResi(false);
-    setEngEco(false);
-    setEngLev(false);
-    setEngRef(false);
-    setEngResi(false);
-    setTablecalc('');
-    setMaxpg('');
-    setForpg('');
-    setFrete('');
     setTimeout(() => {
       router.back();
     }, 500);
   };
+
+  const date = new Date();
+  const dateIsso = date.toISOString();
+  const historico = [
+    {
+      date: dateIsso,
+      vendedor: session.user.name,
+      msg: `Empresa ${nome} foi atualizado`,
+    },
+  ];
 
   const strapi = async () => {
     const data = {
@@ -381,7 +342,7 @@ export default function EmpresaId() {
         frete: frete,
         contribuinte: contribuinte,
         responsavel: Responsavel,
-        fornecedor: Empresa,
+        history: historico,
       },
     };
 
@@ -410,9 +371,6 @@ export default function EmpresaId() {
 
   function getResponsavel(respons: React.SetStateAction<string>) {
     setResponsavel(respons);
-  }
-  function getFornecedor(fornecedor: React.SetStateAction<string>) {
-    setEmpresa(fornecedor);
   }
 
   const maskCnpj = (e: any) => {
