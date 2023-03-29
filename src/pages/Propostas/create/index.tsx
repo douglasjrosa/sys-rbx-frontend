@@ -34,21 +34,17 @@ import { CompBusiness } from '../component/business';
 import { ListaEmpresa } from '../component/ListaEmpresa';
 import { CompPrazo } from '../component/prazo';
 import { ProdutiList } from '../component/produt';
+import { TableConteudo } from '../component/tabela';
 
 const tempo = DateIso;
 
 export default function Proposta() {
   const router = useRouter();
   const { data: session } = useSession();
-  const [loading, setLoading] = useState<boolean>(true);
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
-  const [Enpresa, setEmpresa] = useState([]);
-  const [Produtos, SetProdutos] = useState([]);
   const [ListItens, setItens] = useState([]);
-  const [itenId, setItenId] = useState('');
   const [date, setDate] = useState(tempo);
   const [cnpj, setCnpj] = useState('');
-  const [email, setEmail] = useState('');
   const [frete, setFrete] = useState('');
   const [freteCif, setFreteCif] = useState(0.0);
   const [Loja, setLoja] = useState('');
@@ -66,75 +62,16 @@ export default function Proposta() {
       ? true
       : prazo === 'A Prazo' && tipoprazo === ''
       ? true
-      : Produtos.length === 0
-      ? true
       : false;
-
-  const hidemPod = cnpj === '' ? true : false;
 
   useEffect(() => {
     (async () => {
       const id: any = localStorage.getItem('id');
       const resposta = await fetch('/api/db/business/get/id/' + id);
       const resp = await resposta.json();
-      // console.log(resp.attributes.nBusiness);
       setSaveNegocio(resp.attributes.nBusiness);
     })();
   }, []);
-
-  const addItens = async () => {
-    setLoadingTable(true);
-    const url = `/api/query/get/produto/id/${itenId}`;
-    try {
-      const resp = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(email),
-      });
-      const resposta = await resp.json();
-
-      const maxSum = Math.max(...ListItens.map((obj) => obj.id + 1));
-      resposta.id = maxSum || 1;
-
-      const valor1 = Number(resposta.vFinal.replace('.', '').replace(',', '.'));
-      const ValorGeral = valor1;
-      const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
-      resposta.total =
-        Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
-      resposta.expo = false;
-      resposta.mont = false;
-      resposta.Qtd = 1;
-      const desconto = prazo === 'Antecipado' ? valor * 0.05 : 0;
-      const somaDescontMin =
-        Math.round(parseFloat(desconto.toFixed(2)) * 100) / 100;
-      const TotalDesc = valor - somaDescontMin;
-      const retorno = {
-        ...resposta,
-        desconto: Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
-        total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
-      };
-
-      const newItens = ListItens.map((f) => ({
-        ...f,
-        expo: false,
-        mont: false,
-        Qtd: 1,
-      }));
-      const ListaRetorno = [...newItens, retorno];
-      setItens(ListaRetorno);
-
-      setLoadingTable(false);
-    } catch (err) {
-      console.log(err);
-      setLoadingTable(false);
-      toast({
-        title: 'opss.',
-        description: err,
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-      });
-    }
-  };
 
   const TotalGreal = () => {
     if (ListItens.length === 0) return 'R$ 0,00';
@@ -176,7 +113,8 @@ export default function Proposta() {
   }, [DescontoGeral, ListItens, TotalGreal]);
 
   useEffect(() => {
-    if (ListItens.length > 0 && prazo === 'Antecipado') {
+    console.log(prazo);
+    if (prazo === 'Antecipado') {
       setItens(
         ListItens.map((f) => {
           const valor = Number(f.vFinal.replace('.', '').replace(',', '.'));
@@ -206,174 +144,7 @@ export default function Proposta() {
         }),
       );
     }
-  }, []);
-
-  const ConsultProd = async () => {
-    const url = '/api/query/get/produto/cnpj/' + cnpj;
-    await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(email),
-    })
-      .then((resp) => resp.json())
-      .then((resposta) => {
-        const retonoIdeal = resposta.length === 0 ? false : true;
-        if (retonoIdeal) {
-          SetProdutos(resposta);
-        } else {
-          toast({
-            title: 'opss.',
-            description: 'Esta empresa não possui produtos.',
-            status: 'warning',
-            duration: 9000,
-            isClosable: true,
-          });
-        }
-      })
-      .catch((err) => console.log(err));
-  };
-
-  const DelPrudutos = (x: any) => {
-    setLoadingTable(true);
-    const filterItens = ListItens.filter((i) => i.id !== x);
-    setItens(filterItens);
-    setLoadingTable(false);
-  };
-
-  const handleAdd = (Obj: any, id: number) => {
-    const [ListaObj] = ListItens.filter((i) => i.id === id);
-    const intero = Object.assign(ListaObj, Obj);
-    setItens((ListItens) => {
-      let newArray = [...ListItens];
-      let index = newArray.findIndex((element) => element.id === id);
-      newArray[index] = intero;
-      return newArray;
-    });
-  };
-
-  const TableItens =
-    ListItens.length === 0
-      ? null
-      : ListItens.map((i, x) => {
-          const Id = i.prodId;
-          const remove = () => {
-            DelPrudutos(i.id);
-          };
-          const valor2Original = i.vFinal.replace('.', '');
-          const ValorProd = Number(valor2Original.replace(',', '.'));
-          const somaDescont = ValorProd * i.Qtd;
-          const somaDescontMin = parseInt(somaDescont.toFixed(2));
-
-          if (!i.Qtd) {
-            i.Qtd = 1;
-          }
-
-          const total = () => {
-            if (i.Qtd === 1) {
-              return i.total;
-            }
-            const ValorOriginal =
-              Math.round(parseFloat(ValorProd.toFixed(2)) * 100) / 100;
-            const acrec =
-              i.mont === true && i.expo === true
-                ? 1.2
-                : i.expo === true && i.mont === false
-                ? 1.1
-                : i.expo === false && i.mont === true
-                ? 1.1
-                : 0;
-            const descont = prazo === 'Antecipado' ? ValorOriginal * 0.05 : 0;
-            const somaAcrescimo =
-              acrec === 0
-                ? ValorOriginal * i.Qtd
-                : ValorOriginal * acrec * i.Qtd;
-            const somaDescont = descont * i.Qtd;
-            const somaDescontMin =
-              Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
-            const TotalItem = somaAcrescimo - somaDescontMin;
-            return Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
-          };
-
-          const codig = () => {
-            if (!i.codg || i.codg === '') {
-              const dt = { codg: Id };
-              handleAdd(dt, i.id);
-              return Id;
-            }
-            return Id;
-          };
-          const GetQtd = (e: any) => {
-            const valor = e.target.value;
-            const dt = { Qtd: valor };
-            handleAdd(dt, i.id);
-          };
-
-          const GetMont = (e: any) => {
-            const valor = e.target.checked;
-            const dt = { mont: valor };
-            handleAdd(dt, i.id);
-          };
-
-          const GetExpo = (e: any) => {
-            const valor = e.target.checked;
-            const dt = { expo: valor };
-            handleAdd(dt, i.id);
-          };
-
-          return (
-            <>
-              <Tr key={i.id} fontSize={'xs'}>
-                <Td isNumeric>{x + 1}</Td>
-                <Td>{i.nomeProd}</Td>
-                <Td textAlign={'center'}>{codig()}</Td>
-                <Td px={12}>
-                  <Input
-                    type={'text'}
-                    size="xs"
-                    w="3rem"
-                    me={0}
-                    borderColor="whatsapp.600"
-                    rounded="md"
-                    focusBorderColor="whatsapp.400"
-                    _hover={{
-                      borderColor: 'whatsapp.600',
-                    }}
-                    maxLength={4}
-                    onChange={GetQtd}
-                    value={i.Qtd}
-                  />
-                </Td>
-                <Td textAlign={'center'}>{i.altura}</Td>
-                <Td textAlign={'center'}>{i.largura}</Td>
-                <Td textAlign={'center'}>{i.comprimento}</Td>
-                <Td>
-                  <Checkbox
-                    borderColor="whatsapp.600"
-                    rounded="md"
-                    px="3"
-                    onChange={GetMont}
-                    value={i.mont}
-                  />
-                </Td>
-                <Td>
-                  <Checkbox
-                    borderColor="whatsapp.600"
-                    rounded="md"
-                    px="3"
-                    onChange={GetExpo}
-                    value={i.expo}
-                  />
-                </Td>
-                <Td textAlign={'center'}>R$ {i.vFinal}</Td>
-                <Td textAlign={'center'}>R$ {total()}</Td>
-                <Td>
-                  <Button onClick={remove}>
-                    <BsTrash />
-                  </Button>
-                </Td>
-              </Tr>
-            </>
-          );
-        });
+  }, [prazo]);
 
   const SalvarProdutos = async () => {
     if (!saveNegocio || saveNegocio === '') {
@@ -403,6 +174,8 @@ export default function Proposta() {
           : Date5.getUTCMonth() + 1
       }/${Date5.getUTCFullYear()}`;
 
+      const id: any = localStorage.getItem('id');
+
       const data: any = {
         cliente: cnpj,
         itens: ListItens,
@@ -424,7 +197,7 @@ export default function Proposta() {
         vendedorId: session.user.id,
         frete: frete,
         valorFrete: freteCif,
-        business: saveNegocio,
+        business: id,
         obs: obs,
       };
       const url = '/api/db/proposta/post';
@@ -451,88 +224,6 @@ export default function Proposta() {
     }
   };
 
-  if (ListItens.length > 0 && prazo === 'A Prazo')
-    if (loading) {
-      return <Loading size="200px">Carregando...</Loading>;
-    }
-
-  const loadDiv = () => {
-    return (
-      <Spinner
-        thickness="6px"
-        speed="0.45s"
-        emptyColor="gray.200"
-        color="whatsapp.600"
-        size="xl"
-        hidden={hidemPod}
-      />
-    );
-  };
-
-  const ProdutiDiv = () => {
-    return (
-      <Box
-        display="flex"
-        gap={8}
-        w={'320px'}
-        alignItems="center"
-        hidden={hidemPod}
-      >
-        <Box>
-          <FormLabel
-            htmlFor="cidade"
-            fontSize="xs"
-            fontWeight="md"
-            color="gray.700"
-            _dark={{
-              color: 'gray.50',
-            }}
-          >
-            produtos
-          </FormLabel>
-          <Select
-            shadow="sm"
-            size="sm"
-            w="full"
-            fontSize="xs"
-            rounded="md"
-            placeholder="Selecione um Produto"
-            onChange={(e) => setItenId(e.target.value)}
-            value={itenId}
-          >
-            {Produtos.map((item) => {
-              return (
-                <>
-                  <option value={item.prodId}>{item.nomeProd}</option>
-                </>
-              );
-            })}
-          </Select>
-        </Box>
-        <Box>
-          <Icon
-            as={BiPlusCircle}
-            boxSize={8}
-            mt={8}
-            color="whatsapp.600"
-            cursor="pointer"
-            onClick={addItens}
-          />
-        </Box>
-      </Box>
-    );
-  };
-
-  const LoadingTable = () => {
-    return (
-      <>
-        <Loading mt="-13vh" size="150px">
-          Carregando Produtos...
-        </Loading>
-      </>
-    );
-  };
-
   function handleInputChange(event: any) {
     const valor = event.target.value;
     setFreteCif(parseFloat(valor));
@@ -545,63 +236,45 @@ export default function Proposta() {
   function getCnpj(CNPJ: SetStateAction<string>) {
     setCnpj(CNPJ);
   }
-  function getIten(Item: SetStateAction<string>) {
-    (async () => {
-      setLoadingTable(true);
-      const url = `/api/query/get/produto/id/${Item}`;
-      try {
-        const resp = await fetch(url, {
-          method: 'POST',
-          body: JSON.stringify(email),
-        });
-        const resposta = await resp.json();
+  function getIten(resposta: SetStateAction<any>) {
+    const lista = ListItens;
+    const maxSum = Math.max(...ListItens.map((obj) => obj.id + 1));
+    resposta.id = maxSum || 1;
+    const valor1 = Number(resposta.vFinal.replace('.', '').replace(',', '.'));
+    const ValorGeral = valor1;
+    const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
+    resposta.total = Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
+    resposta.expo = false;
+    resposta.mont = false;
+    resposta.codg = resposta.prodId;
+    resposta.Qtd = 1;
+    const desconto = prazo === 'Antecipado' ? valor * 0.05 : 0;
+    const somaDescontMin =
+      Math.round(parseFloat(desconto.toFixed(2)) * 100) / 100;
+    const TotalDesc = valor - somaDescontMin;
+    const retorno = {
+      ...resposta,
+      desconto: Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
+      total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
+    };
+    const newItens = lista.map((f) => ({
+      ...f,
+      expo: false,
+      mont: false,
+      Qtd: 1,
+    }));
+    const ListaRetorno = [...newItens, retorno];
+    setItens(ListaRetorno);
+  }
 
-        const maxSum = Math.max(...ListItens.map((obj) => obj.id + 1));
-        resposta.id = maxSum || 1;
+  function getLoading(load: SetStateAction<boolean>) {
+    setLoadingTable(load);
+  }
 
-        const valor1 = Number(
-          resposta.vFinal.replace('.', '').replace(',', '.'),
-        );
-        const ValorGeral = valor1;
-        const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
-        resposta.total =
-          Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
-        resposta.expo = false;
-        resposta.mont = false;
-        resposta.Qtd = 1;
-        const desconto = prazo === 'Antecipado' ? valor * 0.05 : 0;
-        const somaDescontMin =
-          Math.round(parseFloat(desconto.toFixed(2)) * 100) / 100;
-        const TotalDesc = valor - somaDescontMin;
-        const retorno = {
-          ...resposta,
-          desconto:
-            Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
-          total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
-        };
+  console.log(ListItens);
 
-        const newItens = ListItens.map((f) => ({
-          ...f,
-          expo: false,
-          mont: false,
-          Qtd: 1,
-        }));
-        const ListaRetorno = [...newItens, retorno];
-        setItens(ListaRetorno);
-
-        setLoadingTable(false);
-      } catch (err) {
-        console.log(err);
-        setLoadingTable(false);
-        toast({
-          title: 'opss.',
-          description: err,
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-        });
-      }
-    })();
+  function getItemFinal(itemFinal: SetStateAction<any>) {
+    setItens(itemFinal);
   }
 
   return (
@@ -753,8 +426,12 @@ export default function Proposta() {
         </Box>
         <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
           <Box gap={8} w={'320px'} alignItems="center">
-            <ProdutiList onCnpj={cnpj} onResp={getIten} />
-            {/* {disbleProd === true ? loadDiv() : ProdutiDiv()} */}
+            <ProdutiList
+              onCnpj={cnpj}
+              onResp={getIten}
+              ontime={disbleProd}
+              retunLoading={getLoading}
+            />
           </Box>
           <Box w={'40rem'}>
             <Box display="flex" gap={8} alignItems="center">
@@ -783,57 +460,52 @@ export default function Proposta() {
         </Box>
         <Box mt={12} w={'100%'} h={'46%'} overflowY={'auto'}>
           <Box>
-            {loadingTable ? (
-              LoadingTable()
-            ) : (
-              <>
-                <TableContainer>
-                  <Table variant="striped" colorScheme="green">
-                    <Thead>
-                      <Tr>
-                        <Th w={'2%'}></Th>
-                        <Th w={'28%'}>Item</Th>
-                        <Th w={'8%'} textAlign={'center'}>
-                          Código
-                        </Th>
-                        <Th w={'10%'} textAlign={'center'}>
-                          Qtd
-                        </Th>
-                        <Th w={'7%'} textAlign={'center'}>
-                          altura
-                        </Th>
-                        <Th w={'7%'} textAlign={'center'}>
-                          largura
-                        </Th>
-                        <Th w={'7%'} textAlign={'center'}>
-                          comprimento
-                        </Th>
-                        <Th w={'5%'} textAlign={'center'}>
-                          Mont.
-                        </Th>
-                        <Th w={'5%'} textAlign={'center'}>
-                          Expo.
-                        </Th>
-                        <Th w={'5%'} textAlign={'center'}>
-                          Preço un
-                        </Th>
-                        <Th w={'5%'} textAlign={'center'}>
-                          Preço total
-                        </Th>
-                        <Th textAlign={'center'} w={'5%'}>
-                          <Icon
-                            as={BsTrash}
-                            boxSize={5}
-                            color={'whatsapp.600'}
-                          />
-                        </Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody overflowY={'auto'}>{TableItens}</Tbody>
-                  </Table>
-                </TableContainer>
-              </>
-            )}
+            <TableContainer>
+              <Table variant="striped" colorScheme="green">
+                <Thead>
+                  <Tr>
+                    <Th w={'2%'}></Th>
+                    <Th w={'28%'}>Item</Th>
+                    <Th w={'8%'} textAlign={'center'}>
+                      Código
+                    </Th>
+                    <Th w={'10%'} textAlign={'center'}>
+                      Qtd
+                    </Th>
+                    <Th w={'7%'} textAlign={'center'}>
+                      altura
+                    </Th>
+                    <Th w={'7%'} textAlign={'center'}>
+                      largura
+                    </Th>
+                    <Th w={'7%'} textAlign={'center'}>
+                      comprimento
+                    </Th>
+                    <Th w={'5%'} textAlign={'center'}>
+                      Mont.
+                    </Th>
+                    <Th w={'5%'} textAlign={'center'}>
+                      Expo.
+                    </Th>
+                    <Th w={'5%'} textAlign={'center'}>
+                      Preço un
+                    </Th>
+                    <Th w={'5%'} textAlign={'center'}>
+                      Preço total
+                    </Th>
+                    <Th textAlign={'center'} w={'5%'}>
+                      <Icon as={BsTrash} boxSize={5} color={'whatsapp.600'} />
+                    </Th>
+                  </Tr>
+                </Thead>
+                <TableConteudo
+                  Itens={ListItens}
+                  Prazo={prazo}
+                  loading={loadingTable}
+                  returnItem={getItemFinal}
+                />
+              </Table>
+            </TableContainer>
           </Box>
         </Box>
         <chakra.p

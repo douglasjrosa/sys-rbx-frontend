@@ -36,7 +36,7 @@ export default async function GetEmpresa(
     const nPedido = inf.nPedido;
     const frete = inf.frete;
     const datePop = inf.dataPedido;
-    const fornecedor = inf.fornecedor.data.attributes;
+    const fornecedor = inf.fornecedor;
     const cliente = inf.empresa.data.attributes;
     const condi = inf.condi;
     const itens = inf.itens;

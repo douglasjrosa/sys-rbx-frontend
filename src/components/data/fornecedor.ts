@@ -1,11 +1,11 @@
 export const ListFornecedor = [
   {
     id: '1',
-    title: 'Ribermax',
+    title: 'Renato',
   },
   {
     id: '2',
-    title: 'Renato',
+    title: 'Ribermax',
   },
   {
     id: '3',

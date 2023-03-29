@@ -3,10 +3,10 @@ import { Box, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import React, { useEffect, useRef, useState } from 'react';
-import Loading from '../../../components/elements/loading';
-import { BodyChat } from '../../../components/negocios/component/bodychat';
-import { NegocioFooter } from '../../../components/negocios/component/footer';
-import { NegocioHeader } from '../../../components/negocios/component/hearder';
+import Loading from '../../components/elements/loading';
+import { BodyChat } from '../../components/negocios/component/bodychat';
+import { NegocioFooter } from '../../components/negocios/component/footer';
+import { NegocioHeader } from '../../components/negocios/component/hearder';
 
 export default function CreateNegocio() {
   const router = useRouter();

@@ -13,14 +13,14 @@ import { useEffect, useState } from 'react';
 
 export const CardList = (props: { id: string }) => {
   const router = useRouter();
-  const url = '/api/db/business/get/id/' + props.id;
+  const url = '/api/db/proposta/get/business/' + props.id;
   const [Data, setData] = useState([]);
   useEffect(() => {
     (async () => {
       const requeste = await axios(url);
       const response = requeste.data;
-      console.table(response.attributes.pedidos.data);
-      setData(response.attributes.pedidos.data);
+      // console.table(response);
+      setData(response);
     })();
   }, [url]);
   return (
@@ -49,6 +49,7 @@ export const CardList = (props: { id: string }) => {
             {!Data
               ? null
               : Data.map((i, x) => {
+                  console.log(i);
                   const dat = new Date(i.attributes.dataPedido);
                   const meses = [
                     'Jan',
@@ -75,14 +76,12 @@ export const CardList = (props: { id: string }) => {
                         rounded="xl"
                         shadow="md"
                         bg="white"
-                        _dark={{
-                          bg: 'gray.800',
-                        }}
                         w="sm"
                         h={'20rem'}
-                        py={5}
+                        px={5}
+                        py={3}
                       >
-                        <Box p={6}>
+                        <Box>
                           <Box>
                             <Text fontWeight="bold" color="gray.700">
                               Pedido N°:{' '}
@@ -104,27 +103,40 @@ export const CardList = (props: { id: string }) => {
                                 color="brand.600"
                                 onClick={() =>
                                   router.push(
-                                    '/negocio/' + i.attributes.negocio,
+                                    '/negocios/' +
+                                      i.attributes.business.data.id,
                                   )
                                 }
                               >
-                                {i.attributes.negocio}
+                                {
+                                  i.attributes.business.data.attributes
+                                    .nBusiness
+                                }
                               </Link>
                             </Text>
                           </Box>
                           <Flex
                             h={20}
+                            mt={5}
                             justifyContent={'center'}
                             alignItems={'center'}
+                            flexDir={'column'}
                           >
                             <Link
                               display="block"
                               color="gray.800"
-                              _dark={{
-                                color: 'white',
-                              }}
                               fontWeight="bold"
-                              fontSize="2xl"
+                              fontSize="xl"
+                              mt={2}
+                            >
+                              Cliente:
+                            </Link>
+                            <Link
+                              display="block"
+                              color="gray.800"
+                              fontWeight="bold"
+                              fontSize="xl"
+                              textAlign={'center'}
                               mt={2}
                               _hover={{
                                 color: 'gray.600',
@@ -136,14 +148,13 @@ export const CardList = (props: { id: string }) => {
                                 )
                               }
                             >
-                              Cliente: {''}
-                              {!i.attributes.empresa.data
+                              {!i.attributes.empresa
                                 ? null
                                 : i.attributes.empresa.data.attributes.nome}
                             </Link>
                           </Flex>
 
-                          <Box mt={4}>
+                          <Box mt={8}>
                             <Flex alignItems="center">
                               <Flex alignItems="center">
                                 <Text
@@ -173,11 +184,6 @@ export const CardList = (props: { id: string }) => {
                                 p={7}
                                 w={'full'}
                                 colorScheme={'whatsapp'}
-                                // onClick={() =>
-                                //   router.push(
-                                //     `/api/db/proposta/pdf/${i.attributes.nPedido}`,
-                                //   )
-                                // }
                                 onClick={() =>
                                   window.open(
                                     `/api/db/proposta/pdf/${i.attributes.nPedido}`,

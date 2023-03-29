@@ -30,14 +30,6 @@ export default async function PostEmpresa(
         : request.attributes.nPedido;
     const nPedido = primeiro;
 
-    const getfornecdor = await axiosRequet.get(
-      `/fornecedores/${data.empresa}?fields[0]=id&fields[1]=titulo`,
-    );
-    const retorno = getfornecdor.data.data;
-    // console.log(retorno);
-    const idFornecedor: number = retorno.id;
-    const FornecedorTitulo = retorno.attributes.titulo;
-
     const getclinete = await axiosRequet.get(
       `/empresas?filters[titulo][$containsi]=${data.cliente}&fields[0]=id&fields[1]=titulo`,
     );
@@ -50,8 +42,7 @@ export default async function PostEmpresa(
     const dadosfornecedores = {
       vendedor: data.vendedor,
       vendedorId: data.vendedorId,
-      fornecedor: FornecedorTitulo,
-      fornecedorId: idFornecedor,
+      fornecedor: data.empresa,
     };
 
     const retornoCliente = [
@@ -77,13 +68,12 @@ export default async function PostEmpresa(
       data: {
         nPedido: NpedidoConvert,
         itens: data.itens,
-        matriz: FornecedorTitulo,
+        matriz: data.empresa,
         dataPedido: data.dataPedido,
         vencPedido: data.vencPedido,
         condi: data.condi,
         prazo: data.prazo,
         fornecedor: data.empresa,
-        fornecedorId: data.empresa,
         frete: data.frete,
         empresa: idCliente,
         empresaId: idCliente,
@@ -96,6 +86,7 @@ export default async function PostEmpresa(
         valorFrete: data.valorFrete.toString(),
         vencPrint: data.vencPrint,
         business: data.business,
+        businessId: data.business,
         obs: data.obs,
       },
     };
@@ -132,6 +123,7 @@ export default async function PostEmpresa(
       })
       .catch(async (error) => {
         console.log(error.response.data);
+        console.log(error.response.data.error.details.errors);
 
         const now = new Date();
         const isoDateTime = now.toISOString();

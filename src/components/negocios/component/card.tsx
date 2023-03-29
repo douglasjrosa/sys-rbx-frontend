@@ -127,7 +127,7 @@ export default function CardBusiness(props: {
                 bg: 'gray.500',
               }}
               onClick={async () => {
-                await router.push('/negocios/create/' + props.id);
+                await router.push('/negocios/' + props.id);
               }}
             >
               History
