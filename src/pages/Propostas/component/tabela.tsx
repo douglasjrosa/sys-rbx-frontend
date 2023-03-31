@@ -86,7 +86,9 @@ export const TableConteudo = (props: {
           const somaDescontMin =
             Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
           const TotalItem = somaAcrescimo - somaDescontMin;
-          return Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
+          const result =
+            Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
+          return result;
         };
 
         const codig = () => {
@@ -154,8 +156,18 @@ export const TableConteudo = (props: {
                   value={i.expo}
                 />
               </Td>
-              <Td textAlign={'center'}>R$ {i.vFinal}</Td>
-              <Td textAlign={'center'}>R$ {total()}</Td>
+              <Td textAlign={'center'}>
+                {i.vFinal.toLocaleString('pt-br', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })}
+              </Td>
+              <Td textAlign={'center'}>
+                {total().toLocaleString('pt-br', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })}
+              </Td>
               <Td>
                 <Button onClick={remove}>
                   <BsTrash />

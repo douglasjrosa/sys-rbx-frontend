@@ -19,10 +19,23 @@ export const CardList = (props: { id: string }) => {
     (async () => {
       const requeste = await axios(url);
       const response = requeste.data;
-      // console.table(response);
+      console.table(response);
       setData(response);
     })();
   }, [url]);
+
+  const pedido = async (numero: string) => {
+    const url = '/api/query/pedido/' + numero;
+    await axios({
+      url: url,
+      method: 'POST',
+    })
+      .then((res: any) => {})
+      .catch((err: any) => {
+        console.log(err);
+      });
+  };
+
   return (
     <>
       <Flex
@@ -79,10 +92,10 @@ export const CardList = (props: { id: string }) => {
                         w="sm"
                         h={'20rem'}
                         px={5}
-                        py={3}
+                        py={4}
                       >
                         <Box>
-                          <Box>
+                          <Flex w={'fill'} justifyContent={'space-evenly'}>
                             <Text fontWeight="bold" color="gray.700">
                               Pedido N°:{' '}
                               <chakra.span
@@ -94,7 +107,7 @@ export const CardList = (props: { id: string }) => {
                                 {i.attributes.nPedido}
                               </chakra.span>
                             </Text>
-                            <Text fontWeight="bold" color="gray.700" mt={3}>
+                            <Text fontWeight="bold" color="gray.700">
                               Negocio N°:{' '}
                               <Link
                                 fontSize="sm"
@@ -114,7 +127,7 @@ export const CardList = (props: { id: string }) => {
                                 }
                               </Link>
                             </Text>
-                          </Box>
+                          </Flex>
                           <Flex
                             h={20}
                             mt={5}
@@ -154,7 +167,7 @@ export const CardList = (props: { id: string }) => {
                             </Link>
                           </Flex>
 
-                          <Box mt={8}>
+                          <Box mt={5}>
                             <Flex alignItems="center">
                               <Flex alignItems="center">
                                 <Text
@@ -179,9 +192,9 @@ export const CardList = (props: { id: string }) => {
                                 {DataPedido}
                               </chakra.span>
                             </Flex>
-                            <Box mt={3}>
+                            <Flex flexDir={'column'} gap={5} mt={3}>
                               <Button
-                                p={7}
+                                p={5}
                                 w={'full'}
                                 colorScheme={'whatsapp'}
                                 onClick={() =>
@@ -193,7 +206,15 @@ export const CardList = (props: { id: string }) => {
                               >
                                 Gerar PDF
                               </Button>
-                            </Box>
+                              <Button
+                                p={5}
+                                w={'full'}
+                                colorScheme={'messenger'}
+                                onClick={() => pedido(i.attributes.nPedido)}
+                              >
+                                Gerar Pedido
+                              </Button>
+                            </Flex>
                           </Box>
                         </Box>
                       </Box>

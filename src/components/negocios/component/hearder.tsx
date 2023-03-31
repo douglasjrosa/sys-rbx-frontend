@@ -192,7 +192,7 @@ export const NegocioHeader = (props: {
             </Box>
           </>
         )}
-        <Flex alignItems={'center'} justifyContent={'space-between'} w={'30%'}>
+        <Flex alignItems={'center'} justifyContent={'space-between'} w={'34%'}>
           <Button colorScheme={'whatsapp'} onClick={Salve}>
             salve
           </Button>
@@ -200,11 +200,9 @@ export const NegocioHeader = (props: {
             colorScheme={'green'}
             onClick={() => router.push('/Propostas/' + ID)}
           >
-            Propostas Comercial
+            Propostas
           </Button>
-          <Button colorScheme={'messenger'} onClick={Salve}>
-            Gerar pedido
-          </Button>
+          <Button colorScheme={'messenger'}>Gerar pedido</Button>
         </Flex>
       </Flex>
     </>
