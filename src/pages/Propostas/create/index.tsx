@@ -3,18 +3,14 @@ import {
   Box,
   Button,
   chakra,
-  Checkbox,
   Flex,
   FormLabel,
   Heading,
   Icon,
   Input,
   Select,
-  Spinner,
   Table,
   TableContainer,
-  Tbody,
-  Td,
   Textarea,
   Th,
   Thead,
@@ -25,11 +21,9 @@ import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { SetStateAction, useEffect, useState } from 'react';
-import { BiPlusCircle } from 'react-icons/bi';
 import { BsTrash } from 'react-icons/bs';
 import { DateIso } from '../../../components/data/Date';
 import { ListFornecedor } from '../../../components/data/fornecedor';
-import Loading from '../../../components/elements/loading';
 import { CompBusiness } from '../component/business';
 import { ListaEmpresa } from '../component/ListaEmpresa';
 import { CompPrazo } from '../component/prazo';

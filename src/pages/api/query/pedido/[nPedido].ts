@@ -16,6 +16,7 @@ export default async function PedidoBling(
       const infos = await GetPedido(nPedido);
       const [data]: any = infos;
       const verifi = await VerifiqItems(data);
+      // console.log(verifi);
 
       res.status(200).json(verifi);
     } catch (error) {
