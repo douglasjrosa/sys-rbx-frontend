@@ -61,7 +61,7 @@ export const CardList = (props: { id: string }) => {
           >
             {!Data
               ? null
-              : Data.map((i, x) => {
+              : Data.map((i) => {
                   console.log(i);
                   const dat = new Date(i.attributes.dataPedido);
                   const meses = [

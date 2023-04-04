@@ -1,52 +1,123 @@
+/* eslint-disable no-undef */
+
+import fs from 'fs';
+import { ApiErrorResponse } from '../../../../../../../types/axiosErrosPedido';
+import { SaveRespose } from '../../db/post/SaveRespose';
+
 export const PostPedido = async (dados: any) => {
-  console.log(dados);
+  const url = process.env.BLING_API_URL;
+  const apiKey = process.env.ATORIZZATION_TOKEN_BLING;
+  const DaDos = await dados.attributes;
+  const empresa = DaDos.empresa.data.attributes;
+  const Produto = await DaDos.itens;
 
-  const empresa = dados.empresa.data.attributes;
-  console.log(empresa);
-
-  const produtos = dados.map((i: any) => {
-    const prod = i.itens;
-    const Mont = prod.prodId + '-mont';
-    const Expo = prod.prodId + '-expo';
-    const montExpo = prod.prodId + '-mont-expo';
+  const Produtos = Produto.map((i: any) => {
+    const Mont = i.prodId + '-mont';
+    const Expo = i.prodId + '-expo';
+    const montExpo = i.prodId + '-mont-expo';
 
     const codg =
-      prod.expo === true && prod.mont === true
+      i.expo === true && i.mont === true
         ? montExpo
-        : prod.expo === true
+        : i.expo === true
         ? Expo
-        : prod.mont === true
+        : i.mont === true
         ? Mont
-        : prod.prodId;
+        : i.prodId;
 
-    const setItens = `<item>
-    <codigo>${codg}</codigo>
-    <descricao>${prod.titulo}</descricao>
-    <un>Un</un>
-    <qtde>${prod.Qtd}</qtde>
-    <vlr_unit>${prod.total}</vlr_unit>
- </item>`;
+    const setItens = `
+    <item>
+      <codigo>${codg}</codigo>
+      <descricao>${i.titulo}</descricao>
+      <un>Un</un>
+      <qtde>${i.Qtd}</qtde>
+      <vlr_unit>${i.total}</vlr_unit>
+    </item>
+    `;
     return setItens;
   });
 
-  const parcela = () => {
+  const xmlprodutos = Array.isArray(Produtos)
+    ? Produtos.reduce((acc: any, cur: any) => acc + cur)
+    : Produtos;
 
-    <parcela>
-           <data></data>
-           <vlr>100</vlr>
-           <obs>Teste obs 1</obs>
-        </parcela>
-        <parcela>
-           <data>06/09/2009</data>
-           <vlr>50</vlr>
-           <obs />
-        </parcela>
-        <parcela>
-           <data>11/09/2009</data>
-           <vlr>50</vlr>
-           <obs>Teste obs 3</obs>
-        </parcela>
-  }
+  const prazo1 = DaDos.prazo === '' ? '5 Dias' : DaDos.prazo;
+  const Valor = DaDos.totalGeral
+    .replace('R$', '')
+    .replace('.', '')
+    .replace(',', '.');
+  const ValorTotal = Valor;
+  const prazo = prazo1.replace('Dias', '');
+
+  const parcelasDay = prazo.split(' / ');
+  const ParcelasMult = parcelasDay.length;
+  const hoje = new Date();
+
+  const datasParcelas = parcelasDay.map((p: string, x: number) => {
+    const pp = parseInt(p);
+    const dataParcela = new Date(hoje);
+    dataParcela.setDate(dataParcela.getDate() + pp);
+    const valorParcela = ValorTotal / ParcelasMult;
+
+    // Verifica se a data cai em sábado ou domingo
+    if (dataParcela.getDay() === 6) {
+      dataParcela.setDate(dataParcela.getDate() + 2); // Adiciona dois dias para cair na segunda-feira
+    } else if (dataParcela.getDay() === 0) {
+      dataParcela.setDate(dataParcela.getDate() + 1); // Adiciona um dia para cair na segunda-feira
+    }
+
+    const obs = x === 0 ? 'Entrada' : `Parcela N°:${x + 1}`;
+    const templateParcela = `<parcela>
+          <data>${dataParcela.toLocaleDateString()}</data>
+          <vlr>${valorParcela.toFixed(2)}</vlr>
+          <obs>${obs}</obs>
+        </parcela>`;
+    return templateParcela;
+  });
+
+  const parcela = () => {
+    const prazo1 = '5 Dias';
+    const prazo = prazo1.replace('Dias', '');
+    const pp = parseInt(prazo);
+    const dataParcela = new Date();
+    dataParcela.setDate(dataParcela.getDate() + pp);
+    const Valor = DaDos.totalGeral
+      .replace('R$', '')
+      .replace('.', '')
+      .replace(',', '.');
+    const ValorTotal = parseFloat(Valor);
+
+    if (dataParcela.getDay() === 6) {
+      dataParcela.setDate(dataParcela.getDate() + 2); // Adiciona dois dias para cair na segunda-feira
+    } else if (dataParcela.getDay() === 0) {
+      dataParcela.setDate(dataParcela.getDate() + 1); // Adiciona um dia para cair na segunda-feira
+    }
+    const obs =
+      DaDos.condi === 'Antecipado'
+        ? 'pagamento antecipado'
+        : DaDos.condi === 'À vista'
+        ? 'pagamento a vista'
+        : null;
+
+    const retorno = `
+      <parcela>
+        <data>${dataParcela.toLocaleDateString()}</data>
+        <vlr>${ValorTotal.toFixed(2)}</vlr>
+        <obs>${obs}</obs>
+      </parcela>
+    `;
+    return retorno;
+  };
+
+  const xmlParcelas =
+    DaDos.condi === 'Antecipado' || DaDos.condi === 'À vista'
+      ? parcela()
+      : datasParcelas;
+
+  const desconto = DaDos.desconto
+    .replace('R$', '')
+    .replace('.', '')
+    .replace(',', '.');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
@@ -65,43 +136,59 @@ export const PostPedido = async (dados: any) => {
         <fone>${empresa.celular === '' ? empresa.fone : empresa.celular}</fone>
         <email>${empresa.email}</email>
      </cliente>
-     <transporte>
-        <transportadora></transportadora>
-        <tipo_frete></tipo_frete>
-        <servico_correios></servico_correios>
-        <dados_etiqueta>
-           <nome></nome>
-           <endereco></endereco>
-           <numero></numero>
-           <complemento></complemento>
-           <municipio></municipio>
-           <uf></uf>
-           <cep></cep>
-           <bairro></bairro>
-        </dados_etiqueta>
-        <volumes>
-           <volume>
-              <servico></servico>
-              <codigoRastreamento />
-           </volume>
-           <volume>
-              <servico />
-              <codigoRastreamento />
-           </volume>
-        </volumes>
-     </transporte>
-     <itens>
-        ${produtos}
-     </itens>
-     <parcelas>
-
-     </parcelas>
-     <vlr_frete>15</vlr_frete>
-     <vlr_desconto>10</vlr_desconto>
-     <obs>Testando o campo observações do pedido</obs>
-     <obs_internas>Testando o campo observações internas do pedido</obs_internas>
+     <transporte />
+     <itens>${xmlprodutos}</itens>
+     <parcelas>${xmlParcelas}</parcelas>
+     <vlr_frete></vlr_frete>
+     <vlr_desconto>${desconto}</vlr_desconto>
+     <obs>${DaDos.obs}</obs>
+     <obs_internas></obs_internas>
   </pedido>`;
-
   try {
-  } catch (error) {}
+    const formData = new FormData();
+    formData.append('apikey', apiKey);
+    formData.append('xml', xml);
+
+    var requestOptions = {
+      method: 'POST',
+      body: formData,
+    };
+
+    const requet = await fetch(url + '/pedido/json/', requestOptions);
+    const response = await requet.json();
+    console.log(response);
+
+    const { pedidos, erros } = response.retorno;
+
+    if (erros) {
+      throw Object.assign(new Error(erros[0].erro.msg), {
+        response: {
+          status: response.status,
+        },
+        erro: erros[0].erro,
+        detalhes: erros[0].erro.msg,
+      });
+    }
+
+    const resposta = {
+      msg:
+        'pedido gerando com susseso, pedido N°: ' + pedidos[0].pedido.idPedido,
+      pedido: pedidos[0].pedido.idPedido,
+      status: 201,
+    };
+    const nPedido = dados.id;
+    const Bpedido = pedidos[0].pedido.idPedido;
+    const IdNegocio = DaDos.business.data.id;
+    await SaveRespose(nPedido, Bpedido, IdNegocio);
+
+    return resposta;
+  } catch (error) {
+    const errorResponse: ApiErrorResponse = {
+      message: error.message ?? `Solicitação inválida`,
+      status: error.response?.status ?? 400,
+      erro: error.erro ?? '[]',
+      detalhes: error.detalhes ?? 'null',
+    };
+    throw errorResponse;
+  }
 };
