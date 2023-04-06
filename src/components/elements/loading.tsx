@@ -1,6 +1,6 @@
 import { Center, CircularProgress, Flex, Heading } from '@chakra-ui/react';
 
-function Loading(props) {
+function Loading(props: any) {
   const pageProps = { ...props },
     { children } = pageProps;
   delete pageProps.children;

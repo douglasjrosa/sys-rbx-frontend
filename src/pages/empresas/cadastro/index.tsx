@@ -14,46 +14,46 @@ import {
   Switch,
   Toast,
   useToast,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { cnpj } from 'cpf-cnpj-validator';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import React, { useState } from 'react';
-import { mask, unMask } from 'remask';
-import { confgEnb } from '../../../components/data/confgEnb';
-import { modCaix } from '../../../components/data/modCaix';
-import { CompPessoa } from '../../../components/elements/lista/pessoas';
+} from "@chakra-ui/react";
+import axios from "axios";
+import { cnpj } from "cpf-cnpj-validator";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import React, { useState } from "react";
+import { mask, unMask } from "remask";
+import { confgEnb } from "../../../components/data/confgEnb";
+import { modCaix } from "../../../components/data/modCaix";
+import { CompPessoa } from "../../../components/elements/lista/pessoas";
 
 export default function Cadastro() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [CNPJ, setCNPJ] = useState('');
-  const [MaskCNPJ, setMaskCNPJ] = useState('');
-  const [nome, setNome] = useState('');
-  const [fantasia, setFantasia] = useState('');
-  const [tipoPessoa, setTipoPessoa] = useState('');
-  const [fone, setFone] = useState('');
-  const [celular, setCelular] = useState('');
-  const [WhatsMask, setWhatsMask] = useState('');
-  const [email, setEmail] = useState('');
-  const [emailNfe, setEmailNfe] = useState('');
+  const [CNPJ, setCNPJ] = useState("");
+  const [MaskCNPJ, setMaskCNPJ] = useState("");
+  const [nome, setNome] = useState("");
+  const [fantasia, setFantasia] = useState("");
+  const [tipoPessoa, setTipoPessoa] = useState("");
+  const [fone, setFone] = useState("");
+  const [celular, setCelular] = useState("");
+  const [WhatsMask, setWhatsMask] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailNfe, setEmailNfe] = useState("");
   const [ieStatus, setIeStatus] = useState(false);
-  const [CNAE, setCNAE] = useState('');
-  const [Ie, setIE] = useState('');
-  const [porte, setPorte] = useState('');
+  const [CNAE, setCNAE] = useState("");
+  const [Ie, setIE] = useState("");
+  const [porte, setPorte] = useState("");
   const [simples, setSimples] = useState(false);
-  const [site, setSite] = useState('');
-  const [endereco, setEndereco] = useState('');
-  const [numero, setNumero] = useState('');
-  const [bairro, setBairro] = useState('');
-  const [complemento, setComplemento] = useState('');
-  const [cidade, setCidade] = useState('');
-  const [uf, setUf] = useState('');
-  const [cep, setCep] = useState('');
-  const [pais, setPais] = useState('');
-  const [codpais, setCodpais] = useState('');
-  const [contribuinte, setContribuinte] = useState('');
+  const [site, setSite] = useState("");
+  const [endereco, setEndereco] = useState("");
+  const [numero, setNumero] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [complemento, setComplemento] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
+  const [cep, setCep] = useState("");
+  const [pais, setPais] = useState("");
+  const [codpais, setCodpais] = useState("");
+  const [contribuinte, setContribuinte] = useState("");
   const [adFrailLat, setAdFragilLat] = useState(false);
   const [adFrailCab, setAdFragilCab] = useState(false);
   const [adEspecialLat, setAdEspecialLat] = useState(false);
@@ -72,12 +72,12 @@ export default function Cadastro() {
   const [engLev, setEngLev] = useState(false);
   const [engRef, setEngRef] = useState(false);
   const [engResi, setEngResi] = useState(false);
-  const [tablecalc, setTablecalc] = useState('');
-  const [maxPg, setMaxpg] = useState('');
-  const [forpg, setForpg] = useState('');
-  const [frete, setFrete] = useState('');
-  const [Empresa, setEmpresa] = useState('');
-  const [Responsavel, setResponsavel] = useState('');
+  const [tablecalc, setTablecalc] = useState("");
+  const [maxPg, setMaxpg] = useState("");
+  const [forpg, setForpg] = useState("");
+  const [frete, setFrete] = useState("");
+  const [Empresa, setEmpresa] = useState("");
+  const [Responsavel, setResponsavel] = useState("");
   const toast = useToast();
 
   const consulta = () => {
@@ -85,49 +85,49 @@ export default function Cadastro() {
     const validCnpj = cnpj.isValid(CNPJ);
     if (CNPJ.length < 13) {
       Toast({
-        title: 'erro no CNPJ',
-        description: 'CNPJ incorreto',
-        status: 'error',
+        title: "erro no CNPJ",
+        description: "CNPJ incorreto",
+        status: "error",
         duration: 7000,
-        position: 'top-right',
+        position: "top-right",
         isClosable: true,
       });
     }
     if (validCnpj === false) {
       Toast({
-        title: 'erro no CNPJ',
-        description: 'CNPJ incorreto',
-        status: 'error',
+        title: "erro no CNPJ",
+        description: "CNPJ incorreto",
+        status: "error",
         duration: 7000,
-        position: 'top-right',
+        position: "top-right",
         isClosable: true,
       });
     } else {
       console.log(CNPJ);
-      let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
+      let url = "https://publica.cnpj.ws/cnpj/" + CNPJ;
 
       axios({
-        method: 'GET',
+        method: "GET",
         url: url,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       })
         .then(function (response) {
           setNome(response.data.razao_social);
           setFantasia(response.data.estabelecimento.nome_fantasia);
-          setTipoPessoa('cnpj');
+          setTipoPessoa("cnpj");
           setIE(
             response.data.estabelecimento.inscricoes_estaduais[0]
-              .inscricao_estadual,
+              .inscricao_estadual
           );
           setIeStatus(
-            response.data.estabelecimento.inscricoes_estaduais[0].ativo,
+            response.data.estabelecimento.inscricoes_estaduais[0].ativo
           );
           setEndereco(
             response.data.estabelecimento.tipo_logradouro +
-              ' ' +
-              response.data.estabelecimento.logradouro,
+              " " +
+              response.data.estabelecimento.logradouro
           );
           setNumero(response.data.estabelecimento.numero);
           setComplemento(response.data.estabelecimento.complemento);
@@ -146,19 +146,19 @@ export default function Cadastro() {
           const cheksimples =
             response.data.simples === null
               ? false
-              : response.data.simples.simples === 'Sim'
+              : response.data.simples.simples === "Sim"
               ? true
               : false;
           setSimples(cheksimples);
           const ICMSisent =
             response.data.simples !== null &&
-            response.data.simples.mei === 'sim' &&
+            response.data.simples.mei === "sim" &&
             response.data.estabelecimento.inscricoes_estaduais[0].ativo === true
               ? true
               : false;
           const ICMSncomtrib =
             response.data.simples !== null &&
-            response.data.simples.mei === 'sim' &&
+            response.data.simples.mei === "sim" &&
             response.data.estabelecimento.inscricoes_estaduais[0].ativo ===
               false
               ? true
@@ -180,7 +180,7 @@ export default function Cadastro() {
   const historico = [
     {
       date: dateIsso,
-      vendedor: session.user.name,
+      vendedor: session?.user.name,
       msg: `Empresa ${nome} foi cadastrado`,
     },
   ];
@@ -234,37 +234,37 @@ export default function Cadastro() {
       forpg: forpg,
       frete: frete,
       contribuinte: contribuinte,
-      vendedor: session.user.name,
-      vendedorId: session.user.id,
+      vendedor: session?.user.name,
+      vendedorId: session?.user.id,
       responsavel: Responsavel,
       history: historico,
     },
   };
 
   const strapi = async () => {
-    const url = '/api/db/empresas/post';
+    const url = "/api/db/empresas/post";
     const validateString = [
-      { mudulo: nome, valor: 'Nome' },
-      { mudulo: CNPJ, valor: 'cnpj' },
-      { mudulo: celular, valor: 'WhatsApp' },
-      { mudulo: Responsavel, valor: 'Responsavel' },
+      { mudulo: nome, valor: "Nome" },
+      { mudulo: CNPJ, valor: "cnpj" },
+      { mudulo: celular, valor: "WhatsApp" },
+      { mudulo: Responsavel, valor: "Responsavel" },
     ];
-    const filter = validateString.filter((m) => m.mudulo === '');
-    if (tablecalc === '') {
+    const filter = validateString.filter((m) => m.mudulo === "");
+    if (tablecalc === "") {
       toast({
         title: `A Tabela de calculo deve ser definida`,
-        status: 'warning',
+        status: "warning",
         duration: 7000,
-        position: 'top-right',
+        position: "top-right",
       });
     }
     if (filter.length > 1) {
       const alert = filter.map((i) => {
         toast({
           title: `Favor verificar campo ${i.valor}`,
-          status: 'warning',
+          status: "warning",
           duration: 7000,
-          position: 'top-right',
+          position: "top-right",
         });
       });
       return alert;
@@ -272,20 +272,20 @@ export default function Cadastro() {
       const resp = filter.map((i) => i.valor);
       toast({
         title: `Favor verificar campo ${resp}`,
-        status: 'warning',
+        status: "warning",
         duration: 7000,
-        position: 'top-right',
+        position: "top-right",
       });
     } else {
       axios({
-        method: 'POST',
+        method: "POST",
         url: url,
         data: data,
       })
         .then((response) => {
           toast({
-            title: 'Cliente criado com sucesso',
-            status: 'success',
+            title: "Cliente criado com sucesso",
+            status: "success",
             duration: 9000,
             isClosable: true,
           });
@@ -310,15 +310,15 @@ export default function Cadastro() {
   const maskCnpj = (e: any) => {
     const valor = e.target.value;
     const valorLinpo = unMask(valor);
-    const masked = mask(valorLinpo, ['99.999.999/9999-99']);
+    const masked = mask(valorLinpo, ["99.999.999/9999-99"]);
     setCNPJ(valorLinpo);
     setMaskCNPJ(masked);
   };
 
-  const WhatsAppMask = (e) => {
+  const WhatsAppMask = (e: any) => {
     const valor = e.target.value;
     const valorLinpo = unMask(valor);
-    const masked = mask(valorLinpo, ['(99) 9 9999-9999']);
+    const masked = mask(valorLinpo, ["(99) 9 9999-9999"]);
     setCelular(valorLinpo);
     setWhatsMask(masked);
   };
@@ -326,22 +326,22 @@ export default function Cadastro() {
   return (
     <>
       <Box
-        h={'100%'}
+        h={"100%"}
         bg="#edf3f8"
         _dark={{
-          bg: '#111',
+          bg: "#111",
         }}
         px={5}
         pt={3}
-        display={'flex'}
-        justifyContent={'center'}
-        alignItems={'center'}
+        display={"flex"}
+        justifyContent={"center"}
+        alignItems={"center"}
       >
         <Box mt={[5, 0]}>
           <SimpleGrid
             display={{
-              base: 'initial',
-              md: 'grid',
+              base: "initial",
+              md: "grid",
             }}
             columns={{
               md: 1,
@@ -356,14 +356,14 @@ export default function Cadastro() {
                 md: 2,
               }}
               rounded={20}
-              border={'1px solid #ccc'}
+              border={"1px solid #ccc"}
             >
               <chakra.form
                 method="POST"
                 shadow="base"
                 rounded={[null, 20]}
                 overflow={{
-                  sm: 'hidden',
+                  sm: "hidden",
                 }}
               >
                 <Stack
@@ -371,7 +371,7 @@ export default function Cadastro() {
                   py={3}
                   bg="gray.50"
                   _dark={{
-                    bg: '#141517',
+                    bg: "#141517",
                   }}
                   spacing={6}
                 >
@@ -391,7 +391,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Cnpj
@@ -431,7 +431,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Razão social
@@ -458,7 +458,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Email
@@ -484,7 +484,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         CNAE
@@ -511,7 +511,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         IE
@@ -538,7 +538,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         IE Status
@@ -557,10 +557,10 @@ export default function Cadastro() {
                         value={(() => {
                           const val =
                             ieStatus === true && nome.length !== 0
-                              ? 'sim'
+                              ? "sim"
                               : ieStatus === false && nome.length !== 0
-                              ? 'não'
-                              : ' ';
+                              ? "não"
+                              : " ";
                           return val;
                         })()}
                       />
@@ -581,7 +581,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Pais
@@ -608,7 +608,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Cod.pais
@@ -635,7 +635,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         end
@@ -662,7 +662,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         N°
@@ -689,7 +689,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Complemento
@@ -716,7 +716,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Bairro
@@ -743,7 +743,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Cep
@@ -770,7 +770,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Cidade
@@ -797,7 +797,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         uf
@@ -823,7 +823,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         site
@@ -850,7 +850,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         email para emvio de Nfe
@@ -873,7 +873,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         whatsapp
@@ -897,7 +897,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Contribuinte
@@ -926,7 +926,7 @@ export default function Cadastro() {
                   py={3}
                   bg="gray.50"
                   _dark={{
-                    bg: '#141517',
+                    bg: "#141517",
                   }}
                   spacing={3}
                 >
@@ -942,7 +942,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Tabela de calculo
@@ -978,7 +978,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Máximo prazo p/ pagamento:
@@ -1016,7 +1016,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Preferência de pagamento:
@@ -1049,7 +1049,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: 'gray.50',
+                          color: "gray.50",
                         }}
                       >
                         Frete
@@ -1080,17 +1080,17 @@ export default function Cadastro() {
                     </Heading>
                     {confgEnb.map((item) => {
                       const val =
-                        item.id === '12'
+                        item.id === "12"
                           ? adFrailLat
-                          : item.id === '13'
+                          : item.id === "13"
                           ? adFrailCab
-                          : item.id === '14'
+                          : item.id === "14"
                           ? adEspecialLat
-                          : item.id === '15'
+                          : item.id === "15"
                           ? adEspecialCab
-                          : item.id === '16'
+                          : item.id === "16"
                           ? latFCab
-                          : item.id === '17'
+                          : item.id === "17"
                           ? cabChao
                           : cabTop;
 
@@ -1109,17 +1109,17 @@ export default function Cadastro() {
                                 isChecked={val}
                                 onChange={(e) => {
                                   const set =
-                                    item.id === '12'
+                                    item.id === "12"
                                       ? setAdFragilLat(e.target.checked)
-                                      : item.id === '13'
+                                      : item.id === "13"
                                       ? setAdFragilCab(e.target.checked)
-                                      : item.id === '14'
+                                      : item.id === "14"
                                       ? setAdEspecialLat(e.target.checked)
-                                      : item.id === '15'
+                                      : item.id === "15"
                                       ? setAdEspecialCab(e.target.checked)
-                                      : item.id === '16'
+                                      : item.id === "16"
                                       ? setLatFCab(e.target.checked)
-                                      : item.id === '17'
+                                      : item.id === "17"
                                       ? setCabChao(e.target.checked)
                                       : setCabTop(e.target.checked);
                                   return set;
@@ -1131,7 +1131,7 @@ export default function Cadastro() {
                                 fontWeight="md"
                                 color="gray.700"
                                 _dark={{
-                                  color: 'gray.50',
+                                  color: "gray.50",
                                 }}
                               >
                                 {item.title}
@@ -1150,25 +1150,25 @@ export default function Cadastro() {
                     {modCaix.map((item) => {
                       console.log(cxEco);
                       const val =
-                        item.id === '1'
+                        item.id === "1"
                           ? cxEco
-                          : item.id === '2'
+                          : item.id === "2"
                           ? cxEst
-                          : item.id === '3'
+                          : item.id === "3"
                           ? cxLev
-                          : item.id === '4'
+                          : item.id === "4"
                           ? cxRef
-                          : item.id === '5'
+                          : item.id === "5"
                           ? cxSupRef
-                          : item.id === '6'
+                          : item.id === "6"
                           ? platSMed
-                          : item.id === '7'
+                          : item.id === "7"
                           ? cxResi
-                          : item.id === '8'
+                          : item.id === "8"
                           ? engEco
-                          : item.id === '9'
+                          : item.id === "9"
                           ? engLev
-                          : item.id === '10'
+                          : item.id === "10"
                           ? engRef
                           : engResi;
                       return (
@@ -1183,31 +1183,34 @@ export default function Cadastro() {
                                 colorScheme="green"
                                 borderColor="gray.400"
                                 rounded="md"
-                                isChecked={val}
+                                isChecked={val || false}
                                 onChange={(e) => {
-                                  const set =
-                                    item.id === '1'
-                                      ? setCxEco(e.target.checked)
-                                      : item.id === '2'
-                                      ? setCxEst(e.target.checked)
-                                      : item.id === '3'
-                                      ? setCxLev(e.target.checked)
-                                      : item.id === '4'
-                                      ? setCxRef(e.target.checked)
-                                      : item.id === '5'
-                                      ? setCxSupRef(e.target.checked)
-                                      : item.id === '6'
-                                      ? setPlatSMed(e.target.checked)
-                                      : item.id === '7'
-                                      ? setCxResi(e.target.checked)
-                                      : item.id === '8'
-                                      ? setEngEco(e.target.checked)
-                                      : item.id === '9'
-                                      ? setEngLev(e.target.checked)
-                                      : item.id === '10'
-                                      ? setEngRef(e.target.checked)
-                                      : setEngResi(e.target.checked);
-                                  return set;
+                                  const set: any=
+                                    item.id === "1"
+                                      ? setCxEco
+                                      : item.id === "2"
+                                      ? setCxEst
+                                      : item.id === "3"
+                                      ? setCxLev
+                                      : item.id === "4"
+                                      ? setCxRef
+                                      : item.id === "5"
+                                      ? setCxSupRef
+                                      : item.id === "6"
+                                      ? setPlatSMed
+                                      : item.id === "7"
+                                      ? setCxResi
+                                      : item.id === "8"
+                                      ? setEngEco
+                                      : item.id === "9"
+                                      ? setEngLev
+                                      : item.id === "10"
+                                      ? setEngRef
+                                      : setEngResi;
+                                  if (set) {
+                                    // Verificação antes de definir o valor do estado
+                                    set(e.target.checked);
+                                  }
                                 }}
                               />
                             </Flex>
@@ -1217,7 +1220,7 @@ export default function Cadastro() {
                                 fontWeight="md"
                                 color="gray.700"
                                 _dark={{
-                                  color: 'gray.50',
+                                  color: "gray.50",
                                 }}
                               >
                                 {item.title}
@@ -1238,7 +1241,7 @@ export default function Cadastro() {
                   pb={[12, null, 5]}
                   bg="gray.50"
                   _dark={{
-                    bg: '#121212',
+                    bg: "#121212",
                   }}
                   textAlign="right"
                 >
@@ -1246,17 +1249,17 @@ export default function Cadastro() {
                     colorScheme="red"
                     me={5}
                     _focus={{
-                      shadow: '',
+                      shadow: "",
                     }}
                     fontWeight="md"
-                    onClick={() => router.push('/empresas/')}
+                    onClick={() => router.push("/empresas/")}
                   >
                     Cancelar
                   </Button>
                   <Button
                     colorScheme="whatsapp"
                     _focus={{
-                      shadow: '',
+                      shadow: "",
                     }}
                     fontWeight="md"
                     onClick={save}

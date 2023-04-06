@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-head-element */
 import PropTypes from 'prop-types';
 
 const renderPDFFooter = () => (
@@ -11,7 +12,7 @@ const renderPDFFooter = () => (
     This is a sample footer
   </div>
 );
-function PDFLayout({ children }) {
+function PDFLayout({ children }: React.PropsWithChildren<{}>) {
   return (
     <html>
       <head>

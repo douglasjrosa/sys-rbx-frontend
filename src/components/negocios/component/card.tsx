@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable prettier/prettier */
 import { Box, chakra, Flex, Link, Toast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';

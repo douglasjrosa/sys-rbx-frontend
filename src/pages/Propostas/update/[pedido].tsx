@@ -27,27 +27,26 @@ import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { SetStateAction, useEffect, useState } from 'react';
-import { BiPlusCircle } from 'react-icons/bi';
 import { BsTrash } from 'react-icons/bs';
 import { ListFornecedor } from '../../../components/data/fornecedor';
-import Loading from '../../../components/elements/loading';
-import { CompBusiness } from '../component/business';
-import { ListaEmpresa } from '../component/ListaEmpresa';
-import { CompPrazo } from '../component/prazo';
-import { ProdutiList } from '../component/produt';
-import { TableConteudo } from '../component/tabela';
+import { ListaEmpresa } from '@/components/Proposta/ListaEmpresa';
+import { CompBusiness } from '@/components/Proposta/business';
+import { CompPrazo } from '@/components/Proposta/prazo';
+import { ProdutiList } from '@/components/Proposta/produt';
+import { TableConteudo } from '@/components/Proposta/tabela';
+
 
 export default function Proposta() {
   const { data: session } = useSession();
   const router = useRouter();
-  const Email = session.user.email;
+  const Email = session?.user.email;
   const [reqPrazo, setReqPrazo] = useState([]);
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
   const [NomeEnpresa, setNomeEmpresa] = useState('');
   const [RelatEnpresa, setRelatEmpresa] = useState([]);
   const [RelatEnpresaId, setRelatEmpresaId] = useState('');
   const [Produtos, SetProdutos] = useState([]);
-  const [ListItens, setItens] = useState([]);
+  const [ListItens, setItens] = useState<any>([]);
   const [date, setDate] = useState('');
   const [cnpj, setCnpj] = useState('');
   const [frete, setFrete] = useState('');
@@ -122,7 +121,7 @@ export default function Proposta() {
 
   const TotalGreal = () => {
     if (ListItens.length === 0) return 'R$ 0,00';
-    const totalItem = ListItens.reduce((acc, item) => {
+    const totalItem = ListItens.reduce((acc: number, item: any) => {
       const valor: number = item.total;
       const valorOriginal: number = parseFloat(item.vFinal.replace(',', '.'));
       const qtd: number = item.Qtd;
@@ -144,7 +143,7 @@ export default function Proposta() {
 
   const DescontoGeral = () => {
     if (ListItens.length === 0) return 'R$ 0,00';
-    const descontos = ListItens.map((i) => i.desconto * i.Qtd);
+    const descontos = ListItens.map((i: any) => i.desconto * i.Qtd);
     const total = descontos.reduce(
       (acc: number, valorAtual: number) => acc + valorAtual,
     );
@@ -163,7 +162,7 @@ export default function Proposta() {
     console.log(prazo);
     if (prazo === 'Antecipado') {
       setItens(
-        ListItens.map((f) => {
+        ListItens.map((f: any) => {
           const valor = Number(f.vFinal.replace('.', '').replace(',', '.'));
           const ValorGeral =
             Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
@@ -180,7 +179,7 @@ export default function Proposta() {
       );
     } else {
       setItens(
-        ListItens.map((f) => {
+        ListItens.map((f: any) => {
           const valor = Number(f.vFinal.replace('.', '').replace(',', '.'));
           const ValorGeral =
             Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
@@ -240,8 +239,8 @@ export default function Proposta() {
           : Desconto === ''
           ? 'R$ 0,00'
           : Desconto,
-        vendedor: session.user.name,
-        vendedorId: session.user.id,
+        vendedor: session?.user.name,
+        vendedorId: session?.user.id,
         frete: frete,
         valorFrete: freteCif,
         business: id,
@@ -285,7 +284,7 @@ export default function Proposta() {
   }
   function getIten(resposta: SetStateAction<any>) {
     const lista = ListItens;
-    const maxSum = Math.max(...ListItens.map((obj) => obj.id + 1));
+    const maxSum = Math.max(...ListItens.map((obj: any) => obj.id + 1));
     resposta.id = maxSum || 1;
     const valor1 = Number(resposta.vFinal.replace('.', '').replace(',', '.'));
     const ValorGeral = valor1;
@@ -304,13 +303,13 @@ export default function Proposta() {
       desconto: Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
       total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
     };
-    const newItens = lista.map((f) => ({
+    const newItens = lista.map((f: any) => ({
       ...f,
       expo: false,
       mont: false,
       Qtd: 1,
     }));
-    const ListaRetorno = [...newItens, retorno];
+    const ListaRetorno: any = [...newItens, retorno];
     setItens(ListaRetorno);
   }
 

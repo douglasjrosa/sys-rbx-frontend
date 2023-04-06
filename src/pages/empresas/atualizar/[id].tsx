@@ -286,7 +286,7 @@ export default function EmpresaId() {
   const historico = [
     {
       date: dateIsso,
-      vendedor: session.user.name,
+      vendedor: session?.user.name,
       msg: `Empresa ${nome} foi atualizado`,
     },
   ];
@@ -381,7 +381,7 @@ export default function EmpresaId() {
     setMaskCNPJ(masked);
   };
 
-  const WhatsAppMask = (e) => {
+  const WhatsAppMask = (e: any) => {
     const valor = e.target.value;
     const valorLinpo = unMask(valor);
     const masked = mask(valorLinpo, ['(99) 9 9999-9999']);

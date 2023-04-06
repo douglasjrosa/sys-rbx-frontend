@@ -9,9 +9,9 @@ export default function Pessoas(): JSX.Element {
   const router = useRouter();
   const { data: session } = useSession();
 
-  if (session.user.pemission !== 'Adm') {
-    router.push('/');
-  }
+  // if (session.user.pemission !== 'Adm') {
+  //   router.push('/');
+  // }
 
   return (
     <Flex h="100%" w="100%" flexDir={'column'} justifyContent="center">

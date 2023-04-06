@@ -11,7 +11,8 @@ import {
 import { ReactJSXElement } from '@emotion/react/types/jsx-namespace';
 import { useEffect, useState } from 'react';
 import { BsTrash } from 'react-icons/bs';
-import Loading from '../../../components/elements/loading';
+import Loading from '../elements/loading';
+
 
 export const TableConteudo = (props: {
   Itens: any;

@@ -6,7 +6,7 @@ import { SaveRespose } from '../../db/post/SaveRespose';
 
 export const PostPedido = async (dados: any) => {
   const url = process.env.BLING_API_URL;
-  const apiKey = process.env.ATORIZZATION_TOKEN_BLING;
+  const apiKey: any = process.env.ATORIZZATION_TOKEN_BLING;
   const DaDos = await dados.attributes;
   const empresa = DaDos.empresa.data.attributes;
   const Produto = await DaDos.itens;
@@ -182,7 +182,7 @@ export const PostPedido = async (dados: any) => {
     await SaveRespose(nPedido, Bpedido, IdNegocio);
 
     return resposta;
-  } catch (error) {
+  } catch (error: any) {
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
       status: error.response?.status ?? 400,

@@ -78,7 +78,7 @@ export const BodyCard = (props: { reload: any }) => {
                 row={{ base: 1, md: 1 }}
                 spacing={{ base: 3, md: 5 }}
               >
-                {dados.map((i) => {
+                {dados.map((i: any) => {
                   return (
                     <>
                       <CardBusiness

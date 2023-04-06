@@ -35,7 +35,7 @@ export const GetPedido = async (nPedido: any) => {
     }
 
     return data;
-  } catch (erro) {
+  } catch (erro: any) {
     const status = erro.response?.status || 500;
     const message = erro.message || 'Erro do Servidor Interno';
     const errorResponse: ApiErrorResponse = {

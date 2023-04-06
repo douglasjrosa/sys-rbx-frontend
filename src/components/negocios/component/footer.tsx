@@ -24,7 +24,7 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
 
     const msg = {
       date: DateAtua,
-      user: session.user.name,
+      user: session?.user.name,
       msg: Valor,
     };
 

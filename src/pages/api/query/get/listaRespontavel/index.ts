@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+
 /* eslint-disable no-undef */
 import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';

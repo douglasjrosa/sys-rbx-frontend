@@ -8,6 +8,7 @@ export default async function GetEmpresa(
   if (req.method === 'POST') {
     const Email = 'kingdever88@gmail.com';
     const token = process.env.ATORIZZATION_TOKEN;
+    const tokenRM: any = process.env.ATORIZZATION_TOKEN_RIBERMAX;
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
       '/empresas?fields[0]=fantasia&fields[1]=CNPJ';
@@ -16,7 +17,7 @@ export default async function GetEmpresa(
       method: 'GET',
       headers: {
         Email: Email,
-        Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
+        Token: tokenRM,
       },
     });
     const respRibermax = await ribermaxDb.json();

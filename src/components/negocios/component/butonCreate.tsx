@@ -92,7 +92,7 @@ export const BtCreate = (props: { onLoading: any }) => {
   }, []);
 
   const maskPreco = (e: any) => {
-    const originalVelue = unMask(e.target.value);
+    const originalVelue: any = unMask(e.target.value);
     const maskedValue = mask(originalVelue, [
       ', 9',
       ',99',
@@ -118,10 +118,10 @@ export const BtCreate = (props: { onLoading: any }) => {
   };
 
   const historico = {
-    vendedor: session.user.name,
+    vendedor: session?.user.name,
     date:
       new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-    msg: `Vendedor ${session.user.name}, criou esse Busines`,
+    msg: `Vendedor ${session?.user.name}, criou esse Busines`,
   };
 
   const salve = async () => {
@@ -136,7 +136,7 @@ export const BtCreate = (props: { onLoading: any }) => {
       Approach: Approach,
       empresa: Empresa,
       history: historico,
-      user: session.user.id,
+      user: session?.user.id,
       incidentRecord: [],
     };
 
@@ -191,7 +191,7 @@ export const BtCreate = (props: { onLoading: any }) => {
               onChange={(e) => setEmpresa(e.target.value)}
               value={Empresa}
             >
-              {work.map((item) => {
+              {work.map((item: any) => {
                 return (
                   <option
                     style={{ backgroundColor: '#2A4365' }}

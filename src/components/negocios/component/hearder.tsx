@@ -32,7 +32,7 @@ export const NegocioHeader = (props: {
   const [Approach, setApproach] = useState('');
   const [Budget, setBudget] = useState('');
   const [Deadline, setDeadline] = useState('');
-  const [DataRetorno, setDataRetorno] = useState('');
+  const [DataRetorno, setDataRetorno] = useState<any>('');
 
   useEffect(() => {
     setStatus(props.Status);
@@ -44,9 +44,9 @@ export const NegocioHeader = (props: {
   }, []);
 
   const historicomsg = {
-    vendedor: session.user.name,
+    vendedor: session?.user.name,
     date: new Date().toLocaleString(),
-    msg: `Vendedor(a) ${session.user.name}, alterou as informaçoes desse Busines`,
+    msg: `Vendedor(a) ${session?.user.name}, alterou as informaçoes desse Busines`,
   };
 
   const history = [...props.historia, historicomsg];

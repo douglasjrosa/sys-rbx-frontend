@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Search2Icon } from '@chakra-ui/icons';
 import { useRouter } from 'next/router';
 import {
@@ -56,7 +55,7 @@ export default function Empresas() {
           >
             Cadastrar Empresa
           </Button>
-          {session.user.pemission !== 'Adm' ? null : (
+          {session?.user.pemission !== 'Adm' ? null : (
             <Button
               h={{ md: '40%', sm: '70%' }}
               colorScheme="telegram"

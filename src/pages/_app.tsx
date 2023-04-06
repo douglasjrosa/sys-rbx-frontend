@@ -1,10 +1,21 @@
-/* eslint-disable react/prop-types */
-import { ChakraProvider, CSSReset } from '@chakra-ui/react';
-import { SessionProvider } from 'next-auth/react';
-import AppHead from '../components/elements/head';
-import Layout from '../components/layout';
+import { ChakraProvider, CSSReset } from "@chakra-ui/react";
+import { SessionProvider } from "next-auth/react";
+import AppHead from "../components/elements/head";
+import Layout from "../components/layout";
+import { FunctionComponent } from "react";
 
-const MyApp = ({ Component, pageProps: { session, ...pageProps } }) => {
+interface MyAppProps {
+  Component: FunctionComponent<any>;
+  pageProps: {
+    session: any;
+    [key: string]: any;
+  };
+}
+
+const MyApp: FunctionComponent<MyAppProps> = ({
+  Component,
+  pageProps: { session, ...pageProps },
+}) => {
   return (
     <SessionProvider session={session}>
       <ChakraProvider>
@@ -17,4 +28,5 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }) => {
     </SessionProvider>
   );
 };
+
 export default MyApp;

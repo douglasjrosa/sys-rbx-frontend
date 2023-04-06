@@ -32,11 +32,11 @@ const NavMenuItems = [
   },
   {
     id: '4',
-    url: '/Propostas',
+    url: '/Propostas/adm',
     text: 'Propostas',
     icon: AiOutlineCodepen,
     iconComponent: <AiOutlineCodepen />,
-    permission: 'User',
+    permission: 'Adm',
   },
   {
     id: '5',
@@ -48,11 +48,11 @@ const NavMenuItems = [
   },
   {
     id: '6',
-    url: '/pessoas',
+    url: '/pessoas/ativate',
     text: 'Pessoas',
     icon: BsPeopleFill,
     iconComponent: <BsPeopleFill />,
-    permission: 'Adm',
+    permission: 'User',
   },
   {
     id: '7',

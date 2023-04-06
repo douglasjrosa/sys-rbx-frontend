@@ -2,11 +2,14 @@
 /* eslint-disable no-unreachable */
 /* eslint-disable no-undef */
 import axios from 'axios';
+import { any } from 'joi';
 import NextAuth, { DefaultUser } from 'next-auth';
+import { Session } from 'next-auth/core/types';
+import { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
 type ExtendedDefaultUser = DefaultUser & {
-  id: string;
+  id: number;
   confirmed: boolean;
   blocked: boolean;
   pemission: string;
@@ -28,7 +31,7 @@ export default NextAuth({
         email: { label: 'Email', type: 'text', placeholder: 'test@test.com' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials: any, req) {
         const data = {
           identifier: credentials.email,
           password: credentials.password,
@@ -73,10 +76,11 @@ export default NextAuth({
     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user }): Promise<any> => {
       const isSignIn = !!user;
       const actualDateInSeconds = Math.floor(Date.now() / 1000);
       const tokenExpirationInSeconds = Math.floor(4 * 60 * 60); // 4 hours
+
 
       if (isSignIn) {
         if (!user?.jwt || !user?.id || !user?.name || !user?.email) {
@@ -93,14 +97,14 @@ export default NextAuth({
 
         token.expiration = actualDateInSeconds + tokenExpirationInSeconds;
       } else {
-        if (!token?.expiration || actualDateInSeconds > token.expiration) {
+        if (!token?.expiration) {
           return null;
         }
       }
 
-      return token;
+      return token as JWT;
     },
-    async session({ session, token }) {
+    session: async ({ session, token }): Promise<Session | any> => {
       if (
         !token?.jwt ||
         !token?.id ||
@@ -113,16 +117,17 @@ export default NextAuth({
       }
 
       session.user = {
-        id: token.id as string,
+        id: token.id as number,
         name: token.name as string,
         email: token.email as string,
         pemission: token.pemission as string,
         confirmed: token.confirmed as boolean,
         blocked: token.blocked as boolean,
-      } as ExtendedDefaultUser;
+      };
 
       session.token = token.jwt as string;
       return session;
     },
   },
+
 });

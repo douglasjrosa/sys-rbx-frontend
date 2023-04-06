@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable prettier/prettier */
+
 import {
   Box,
   chakra,
@@ -28,7 +28,7 @@ export default function CardEmpresa() {
   useEffect(() => {
     get();
   }, []);
-  const user: string = session.user.id;
+  const user = session?.user.id;
 
   const get = async () => {
     await fetch('/api/db/empresas/get', {

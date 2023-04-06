@@ -53,7 +53,7 @@ export default function PessoaId() {
   const [Dados, setDados] = useState([]);
   const [historico, sethistorico] = useState([]);
 
-  if (session.user.pemission !== 'Adm') {
+  if (session?.user.pemission !== 'Adm') {
     router.push('/');
   }
 
@@ -178,7 +178,7 @@ export default function PessoaId() {
         : '';
     const historicoAt = {
       date: dateIsso,
-      vendedor: session.user.name,
+      vendedor: session?.user.name,
       msg: `cinete ${nome} foi atualizado`,
       alteração: Alteração,
     };

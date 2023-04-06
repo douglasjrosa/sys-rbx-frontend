@@ -21,13 +21,13 @@ function Navbar() {
   const [Dados, setDados] = useState<any>([]);
 
   useEffect(() => {
-    if (session.user.pemission !== 'Adm') {
+    if (session?.user.pemission !== 'Adm') {
       const filtro = NavMenuItems.filter((p) => p.permission !== 'Adm');
       setDados(filtro);
     } else {
       setDados(NavMenuItems);
     }
-  }, [session.user.pemission]);
+  }, [session?.user.pemission]);
 
   return (
     <Flex
@@ -48,7 +48,7 @@ function Navbar() {
         />
         <Flex flexDir="column" m="10%">
           <List spacing={5}>
-            {Dados.map((navItem) => (
+            {Dados.map((navItem: any) => (
               <ListItem key={`navbar-${navItem.id}`}>
                 <Text fontSize="lg">
                   <ListIcon color="greenyellow" as={navItem.icon} />

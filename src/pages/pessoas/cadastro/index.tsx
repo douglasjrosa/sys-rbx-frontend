@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
   Box,
@@ -15,39 +14,39 @@ import {
   Textarea,
   Toast,
   useToast,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { cpf } from 'cpf-cnpj-validator';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { mask, unMask } from 'remask';
+} from "@chakra-ui/react";
+import axios from "axios";
+import { cpf } from "cpf-cnpj-validator";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { mask, unMask } from "remask";
 
 export default function Cadastro() {
   const router = useRouter();
   const { data: session } = useSession();
   const toast = useToast();
-  const [nome, setNome] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [telefone, setTelefone] = useState('');
-  const [email, setEmail] = useState('');
-  const [obs, setObs] = useState('');
+  const [nome, setNome] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
+  const [obs, setObs] = useState("");
   const [Empresa, setEmpresa] = useState<any>([]);
-  const [CPF, setCPF] = useState('');
-  const [cep, setCep] = useState('');
-  const [endereco, setEndereco] = useState('');
-  const [numero, setNumero] = useState('');
-  const [bairro, setBairro] = useState('');
-  const [cidade, setCidade] = useState('');
-  const [uf, setUf] = useState('');
+  const [CPF, setCPF] = useState("");
+  const [cep, setCep] = useState("");
+  const [endereco, setEndereco] = useState("");
+  const [numero, setNumero] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
   const [work, setWork] = useState([]);
-  const [whatsappMask, setWhatsappMask] = useState('');
-  const [telefoneMask, setTelefoneMask] = useState('');
-  const [CepMask, setCepMask] = useState('');
-  const [CpfMask, setCpfMask] = useState('');
+  const [whatsappMask, setWhatsappMask] = useState("");
+  const [telefoneMask, setTelefoneMask] = useState("");
+  const [CepMask, setCepMask] = useState("");
+  const [CpfMask, setCpfMask] = useState("");
   const [Reddata, setRendData] = useState([]);
-  const [Departamento, setDepartamento] = useState('');
-  const [Cargo, setCargo] = useState('');
+  const [Departamento, setDepartamento] = useState("");
+  const [Cargo, setCargo] = useState("");
 
   useEffect(() => {
     setWork(Empresa.map((i: { id: any }) => i.id));
@@ -55,34 +54,34 @@ export default function Cadastro() {
 
   const MaskWhatsapp = (e: any) => {
     const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['(99) 9 9999-9999']);
+    const maskedValue = mask(originalVelue, ["(99) 9 9999-9999"]);
     setWhatsapp(originalVelue);
     setWhatsappMask(maskedValue);
   };
 
   const MaskTel = (e: any) => {
     const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['(99) 9999-9999']);
+    const maskedValue = mask(originalVelue, ["(99) 9999-9999"]);
     setTelefone(originalVelue);
     setTelefoneMask(maskedValue);
   };
 
   const MaskCpf = (e: any) => {
     const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['999.999.999-99']);
+    const maskedValue = mask(originalVelue, ["999.999.999-99"]);
     setCPF(originalVelue);
     setCpfMask(maskedValue);
   };
 
   const CEP = (e: any) => {
     const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['99.999-999']);
+    const maskedValue = mask(originalVelue, ["99.999-999"]);
     setCepMask(maskedValue);
     setCep(originalVelue);
   };
 
   const NUMERO = (e: any) => {
-    const data = e.target.value.replace(/[a-zA-Z]+/g, '');
+    const data = e.target.value.replace(/[a-zA-Z]+/g, "");
     setNumero(data);
   };
 
@@ -103,11 +102,11 @@ export default function Cadastro() {
     const dateIsso = date.toISOString();
     const historico = {
       date: dateIsso,
-      vendedor: session.user.name,
+      vendedor: session?.user.name,
       msg: `cinete ${nome} foi cadastrado`,
     };
 
-    const IdEmpresa = localStorage.getItem('id');
+    const IdEmpresa = localStorage.getItem("id");
 
     const data = {
       data: {
@@ -118,7 +117,7 @@ export default function Cadastro() {
         CPF: CPF,
         CEP: cep,
         uf: uf,
-        user: session.user.id,
+        user: session?.user.id,
         endereco: endereco,
         numero: numero,
         bairro: bairro,
@@ -132,42 +131,42 @@ export default function Cadastro() {
       },
     };
 
-    const url = '/api/db/pessoas/Post';
+    const url = "/api/db/pessoas/Post";
 
     if (!nome) {
       toast({
-        title: 'Como devemos chamar esse cliente',
-        description: 'Obrigatorio o nome do cliente!',
-        status: 'warning',
+        title: "Como devemos chamar esse cliente",
+        description: "Obrigatorio o nome do cliente!",
+        status: "warning",
         duration: 6000,
         isClosable: true,
       });
     } else if (!whatsapp) {
       toast({
-        title: 'Sem numero de contato',
-        description: 'É nessesario o numero de whasApp!',
-        status: 'warning',
+        title: "Sem numero de contato",
+        description: "É nessesario o numero de whasApp!",
+        status: "warning",
         duration: 6000,
         isClosable: true,
       });
     } else {
       await axios({
-        method: 'POST',
+        method: "POST",
         url: url,
         data: data,
       })
         .then((response) => {
           toast({
-            title: 'salvo',
-            description: 'Cliente salvo',
-            status: 'success',
+            title: "salvo",
+            description: "Cliente salvo",
+            status: "success",
             duration: 6000,
-            position: 'top-right',
+            position: "top-right",
           });
           setTimeout(() => {
-            const Id = localStorage.getItem('id');
-            router.push('/pessoas/' + Id);
-            localStorage.removeItem('id');
+            const Id = localStorage.getItem("id");
+            router.push("/pessoas/" + Id);
+            localStorage.removeItem("id");
           }, 500);
         })
         .catch((err) => {
@@ -182,10 +181,10 @@ export default function Cadastro() {
 
   return (
     <>
-      <Flex justifyContent={'center'} alignItems={'center'} h={'100vh'}>
+      <Flex justifyContent={"center"} alignItems={"center"} h={"100vh"}>
         <Box
           _dark={{
-            bg: '#111',
+            bg: "#111",
           }}
           px={5}
           pt={3}
@@ -193,8 +192,8 @@ export default function Cadastro() {
           <Box mt={[5, 0]}>
             <SimpleGrid
               display={{
-                base: 'initial',
-                md: 'grid',
+                base: "initial",
+                md: "grid",
               }}
               columns={{
                 md: 1,
@@ -208,8 +207,8 @@ export default function Cadastro() {
                 colSpan={{
                   md: 2,
                 }}
-                border={'1px solid'}
-                borderColor={'blackAlpha.400'}
+                border={"1px solid"}
+                borderColor={"blackAlpha.400"}
                 rounded={20}
                 bg="#edf3f8"
               >
@@ -217,14 +216,14 @@ export default function Cadastro() {
                   shadow="base"
                   rounded={[null, 20]}
                   overflow={{
-                    sm: 'hidden',
+                    sm: "hidden",
                   }}
                 >
                   <Stack
                     px={4}
                     py={3}
                     _dark={{
-                      bg: '#141517',
+                      bg: "#141517",
                     }}
                     spacing={6}
                   >
@@ -243,7 +242,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           nome
@@ -268,7 +267,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           CPF
@@ -282,7 +281,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={'uppercase'}
+                          textTransform={"uppercase"}
                           onChange={MaskCpf}
                           onBlur={(e: any) => {
                             const cpfv = unMask(e.target.value);
@@ -290,32 +289,32 @@ export default function Cadastro() {
 
                             if (cpfv.length < 11) {
                               Toast({
-                                title: 'erro no CPF',
-                                description: 'CPF menor que esperado',
-                                status: 'error',
+                                title: "erro no CPF",
+                                description: "CPF menor que esperado",
+                                status: "error",
                                 duration: 7000,
-                                position: 'top-right',
+                                position: "top-right",
                                 isClosable: true,
                               });
                             }
                             if (cpfv.length > 11) {
                               Toast({
-                                title: 'erro no CPF',
-                                description: 'CPF imcompativel',
-                                status: 'error',
+                                title: "erro no CPF",
+                                description: "CPF imcompativel",
+                                status: "error",
                                 duration: 7000,
-                                position: 'top-right',
+                                position: "top-right",
                                 isClosable: true,
                               });
                             }
 
                             if (validcpf === false) {
                               Toast({
-                                title: 'erro no CPF',
-                                description: 'CPF incorreto',
-                                status: 'error',
+                                title: "erro no CPF",
+                                description: "CPF incorreto",
+                                status: "error",
                                 duration: 7000,
-                                position: 'top-right',
+                                position: "top-right",
                                 isClosable: true,
                               });
                             }
@@ -330,7 +329,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           cep
@@ -344,7 +343,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={'uppercase'}
+                          textTransform={"uppercase"}
                           onChange={CEP}
                           onBlur={checkCep}
                           value={CepMask}
@@ -357,7 +356,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           Endereço
@@ -370,7 +369,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={'uppercase'}
+                          textTransform={"uppercase"}
                           value={endereco}
                         />
                       </FormControl>
@@ -381,7 +380,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           Nº
@@ -405,7 +404,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           Cidade
@@ -428,7 +427,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           Bairro
@@ -451,7 +450,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           uf
@@ -474,7 +473,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           Email
@@ -499,7 +498,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           Telelfone
@@ -524,7 +523,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           whatsapp
@@ -548,7 +547,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           Departamento
@@ -571,7 +570,7 @@ export default function Cadastro() {
                           fontWeight="md"
                           color="gray.700"
                           _dark={{
-                            color: 'gray.50',
+                            color: "gray.50",
                           }}
                         >
                           Cargo
@@ -594,7 +593,7 @@ export default function Cadastro() {
                     px={4}
                     py={3}
                     _dark={{
-                      bg: '#141517',
+                      bg: "#141517",
                     }}
                     spacing={3}
                   >
@@ -604,11 +603,11 @@ export default function Cadastro() {
                       </Heading>
                       <Box as={GridItem} colSpan={12} m="auto">
                         <Textarea
-                          w={['80vw', '70vw']}
+                          w={["80vw", "70vw"]}
                           borderColor="gray.500"
                           placeholder="Especifique aqui, todos os detalhes do cliente"
                           size="sm"
-                          resize={'none'}
+                          resize={"none"}
                           onChange={(e: any) => setObs(e.target.value)}
                           value={obs}
                         />
@@ -623,7 +622,7 @@ export default function Cadastro() {
                     py={5}
                     pb={[12, null, 5]}
                     _dark={{
-                      bg: '#121212',
+                      bg: "#121212",
                     }}
                     textAlign="right"
                   >
@@ -632,13 +631,13 @@ export default function Cadastro() {
                       colorScheme="red"
                       me={5}
                       _focus={{
-                        shadow: '',
+                        shadow: "",
                       }}
                       fontWeight="md"
                       onClick={() => {
-                        const Id = localStorage.getItem('id');
-                        router.push('/pessoas/' + Id);
-                        localStorage.removeItem('id');
+                        const Id = localStorage.getItem("id");
+                        router.push("/pessoas/" + Id);
+                        localStorage.removeItem("id");
                       }}
                     >
                       Cancelar
@@ -646,7 +645,7 @@ export default function Cadastro() {
                     <Button
                       colorScheme="whatsapp"
                       _focus={{
-                        shadow: '',
+                        shadow: "",
                       }}
                       fontWeight="md"
                       onClick={save}

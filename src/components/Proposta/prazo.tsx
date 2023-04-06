@@ -1,6 +1,7 @@
 import { Box, FormLabel, Select } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-import { listPrazo } from '../../../components/data/listPrazo';
+import { listPrazo } from '../data/listPrazo';
+
 
 export const CompPrazo = (props: { Resp: string; onAddResp: any }) => {
   const dados: any = listPrazo;

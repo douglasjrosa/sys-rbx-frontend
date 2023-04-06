@@ -11,7 +11,7 @@ export default function Pessoas(): JSX.Element {
   const router = useRouter();
   const [dados, setDados] = useState<Empresa | any>([]);
   const [loading, setLoading] = useState(true);
-  const id = router.query.id;
+  const id: any = router.query.id;
   useEffect(() => {
     (async () => {
       await axios('/api/db/empresas/getId/' + id)
@@ -51,7 +51,7 @@ export default function Pessoas(): JSX.Element {
             h={{ md: '40%', sm: '70%' }}
             colorScheme="whatsapp"
             onClick={() => {
-              const IdEmpresa: string = id.toString();
+              const IdEmpresa = id;
               localStorage.setItem('id', IdEmpresa);
               router.push('/pessoas/cadastro');
             }}

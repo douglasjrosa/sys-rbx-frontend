@@ -17,7 +17,7 @@ export default async function PedidoBling(
       const getPedido = await PostPedido(data);
 
       res.status(getPedido.status || 200).send(getPedido.msg);
-    } catch (error) {
+    } catch (error: any) {
       res.status(error.status || 500).json(error);
     }
   } else {

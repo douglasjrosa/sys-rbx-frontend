@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { AiOutlineUsergroupAdd } from 'react-icons/ai';
 
 export const RelaciomentoEmpr = (props: { onGetValue: any; dados: any }) => {
-  const [work, setWork] = useState([]);
+  const [work, setWork] = useState<any>([]);
   const [id, setId] = useState('');
   const [isDisabled, setIsDisabled] = useState(false);
   const toast = useToast();
@@ -86,7 +86,7 @@ export const RelaciomentoEmpr = (props: { onGetValue: any; dados: any }) => {
         placeholder="Selecione uma empresa"
         onChange={handleId}
       >
-        {work.map((item) => {
+        {work.map((item: any) => {
           return (
             <option key={item.id} value={item.id}>
               {item.attributes.nome}

@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable prettier/prettier */
 import { Box, chakra, Flex, Icon, Link, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -10,7 +9,7 @@ import { mask } from 'remask';
 import Loading from '../../../elements/loading';
 
 export default function CardPessoas(props: { getId: any }) {
-  const [dados, setDados] = useState([]);
+  const [dados, setDados] = useState<any>([]);
   const [dadosEmpresa, setDadosEmpresa] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
@@ -22,7 +21,7 @@ export default function CardPessoas(props: { getId: any }) {
         method: 'GET',
         url: '/api/db/empresas/getId/' + props.getId,
       })
-        .then((res) => {
+        .then((res: any) => {
           console.log(res.data.data.attributes.responsavel.data);
           setDados([res.data.data.attributes.responsavel.data]);
           setDadosEmpresa(res.data.data);
@@ -78,7 +77,7 @@ export default function CardPessoas(props: { getId: any }) {
     );
   }
 
-  const render = dados.map((item) => {
+  const render = dados.map((item: any) => {
     const data = () => {
       const ano = item.attributes.createdAt.substr(0, 4);
       const mes = item.attributes.createdAt.substr(5, 2);

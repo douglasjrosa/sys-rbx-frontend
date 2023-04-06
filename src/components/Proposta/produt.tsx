@@ -69,7 +69,7 @@ export const ProdutiList = (props: {
       const resposta = await resp.json();
       props.onResp(resposta);
       setLoad(false);
-    } catch (err) {
+    } catch (err: any) {
       console.log(err);
       setLoad(false);
       toast({

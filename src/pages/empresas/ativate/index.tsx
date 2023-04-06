@@ -1,15 +1,14 @@
-/* eslint-disable prettier/prettier */
 import { useRouter } from 'next/router';
 import { Box, Flex, Input, InputGroup } from '@chakra-ui/react';
 import CardExclud from '../../../components/empresa/lista/card/exclud';
 import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+
 
 export default function Empresas() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  if (session.user.pemission !== 'Adm') {
+  if (session?.user.pemission !== 'Adm') {
     router.push('/empresas/');
   }
   return (

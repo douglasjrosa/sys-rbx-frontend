@@ -2,8 +2,10 @@ import { Box } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import Loading from '../../elements/loading';
 
+interface MyTextAreaElement extends HTMLTextAreaElement {}
+
 export const BodyChat = (props: { conteudo: any; loading: boolean }) => {
-  const textareaRef = useRef(null);
+  const textareaRef = useRef<MyTextAreaElement>(null);
   const [Load, setLoad] = useState(false);
   const [data, setData] = useState([]);
   const [dataUser, setDataUser] = useState([]);
@@ -13,18 +15,21 @@ export const BodyChat = (props: { conteudo: any; loading: boolean }) => {
     setData(props.conteudo);
   }, [props.conteudo, props.loading]);
 
+
+
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-      textareaRef.current.style.width = 'auto';
-      textareaRef.current.style.width = `${textareaRef.current.scrollwidth}px`;
+      (textareaRef.current as HTMLTextAreaElement).style.height = 'auto';
+      (textareaRef.current as HTMLTextAreaElement).style.height = `${textareaRef.current.scrollHeight}px`;
+      (textareaRef.current as HTMLTextAreaElement).style.width = 'auto';
+      (textareaRef.current as HTMLTextAreaElement).style.width = `${textareaRef.current.scrollWidth}px`;
     }
   }, [data]);
 
-  const sitema = data.filter((d) => d.user === 'Sistema');
 
-  const usuario = data.filter((d) => d.user !== 'Sistema');
+  const sitema = data.filter((d: any) => d.user === 'Sistema');
+
+  const usuario = data.filter((d: any) => d.user !== 'Sistema');
 
   if (Load) {
     return <Loading size="200px">Carregando...</Loading>;
@@ -45,7 +50,7 @@ export const BodyChat = (props: { conteudo: any; loading: boolean }) => {
 
   return (
     <Box display={'flex'} flexDirection={'column'} w={'100%'} h={'100%'} p={5}>
-      {data.map((mensagem, index) => {
+      {data.map((mensagem: any, index: number) => {
         const estilo =
           mensagem.user === 'Sistema'
             ? estiloMensagem.mensagemSistema

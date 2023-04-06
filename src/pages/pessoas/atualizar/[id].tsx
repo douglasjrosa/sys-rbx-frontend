@@ -172,7 +172,7 @@ export default function PessoaId() {
         : '';
     const historicoAt = {
       date: dateIsso,
-      vendedor: session.user.name,
+      vendedor: session?.user.name,
       msg: `cinete ${nome} foi atualizado`,
       alteração: Alteração,
     };

@@ -6,7 +6,7 @@ export default async function GetEmpresa(
   res: NextApiResponse,
 ) {
   if (req.method === 'POST') {
-    const token = process.env.ATORIZZATION_TOKEN_RIBERMAX;
+    const token: any = process.env.ATORIZZATION_TOKEN_RIBERMAX;
     const data = req.body;
     const Email = 'kingdever88@gmail.com';
     const cnpj = req.query.cnpj;

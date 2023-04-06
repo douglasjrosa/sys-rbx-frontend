@@ -12,7 +12,7 @@ export default function CreateNegocio() {
   const router = useRouter();
   const id = router.query.id;
   const toast = useToast();
-  const divRef = useRef(null);
+  const divRef = useRef<HTMLDivElement>(null);
   const [msg, setMsg] = useState([]);
   const [loadingGeral, setLoadingGeral] = useState(true);
   const [loading, setLoading] = useState(false);

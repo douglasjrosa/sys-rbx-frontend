@@ -1,18 +1,18 @@
 /* eslint-disable no-undef */
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function GetEmpresa(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
-  if (req.method === 'POST') {
-    const token = process.env.ATORIZZATION_TOKEN_RIBERMAX;
+  if (req.method === "POST") {
+    const token: any = process.env.ATORIZZATION_TOKEN_RIBERMAX;
     const data = req.body;
-    const Email = 'kingdever88@gmail.com';
-    const Url = process.env.RIBERMAX_API_URL + '/empresas';
+    const Email = "kingdever88@gmail.com";
+    const Url = process.env.RIBERMAX_API_URL + "/empresas";
 
     await fetch(Url, {
-      method: 'GET',
+      method: "GET",
       headers: {
         Email: Email,
         Token: token,
@@ -26,11 +26,11 @@ export default async function GetEmpresa(
           // console.log(JSON.stringify(iten.CNPJ));
           return {
             data: {
-              id: '',
+              id: "",
               attributes: {
                 nome: iten.nome,
                 fantasia: iten.nome,
-                tipoPessoa: 'cnpj',
+                tipoPessoa: "cnpj",
                 CNPJ: iten.CNPJ,
               },
             },
@@ -46,6 +46,6 @@ export default async function GetEmpresa(
         });
       });
   } else {
-    return res.status(405).send({ message: 'Only POST requests are allowed' });
+    return res.status(405).send({ message: "Only POST requests are allowed" });
   }
 }
