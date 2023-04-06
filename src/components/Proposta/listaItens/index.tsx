@@ -30,7 +30,7 @@ export const CardList = (props: { id: string }) => {
       url: url,
       method: 'POST',
     })
-      .then((res: any) => {})
+      .then(() => {})
       .catch((err: any) => {
         console.log(err);
       });
@@ -62,7 +62,6 @@ export const CardList = (props: { id: string }) => {
             {!Data
               ? null
               : Data.map((i: any) => {
-                  console.log(i);
                   const dat = new Date(i.attributes.dataPedido);
                   const meses = [
                     'Jan',
