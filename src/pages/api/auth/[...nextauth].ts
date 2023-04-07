@@ -1,12 +1,12 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unreachable */
 /* eslint-disable no-undef */
-import axios from 'axios';
-import { any } from 'joi';
-import NextAuth, { DefaultUser } from 'next-auth';
-import { Session } from 'next-auth/core/types';
-import { JWT } from 'next-auth/jwt';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import axios from "axios";
+import { any } from "joi";
+import NextAuth, { DefaultUser } from "next-auth";
+import { Session } from "next-auth/core/types";
+import { JWT } from "next-auth/jwt";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 type ExtendedDefaultUser = DefaultUser & {
   id: number;
@@ -21,32 +21,33 @@ export default NextAuth({
   },
   secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
     maxAge: 4 * 60 * 60, // 4 hours
   },
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'text', placeholder: 'test@test.com' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "text", placeholder: "test@test.com" },
+        password: { label: "Password", type: "password" },
       },
-      async authorize(credentials: any, req) {
-        const data = {
-          identifier: credentials.email,
-          password: credentials.password,
-        };
-
-        const res = await axios({
-          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + '/auth/local',
-          method: 'POST',
-          data: data,
-        });
+      async authorize(credentials: any) {
         try {
+          const data = {
+            identifier: credentials.email,
+            password: credentials.password,
+          };
+          const res = await axios({
+            url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/auth/local",
+            method: "POST",
+            data: data,
+          });
+
+          console.log(res);
           const { jwt, user } = await res.data;
           const { confirmed, blocked, username, id, email, pemission } =
             await user;
-          const data = {
+          const response = {
             jwt: jwt,
             id: id,
             name: username,
@@ -57,10 +58,10 @@ export default NextAuth({
           };
 
           if (!jwt || !id || !username || !email) {
-            throw new Error('Usuario e senha incorreto');
+            throw new Error("Usuario e senha incorreto");
             return null;
           }
-          return data;
+          return response;
         } catch (e) {
           console.log(e);
           return null;
@@ -69,7 +70,7 @@ export default NextAuth({
     }),
   ],
   pages: {
-    signIn: '/auth/signin',
+    signIn: "/auth/signin",
     // signOut: '/auth/signout',
     // error: '/auth/error', // Error code passed in query string as ?error=
     // verifyRequest: '/auth/verify-request', // (used for check email message)
@@ -80,7 +81,6 @@ export default NextAuth({
       const isSignIn = !!user;
       const actualDateInSeconds = Math.floor(Date.now() / 1000);
       const tokenExpirationInSeconds = Math.floor(4 * 60 * 60); // 4 hours
-
 
       if (isSignIn) {
         if (!user?.jwt || !user?.id || !user?.name || !user?.email) {
@@ -129,5 +129,4 @@ export default NextAuth({
       return session;
     },
   },
-
 });
