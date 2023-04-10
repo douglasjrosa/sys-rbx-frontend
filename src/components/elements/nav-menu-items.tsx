@@ -52,7 +52,7 @@ const NavMenuItems = [
     text: 'Pessoas',
     icon: BsPeopleFill,
     iconComponent: <BsPeopleFill />,
-    permission: 'User',
+    permission: 'Adm',
   },
   {
     id: '7',
