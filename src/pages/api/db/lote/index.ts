@@ -1,18 +1,17 @@
 /* eslint-disable no-undef */
-import axios from 'axios';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { nLote } from '../lib/nLote';
+import { NextApiRequest, NextApiResponse } from "next";
+import { nLote } from "../nLote";
 
 export default async function GetEmpresa(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     const token = process.env.ATORIZZATION_TOKEN;
 
-   const resp = await nLote()
-   console.log(resp)
-   res.status(200).json(resp);
+    const resp = await nLote();
+    console.log(resp);
+    res.status(200).json(resp);
 
     // await axios({
     //   method: 'GET',
@@ -36,6 +35,6 @@ export default async function GetEmpresa(
     //     });
     //   });
   } else {
-    return res.status(405).send({ message: 'Only GET requests are allowed' });
+    return res.status(405).send({ message: "Only GET requests are allowed" });
   }
 }

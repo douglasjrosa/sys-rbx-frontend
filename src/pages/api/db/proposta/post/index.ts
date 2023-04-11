@@ -2,8 +2,8 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Historico } from "../../lib/historico";
+import { PostLote } from "../../nLote/psotLote";
 import { Populate } from "./populate";
-import { PostLote } from "../../lib/nLote/psotLote";
 
 export default async function PostEmpresa(
   req: NextApiRequest,

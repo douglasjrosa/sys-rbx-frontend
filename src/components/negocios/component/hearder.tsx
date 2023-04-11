@@ -192,7 +192,7 @@ export const NegocioHeader = (props: {
             </Box>
           </>
         )}
-        <Flex alignItems={'center'} justifyContent={'space-between'} w={'34%'}>
+        <Flex alignItems={'center'} justifyContent={'space-around'} w={'34%'}>
           <Button colorScheme={'whatsapp'} onClick={Salve}>
             salve
           </Button>
@@ -202,7 +202,7 @@ export const NegocioHeader = (props: {
           >
             Propostas
           </Button>
-          <Button colorScheme={'messenger'}>Gerar pedido</Button>
+          {/* <Button colorScheme={'messenger'}>Gerar pedido</Button> */}
         </Flex>
       </Flex>
     </>
