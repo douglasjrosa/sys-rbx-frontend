@@ -6,14 +6,14 @@ import {
   Link,
   SimpleGrid,
   Text,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+} from "@chakra-ui/react";
+import axios from "axios";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 export const CardList = (props: { id: string }) => {
   const router = useRouter();
-  const url = '/api/db/proposta/get/business/' + props.id;
+  const url = "/api/db/proposta/get/business/" + props.id;
   const [Data, setData] = useState([]);
   useEffect(() => {
     (async () => {
@@ -25,10 +25,32 @@ export const CardList = (props: { id: string }) => {
   }, [url]);
 
   const pedido = async (numero: string) => {
-    const url = '/api/query/pedido/' + numero;
+    const url = "/api/query/pedido/" + numero;
     await axios({
       url: url,
-      method: 'POST',
+      method: "POST",
+    })
+      .then(() => {})
+      .catch((err: any) => {
+        console.log(err);
+      });
+    await axios({
+      url: 'src/pages/api/db/nLote/psotLote'
+    })
+      .then(() => {})
+      .catch((err: any) => {
+        console.log(err);
+      });
+
+    await axios({})
+      .then(() => {})
+      .catch((err: any) => {
+        console.log(err);
+      });
+
+    await axios({
+      url: "/api/db/trello" + numero,
+      method: "POST",
     })
       .then(() => {})
       .catch((err: any) => {
@@ -39,18 +61,18 @@ export const CardList = (props: { id: string }) => {
   return (
     <>
       <Flex
-        mx={'10rem'}
-        w={'full'}
-        h={'full'}
-        border={'1px solid'}
-        borderColor={'gray.400'}
-        rounded={'5rem'}
+        mx={"10rem"}
+        w={"full"}
+        h={"full"}
+        border={"1px solid"}
+        borderColor={"gray.400"}
+        rounded={"5rem"}
         p={10}
       >
         <Flex
-          h={'full'}
-          w={'full'}
-          overflowX={'hidden'}
+          h={"full"}
+          w={"full"}
+          overflowX={"hidden"}
           justifyContent="center"
         >
           <SimpleGrid
@@ -64,18 +86,18 @@ export const CardList = (props: { id: string }) => {
               : Data.map((i: any) => {
                   const dat = new Date(i.attributes.dataPedido);
                   const meses = [
-                    'Jan',
-                    'Fev',
-                    'Mar',
-                    'Abr',
-                    'Mai',
-                    'Jun',
-                    'Jul',
-                    'Ago',
-                    'Set',
-                    'Out',
-                    'Nov',
-                    'Dez',
+                    "Jan",
+                    "Fev",
+                    "Mar",
+                    "Abr",
+                    "Mai",
+                    "Jun",
+                    "Jul",
+                    "Ago",
+                    "Set",
+                    "Out",
+                    "Nov",
+                    "Dez",
                   ];
                   const DataPedido = `${dat.getDate() + 1} ${
                     meses[dat.getMonth()]
@@ -89,14 +111,14 @@ export const CardList = (props: { id: string }) => {
                         shadow="md"
                         bg="white"
                         w="sm"
-                        h={'20rem'}
+                        h={"20rem"}
                         px={5}
                         py={4}
                       >
                         <Box>
-                          <Flex w={'fill'} justifyContent={'space-evenly'}>
+                          <Flex w={"fill"} justifyContent={"space-evenly"}>
                             <Text fontWeight="bold" color="gray.700">
-                              Pedido N°:{' '}
+                              Pedido N°:{" "}
                               <chakra.span
                                 fontSize="sm"
                                 fontWeight="light"
@@ -107,7 +129,7 @@ export const CardList = (props: { id: string }) => {
                               </chakra.span>
                             </Text>
                             <Text fontWeight="bold" color="gray.700">
-                              Negocio N°:{' '}
+                              Negocio N°:{" "}
                               <Link
                                 fontSize="sm"
                                 fontWeight="light"
@@ -115,8 +137,7 @@ export const CardList = (props: { id: string }) => {
                                 color="brand.600"
                                 onClick={() =>
                                   router.push(
-                                    '/negocios/' +
-                                      i.attributes.business.data.id,
+                                    "/negocios/" + i.attributes.business.data.id
                                   )
                                 }
                               >
@@ -130,9 +151,9 @@ export const CardList = (props: { id: string }) => {
                           <Flex
                             h={20}
                             mt={5}
-                            justifyContent={'center'}
-                            alignItems={'center'}
-                            flexDir={'column'}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDir={"column"}
                           >
                             <Link
                               display="block"
@@ -148,15 +169,15 @@ export const CardList = (props: { id: string }) => {
                               color="gray.800"
                               fontWeight="bold"
                               fontSize="xl"
-                              textAlign={'center'}
+                              textAlign={"center"}
                               mt={2}
                               _hover={{
-                                color: 'gray.600',
-                                textDecor: 'underline',
+                                color: "gray.600",
+                                textDecor: "underline",
                               }}
                               onClick={() =>
                                 router.push(
-                                  '/Propostas/update/' + i.attributes.nPedido,
+                                  "/Propostas/update/" + i.attributes.nPedido
                                 )
                               }
                             >
@@ -174,7 +195,7 @@ export const CardList = (props: { id: string }) => {
                                   fontWeight="bold"
                                   color="gray.700"
                                   _dark={{
-                                    color: 'gray.200',
+                                    color: "gray.200",
                                   }}
                                 >
                                   Pedido gerado em :
@@ -185,21 +206,21 @@ export const CardList = (props: { id: string }) => {
                                 fontSize="sm"
                                 color="gray.600"
                                 _dark={{
-                                  color: 'gray.300',
+                                  color: "gray.300",
                                 }}
                               >
                                 {DataPedido}
                               </chakra.span>
                             </Flex>
-                            <Flex flexDir={'column'} gap={5} mt={3}>
+                            <Flex flexDir={"column"} gap={5} mt={3}>
                               <Button
                                 p={5}
-                                w={'full'}
-                                colorScheme={'whatsapp'}
+                                w={"full"}
+                                colorScheme={"whatsapp"}
                                 onClick={() =>
                                   window.open(
                                     `/api/db/proposta/pdf/${i.attributes.nPedido}`,
-                                    '_blank',
+                                    "_blank"
                                   )
                                 }
                               >
@@ -207,8 +228,8 @@ export const CardList = (props: { id: string }) => {
                               </Button>
                               <Button
                                 p={5}
-                                w={'full'}
-                                colorScheme={'messenger'}
+                                w={"full"}
+                                colorScheme={"messenger"}
                                 onClick={() => pedido(i.attributes.nPedido)}
                               >
                                 Gerar Pedido
