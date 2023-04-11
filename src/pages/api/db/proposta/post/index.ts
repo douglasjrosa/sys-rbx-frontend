@@ -1,27 +1,28 @@
 /* eslint-disable no-undef */
-import axios from 'axios';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { Historico } from '../../lib/historico';
-import { Populate } from './populate';
+import axios from "axios";
+import { NextApiRequest, NextApiResponse } from "next";
+import { Historico } from "../../lib/historico";
+import { Populate } from "./populate";
+import { PostLote } from "../../lib/nLote/psotLote";
 
 export default async function PostEmpresa(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     // const data = JSON.parse(req.body);
     const data = req.body;
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
       baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
 
     const response = await axiosRequet.get(
-      '/pedidos?filters[nPedido][$notIn]=null&fields[0]=id&fields[1]=nPedido&sort=id%3Adesc',
+      "/pedidos?filters[nPedido][$notIn]=null&fields[0]=id&fields[1]=nPedido&sort=id%3Adesc"
     );
     const [request] = response.data.data;
     const primeiro =
@@ -31,10 +32,10 @@ export default async function PostEmpresa(
     const nPedido = primeiro;
 
     const getclinete = await axiosRequet.get(
-      `/empresas?filters[titulo][$containsi]=${data.cliente}&fields[0]=id&fields[1]=titulo`,
+      `/empresas?filters[titulo][$containsi]=${data.cliente}&fields[0]=id&fields[1]=titulo`
     );
     const getclinete2 = await axiosRequet.get(
-      `/empresas?filters[CNPJ][$containsi]=${data.cliente}&fields[0]=id&fields[1]=titulo`,
+      `/empresas?filters[CNPJ][$containsi]=${data.cliente}&fields[0]=id&fields[1]=titulo`
     );
     const retorno2 = getclinete.data.data;
     const retornoclinete2 = getclinete2.data.data;
@@ -47,8 +48,8 @@ export default async function PostEmpresa(
 
     const retornoCliente = [
       {
-        id: '',
-        attributes: { titulo: '' },
+        id: "",
+        attributes: { titulo: "" },
       },
     ];
 
@@ -97,24 +98,40 @@ export default async function PostEmpresa(
         console.log(response.data);
         const now = new Date();
         const VisibliDateTime = `${
-          now.getDate() < 10 ? '0' + now.getDate() : now.getDate()
+          now.getDate() < 10 ? "0" + now.getDate() : now.getDate()
         }/${
           now.getMonth() + 1 < 10
-            ? '0' + (now.getMonth() + 1)
+            ? "0" + (now.getMonth() + 1)
             : now.getMonth() + 1
         }/${now.getFullYear()}, as ${now.getHours()} H ${now.getMinutes()} mim ${
-          now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds()
+          now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
         } Seconds.`;
+
         const isoDateTime = now.toISOString();
         const txt = {
           date: isoDateTime,
           vendedors: data.vendedor,
           msg: `Proposta comercial de numero: ${response.data.data.attributes.nPedido}, foi registrada para o cliente ${ClienteTitle} pelo vendedor ${data.vendedor} no dia ${VisibliDateTime}`,
         };
+
         const url = `empresas/${idCliente}`;
         const Register = await Historico(txt, url);
         const url2 = `businesses/${data.business}`;
         await Historico(txt, url2);
+
+        const itens = data.itens;
+        const ItensMap = itens.map(
+          async (i: any) =>
+            await PostLote(
+              i,
+              data.business,
+              idCliente,
+              data.empresa,
+              data.vendedorId
+            )
+        );
+        await ItensMap;
+
         res.status(200).json({
           status: 200,
           message: `Proposta comercial de numero: ${response.data.data.attributes.nPedido}, foi registrada para o cliente ${ClienteTitle} pelo vendedor ${data.vendedor} no dia ${VisibliDateTime}`,
@@ -130,7 +147,7 @@ export default async function PostEmpresa(
         const txt = {
           date: isoDateTime,
           vendedors: data.vendedor,
-          msg: 'Proposta não foi criada devido a erro',
+          msg: "Proposta não foi criada devido a erro",
           error: error.response.data,
         };
         const url = `empresas/${idCliente}`;
@@ -143,6 +160,6 @@ export default async function PostEmpresa(
         });
       });
   } else {
-    return res.status(405).send({ message: 'Only POST requests are allowed' });
+    return res.status(405).send({ message: "Only POST requests are allowed" });
   }
 }
