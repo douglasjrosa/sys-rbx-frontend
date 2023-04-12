@@ -1,0 +1,108 @@
+/* eslint-disable no-undef */
+import axios from "axios";
+import { NextApiRequest, NextApiResponse } from "next";
+import { GetPedido } from "../../query/pedido/request/db/get";
+
+interface TrelloCard {
+  key: string;
+  token: string;
+  idList: string;
+  boardId: string;
+  name: string;
+  desc: string;
+  idMembers: string[];
+  due: string;
+  dueReminder: number;
+  pos: string;
+}
+
+const token = process.env.ATORIZZATION_TOKEN;
+const STRAPI = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  },
+});
+
+export default async function GetEmpresa(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method === "POST") {
+    const { numero } = req.query;
+
+    const pedido = await GetPedido(numero);
+
+    const items = pedido.itens;
+    const empresa = pedido.attributes.empresa.data.id;
+    const cliente = pedido.attributes.empresa.data.attributes.nome;
+    const negocio = pedido.attributes.business.data.id;
+    const fornecedor = pedido.attributes.fornecedorId;
+    const vendedor = pedido.attributes.vendedorId;
+    const frete =
+      pedido.attributes.frete === "" ? "Fob" : pedido.attributes.frete;
+    const pgto = pedido.attributes.condi;
+    const Bpedido = pedido.attributes.Bpedido;
+    const estrega = pedido.attributes.business.data.attributes.deadline;
+
+    const VendedorName = "";
+    const fornecedorName = "";
+
+    await items.map(async (i: any) => {
+      const nlote = "";
+      const type =
+        i.mont === true && i.expo === false
+          ? "MONT"
+          : i.mont === false && i.expo === true
+          ? "EXP"
+          : "EXP - MONT";
+
+      const nomeCard = `${cliente} - ${i.Qtd}cx - ${i.titulo} - Medidas ${i.comprimento} x ${i.largura} x ${i.altura} - peso ${i.pesoCx}(kg) - ${type} - ${nlote}`;
+
+      //Membros
+      const trelloMembers: string[] = [
+        "5fd10678fbc6b504679737d4" /*Daniela*/,
+        "62a736038685171186013ba4" /*Expedição*/,
+        "5ff74138721978652e0293bb" /*Jesuila*/,
+        "63e13cb526cca27c0d30f648" /*Edna*/,
+        "63e13887ef5b25eea224493e" /*Luciana*/,
+        "5d7bbf629972e80b374829bb" /*Fábrica*/,
+      ];
+
+      const dataBoard: TrelloCard = {
+        key: "7f3afdbb72cb272f2ef99089cd9066c8",
+        token:
+          "ad565886cde4f9d1466040864b94a879d2281ec2f83c43d9cf0d74dbd752509d",
+        idList: "5fac446c22f5d05364052362",
+        boardId: "5fac445b3c5274707a309d61",
+        name: nomeCard,
+        desc: `Proposta: Nº. ${numero},\n
+          Vendedor(a): ${VendedorName},\n
+          Empresa: ${fornecedorName},\n
+          Tipo de frete: ${frete},\n
+          Pedido Bling: Nº. ${Bpedido},\n
+          Lote: Nº. ${nlote},\n
+          Forma de pagamento: ${pgto},\n
+          Modelo: ${i.titulo}`,
+        idMembers: trelloMembers,
+        due: estrega,
+        dueReminder: 2880,
+        pos: "top",
+      };
+
+      const enviarCard = {
+        method: "post",
+        contentType: "application/json",
+        payload: JSON.stringify(dataBoard),
+      };
+
+      await fetch("https://api.trello.com/1/cards", enviarCard)
+        .then((resposta: any) => resposta.json())
+        .then((resp: any) => console.log(resp))
+        .catch((err: any) => console.log(err));
+    });
+  } else {
+    return res.status(405).send({ message: "Only POST requests are allowed" });
+  }
+}

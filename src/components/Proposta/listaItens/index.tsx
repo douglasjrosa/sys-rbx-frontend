@@ -37,7 +37,9 @@ export const CardList = (props: { id: string }) => {
     await axios({
       url: 'src/pages/api/db/nLote/psotLote'
     })
-      .then(() => {})
+      .then((res: any) => {
+        console.log(res.data);
+      })
       .catch((err: any) => {
         console.log(err);
       });
