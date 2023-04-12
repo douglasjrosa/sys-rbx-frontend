@@ -120,7 +120,7 @@ export const CardList = (props: { id: string }) => {
                         <Box>
                           <Flex w={"fill"} justifyContent={"space-evenly"}>
                             <Text fontWeight="bold" color="gray.700">
-                              Pedido N°:{" "}
+                              Proposta N°:{" "}
                               <chakra.span
                                 fontSize="sm"
                                 fontWeight="light"

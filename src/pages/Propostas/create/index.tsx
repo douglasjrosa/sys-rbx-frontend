@@ -30,9 +30,6 @@ import { CompPrazo } from "@/components/Proposta/prazo";
 import { ProdutiList } from "@/components/Proposta/produt";
 import { TableConteudo } from "@/components/Proposta/tabela";
 
-
-
-
 const tempo = DateIso;
 
 export default function Proposta() {
@@ -50,6 +47,7 @@ export default function Proposta() {
   const [totalGeral, setTotalGeral] = useState("");
   const [Desconto, setDesconto] = useState("");
   const [negocio, setNegocio] = useState([]);
+  const [hirtori, setHistory] = useState([]);
   const [saveNegocio, setSaveNegocio] = useState("");
   const [obs, setObs] = useState("");
   const toast = useToast();
@@ -67,6 +65,7 @@ export default function Proposta() {
       const resposta = await fetch("/api/db/business/get/id/" + id);
       const resp = await resposta.json();
       setSaveNegocio(resp.attributes.nBusiness);
+      setHistory(resp.attributes.history)
     })();
   }, []);
 
@@ -203,13 +202,36 @@ export default function Proposta() {
         url: url,
         data: data,
       })
-        .then((res) => {
+        .then(async (res: any) => {
           toast({
             title: "Proposta Criada",
             description: res.data.message,
             status: "success",
             duration: 3000,
             isClosable: true,
+          });
+
+          const date = new Date();
+          const DateAtua = date.toISOString();
+
+          const msg = {
+            date: DateAtua,
+            user: session?.user.name,
+            msg: `Proposta criada com o valor total ${totalGeral} contendo ${parseInt(ListItens.length) + 1} items`,
+          };
+
+          const record = [...hirtori, msg];
+
+          const data = {
+            data: {
+              incidentRecord: record,
+            },
+          };
+
+          await axios({
+            method: "PUT",
+            url: '/api/db/business/put/id/' + id,
+            data: data,
           });
           setTimeout(() => {
             router.back();
@@ -235,8 +257,11 @@ export default function Proposta() {
   }
   function getIten(resposta: SetStateAction<any>) {
     const lista = ListItens;
-    const maxSum = Math.max(...ListItens.map((obj: any) => obj.id + 1));
-    resposta.id = maxSum || 1;
+    const maxSum =
+      ListItens.length > 0
+        ? Math.max(...ListItens.map((obj: any) => parseInt(obj.id) + 1))
+        : 1;
+    resposta.id = maxSum;
     const valor1 = Number(resposta.vFinal.replace(".", "").replace(",", "."));
     const ValorGeral = valor1;
     const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
@@ -268,10 +293,9 @@ export default function Proposta() {
     setLoadingTable(load);
   }
 
-  console.log(ListItens);
-
   function getItemFinal(itemFinal: SetStateAction<any>) {
-    setItens(itemFinal);
+    const filterItens = ListItens.filter((i: any) => i.id !== itemFinal);
+    setItens(filterItens);
   }
 
   return (
@@ -333,7 +357,7 @@ export default function Proposta() {
             >
               {ListFornecedor.map((item) => {
                 return (
-                  <option key={item.id} value={item.title}>
+                  <option key={item.id} value={item.id}>
                     {item.title}
                   </option>
                 );
@@ -428,6 +452,7 @@ export default function Proposta() {
               onResp={getIten}
               ontime={disbleProd}
               retunLoading={getLoading}
+              idProd={ListItens.length}
             />
           </Box>
           <Box w={"40rem"}>

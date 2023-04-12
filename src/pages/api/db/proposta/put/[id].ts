@@ -1,22 +1,23 @@
 /* eslint-disable no-undef */
-import axios from 'axios';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { IncidentRecord } from '../../lib/businesses';
-import { Historico } from '../../lib/historico';
+import axios from "axios";
+import { NextApiRequest, NextApiResponse } from "next";
+import { IncidentRecord } from "../../lib/businesses";
+import { Historico } from "../../lib/historico";
 
 export default async function PUTEmpresa(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
-  if (req.method === 'PUT') {
+  if (req.method === "PUT") {
     // const data = JSON.parse(req.body);
     const data = req.body;
     const ID = req.query.id;
+    console.log(ID)
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
       baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
@@ -24,28 +25,29 @@ export default async function PUTEmpresa(
     // console.log(data);
 
     const getfornecdor = await axiosRequet.get(
-      `/fornecedores?filters[titulo][$containsi]=${fornecedorString}&fields[0]=id&fields[1]=titulo`,
+      `/empresas?filters[CNPJ][$eq]=${fornecedorString}&fields[0]=id&fields[1]=titulo`
     );
     const [retorno] = getfornecdor.data.data;
+    console.log(getfornecdor.data)
     const idFornecedor: number = retorno.id;
+
+    const date = new Date().toLocaleString;
 
     const DataPost = {
       data: {
         itens: data.itens,
-        matriz: data.matriz,
         dataPedido: data.dataPedido,
         vencPedido: data.vencPedido,
         condi: data.condi,
         prazo: data.prazo,
-        fornecedor: idFornecedor,
+        fornecedor: data.matriz,
         fornecedorId: idFornecedor,
         frete: data.frete,
         totalGeral: data.totalGeral,
         desconto: data.desconto,
-        andamento: 'Proposta Atualizada',
+        andamento: "Proposta Atualizada " + date,
         valorFrete: data.valorFrete,
         vencPrint: data.vencPrint,
-        business: data.business,
         obs: data.obs,
       },
     };
@@ -56,13 +58,13 @@ export default async function PUTEmpresa(
         // console.log(response.data);
         const now = new Date();
         const VisibliDateTime = `${
-          now.getDate() < 10 ? '0' + now.getDate() : now.getDate()
+          now.getDate() < 10 ? "0" + now.getDate() : now.getDate()
         }/${
           now.getMonth() + 1 < 10
-            ? '0' + (now.getMonth() + 1)
+            ? "0" + (now.getMonth() + 1)
             : now.getMonth() + 1
         }/${now.getFullYear()}, as ${now.getHours()} H ${now.getMinutes()} mim ${
-          now.getSeconds() < 10 ? '0' + now.getSeconds() : now.getSeconds()
+          now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
         } Seconds.`;
         const isoDateTime = now.toISOString();
         const txt = {
@@ -77,21 +79,21 @@ export default async function PUTEmpresa(
           const quant = i.Qtd;
           const text =
             i.expo === true && i.mont === false
-              ? 'este item, deve ser feito tratamento para exportação'
+              ? "este item, deve ser feito tratamento para exportação"
               : i.expo === false && i.mont === true
-              ? 'este item, deve ser enviado montado para cliente'
+              ? "este item, deve ser enviado montado para cliente"
               : i.expo === true && i.mont === true
-              ? 'este item, deve ser enviado montado para cliente, e tambem feito o tratamento para exportação'
-              : '';
+              ? "este item, deve ser enviado montado para cliente, e tambem feito o tratamento para exportação"
+              : "";
 
           const resp = `✔️ produto: ${prod}  medelo: ${noldProd}  quant.: ${quant},${
-            text !== '' ? ` observação: ${text},` : '\n'
+            text !== "" ? ` observação: ${text},` : "\n"
           }\n`;
           return resp;
         });
         const txtOcorrencia = {
           date: isoDateTime,
-          user: 'Sistema',
+          user: "Sistema",
           msg: `Proposta comercial de numero: ${data.nPedido}, do cliente ${data.empresa.attributes.nome},\nfoi atualizada pelo vendedor ${data.vendedor} no dia ${VisibliDateTime},\nconteudo da proposta: \n\n${mapItens} \n\nObservaçoes gerais: \n\n ${data.obs}`,
         };
 
@@ -107,7 +109,7 @@ export default async function PUTEmpresa(
         });
       })
       .catch(async (error) => {
-        // console.log(error.response);
+        console.log(error.response);
         // console.log(error.response.data.error);
         // console.log(error.response.data.error.details);
         // console.log(error.response.data.error.details.errors);
@@ -117,7 +119,7 @@ export default async function PUTEmpresa(
         const txt = {
           date: isoDateTime,
           vendedors: data.vendedor,
-          msg: 'Proposta não foi atualizada devido a erro',
+          msg: "Proposta não foi atualizada devido a erro",
           error: error.response,
         };
         const url = `empresas/${data.empresa.id}`;
@@ -132,6 +134,6 @@ export default async function PUTEmpresa(
         });
       });
   } else {
-    return res.status(405).send({ message: 'Only PUT requests are allowed' });
+    return res.status(405).send({ message: "Only PUT requests are allowed" });
   }
 }

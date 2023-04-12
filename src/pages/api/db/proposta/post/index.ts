@@ -2,7 +2,6 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Historico } from "../../lib/historico";
-import { PostLote } from "../../nLote/psotLote";
 import { Populate } from "./populate";
 
 export default async function PostEmpresa(
@@ -65,25 +64,38 @@ export default async function PostEmpresa(
     const ClienteTitle = retor.attributes.titulo;
     const pedidonomero = parseInt(nPedido) + 1;
     const NpedidoConvert = pedidonomero.toString();
+
+    const fornecedorString: string = data.empresa;
+    // console.log(data);
+
+    const getfornecdor = await axiosRequet.get(
+      `/empresas?filters[CNPJ][$containsi]=${fornecedorString}&fields[0]=id&fields[1]=titulo`
+    );
+    const [retorno] = getfornecdor.data.data;
+    const idFornecedor: number = retorno.id;
+
+    const date = new Date().toLocaleString;
+
     const DataPost = {
       data: {
         nPedido: NpedidoConvert,
         itens: data.itens,
-        matriz: data.empresa,
         dataPedido: data.dataPedido,
         vencPedido: data.vencPedido,
         condi: data.condi,
         prazo: data.prazo,
         fornecedor: data.empresa,
+        fornecedorId: idFornecedor,
         frete: data.frete,
         empresa: idCliente,
         empresaId: idCliente,
         vendedor: data.vendedor,
-        vendedorId: data.vendedorId,
+        user: data.vendedorId,
         totalGeral: data.totalGeral,
         desconto: data.deconto,
         CNPJClinet: data.cliente,
         status: true,
+        andamento: "Proposta criada " + date,
         valorFrete: data.valorFrete.toString(),
         vencPrint: data.vencPrint,
         business: data.business,
@@ -118,19 +130,6 @@ export default async function PostEmpresa(
         const Register = await Historico(txt, url);
         const url2 = `businesses/${data.business}`;
         await Historico(txt, url2);
-
-        const itens = data.itens;
-        const ItensMap = itens.map(
-          async (i: any) =>
-            await PostLote(
-              i,
-              data.business,
-              idCliente,
-              data.empresa,
-              data.vendedorId
-            )
-        );
-        await ItensMap;
 
         res.status(200).json({
           status: 200,

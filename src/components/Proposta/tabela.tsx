@@ -7,18 +7,18 @@ import {
   Tbody,
   Td,
   Tr,
-} from '@chakra-ui/react';
-import { ReactJSXElement } from '@emotion/react/types/jsx-namespace';
-import { useEffect, useState } from 'react';
-import { BsTrash } from 'react-icons/bs';
-import Loading from '../elements/loading';
-
+} from "@chakra-ui/react";
+import { ReactJSXElement } from "@emotion/react/types/jsx-namespace";
+import { useEffect, useState } from "react";
+import { BsTrash } from "react-icons/bs";
+import Loading from "../elements/loading";
 
 export const TableConteudo = (props: {
   Itens: any;
   Prazo: string;
   loading: boolean;
   returnItem: any;
+  // retunLoading: any;
 }): ReactJSXElement => {
   const [ListItens, setItens] = useState<any>([]);
   const [LoadingTable, setLoadingTable] = useState<boolean>(false);
@@ -30,14 +30,6 @@ export const TableConteudo = (props: {
   useEffect(() => {
     setItens(props.Itens);
   }, [props.Itens]);
-
-  const DelPrudutos = (x: any) => {
-    setLoadingTable(true);
-    const filterItens = ListItens.filter((i: any) => i.id !== x);
-    setItens(filterItens);
-    props.returnItem(ListItens);
-    setLoadingTable(false);
-  };
 
   const handleAdd = (Obj: any, id: number) => {
     const [ListaObj] = ListItens.filter((i: any) => i.id === id);
@@ -56,10 +48,12 @@ export const TableConteudo = (props: {
     : ListItens.map((i: any, x: number) => {
         const Id = i.prodId;
         const remove = () => {
-          DelPrudutos(i.id);
+          setLoadingTable(true);
+          props.returnItem(i.id);
+          setTimeout(() => setLoadingTable(false), 800);
         };
-        const valor2Original = i.vFinal.replace('.', '');
-        const ValorProd = Number(valor2Original.replace(',', '.'));
+        const valor2Original = i.vFinal.replace(".", "");
+        const ValorProd = Number(valor2Original.replace(",", "."));
         const somaDescont = ValorProd * i.Qtd;
         const somaDescontMin = parseInt(somaDescont.toFixed(2));
         if (!i.Qtd) {
@@ -80,7 +74,7 @@ export const TableConteudo = (props: {
               ? 1.1
               : 0;
           const descont =
-            props.Prazo === 'Antecipado' ? ValorOriginal * 0.05 : 0;
+            props.Prazo === "Antecipado" ? ValorOriginal * 0.05 : 0;
           const somaAcrescimo =
             acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
           const somaDescont = descont * i.Qtd;
@@ -115,13 +109,13 @@ export const TableConteudo = (props: {
 
         return (
           <>
-            <Tr key={i.id} fontSize={'xs'}>
+            <Tr key={i.id} fontSize={"xs"}>
               <Td isNumeric>{x + 1}</Td>
               <Td>{i.nomeProd}</Td>
-              <Td textAlign={'center'}>{codig()}</Td>
+              <Td textAlign={"center"}>{codig()}</Td>
               <Td px={12}>
                 <Input
-                  type={'text'}
+                  type={"text"}
                   size="xs"
                   w="3rem"
                   me={0}
@@ -129,16 +123,16 @@ export const TableConteudo = (props: {
                   rounded="md"
                   focusBorderColor="whatsapp.400"
                   _hover={{
-                    borderColor: 'whatsapp.600',
+                    borderColor: "whatsapp.600",
                   }}
                   maxLength={4}
                   onChange={GetQtd}
                   value={i.Qtd}
                 />
               </Td>
-              <Td textAlign={'center'}>{i.altura}</Td>
-              <Td textAlign={'center'}>{i.largura}</Td>
-              <Td textAlign={'center'}>{i.comprimento}</Td>
+              <Td textAlign={"center"}>{i.altura}</Td>
+              <Td textAlign={"center"}>{i.largura}</Td>
+              <Td textAlign={"center"}>{i.comprimento}</Td>
               <Td>
                 <Checkbox
                   borderColor="whatsapp.600"
@@ -157,16 +151,16 @@ export const TableConteudo = (props: {
                   value={i.expo}
                 />
               </Td>
-              <Td textAlign={'center'}>
-                {i.vFinal.toLocaleString('pt-br', {
-                  style: 'currency',
-                  currency: 'BRL',
+              <Td textAlign={"center"}>
+                {i.vFinal.toLocaleString("pt-br", {
+                  style: "currency",
+                  currency: "BRL",
                 })}
               </Td>
-              <Td textAlign={'center'}>
-                {total().toLocaleString('pt-br', {
-                  style: 'currency',
-                  currency: 'BRL',
+              <Td textAlign={"center"}>
+                {total().toLocaleString("pt-br", {
+                  style: "currency",
+                  currency: "BRL",
                 })}
               </Td>
               <Td>
@@ -181,7 +175,7 @@ export const TableConteudo = (props: {
 
   if (LoadingTable) {
     return (
-      <Flex w="70vw" justifyContent={'center'} me={'-60rem'}>
+      <Flex w="70vw" justifyContent={"center"} me={"-60rem"}>
         <Loading mt="-13vh" size="150px">
           Carregando Produtos...
         </Loading>
@@ -191,7 +185,7 @@ export const TableConteudo = (props: {
 
   return (
     <>
-      <Tbody overflowY={'auto'}>{TableItens}</Tbody>
+      <Tbody overflowY={"auto"}>{TableItens}</Tbody>
     </>
   );
 };

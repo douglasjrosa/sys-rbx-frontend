@@ -22,19 +22,18 @@ import {
   Thead,
   Tr,
   useToast,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { SetStateAction, useEffect, useState } from 'react';
-import { BsTrash } from 'react-icons/bs';
-import { ListFornecedor } from '../../../components/data/fornecedor';
-import { ListaEmpresa } from '@/components/Proposta/ListaEmpresa';
-import { CompBusiness } from '@/components/Proposta/business';
-import { CompPrazo } from '@/components/Proposta/prazo';
-import { ProdutiList } from '@/components/Proposta/produt';
-import { TableConteudo } from '@/components/Proposta/tabela';
-
+} from "@chakra-ui/react";
+import axios from "axios";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { SetStateAction, useEffect, useState } from "react";
+import { BsTrash } from "react-icons/bs";
+import { ListFornecedor } from "../../../components/data/fornecedor";
+import { ListaEmpresa } from "@/components/Proposta/ListaEmpresa";
+import { CompBusiness } from "@/components/Proposta/business";
+import { CompPrazo } from "@/components/Proposta/prazo";
+import { ProdutiList } from "@/components/Proposta/produt";
+import { TableConteudo } from "@/components/Proposta/tabela";
 
 export default function Proposta() {
   const { data: session } = useSession();
@@ -42,45 +41,47 @@ export default function Proposta() {
   const Email = session?.user.email;
   const [reqPrazo, setReqPrazo] = useState([]);
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
-  const [NomeEnpresa, setNomeEmpresa] = useState('');
+  const [NomeEnpresa, setNomeEmpresa] = useState("");
   const [RelatEnpresa, setRelatEmpresa] = useState([]);
-  const [RelatEnpresaId, setRelatEmpresaId] = useState('');
+  const [RelatEnpresaId, setRelatEmpresaId] = useState("");
   const [Produtos, SetProdutos] = useState([]);
   const [ListItens, setItens] = useState<any>([]);
-  const [date, setDate] = useState('');
-  const [cnpj, setCnpj] = useState('');
-  const [frete, setFrete] = useState('');
+  const [date, setDate] = useState("");
+  const [cnpj, setCnpj] = useState("");
+  const [frete, setFrete] = useState("");
   const [freteCif, setFreteCif] = useState(0.0);
-  const [Loja, setLoja] = useState('');
-  const [prazo, setPrazo] = useState('');
-  const [tipoprazo, setTipoPrazo] = useState('');
-  const [totalGeral, setTotalGeral] = useState('');
-  const [Desconto, setDesconto] = useState('');
+  const [Loja, setLoja] = useState("");
+  const [prazo, setPrazo] = useState("");
+  const [tipoprazo, setTipoPrazo] = useState("");
+  const [totalGeral, setTotalGeral] = useState("");
+  const [Desconto, setDesconto] = useState("");
   const [Andamento, setAndamento] = useState([]);
-  const [saveNegocio, setSaveNegocio] = useState('');
+  const [saveNegocio, setSaveNegocio] = useState("");
   const [dados, setDados] = useState<any>([]);
-  const [obs, setObs] = useState('');
-  const [Id, setId] = useState('');
+  const [hirtori, setHistory] = useState([]);
+  const [obs, setObs] = useState("");
+  const [Id, setId] = useState("");
+  const [BId, setBId] = useState("");
 
   const toast = useToast();
 
   useEffect(() => {
     (async () => {
       const PEDIDO = router.query.pedido;
-      const request = await axios('/api/db/proposta/get/pedido/' + PEDIDO);
+      const request = await axios("/api/db/proposta/get/pedido/" + PEDIDO);
       const [resp]: any = request.data;
       console.log(resp);
       setId(resp.id);
       setCnpj(resp.attributes.CNPJClinet);
       const retornoProd = await fetch(
-        '/api/query/get/produto/cnpj/' + resp.attributes.CNPJClinet,
+        "/api/query/get/produto/cnpj/" + resp.attributes.CNPJClinet,
         {
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(Email),
-        },
+        }
       );
       const respProd = await retornoProd.json();
-      const requestPrazo = await fetch('/api/db/prazo/get');
+      const requestPrazo = await fetch("/api/db/prazo/get");
       const RespPrazoB: any = await requestPrazo.json();
       setReqPrazo(RespPrazoB.data);
       setAndamento(resp.attributes.andamento);
@@ -96,34 +97,25 @@ export default function Proposta() {
       setLoja(resp.attributes.fornecedor);
       setObs(resp.attributes.obs);
       setSaveNegocio(resp.attributes.business.data.attributes.nBusiness);
+      setBId(resp.attributes.business.data.id);
+      setHistory(resp.attributes.business.data.attributes.history);
       const nome = resp.attributes.empresa.data.attributes.nome;
       setNomeEmpresa(nome);
     })();
   }, []);
 
-  // const disablefrete = () => {
-  //   if (frete === 'CIF') return false;
-  //   else {
-  //     if (freteCif === '0,00') return true;
-  //     else {
-  //       setFreteCif('0,00');
-  //       return true;
-  //     }
-  //   }
-  // };
-
   const disbleProd =
-    prazo === ''
+    prazo === ""
       ? true
-      : prazo === 'A Prazo' && tipoprazo === ''
+      : prazo === "A Prazo" && tipoprazo === ""
       ? true
       : false;
 
   const TotalGreal = () => {
-    if (ListItens.length === 0) return 'R$ 0,00';
+    if (ListItens.length === 0) return "R$ 0,00";
     const totalItem = ListItens.reduce((acc: number, item: any) => {
       const valor: number = item.total;
-      const valorOriginal: number = parseFloat(item.vFinal.replace(',', '.'));
+      const valorOriginal: number = parseFloat(item.vFinal.replace(",", "."));
       const qtd: number = item.Qtd;
       const mont: boolean = item.mont;
       const expo: boolean = item.expo;
@@ -135,21 +127,21 @@ export default function Proposta() {
       return acc + total;
     }, 0);
 
-    return totalItem.toLocaleString('pt-br', {
-      style: 'currency',
-      currency: 'BRL',
+    return totalItem.toLocaleString("pt-br", {
+      style: "currency",
+      currency: "BRL",
     });
   };
 
   const DescontoGeral = () => {
-    if (ListItens.length === 0) return 'R$ 0,00';
+    if (ListItens.length === 0) return "R$ 0,00";
     const descontos = ListItens.map((i: any) => i.desconto * i.Qtd);
     const total = descontos.reduce(
-      (acc: number, valorAtual: number) => acc + valorAtual,
+      (acc: number, valorAtual: number) => acc + valorAtual
     );
-    return total.toLocaleString('pt-br', {
-      style: 'currency',
-      currency: 'BRL',
+    return total.toLocaleString("pt-br", {
+      style: "currency",
+      currency: "BRL",
     });
   };
 
@@ -160,10 +152,10 @@ export default function Proposta() {
 
   useEffect(() => {
     console.log(prazo);
-    if (prazo === 'Antecipado') {
+    if (prazo === "Antecipado") {
       setItens(
         ListItens.map((f: any) => {
-          const valor = Number(f.vFinal.replace('.', '').replace(',', '.'));
+          const valor = Number(f.vFinal.replace(".", "").replace(",", "."));
           const ValorGeral =
             Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
           const descont = ValorGeral * 0.05;
@@ -175,30 +167,30 @@ export default function Proposta() {
             Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100;
           const data = { ...f };
           return data;
-        }),
+        })
       );
     } else {
       setItens(
         ListItens.map((f: any) => {
-          const valor = Number(f.vFinal.replace('.', '').replace(',', '.'));
+          const valor = Number(f.vFinal.replace(".", "").replace(",", "."));
           const ValorGeral =
             Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
           f.total = Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
           f.desconto = 0;
           const data = { ...f };
           return data;
-        }),
+        })
       );
     }
   }, [prazo]);
 
   const SalvarProdutos = async () => {
-    if (!saveNegocio || saveNegocio === '') {
+    if (!saveNegocio || saveNegocio === "") {
       toast({
-        title: 'Esta Faltando informação',
+        title: "Esta Faltando informação",
         description:
-          'Você deve vincular essa proposta a um n° Business ou negocio',
-        status: 'warning',
+          "Você deve vincular essa proposta a um n° Business ou negocio",
+        status: "warning",
         duration: 3000,
         isClosable: true,
       });
@@ -207,22 +199,24 @@ export default function Proposta() {
       Date5.setDate(Date5.getDate() + 5);
       const VencDate = `${Date5.getUTCFullYear()}-${
         Date5.getUTCMonth() + 1 < 10
-          ? '0' + (Date5.getUTCMonth() + 1)
+          ? "0" + (Date5.getUTCMonth() + 1)
           : Date5.getUTCMonth() + 1
       }-${
-        Date5.getUTCDate() < 10 ? '0' + Date5.getUTCDate() : Date5.getUTCDate()
+        Date5.getUTCDate() < 10 ? "0" + Date5.getUTCDate() : Date5.getUTCDate()
       }`;
       const VencDatePrint = `${
-        Date5.getUTCDate() < 10 ? '0' + Date5.getUTCDate() : Date5.getUTCDate()
+        Date5.getUTCDate() < 10 ? "0" + Date5.getUTCDate() : Date5.getUTCDate()
       }/${
         Date5.getUTCMonth() + 1 < 10
-          ? '0' + (Date5.getUTCMonth() + 1)
+          ? "0" + (Date5.getUTCMonth() + 1)
           : Date5.getUTCMonth() + 1
       }/${Date5.getUTCFullYear()}`;
 
-      const id: any = localStorage.getItem('id');
+      const id: any = localStorage.getItem("id");
+      console.log(Id)
 
       const data: any = {
+        matriz: Loja,
         cliente: cnpj,
         itens: ListItens,
         empresa: Loja,
@@ -233,11 +227,11 @@ export default function Proposta() {
         prazo: tipoprazo,
         totalGeral: totalGeral,
         deconto: !Desconto
-          ? 'R$ 0,00'
+          ? "R$ 0,00"
           : Desconto === undefined
-          ? 'R$ 0,00'
-          : Desconto === ''
-          ? 'R$ 0,00'
+          ? "R$ 0,00"
+          : Desconto === ""
+          ? "R$ 0,00"
           : Desconto,
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
@@ -246,20 +240,46 @@ export default function Proposta() {
         business: id,
         obs: obs,
       };
-      const url = '/api/db/proposta/post';
+      const url = `/api/db/proposta/put/${Id}`;
       await axios({
-        method: 'POST',
+        method: "PUT",
         url: url,
         data: data,
       })
-        .then((res) => {
+        .then(async (res: any) => {
           toast({
-            title: 'Proposta Criada',
+            title: "Proposta Atualizada",
             description: res.data.message,
-            status: 'success',
+            status: "success",
             duration: 3000,
             isClosable: true,
           });
+
+          const date = new Date();
+          const DateAtua = date.toISOString();
+
+          const msg = {
+            date: DateAtua,
+            user: session?.user.name,
+            msg: `Proposta atualizada, valor total agora é ${totalGeral}, pasando a ter ${
+              parseInt(ListItens.length) + 1
+            } items`,
+          };
+
+          const record = [...hirtori, msg];
+
+          const data = {
+            data: {
+              incidentRecord: record,
+            },
+          };
+
+          await axios({
+            method: "PUT",
+            url: "/api/db/business/put/id/" + BId,
+            data: data,
+          });
+
           setTimeout(() => {
             router.back();
           }, 3100);
@@ -282,11 +302,14 @@ export default function Proposta() {
   function getCnpj(CNPJ: SetStateAction<string>) {
     setCnpj(CNPJ);
   }
-  function getIten(resposta: SetStateAction<any>) {
+  function getIten(resposta: SetStateAction<any>, ListItens: any) {
     const lista = ListItens;
-    const maxSum = Math.max(...ListItens.map((obj: any) => obj.id + 1));
-    resposta.id = maxSum || 1;
-    const valor1 = Number(resposta.vFinal.replace('.', '').replace(',', '.'));
+    const maxSum =
+      ListItens.length > 0
+        ? Math.max(...ListItens.map((obj: any) => parseInt(obj.id) + 1))
+        : 1;
+    resposta.id = maxSum;
+    const valor1 = Number(resposta.vFinal.replace(".", "").replace(",", "."));
     const ValorGeral = valor1;
     const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
     resposta.total = Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
@@ -294,7 +317,7 @@ export default function Proposta() {
     resposta.mont = false;
     resposta.codg = resposta.prodId;
     resposta.Qtd = 1;
-    const desconto = prazo === 'Antecipado' ? valor * 0.05 : 0;
+    const desconto = prazo === "Antecipado" ? valor * 0.05 : 0;
     const somaDescontMin =
       Math.round(parseFloat(desconto.toFixed(2)) * 100) / 100;
     const TotalDesc = valor - somaDescontMin;
@@ -318,12 +341,13 @@ export default function Proposta() {
   }
 
   function getItemFinal(itemFinal: SetStateAction<any>) {
-    setItens(itemFinal);
+    const filterItens = ListItens.filter((i: any) => i.id !== itemFinal);
+    setItens(filterItens);
   }
 
   return (
     <>
-      <Flex h="100vh" px={10} w="100%" flexDir={'column'} mt="5">
+      <Flex h="100vh" px={10} w="100%" flexDir={"column"} mt="5">
         <Heading size="lg">Proposta comercial</Heading>
         <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
           <Box>
@@ -339,14 +363,14 @@ export default function Proposta() {
               fontWeight="md"
               color="gray.700"
               _dark={{
-                color: 'gray.50',
+                color: "gray.50",
               }}
             >
               Data
             </FormLabel>
             <Input
               shadow="sm"
-              type={'date'}
+              type={"date"}
               size="sm"
               w="full"
               fontSize="xs"
@@ -363,7 +387,7 @@ export default function Proposta() {
               fontWeight="md"
               color="gray.700"
               _dark={{
-                color: 'gray.50',
+                color: "gray.50",
               }}
             >
               Fornecedor
@@ -380,7 +404,7 @@ export default function Proposta() {
             >
               {ListFornecedor.map((item) => {
                 return (
-                  <option key={item.id} value={item.title}>
+                  <option key={item.id} value={item.id}>
                     {item.title}
                   </option>
                 );
@@ -394,7 +418,7 @@ export default function Proposta() {
               fontWeight="md"
               color="gray.700"
               _dark={{
-                color: 'gray.50',
+                color: "gray.50",
               }}
             >
               Condição de pagamento
@@ -414,7 +438,7 @@ export default function Proposta() {
               <option value="A Prazo">A prazo</option>
             </Select>
           </Box>
-          <Box hidden={prazo === 'A Prazo' ? false : true}>
+          <Box hidden={prazo === "A Prazo" ? false : true}>
             <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} />
           </Box>
           <Box>
@@ -424,7 +448,7 @@ export default function Proposta() {
               fontWeight="md"
               color="gray.700"
               _dark={{
-                color: 'gray.50',
+                color: "gray.50",
               }}
             >
               Frete
@@ -442,22 +466,22 @@ export default function Proposta() {
               <option value="FOB">FOB</option>
             </Select>
           </Box>
-          <Box hidden={frete === 'CIF' ? false : true}>
+          <Box hidden={frete === "CIF" ? false : true}>
             <FormLabel
               htmlFor="cidade"
               fontSize="xs"
               fontWeight="md"
               color="gray.700"
               _dark={{
-                color: 'gray.50',
+                color: "gray.50",
               }}
             >
               Valor de Frete
             </FormLabel>
             <Input
-              textAlign={'end'}
+              textAlign={"end"}
               size="xs"
-              w={'7rem'}
+              w={"7rem"}
               fontSize="xs"
               rounded="md"
               onChange={handleInputChange}
@@ -469,15 +493,16 @@ export default function Proposta() {
           <Heading size="md">Itens da proposta comercial</Heading>
         </Box>
         <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
-          <Box gap={8} w={'320px'} alignItems="center">
+          <Box gap={8} w={"320px"} alignItems="center">
             <ProdutiList
               onCnpj={cnpj}
               onResp={getIten}
               ontime={disbleProd}
               retunLoading={getLoading}
+              idProd={ListItens.length}
             />
           </Box>
-          <Box w={'40rem'}>
+          <Box w={"40rem"}>
             <Box display="flex" gap={8} alignItems="center">
               <Box w="full">
                 <FormLabel
@@ -486,7 +511,7 @@ export default function Proposta() {
                   fontWeight="md"
                   color="gray.700"
                   _dark={{
-                    color: 'gray.50',
+                    color: "gray.50",
                   }}
                 >
                   Observação
@@ -502,43 +527,43 @@ export default function Proposta() {
             </Box>
           </Box>
         </Box>
-        <Box mt={12} w={'100%'} h={'46%'} overflowY={'auto'}>
+        <Box mt={12} w={"100%"} h={"46%"} overflowY={"auto"}>
           <Box>
             <TableContainer>
               <Table variant="striped" colorScheme="green">
                 <Thead>
                   <Tr>
-                    <Th w={'2%'}></Th>
-                    <Th w={'28%'}>Item</Th>
-                    <Th w={'8%'} textAlign={'center'}>
+                    <Th w={"2%"}></Th>
+                    <Th w={"28%"}>Item</Th>
+                    <Th w={"8%"} textAlign={"center"}>
                       Código
                     </Th>
-                    <Th w={'10%'} textAlign={'center'}>
+                    <Th w={"10%"} textAlign={"center"}>
                       Qtd
                     </Th>
-                    <Th w={'7%'} textAlign={'center'}>
+                    <Th w={"7%"} textAlign={"center"}>
                       altura
                     </Th>
-                    <Th w={'7%'} textAlign={'center'}>
+                    <Th w={"7%"} textAlign={"center"}>
                       largura
                     </Th>
-                    <Th w={'7%'} textAlign={'center'}>
+                    <Th w={"7%"} textAlign={"center"}>
                       comprimento
                     </Th>
-                    <Th w={'5%'} textAlign={'center'}>
+                    <Th w={"5%"} textAlign={"center"}>
                       Mont.
                     </Th>
-                    <Th w={'5%'} textAlign={'center'}>
+                    <Th w={"5%"} textAlign={"center"}>
                       Expo.
                     </Th>
-                    <Th w={'5%'} textAlign={'center'}>
+                    <Th w={"5%"} textAlign={"center"}>
                       Preço un
                     </Th>
-                    <Th w={'5%'} textAlign={'center'}>
+                    <Th w={"5%"} textAlign={"center"}>
                       Preço total
                     </Th>
-                    <Th textAlign={'center'} w={'5%'}>
-                      <Icon as={BsTrash} boxSize={5} color={'whatsapp.600'} />
+                    <Th textAlign={"center"} w={"5%"}>
+                      <Icon as={BsTrash} boxSize={5} color={"whatsapp.600"} />
                     </Th>
                   </Tr>
                 </Thead>
@@ -553,30 +578,30 @@ export default function Proposta() {
           </Box>
         </Box>
         <chakra.p
-          textAlign={'center'}
-          color={'gray.500'}
-          fontSize={'sm'}
+          textAlign={"center"}
+          color={"gray.500"}
+          fontSize={"sm"}
           mt={5}
           mb={8}
         >
           Lista de produtos adicionados para proposta comercial
         </chakra.p>
-        <Box display={'flex'} justifyContent={'space-between'} me={10}>
+        <Box display={"flex"} justifyContent={"space-between"} me={10}>
           <Flex gap={20}>
             <chakra.p>
-              Total de itens: {ListItens.length === 0 ? '' : ListItens.length}
+              Total de itens: {ListItens.length === 0 ? "" : ListItens.length}
             </chakra.p>
             <chakra.p>
-              Frete:{' '}
-              {freteCif.toLocaleString('pt-br', {
-                style: 'currency',
-                currency: 'BRL',
+              Frete:{" "}
+              {freteCif.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
               })}
             </chakra.p>
             <chakra.p>Desconto: {Desconto}</chakra.p>
             <chakra.p>Valor Total: {totalGeral}</chakra.p>
           </Flex>
-          <Button colorScheme={'whatsapp'} onClick={SalvarProdutos}>
+          <Button colorScheme={"whatsapp"} onClick={SalvarProdutos}>
             Salvar Proposta
           </Button>
         </Box>

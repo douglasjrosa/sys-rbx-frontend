@@ -5,44 +5,56 @@ import {
   Select,
   Spinner,
   useToast,
-} from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
-import { BiPlusCircle } from 'react-icons/bi';
+} from "@chakra-ui/react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { BiPlusCircle } from "react-icons/bi";
 
 export const ProdutiList = (props: {
   onCnpj: any;
   onResp: any;
   ontime: boolean;
   retunLoading: any;
+  idProd: number
 }) => {
   const [Loading, setLoading] = useState(true);
   const [Load, setLoad] = useState<boolean>(false);
   const [Produtos, setProdutos] = useState<any>([]);
-  const [itenId, setItenId] = useState('');
+  const [itenId, setItenId] = useState("");
   const toast = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
-      const email = localStorage.getItem('email');
-      const url = '/api/query/get/produto/cnpj/' + props.onCnpj;
-      if (props.onCnpj !== '' && Produtos.length === 0) {
+      const email = localStorage.getItem("email");
+      const url = "/api/query/get/produto/cnpj/" + props.onCnpj;
+      if (props.onCnpj !== "" && Produtos.length === 0) {
         await fetch(url, {
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify(email),
         })
           .then((resp) => resp.json())
           .then((resposta) => {
-            const retonoIdeal = resposta.length === 0 ? false : true;
+            console.log(resposta);
+            console.log(resposta.length);
+            const retonoIdeal =
+              resposta.length === 0
+                ? false
+                : resposta.status === false
+                ? false
+                : true;
             if (retonoIdeal) {
               setProdutos(resposta);
             } else {
+              setProdutos([]);
               toast({
-                title: 'opss.',
-                description: 'Esta empresa não possui produtos.',
-                status: 'warning',
+                title: "opss.",
+                description: "Esta empresa não possui produtos.",
+                status: "warning",
                 duration: 9000,
                 isClosable: true,
               });
+              setTimeout(() => router.push("/produtos"), 5 * 1000);
             }
           })
           .catch((err) => console.log(err));
@@ -51,19 +63,20 @@ export const ProdutiList = (props: {
     if (props.ontime === false) {
       setLoading(false);
     }
-  }, [Produtos.length, props.onCnpj, props.ontime, toast]);
+  }, [Produtos.length, props.onCnpj, props.ontime, router, toast]);
 
   useEffect(() => {
     props.retunLoading(Load);
   }, [Load, props, props.retunLoading]);
 
   const addItens = async () => {
+
     setLoad(true);
     try {
       const url = `/api/query/get/produto/id/${itenId}`;
-      const email = localStorage.getItem('email');
+      const email = localStorage.getItem("email");
       const resp = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(email),
       });
       const resposta = await resp.json();
@@ -73,9 +86,9 @@ export const ProdutiList = (props: {
       console.log(err);
       setLoad(false);
       toast({
-        title: 'opss.',
+        title: "opss.",
         description: err,
-        status: 'error',
+        status: "error",
         duration: 9000,
         isClosable: true,
       });
@@ -99,9 +112,9 @@ export const ProdutiList = (props: {
       <Box
         display="flex"
         gap={8}
-        w={'320px'}
+        w={"320px"}
         alignItems="center"
-        hidden={props.onCnpj === '' ? true : false}
+        hidden={props.onCnpj === "" ? true : false}
       >
         <Box>
           <FormLabel
@@ -110,7 +123,7 @@ export const ProdutiList = (props: {
             fontWeight="md"
             color="gray.700"
             _dark={{
-              color: 'gray.50',
+              color: "gray.50",
             }}
           >
             produtos
