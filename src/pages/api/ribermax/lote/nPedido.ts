@@ -1,16 +1,14 @@
 /* eslint-disable no-undef */
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
-import { GetPedido } from "../../query/pedido/request/db/get";
-import { nLote } from "../../db/nLote";
+import { GetLoteProposta } from "../../lib/get_lote_nProposta";
 
 
-const token = process.env.ATORIZZATION_TOKEN;
-const STRAPI = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
+const PHP = axios.create({
+  baseURL: process.env.RIBERMAX_API_URL,
   headers: {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
+    Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
+    Email: process.env.ATORIZZATION_EMAIL,
   },
 });
 
@@ -21,35 +19,30 @@ export default async function postLotePHP(
   if (req.method === "POST") {
     const { nPedido } = req.query;
 
-    const lote = await STRAPI.get('/lote?filters[nPedido][$eq]=' + nPedido);
-    const items = lote.data.data.attributes;
+    const lote = await GetLoteProposta(nPedido);
+    const items = lote;
 
     await items.map(async (i: any) => {
-      const NLote = '';
-      const postLote = {
-        data: {
-          lote: i.lote,
-          empresa: i.empresa,
-          empresaId: i.empresaId,
-          business: i.business,
-          produtosId: i.produtosId,
-          emitente: i.emitente,
-          emitenteId: i.emitenteId,
-          qtde: i.qtde,
-          info: "",
-          status: "",
-          checklist: "",
-          logs: "",
-          vendedor: vendedor,
-        },
+
+      // EXEMPLO DE COMO ORGANIZAR OS DADOS PARA ENVIAR.
+      const dados = {
+        "cliente[CNPJ]": i.attributes.empresa.data.attributes.CNPJ,
+        "emitente[CNPJ]": i.attributes.emitente.data.attributes.CNPJ,
+        idProduto: i.attributes.produtosId,
+        nLote: i.attributes.lote,
+        qtde: i.attributes.qtde,
       };
-      await STRAPI.post("/lotes", postLote)
-        .then((res: any) => {
-          res.status(res.status || 200).json(res.data)
-        })
-        .catch((err: any) => {
-          res.status(err.status || 400).json(err.response.data)
-        });
+
+      const formData = new FormData();
+      for (const key in dados) {
+        formData.append(key, JSON.stringify(dados));
+      }
+
+      await PHP
+        .post("/lotes", formData)
+        .then((response) => console.log(response.data))
+        .catch((error) => console.error(error));
+        
     });
   } else {
     return res.status(405).send({ message: "Only POST requests are allowed" });

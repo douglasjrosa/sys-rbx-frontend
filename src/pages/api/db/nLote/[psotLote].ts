@@ -45,6 +45,7 @@ export default async function GetEmpresa(
           checklist: "",
           logs: "",
           vendedor: vendedor,
+          nPorosta: numero,
         },
       };
       await STRAPI.post("/lotes", postLote)

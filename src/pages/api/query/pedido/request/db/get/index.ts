@@ -21,8 +21,12 @@ export const GetPedido = async (nPedido: any) => {
       },
     });
 
-    const data = resP.data.data;
-    if (data.length === 0) {
+    const data = resP.data;
+    if (data.error) {
+      return data.error.response.data.error
+    }
+
+    if (data.data.length === 0) {
       throw {
         response: {
           status: 404,
@@ -34,7 +38,7 @@ export const GetPedido = async (nPedido: any) => {
       };
     }
 
-    return data;
+    return data.data;
   } catch (erro: any) {
     const status = erro.response?.status || 500;
     const message = erro.message || 'Erro do Servidor Interno';
