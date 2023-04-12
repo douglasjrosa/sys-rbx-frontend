@@ -25,7 +25,7 @@ const STRAPI = axios.create({
   },
 });
 
-export default async function GetEmpresa(
+export default async function PostTrello(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
