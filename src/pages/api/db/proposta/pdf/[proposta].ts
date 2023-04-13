@@ -34,16 +34,14 @@ export default async function GetEmpresa(
     const inf = resp.attributes;
     const dadosFornecedor = {
       data: {
-        attributes: {
-          razao: "MAX BRASIL DERIVADOS DE MADEIRA LTDA",
-          fantasia: "RIBERMAX EMBALAGENS",
-          cnpj: "17.757.153/0001-80",
-          endereco: "Rua Australia, 585",
-          cidade: "Riberão Preto",
-          uf: "Sp",
-          tel: "(16) 9 9765-5543",
-          email: "contato@ribermax.com.br",
-        },
+        razao: "MAX BRASIL DERIVADOS DE MADEIRA LTDA",
+        fantasia: "RIBERMAX EMBALAGENS",
+        cnpj: "17.757.153/0001-80",
+        endereco: "Rua Australia, 585",
+        cidade: "Riberão Preto",
+        uf: "Sp",
+        tel: "(16) 9 9765-5543",
+        email: "contato@ribermax.com.br",
       },
     };
 

@@ -32,13 +32,14 @@ export default async function PostTrello(
   if (req.method === "POST") {
     const { numero } = req.query;
 
-    const pedido = await GetPedido(numero);
+    const [pedido] = await GetPedido(numero);
+    console.log(pedido.attributes.business.data);
 
-    const items = pedido.itens;
+    const items = pedido.attributes.itens;
     const empresa = pedido.attributes.empresa.data.id;
     const cliente = pedido.attributes.empresa.data.attributes.nome;
-    const negocio = pedido.attributes.business.data.id;
-    const fornecedor = pedido.attributes.fornecedorId;
+    const negocio = pedido.attributes.business.data.attributes.nBusiness;
+    const fornecedor = pedido.attributes.fornecedorId.data.attributes.name;
     const vendedor = pedido.attributes.vendedorId;
     const frete =
       pedido.attributes.frete === "" ? "Fob" : pedido.attributes.frete;
@@ -46,8 +47,8 @@ export default async function PostTrello(
     const Bpedido = pedido.attributes.Bpedido;
     const estrega = pedido.attributes.business.data.attributes.deadline;
 
-    const VendedorName = "";
-    const fornecedorName = "";
+    const VendedorName = pedido.attributes.user.data.attributes.username;
+    const fornecedorName = pedido.attributes.fornecedorId.data.attributes.name;
 
     await items.map(async (i: any) => {
       const nlote = "";
@@ -58,7 +59,7 @@ export default async function PostTrello(
           ? "EXP"
           : "EXP - MONT";
 
-      const nomeCard = `${cliente} - ${i.Qtd}cx - ${i.titulo} - Medidas ${i.comprimento} x ${i.largura} x ${i.altura} - peso ${i.pesoCx}(kg) - ${type} - ${nlote}`;
+      const nomeCard = `${cliente} - ${i.Qtd} - ${i.titulo} - Medidas ${i.comprimento} x ${i.largura} x ${i.altura} - peso ${i.pesoCx}(kg) - ${type} - ${nlote}`;
 
       //Membros
       const trelloMembers: string[] = [
@@ -70,37 +71,51 @@ export default async function PostTrello(
         "5d7bbf629972e80b374829bb" /*Fábrica*/,
       ];
 
-      const dataBoard: TrelloCard = {
+      const dataBoard = JSON.stringify({
         key: "7f3afdbb72cb272f2ef99089cd9066c8",
         token:
           "ad565886cde4f9d1466040864b94a879d2281ec2f83c43d9cf0d74dbd752509d",
-        idList: "5fac446c22f5d05364052362",
+        // idList: "5fac446c22f5d05364052362",
+        idList: "6438073ecc85f294325f74ac", //board teste
+        // idList: "6438073ecc85f294325f74", //board testeerr
         boardId: "5fac445b3c5274707a309d61",
         name: nomeCard,
-        desc: `Proposta: Nº. ${numero},\n
-          Vendedor(a): ${VendedorName},\n
-          Empresa: ${fornecedorName},\n
-          Tipo de frete: ${frete},\n
-          Pedido Bling: Nº. ${Bpedido},\n
-          Lote: Nº. ${nlote},\n
-          Forma de pagamento: ${pgto},\n
-          Modelo: ${i.titulo}`,
+        desc: `Negocio: Nº. ${negocio},
+        Vendedor(a): ${VendedorName},
+        Empresa: ${fornecedorName},
+        Tipo de frete: ${frete},
+        Bling: Nº. ${Bpedido},
+        Pedido: Nº. ,
+        Lote: Nº. ${nlote},
+        Forma de pagamento: ${pgto},
+        Modelo: ${i.titulo}
+
+        OBS: é um teste`,
         idMembers: trelloMembers,
         due: estrega,
         dueReminder: 2880,
         pos: "top",
+      });
+
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://api.trello.com/1/cards',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': 'preAuthProps=s%3A5d7b946bb2d92e57d8d07e4d%3AisEnterpriseAdmin%3Dfalse.xktum%2BounyUl8SGrzLx%2BKGezb8C94Hysn%2FNSdI77YcY'
+        },
+        data : dataBoard
       };
 
-      const enviarCard = {
-        method: "post",
-        contentType: "application/json",
-        payload: JSON.stringify(dataBoard),
-      };
+      try {
+        const response = await axios.request(config);
+        console.log(JSON.stringify(response.data));
+      }
+      catch (error) {
+        console.log(error);
+      }
 
-      await fetch("https://api.trello.com/1/cards", enviarCard)
-        .then((resposta: any) => resposta.json())
-        .then((resp: any) => console.log(resp))
-        .catch((err: any) => console.log(err));
     });
   } else {
     return res.status(405).send({ message: "Only POST requests are allowed" });

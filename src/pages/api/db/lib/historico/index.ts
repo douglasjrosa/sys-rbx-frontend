@@ -12,6 +12,9 @@ export const Historico = async (txt: any, url: string) => {
   });
   const verifique = await axiosRequet.get(url);
   const respVerifique = verifique.data.data;
+  if (!respVerifique){
+    return verifique.data.error
+  }
   const { history } = respVerifique.attributes;
 
   const data = {
@@ -26,6 +29,7 @@ export const Historico = async (txt: any, url: string) => {
       return resp;
     })
     .catch((error) => {
-      return error;
+      console.log(error.response.data.error)
+      return error.response.data.error;
     });
 };

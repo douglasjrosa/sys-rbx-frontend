@@ -76,6 +76,7 @@ export default async function PostEmpresa(
 
     const date = new Date().toLocaleString;
 
+
     const DataPost = {
       data: {
         nPedido: NpedidoConvert,
@@ -148,6 +149,7 @@ export default async function PostEmpresa(
           vendedors: data.vendedor,
           msg: "Proposta não foi criada devido a erro",
           error: error.response.data,
+          user: 'Sistema'
         };
         const url = `empresas/${idCliente}`;
         const Register = await Historico(txt, url);

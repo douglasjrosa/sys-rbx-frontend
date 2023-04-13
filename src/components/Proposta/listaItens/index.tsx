@@ -25,36 +25,42 @@ export const CardList = (props: { id: string }) => {
   }, [url]);
 
   const pedido = async (numero: string) => {
-    const url = "/api/query/pedido/" + numero;
+    const lotes = [];
+    // const url = "/api/query/pedido/" + numero;
+    // await axios({
+    //   url: url,
+    //   method: "POST",
+    // })
+    //   .then(() => {})
+    //   .catch((err: any) => {
+    //     console.log(err);
+    //   });
+
+    // await axios({
+    //   url: `/api/db/nLote/${numero}`,
+    //   method: 'POST'
+    // })
+    //   .then((res: any) => {
+    //     console.log(res.data);
+    //     lotes.push(res.data)
+    //   })
+    //   .catch((err: any) => {
+    //     console.log(err);
+    //   });
+
+    // await axios({})
+    //   .then(() => {})
+    //   .catch((err: any) => {
+    //     console.log(err);
+    //   });
+
     await axios({
-      url: url,
+      url: `/api/db/trello/${numero}`,
       method: "POST",
-    })
-      .then(() => {})
-      .catch((err: any) => {
-        console.log(err);
-      });
-    await axios({
-      url: 'src/pages/api/db/nLote/psotLote'
     })
       .then((res: any) => {
         console.log(res.data);
       })
-      .catch((err: any) => {
-        console.log(err);
-      });
-
-    await axios({})
-      .then(() => {})
-      .catch((err: any) => {
-        console.log(err);
-      });
-
-    await axios({
-      url: "/api/db/trello" + numero,
-      method: "POST",
-    })
-      .then(() => {})
       .catch((err: any) => {
         console.log(err);
       });

@@ -92,7 +92,7 @@ export default function Proposta() {
       setItens(resp.attributes.itens);
       setPrazo(resp.attributes.condi);
       setRelatEmpresa(resp.attributes.empresa.data);
-      setRelatEmpresaId(resp.attributes.empresaId);
+      setRelatEmpresaId(resp.attributes.empresa.data.id);
       setFreteCif(resp.attributes.valorFrete);
       setLoja(resp.attributes.fornecedor);
       setObs(resp.attributes.obs);
@@ -213,12 +213,41 @@ export default function Proposta() {
       }/${Date5.getUTCFullYear()}`;
 
       const id: any = localStorage.getItem("id");
-      console.log(Id)
+
+      const ProdutosItems =  await ListItens.map((i: any) => {
+        const valor2Original = i.vFinal.replace(".", "");
+        const ValorProd = Number(valor2Original.replace(",", "."));
+        const ValorOriginal =
+          Math.round(parseFloat(ValorProd.toFixed(2)) * 100) / 100;
+        const acrec =
+          i.mont === true && i.expo === true
+            ? 1.2
+            : i.expo === true && i.mont === false
+            ? 1.1
+            : i.expo === false && i.mont === true
+            ? 1.1
+            : 0;
+        const descont = tipoprazo === "Antecipado" ? ValorOriginal * 0.05 : 0;
+        const somaAcrescimo =
+          acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
+        const somaDescont = descont * i.Qtd;
+        const somaDescontMin =
+          Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
+        const TotalItem = somaAcrescimo - somaDescontMin;
+        const result = Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
+
+        return {
+          ...i,
+          total: result,
+        };
+      });
 
       const data: any = {
+        nPedido: router.query.pedido,
         matriz: Loja,
         cliente: cnpj,
-        itens: ListItens,
+        clienteId: RelatEnpresaId,
+        itens: ProdutosItems,
         empresa: Loja,
         dataPedido: date,
         vencPedido: VencDate,
@@ -260,7 +289,7 @@ export default function Proposta() {
 
           const msg = {
             date: DateAtua,
-            user: session?.user.name,
+            user: "Sistema",
             msg: `Proposta atualizada, valor total agora é ${totalGeral}, pasando a ter ${
               parseInt(ListItens.length) + 1
             } items`,
@@ -285,7 +314,7 @@ export default function Proposta() {
           }, 3100);
         })
         .catch((err) => {
-          console.error(err.data);
+          console.log(err);
         });
     }
   };
@@ -302,7 +331,7 @@ export default function Proposta() {
   function getCnpj(CNPJ: SetStateAction<string>) {
     setCnpj(CNPJ);
   }
-  function getIten(resposta: SetStateAction<any>, ListItens: any) {
+  function getIten(resposta: SetStateAction<any>) {
     const lista = ListItens;
     const maxSum =
       ListItens.length > 0
@@ -328,9 +357,9 @@ export default function Proposta() {
     };
     const newItens = lista.map((f: any) => ({
       ...f,
-      expo: false,
-      mont: false,
-      Qtd: 1,
+      expo: !f.expo ? false : f.expo > false ? f.expo : false,
+      mont: !f.mont ? false : f.mont > false ? f.mont : false,
+      Qtd: !f.Qtd ? 1 : f.Qtd > 1 ? f.Qtd : 1,
     }));
     const ListaRetorno: any = [...newItens, retorno];
     setItens(ListaRetorno);

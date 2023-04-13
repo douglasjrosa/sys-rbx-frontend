@@ -124,6 +124,12 @@ export const BtCreate = (props: { onLoading: any }) => {
     msg: `Vendedor ${session?.user.name}, criou esse Busines`,
   };
 
+  const MSG =  {
+    msg: `Vendedor ${session?.user.name}, criou esse Busines`,
+    date:  new Date().toLocaleString(),
+    user: "Sistema"
+  }
+
   const salve = async () => {
     // props.onLoading(true);
     const data = {
@@ -137,7 +143,7 @@ export const BtCreate = (props: { onLoading: any }) => {
       empresa: Empresa,
       history: historico,
       user: session?.user.id,
-      incidentRecord: [],
+      incidentRecord: MSG,
     };
 
     const url = '/api/db/business/post';

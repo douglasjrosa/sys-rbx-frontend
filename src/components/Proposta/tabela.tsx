@@ -23,6 +23,7 @@ export const TableConteudo = (props: {
   const [ListItens, setItens] = useState<any>([]);
   const [LoadingTable, setLoadingTable] = useState<boolean>(false);
 
+
   useEffect(() => {
     setLoadingTable(props.loading);
   }, [props.loading]);
@@ -63,6 +64,7 @@ export const TableConteudo = (props: {
           if (i.Qtd === 1) {
             return i.total;
           }
+
           const ValorOriginal =
             Math.round(parseFloat(ValorProd.toFixed(2)) * 100) / 100;
           const acrec =
@@ -83,6 +85,7 @@ export const TableConteudo = (props: {
           const TotalItem = somaAcrescimo - somaDescontMin;
           const result =
             Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
+
           return result;
         };
 
@@ -106,6 +109,7 @@ export const TableConteudo = (props: {
           const dt = { expo: valor };
           handleAdd(dt, i.id);
         };
+        console.log(i)
 
         return (
           <>
@@ -139,7 +143,7 @@ export const TableConteudo = (props: {
                   rounded="md"
                   px="3"
                   onChange={GetMont}
-                  value={i.mont}
+                  isChecked={i.mont}
                 />
               </Td>
               <Td>
@@ -148,7 +152,7 @@ export const TableConteudo = (props: {
                   rounded="md"
                   px="3"
                   onChange={GetExpo}
-                  value={i.expo}
+                  isChecked={i.expo}
                 />
               </Td>
               <Td textAlign={"center"}>

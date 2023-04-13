@@ -6,6 +6,7 @@ import {
   Spinner,
   useToast,
 } from "@chakra-ui/react";
+import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { BiPlusCircle } from "react-icons/bi";
@@ -15,7 +16,7 @@ export const ProdutiList = (props: {
   onResp: any;
   ontime: boolean;
   retunLoading: any;
-  idProd: number
+  idProd: number;
 }) => {
   const [Loading, setLoading] = useState(true);
   const [Load, setLoad] = useState<boolean>(false);
@@ -35,8 +36,7 @@ export const ProdutiList = (props: {
         })
           .then((resp) => resp.json())
           .then((resposta) => {
-            console.log(resposta);
-            console.log(resposta.length);
+            console.log(resposta)
             const retonoIdeal =
               resposta.length === 0
                 ? false
@@ -70,29 +70,22 @@ export const ProdutiList = (props: {
   }, [Load, props, props.retunLoading]);
 
   const addItens = async () => {
-
     setLoad(true);
-    try {
-      const url = `/api/query/get/produto/id/${itenId}`;
-      const email = localStorage.getItem("email");
-      const resp = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(email),
+    const email = localStorage.getItem("email");
+    const url = `/api/query/get/produto/id/${itenId}`;
+    await fetch(url, {
+      method: "POST",
+      body: JSON.stringify(email),
+    })
+      .then((resp) => resp.json())
+      .then((resposta) => {
+        props.onResp(resposta);
+        setLoad(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoad(false);
       });
-      const resposta = await resp.json();
-      props.onResp(resposta);
-      setLoad(false);
-    } catch (err: any) {
-      console.log(err);
-      setLoad(false);
-      toast({
-        title: "opss.",
-        description: err,
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
-    }
   };
 
   if (Loading) {

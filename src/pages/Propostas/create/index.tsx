@@ -216,7 +216,7 @@ export default function Proposta() {
 
           const msg = {
             date: DateAtua,
-            user: session?.user.name,
+            user: 'Sistema',
             msg: `Proposta criada com o valor total ${totalGeral} contendo ${parseInt(ListItens.length) + 1} items`,
           };
 

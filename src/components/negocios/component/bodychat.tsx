@@ -14,6 +14,7 @@ export const BodyChat = (props: { conteudo: any; loading: boolean }) => {
     setLoad(props.loading);
     setData(props.conteudo);
   }, [props.conteudo, props.loading]);
+  // console.log(data)
 
 
 
@@ -26,10 +27,6 @@ export const BodyChat = (props: { conteudo: any; loading: boolean }) => {
     }
   }, [data]);
 
-
-  const sitema = data.filter((d: any) => d.user === 'Sistema');
-
-  const usuario = data.filter((d: any) => d.user !== 'Sistema');
 
   if (Load) {
     return <Loading size="200px">Carregando...</Loading>;

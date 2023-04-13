@@ -22,7 +22,10 @@ export default async function GetEmpresa(
       .then((response) => {
         res.status(200).json(response);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err)
+      });
+
   } else {
     return res.status(405).send({ message: 'Only GET requests are allowed' });
   }
