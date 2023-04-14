@@ -16,7 +16,9 @@ export const nLote = async () => {
     const resposta = await baseUrl.get(
       "/lotes?fields[0]=lote&sort=lote%3Adesc&pagination[limit]=1"
     );
+    
     const [NLote]: any = resposta.data.data;
+
     if (!NloteEnvi && !NLote) {
       throw {
         response: {
@@ -28,12 +30,20 @@ export const nLote = async () => {
           "O numero de lote inicial Não foi encontardo e o retorno do Database foi null",
       };
     }
+
     if (!NLote) {
       const ALote = parseInt(NloteEnvi) + 1;
       return ALote;
     }
+
+    if (NLote.attributes.lote === ''|| NLote.attributes.lote === null || NLote.attributes.lote === undefined) {
+      const ALote = parseInt(NloteEnvi) + 1;
+      return ALote;
+    }
+
     const AnLote = parseInt(NLote.attributes.lote) + 1;
     return AnLote;
+
   } catch (error: any) {
     console.log(error);
     const status = error.response?.status || 500;

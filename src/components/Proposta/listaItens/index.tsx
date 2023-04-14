@@ -6,6 +6,7 @@ import {
   Link,
   SimpleGrid,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -13,6 +14,7 @@ import { useEffect, useState } from "react";
 
 export const CardList = (props: { id: string }) => {
   const router = useRouter();
+  const toast = useToast();
   const url = "/api/db/proposta/get/business/" + props.id;
   const [Data, setData] = useState([]);
   useEffect(() => {
@@ -25,7 +27,7 @@ export const CardList = (props: { id: string }) => {
   }, [url]);
 
   const pedido = async (numero: string) => {
-    const lotes = [];
+    const lotes: any = [];
     // const url = "/api/query/pedido/" + numero;
     // await axios({
     //   url: url,
@@ -33,7 +35,7 @@ export const CardList = (props: { id: string }) => {
     // })
     //   .then(() => {})
     //   .catch((err: any) => {
-    //     console.log(err);
+    //     console.log(err.response.data);
     //   });
 
     // await axios({
@@ -45,13 +47,13 @@ export const CardList = (props: { id: string }) => {
     //     lotes.push(res.data)
     //   })
     //   .catch((err: any) => {
-    //     console.log(err);
+    //     console.log(err.response.data);
     //   });
 
     // await axios({})
     //   .then(() => {})
     //   .catch((err: any) => {
-    //     console.log(err);
+    //     console.log(err.response.data);
     //   });
 
     await axios({
@@ -61,8 +63,31 @@ export const CardList = (props: { id: string }) => {
       .then((res: any) => {
         console.log(res.data);
       })
-      .catch((err: any) => {
-        console.log(err);
+      .catch(async (err: any) => {
+        console.log(err.response.data);
+        const errogeral = err.response.data;
+
+        const data = {
+          log: errogeral.data,
+        };
+
+        await axios({
+          url: `/api/db/erros/trello`,
+          method: "POST",
+          data: data,
+        })
+          .then((res: any) => {
+            console.log(res.data);
+            toast({
+              title: 'Opss.',
+              description: "Entre en contata com o suporte",
+              status: 'error',
+              duration: 9000,
+            });
+          })
+          .catch((err: any) => {
+            console.log(err.response.data);
+          });
       });
   };
 

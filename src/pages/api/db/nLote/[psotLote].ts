@@ -28,7 +28,9 @@ export default async function GetEmpresa(
     const vendedor = pedido.attributes.user.data.id;
 
     try {
-      const promises = items.map(async (i: any) => {
+      const result = [];
+
+      for (const i of items) {
         const NLote = await nLote();
         const postLote = {
           data: {
@@ -49,33 +51,13 @@ export default async function GetEmpresa(
           },
         };
 
-        return STRAPI.post("/lotes", postLote)
-          .then((res: any) => {
-            return res.data.data;
-          })
-          .catch((err: any) => {
-            console.log(err);
-            throw {
-              status: err.response.data.error.status,
-              name: err.response.data.error.name,
-              message: err.response.data.error.message,
-              details: {
-                errors: [
-                  {
-                    path: [],
-                    message: err.response.data.error.details.errors[0].message,
-                    name: err.response.data.error.details.errors[0].name,
-                  },
-                ],
-              },
-            };
-          });
-      });
-
-      const result = await Promise.all(promises);
+        const res = await STRAPI.post("/lotes", postLote);
+        result.push(res.data.data);
+      }
 
       console.log(result);
       res.status(201).json(result);
+      
     } catch (error) {
       console.log(error);
       res.status(400).json(error);
