@@ -21,25 +21,24 @@ export default async function postLotePHP(
 
     const lote = await GetLoteProposta(nPedido);
     const items = lote;
+    const promessas = [];
 
-    const mapItens = await items.map(async (i: any) => {
-      // EXEMPLO DE COMO ORGANIZAR OS DADOS PARA ENVIAR.
-      const dados = {
-        "cliente[CNPJ]": i.attributes.CNPJClinet,
-        "emitente[CNPJ]": i.attributes.CNPJEmitente,
-        idProduto: i.attributes.produtosId,
-        nLote: i.attributes.lote,
-        qtde: i.attributes.qtde,
-      };
-
+    for (const i of items) {
       const formData = new FormData();
-      for (const key in dados) {
-        formData.append(key, JSON.stringify(dados));
-      }
+      formData.append("cliente[CNPJ]", i.attributes.CNPJClinet);
+      formData.append("emitente[CNPJ]", i.attributes.CNPJEmitente);
+      formData.append("idProduto", i.attributes.produtosId);
+      formData.append("nLote", i.attributes.lote);
+      formData.append("qtde", i.attributes.qtde);
 
-      await PHP.post("/lotes", formData)
-        .then((response) => console.log(response.data))
-        .catch((error) => {
+      const promessa = PHP.post("/lotes", formData)
+        .then(async (response) => {
+          return {
+            msg: await response.data.message,
+            lote: await response.data.lote.lote,
+          };
+        })
+        .catch(async(error) => {
           const data = {
             log: {
               "cliente[CNPJ]": i.attributes.CNPJClinet,
@@ -48,13 +47,18 @@ export default async function postLotePHP(
               nLote: i.attributes.lote,
               qtde: i.attributes.qtde,
               pedido: nPedido,
+              error: error.response.data,
             },
           };
-          return ErroPHP(data);
+          return await ErroPHP(data);
         });
-    });
-    const resposra = await Promise.all(mapItens)
-    res.json(resposra)
+
+      promessas.push(promessa);
+    }
+
+    const resposta = await Promise.all(promessas);
+    console.log(resposta);
+    res.json(resposta);
   } else {
     return res.status(405).send({ message: "Only POST requests are allowed" });
   }

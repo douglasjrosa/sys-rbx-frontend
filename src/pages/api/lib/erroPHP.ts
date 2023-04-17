@@ -15,15 +15,15 @@ export const ErroPHP = async (ERROR: any) => {
       ...ERROR,
     },
   };
-  console.log(DodyData);
-
+//  console.log(ERROR.log.error.message)
   await STRAPI.post(`/erro-phps`, DodyData)
     .then((rest: any) => {
-      console.log(rest.data.data)
-      return rest.data.data;
+      // console.log(rest.data.data)
+      const msg = ERROR.log.error.message +" lote "+ ERROR.log.nLote
+      return msg;
     })
     .catch((err: any) => {
-      console.log(err.response.data)
+      // console.log(err.response.data)
      return err.response.data;
     });
 };
