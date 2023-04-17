@@ -23,9 +23,12 @@ export default async function GetEmpresa(
 
     const items = pedido.attributes.itens;
     const empresa = pedido.attributes.empresaId;
+    const empresaCNPJ = pedido.attributes.empresa.data.attributes.CNPJ;
     const negocio = pedido.attributes.business.data.id;
     const fornecedor = pedido.attributes.fornecedorId;
+    const fornecedorCNPJ = pedido.attributes.fornecedorId.data.attributes.CNPJ;
     const vendedor = pedido.attributes.user.data.id;
+
 
     try {
       const result = [];
@@ -48,6 +51,8 @@ export default async function GetEmpresa(
             logs: "",
             vendedor: vendedor,
             nProposta: numero,
+            CNPJClinet: empresaCNPJ,
+            CNPJEmitente: fornecedorCNPJ
           },
         };
 
@@ -57,7 +62,7 @@ export default async function GetEmpresa(
 
       console.log(result);
       res.status(201).json(result);
-      
+
     } catch (error) {
       console.log(error);
       res.status(400).json(error);

@@ -12,7 +12,7 @@ const STRAPI = axios.create({
 
 export const GetLoteProposta = async (nProposta: any) => {
   try {
-    const resposta = await STRAPI.get(`/lotes?populate=*&filters[nProposta][$eq]=${nProposta}&sort[0]=updatedAt%3Adesc&sort[1]=id%3Adesc`);
+    const resposta = await STRAPI.get(`/lotes?populate=*&filters[nProposta][$eq]=${nProposta}&sort[0]=id%3Adesc`);
 
     const data: any = resposta.data;
 

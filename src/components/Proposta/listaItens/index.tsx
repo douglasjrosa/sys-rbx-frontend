@@ -50,45 +50,32 @@ export const CardList = (props: { id: string }) => {
     //     console.log(err.response.data);
     //   });
 
-    // await axios({})
-    //   .then(() => {})
-    //   .catch((err: any) => {
-    //     console.log(err.response.data);
-    //   });
-
     await axios({
-      url: `/api/db/trello/${numero}`,
+      url: `/api/ribermax/lote/${numero}`,
       method: "POST",
     })
-      .then((res: any) => {
+      .then((res) => {
         console.log(res.data);
       })
-      .catch(async (err: any) => {
+      .catch((err: any) => {
         console.log(err.response.data);
-        const errogeral = err.response.data;
-
-        const data = {
-          log: errogeral.data,
-        };
-
-        await axios({
-          url: `/api/db/erros/trello`,
-          method: "POST",
-          data: data,
-        })
-          .then((res: any) => {
-            console.log(res.data);
-            toast({
-              title: 'Opss.',
-              description: "Entre en contata com o suporte",
-              status: 'error',
-              duration: 9000,
-            });
-          })
-          .catch((err: any) => {
-            console.log(err.response.data);
-          });
       });
+
+    // await axios({
+    //   url: `/api/db/trello/${numero}`,
+    //   method: "POST",
+    // })
+    //   .then((res: any) => {
+    //     console.log(res.data);
+    //   })
+    //   .catch(async (err: any) => {
+    //     toast({
+    //       title: "Opss.",
+    //       description: "Entre en contata com o suporte",
+    //       status: "error",
+    //       duration: 9000,
+    //     });
+    //   });
   };
 
   return (
