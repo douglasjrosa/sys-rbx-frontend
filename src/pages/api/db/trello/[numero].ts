@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { GetPedido } from "../../query/pedido/request/db/get";
 import { GetLoteProposta } from "../../lib/get_lote_nProposta";
 import { GetTrelloId } from "../../lib/get_trello_id";
+import { ErroTrello } from "../../lib/errtrello";
 
 interface TrelloCard {
   key: string;
@@ -130,12 +131,9 @@ export default async function PostTrello(
           .then((res: any) => {
             return res.data.data;
           })
-          .catch((err: any) => {
-
-            throw {
-              status: err.response.status,
-              message: err.response.data,
-              data: {
+          .catch(async(err: any) => {
+            const data = {
+              log: {
                 key: userKey,
                 token: userToken,
                 idList: list,
@@ -154,7 +152,10 @@ export default async function PostTrello(
                 erro_status: err.response.status,
                 erro_message: err.response.data,
               },
-            };
+            }
+
+           return await ErroTrello(data);
+
           });
       });
       const result = await Promise.all(promises);
