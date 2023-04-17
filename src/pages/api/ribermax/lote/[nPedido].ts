@@ -2,7 +2,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import { GetLoteProposta } from "../../lib/get_lote_nProposta";
-
+import { ErroPHP } from "../../lib/erroPHP";
 
 const PHP = axios.create({
   baseURL: process.env.RIBERMAX_API_URL,
@@ -22,12 +22,11 @@ export default async function postLotePHP(
     const lote = await GetLoteProposta(nPedido);
     const items = lote;
 
-    await items.map(async (i: any) => {
-
+    const mapItens = await items.map(async (i: any) => {
       // EXEMPLO DE COMO ORGANIZAR OS DADOS PARA ENVIAR.
       const dados = {
-        "cliente[CNPJ]": i.attributes.empresa.data.attributes.CNPJ,
-        "emitente[CNPJ]": i.attributes.emitente.data.attributes.CNPJ,
+        "cliente[CNPJ]": i.attributes.CNPJClinet,
+        "emitente[CNPJ]": i.attributes.CNPJEmitente,
         idProduto: i.attributes.produtosId,
         nLote: i.attributes.lote,
         qtde: i.attributes.qtde,
@@ -38,12 +37,24 @@ export default async function postLotePHP(
         formData.append(key, JSON.stringify(dados));
       }
 
-      await PHP
-        .post("/lotes", formData)
+      await PHP.post("/lotes", formData)
         .then((response) => console.log(response.data))
-        .catch((error) => console.error(error));
-        
+        .catch((error) => {
+          const data = {
+            log: {
+              "cliente[CNPJ]": i.attributes.CNPJClinet,
+              "emitente[CNPJ]": i.attributes.CNPJEmitente,
+              idProduto: i.attributes.produtosId,
+              nLote: i.attributes.lote,
+              qtde: i.attributes.qtde,
+              pedido: nPedido,
+            },
+          };
+          return ErroPHP(data);
+        });
     });
+    const resposra = await Promise.all(mapItens)
+    res.json(resposra)
   } else {
     return res.status(405).send({ message: "Only POST requests are allowed" });
   }
