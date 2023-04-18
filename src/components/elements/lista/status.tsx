@@ -42,6 +42,8 @@ export const BtnStatus = (props: { Resp: string; onAddResp: any }) => {
         <option value="Pause">Aguardando retorno</option>
         <option value="Stop">Parado por tenpo indeterminado</option>
         <option value="Retorno em">Retorno em</option>
+        <option value="Ganho">Ganho</option>
+        <option value="Perdido">Perdido</option>
       </Select>
     </Box>
   );
