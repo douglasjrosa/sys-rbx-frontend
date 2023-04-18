@@ -109,7 +109,6 @@ export const TableConteudo = (props: {
           const dt = { expo: valor };
           handleAdd(dt, i.id);
         };
-        console.log(i)
 
         return (
           <>

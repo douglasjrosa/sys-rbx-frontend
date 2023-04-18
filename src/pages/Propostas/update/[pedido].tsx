@@ -114,7 +114,7 @@ export default function Proposta() {
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const totalItem = ListItens.reduce((acc: number, item: any) => {
-      const valor: number = item.total;
+      const valor: number = parseFloat(item.vFinal.replace(",", "."));
       const valorOriginal: number = parseFloat(item.vFinal.replace(",", "."));
       const qtd: number = item.Qtd;
       const mont: boolean = item.mont;

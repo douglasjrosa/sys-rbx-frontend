@@ -34,7 +34,7 @@ export default function ListaProposta() {
                 router.push("/Propostas/create");
               }}
             >
-              Gerar Proposta
+              Nova Proposta
             </Button>
           </Box>
         </Flex>
@@ -47,13 +47,28 @@ export default function ListaProposta() {
             pt={"3rem"}
             pb={"2rem"}
             px={"2rem"}
-            h="100%"
+            h="full"
             alignItems="center"
             justifyContent="center"
             flexDirection="column"
             gap={5}
           >
-            <CardList id={ID} />
+            <Box
+              h="full"
+              border={"1px solid"}
+              borderColor={"gray.400"}
+              rounded={"5rem"}
+            >
+              <Flex mx={"10rem"} w={"full"} p={10}>
+                <Flex
+                  h={"full"}
+                  overflowX={"hidden"}
+                  justifyContent="center"
+                >
+                  <CardList id={ID} />
+                </Flex>
+              </Flex>
+            </Box>
           </Flex>
         </Box>
       </Flex>

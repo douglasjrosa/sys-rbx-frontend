@@ -25,6 +25,7 @@ export default async function GetEmpresa(
 
     const response = await axios(config);
     const [result] = response.data.data;
+    const empresaFornec = result.attributes.fornecedorId.data.attributes;
     const itenResponse = result.attributes.itens;
     const quanti = itenResponse.length;
 
@@ -34,14 +35,17 @@ export default async function GetEmpresa(
     const inf = resp.attributes;
     const dadosFornecedor = {
       data: {
-        razao: "MAX BRASIL DERIVADOS DE MADEIRA LTDA",
-        fantasia: "RIBERMAX EMBALAGENS",
-        cnpj: "17.757.153/0001-80",
+        razao: empresaFornec?.nome,
+        fantasia: empresaFornec?.fantasia,
+        cnpj: empresaFornec?.CNPJ.replace(
+          /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+          "$1.$2.$3/$4-$5"
+        ),
         endereco: "Rua Australia, 585",
         cidade: "Riberão Preto",
         uf: "Sp",
         tel: "(16) 9 9765-5543",
-        email: "contato@ribermax.com.br",
+        email: empresaFornec?.email,
       },
     };
 
