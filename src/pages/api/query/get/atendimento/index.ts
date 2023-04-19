@@ -14,8 +14,13 @@ export default async function GetEmpresa(
       method: "GET",
       headers: { Authorization: "Bearer " + token },
     })
-      .then((Response) => res.status(200).send(Response.data.data))
-      .catch((err) => res.status(500).send(err));
+      .then((Response) => {
+        res.status(200).send(Response.data.data
+        )})
+      .catch((err) => {
+        console.log("🚀 ~ file: index.ts:21 ~ err:", err.respose)
+        res.status(500).send(err)
+      });
   } else {
     return res.status(405).send({ message: "Only GET requests are allowed" });
   }

@@ -7,14 +7,15 @@ export const SelecAtendimento = (props: { Resp: string; onAddResp: any }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const url = '/api/query/get/atendimento';
-        const get = await fetch(url);
-        const response = await get.json();
-        setDados(response);
-      } catch (error) {
-        console.error(error);
-      }
+      // try {
+      //   const url = '/api/query/get/atendimento';
+      //   const get = await fetch(url);
+      //   const response = await get.json();
+      //   console.log("🚀 ~ file: atendimento.tsx:14 ~ fetchData ~ response:", response)
+      //   setDados(response);
+      // } catch (error) {
+      //   console.error(error);
+      // }
     };
     fetchData();
   }, []);

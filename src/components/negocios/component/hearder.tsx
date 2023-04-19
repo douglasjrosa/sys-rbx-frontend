@@ -5,20 +5,23 @@ import {
   Flex,
   FormLabel,
   Input,
+  Select,
   useToast,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { SetStateAction, useEffect, useState } from 'react';
-import { SelecAtendimento } from '../../elements/lista/atendimento';
-import { BtnStatus } from '../../elements/lista/status';
+} from "@chakra-ui/react";
+import axios from "axios";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { SetStateAction, useEffect, useState } from "react";
+import { SelecAtendimento } from "../../elements/lista/atendimento";
+import { BtnStatus } from "../../elements/lista/status";
+import { StatusPerca } from "@/components/data/perca";
+import { EtapasNegocio } from "@/components/data/etapa";
 
 export const NegocioHeader = (props: {
   nBusiness: string;
   Approach: string;
   Budget: string;
-  Status: string;
+  Status: number;
   Deadline: string;
   historia?: any;
   DataRetorno?: string;
@@ -27,12 +30,14 @@ export const NegocioHeader = (props: {
   const ID = router.query.id;
   const toast = useToast();
   const { data: session } = useSession();
-  const [Status, setStatus] = useState('');
-  const [Busines, setBusines] = useState('');
-  const [Approach, setApproach] = useState('');
-  const [Budget, setBudget] = useState('');
-  const [Deadline, setDeadline] = useState('');
-  const [DataRetorno, setDataRetorno] = useState<any>('');
+  const [Status, setStatus] = useState<any | null>();
+  const [Etapa, setEtapa] = useState<any | null>();
+  const [Mperca, setMperca] = useState<any | null>();
+  const [Busines, setBusines] = useState("");
+  const [Approach, setApproach] = useState("");
+  const [Budget, setBudget] = useState("");
+  const [Deadline, setDeadline] = useState("");
+  const [DataRetorno, setDataRetorno] = useState<any>("");
 
   useEffect(() => {
     setStatus(props.Status);
@@ -59,22 +64,23 @@ export const NegocioHeader = (props: {
         Budget: Budget,
         Approach: Approach,
         history: history,
-        statusAnd: Status,
-        DataRetorno: Status !== 'Retorno em' ? null : DataRetorno,
+        etapa: Etapa,
+        andamento: Status,
+        Mperca: Mperca,
+        DataRetorno: Status !== 4 ? null : DataRetorno,
       },
     };
 
     await axios({
-      url: '/api/db/business/put/id/' + ID,
-      method: 'PUT',
+      url: "/api/db/business/put/id/" + ID,
+      method: "PUT",
       data: data,
     })
       .then((res) => {
-        // console.log(res);
         toast({
-          title: 'Atualização feita',
-          description: 'Atualização das inforaçoes foi efetuada com sucesso',
-          status: 'success',
+          title: "Atualização feita",
+          description: "Atualização das inforaçoes foi efetuada com sucesso",
+          status: "success",
           duration: 9000,
           isClosable: true,
         });
@@ -82,7 +88,7 @@ export const NegocioHeader = (props: {
       .catch((err) => console.error(err));
   };
 
-  function getStatus(statusinf: SetStateAction<string>) {
+  function getStatus(statusinf: SetStateAction<any>) {
     setStatus(statusinf);
   }
   function getAtendimento(atendimento: SetStateAction<string>) {
@@ -91,114 +97,181 @@ export const NegocioHeader = (props: {
 
   return (
     <>
-      <Flex gap={8}>
-        <Box>
-          <FormLabel
-            htmlFor="cidade"
-            fontSize="xs"
-            fontWeight="md"
-            color="gray.700"
-            _dark={{
-              color: 'gray.50',
-            }}
-          >
-            N° Negocio
-          </FormLabel>
-          <Input
-            shadow="sm"
-            size="sm"
-            w="full"
-            fontSize="xs"
-            rounded="md"
-            onChange={(e) => setBusines(e.target.value)}
-            value={props.nBusiness}
-          />
-        </Box>
-        <Box>
-          <SelecAtendimento Resp={props.Approach} onAddResp={getAtendimento} />
-        </Box>
-        <Box>
-          <FormLabel
-            htmlFor="cidade"
-            fontSize="xs"
-            fontWeight="md"
-            color="gray.700"
-            _dark={{
-              color: 'gray.50',
-            }}
-          >
-            Budget
-          </FormLabel>
-          <Input
-            shadow="sm"
-            size="sm"
-            w="full"
-            fontSize="xs"
-            rounded="md"
-            onChange={(e) => setBudget(e.target.value)}
-            value={props.Budget}
-          />
-        </Box>
-        <Box>
-          <FormLabel
-            htmlFor="cidade"
-            fontSize="xs"
-            fontWeight="md"
-            color="gray.700"
-            _dark={{
-              color: 'gray.50',
-            }}
-          >
-            Deadline
-          </FormLabel>
-          <Input
-            shadow="sm"
-            size="sm"
-            w="full"
-            type={'date'}
-            fontSize="xs"
-            rounded="md"
-            onChange={(e) => setDeadline(e.target.value)}
-            value={Deadline}
-          />
-        </Box>
-        <Box>
-          <BtnStatus Resp={props.Status} onAddResp={getStatus} />
-        </Box>
-        {Status !== 'Retorno em' ? null : (
-          <>
-            <Box>
-              <FormLabel
-                htmlFor="cidade"
-                fontSize="xs"
-                fontWeight="md"
-                color="gray.700"
-                _dark={{
-                  color: 'gray.50',
-                }}
-              >
-                Data de retorno
-              </FormLabel>
-              <Input
-                shadow="sm"
-                size="sm"
-                w="full"
-                type={'date'}
-                fontSize="xs"
-                rounded="md"
-                onChange={(e) => setDataRetorno(e.target.value)}
-                value={DataRetorno}
-              />
-            </Box>
-          </>
-        )}
-        <Flex alignItems={'center'} justifyContent={'space-around'} w={'34%'}>
-          <Button colorScheme={'whatsapp'} onClick={Salve}>
+      <Flex>
+        <Flex gap={8} w={"60%"} flexWrap={"wrap"}>
+          <Box>
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: "gray.50",
+              }}
+            >
+              N° Negocio
+            </FormLabel>
+            <Input
+              shadow="sm"
+              size="sm"
+              w="full"
+              fontSize="xs"
+              rounded="md"
+              onChange={(e) => setBusines(e.target.value)}
+              value={props.nBusiness}
+            />
+          </Box>
+          <Box>
+            <SelecAtendimento
+              Resp={props.Approach}
+              onAddResp={getAtendimento}
+            />
+          </Box>
+          <Box>
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: "gray.50",
+              }}
+            >
+              Budget
+            </FormLabel>
+            <Input
+              shadow="sm"
+              size="sm"
+              w="full"
+              fontSize="xs"
+              rounded="md"
+              onChange={(e) => setBudget(e.target.value)}
+              value={props.Budget}
+            />
+          </Box>
+          <Box>
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: "gray.50",
+              }}
+            >
+              Deadline
+            </FormLabel>
+            <Input
+              shadow="sm"
+              size="sm"
+              w="full"
+              type={"date"}
+              fontSize="xs"
+              rounded="md"
+              onChange={(e) => setDeadline(e.target.value)}
+              value={Deadline}
+            />
+          </Box>
+          <Box>
+            <FormLabel
+              htmlFor="cidade"
+              fontSize="xs"
+              fontWeight="md"
+              color="gray.700"
+              _dark={{
+                color: "gray.50",
+              }}
+            >
+              Etapa do Negocio
+            </FormLabel>
+            <Select
+              shadow="sm"
+              size="xs"
+              w="full"
+              fontSize="xs"
+              rounded="md"
+              placeholder=" "
+              onChange={(e) => setEtapa(e.target.value)}
+              value={Etapa}
+            >
+              {EtapasNegocio.map((i: any) => (
+                <option key={i.id} value={i.id}>
+                  {i.title}
+                </option>
+              ))}
+            </Select>
+          </Box>
+          <Box>
+            <BtnStatus Resp={props.Status} onAddResp={getStatus} />
+          </Box>
+          {Status !== 6 ? null : (
+            <>
+              <Box>
+                <FormLabel
+                  htmlFor="cidade"
+                  fontSize="xs"
+                  fontWeight="md"
+                  color="gray.700"
+                  _dark={{
+                    color: "gray.50",
+                  }}
+                >
+                  Motivo de Perda
+                </FormLabel>
+                <Select
+                  shadow="sm"
+                  size="xs"
+                  w="full"
+                  fontSize="xs"
+                  rounded="md"
+                  placeholder=" "
+                  onChange={(e)=> setMperca(e.target.value)}
+                  value={Mperca}
+                >
+                  {StatusPerca.map((i: any) => (
+                    <option key={i.id} value={i.id}>
+                      {i.title}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+            </>
+          )}
+          {Status !== 4 ? null : (
+            <>
+              <Box>
+                <FormLabel
+                  htmlFor="cidade"
+                  fontSize="xs"
+                  fontWeight="md"
+                  color="gray.700"
+                  _dark={{
+                    color: "gray.50",
+                  }}
+                >
+                  Data de retorno
+                </FormLabel>
+                <Input
+                  shadow="sm"
+                  size="sm"
+                  w="full"
+                  type={"date"}
+                  fontSize="xs"
+                  rounded="md"
+                  onChange={(e) => setDataRetorno(e.target.value)}
+                  value={DataRetorno}
+                />
+              </Box>
+            </>
+          )}
+        </Flex>
+        <Flex alignItems={"center"} justifyContent={"space-around"} w={"34%"}>
+          <Button colorScheme={"whatsapp"} onClick={Salve}>
             salve
           </Button>
           <Button
-            colorScheme={'green'}
-            onClick={() => router.push('/Propostas/' + ID)}
+            colorScheme={"green"}
+            onClick={() => router.push("/Propostas/" + ID)}
           >
             Propostas
           </Button>

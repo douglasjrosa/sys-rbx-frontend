@@ -45,7 +45,6 @@ export default function CreateNegocio() {
         url: url,
       })
         .then((res) => {
-          console.log(res.data.attributes);
           setnBusiness(res.data.attributes.nBusiness);
           setApproach(res.data.attributes.Approach);
           setBudget(res.data.attributes.Budget);
@@ -84,7 +83,7 @@ export default function CreateNegocio() {
           url: url,
         })
           .then((res) => {
-            console.log(res.data.attributes);
+            // console.log(res.data.attributes);
             setChatHistory(res.data.attributes.incidentRecord);
             // fim do loading
             setLoading(false);
@@ -107,7 +106,6 @@ export default function CreateNegocio() {
 
   function getMsg(menssage: React.SetStateAction<any>) {
     setMsg(menssage);
-    console.log(menssage);
   }
 
   if (loadingGeral) {

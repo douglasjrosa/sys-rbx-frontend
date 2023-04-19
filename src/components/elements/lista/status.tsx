@@ -1,9 +1,9 @@
-import { Box, FormLabel, Select } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { StatusAndamento } from "@/components/data/status";
+import { Box, FormLabel, Select } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 
-export const BtnStatus = (props: { Resp: string; onAddResp: any }) => {
-  const [dados, setDados] = useState<any>([]);
-  const [valor, setValor] = useState('');
+export const BtnStatus = (props: { Resp: number; onAddResp: any }) => {
+  const [valor, setValor] = useState<number>();
 
   useEffect(() => {
     setValor(props.Resp);
@@ -14,8 +14,6 @@ export const BtnStatus = (props: { Resp: string; onAddResp: any }) => {
     props.onAddResp(event.target.value);
   }
 
-  console.log(valor);
-
   return (
     <Box>
       <FormLabel
@@ -23,7 +21,7 @@ export const BtnStatus = (props: { Resp: string; onAddResp: any }) => {
         fontWeight="md"
         color="gray.700"
         _dark={{
-          color: 'gray.50',
+          color: "gray.50",
         }}
       >
         Status
@@ -38,12 +36,13 @@ export const BtnStatus = (props: { Resp: string; onAddResp: any }) => {
         onChange={atualizarValor}
         value={valor}
       >
-        <option value="Ativo">Em contato com cliente</option>
-        <option value="Pause">Aguardando retorno</option>
-        <option value="Stop">Parado por tenpo indeterminado</option>
-        <option value="Retorno em">Retorno em</option>
-        <option value="Ganho">Ganho</option>
-        <option value="Perdido">Perdido</option>
+        {StatusAndamento.map((i: any) => {
+          return (
+            <option key={i.id} value={i.id}>
+              {i.title}
+            </option>
+          );
+        })}
       </Select>
     </Box>
   );
