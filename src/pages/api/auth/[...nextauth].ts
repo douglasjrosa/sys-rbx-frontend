@@ -44,6 +44,7 @@ export default NextAuth({
           });
 
           const { jwt, user } = await res.data;
+
           const { confirmed, blocked, username, id, email, pemission } =
             await user;
           const response = {
@@ -55,6 +56,7 @@ export default NextAuth({
             blocked: blocked,
             pemission: pemission,
           };
+          console.log("🚀 ~ file: [...nextauth].ts:60 ~ authorize ~ res:", res)
 
           if (!jwt || !id || !username || !email) {
             throw new Error("Usuario e senha incorreto");
@@ -65,6 +67,7 @@ export default NextAuth({
           console.log(e);
           return null;
         }
+
       },
     }),
   ],
@@ -75,6 +78,7 @@ export default NextAuth({
     // verifyRequest: '/auth/verify-request', // (used for check email message)
     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
+    
   callbacks: {
     jwt: async ({ token, user }): Promise<any> => {
       const isSignIn = !!user;

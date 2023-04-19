@@ -4,16 +4,16 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 
 export default function CardBusiness(props: {
-  id: string;
-  nBusiness: string;
-  deadline: string;
-  Budget: string;
-  empresa: any;
-  criateed: any;
-  pedidos: string;
-  pedidosQtd: any;
-  onloading: any;
-  andamento: string;
+  id?: string | null;
+  nBusiness?: string | null;
+  deadline?: Date | any;
+  Budget?: string | null;
+  empresa?: any | [];
+  criateed?: any | [];
+  pedidos?: string | null;
+  pedidosQtd?: any | [];
+  onloading?: any | [];
+  andamento?: string | null;
 }) {
   const router = useRouter();
   const empresa = !props.empresa
@@ -23,7 +23,7 @@ export default function CardBusiness(props: {
     : props.empresa.data.attributes.nome;
 
   const soma = () => {
-    const valores = props.pedidosQtd.map((i: any) =>
+    const valores = props.pedidosQtd?.map((i: any) =>
       parseFloat(
         i.attributes.totalGeral
           .replace('R$', '')
@@ -31,8 +31,8 @@ export default function CardBusiness(props: {
           .replace(',', '.'),
       ),
     );
-    const soma = valores.reduce((acc: any, curr: any) => acc + curr, 0);
-    return soma.toLocaleString('pt-br', {
+    const soma = valores?.reduce((acc: any, curr: any) => acc + curr, 0);
+    return soma?.toLocaleString('pt-br', {
       style: 'currency',
       currency: 'BRL',
     });
