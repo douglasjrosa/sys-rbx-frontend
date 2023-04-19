@@ -24,6 +24,8 @@ export default function CreateNegocio() {
   const [DataRetorno, setDataRetorno] = useState('');
   const [Historia, setHistoria] = useState([]);
   const [ChatHistory, setChatHistory] = useState([]);
+  const [Etapa, setEtapa] = useState<any | null>();
+  const [Mperca, setMperca] = useState<any | null>();
 
   useEffect(() => {
     const div = divRef.current;
@@ -53,6 +55,8 @@ export default function CreateNegocio() {
           setDataRetorno(res.data.attributes.DataRetorno);
           setHistoria(res.data.attributes.history);
           setChatHistory(res.data.attributes.incidentRecord);
+          setEtapa(res.data.attributes.etapa);
+          setMperca(res.data.attributes.Mperca);
           // fim do loading
           setLoadingGeral(false);
         })
@@ -124,6 +128,8 @@ export default function CreateNegocio() {
             Deadline={Deadline}
             historia={Historia}
             DataRetorno={DataRetorno}
+            Mperca={Mperca}
+            etapa={Etapa}
           />
         </Box>
         <Box bg="#edeae6" w="full" h="70%" ref={divRef} overflowY={'auto'}>

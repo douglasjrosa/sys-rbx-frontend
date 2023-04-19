@@ -21,10 +21,12 @@ export const NegocioHeader = (props: {
   nBusiness: string;
   Approach: string;
   Budget: string;
-  Status: number;
+  Status: any;
   Deadline: string;
   historia?: any;
   DataRetorno?: string;
+  etapa?: any;
+  Mperca?: any;
 }) => {
   const router = useRouter();
   const ID = router.query.id;
@@ -46,6 +48,8 @@ export const NegocioHeader = (props: {
     setBusines(props.nBusiness);
     setApproach(props.Approach);
     setDataRetorno(props.DataRetorno);
+    setMperca(props.Mperca)
+    setEtapa(props.etapa)
   }, []);
 
   const historicomsg = {
