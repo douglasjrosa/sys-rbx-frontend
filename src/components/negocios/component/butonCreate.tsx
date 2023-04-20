@@ -135,7 +135,7 @@ export const BtCreate = (props: { onLoading: any }) => {
     const data = {
       status: true,
       deadline: Deadline,
-      Budget: parseFloat(budgets).toLocaleString('pt-br', {
+      Budget: !budgets? 'R$ 0,00': parseFloat(budgets).toLocaleString('pt-br', {
         style: 'currency',
         currency: 'BRL',
       }),
@@ -143,7 +143,7 @@ export const BtCreate = (props: { onLoading: any }) => {
       empresa: Empresa,
       history: historico,
       user: session?.user.id,
-      incidentRecord: MSG,
+      incidentRecord: [MSG],
     };
 
     const url = '/api/db/business/post';
@@ -181,12 +181,12 @@ export const BtCreate = (props: { onLoading: any }) => {
       >
         <PopoverTrigger>
           <Button h={{ md: '40%', sm: '70%' }} colorScheme="whatsapp">
-            New
+            Novo Negocio
           </Button>
         </PopoverTrigger>
         <PopoverContent color="white" bg="blue.800" borderColor="blue.800">
           <PopoverHeader pt={4} fontWeight="bold" border="0">
-            Criar novo Business
+            Criar novo Negocio
           </PopoverHeader>
           <PopoverArrow bg="blue.800" />
           <PopoverBody>
