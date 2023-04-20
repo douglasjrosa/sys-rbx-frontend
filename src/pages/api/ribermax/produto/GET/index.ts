@@ -20,10 +20,12 @@ export default async function GetEmpresa(
       },
     })
       .then(async (Response) => {
-        console.log(Response.data.data);
+       console.log("🚀 ~ file: index.ts:23 ~ .then ~ Response:", Response)
+
         res.status(200).json(Response.data);
       })
       .catch((err) => {
+        console.log("🚀 ~ file: index.ts:27 ~ err:", err)
         res.status(400).json({
           error: err.response.data,
           mensage: err.response.data.error,
