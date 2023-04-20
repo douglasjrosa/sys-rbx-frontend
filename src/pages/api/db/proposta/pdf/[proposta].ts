@@ -19,12 +19,9 @@ export default async function GetEmpresa(
       const items = infos.itens
       const chunks = await chunkArray(items, 6);
       const htmls = chunks.map((chunk: any, x:number) => generateHtml(chunk,infos, x));
-      const [html] = await Promise.all(htmls)
+      const html: any = await Promise.all(htmls)
       const pdfs = await generatePdf(html);
-      // const pdfs = await Promise.all(htmls.map(async (html) => {
-      //   await generatePdf(html)
-      // }));
-      // const mergedPdf = await mergePdfs(pdfs);
+    
 
       const today = new Date();
       const formattedDate =

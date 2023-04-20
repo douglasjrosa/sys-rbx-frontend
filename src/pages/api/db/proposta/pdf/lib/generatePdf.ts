@@ -2,7 +2,7 @@ import puppeteer from "puppeteer";
 
 // Defina uma função que gera um PDF a partir de um HTML usando o Puppeteer
 export const generatePdf = async (html: string) => {
-  const browser = await puppeteer.launch({headless: false});
+  const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: "networkidle0" });
   // Gera o PDF

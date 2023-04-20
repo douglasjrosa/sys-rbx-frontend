@@ -34,6 +34,7 @@ import { CompBusiness } from "@/components/Proposta/business";
 import { CompPrazo } from "@/components/Proposta/prazo";
 import { ProdutiList } from "@/components/Proposta/produt";
 import { TableConteudo } from "@/components/Proposta/tabela";
+import Loading from "@/components/elements/loading";
 
 export default function Proposta() {
   const { data: session } = useSession();
@@ -41,6 +42,7 @@ export default function Proposta() {
   const Email = session?.user.email;
   const [reqPrazo, setReqPrazo] = useState([]);
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
+  const [loadingGeral, setLoadingGeral] = useState<boolean>(false);
   const [NomeEnpresa, setNomeEmpresa] = useState("");
   const [RelatEnpresa, setRelatEmpresa] = useState([]);
   const [RelatEnpresaId, setRelatEmpresaId] = useState("");
@@ -67,6 +69,7 @@ export default function Proposta() {
 
   useEffect(() => {
     (async () => {
+      setLoadingGeral(true)
       const PEDIDO = router.query.pedido;
       const request = await axios("/api/db/proposta/get/pedido/" + PEDIDO);
       const [resp]: any = request.data;
@@ -101,6 +104,7 @@ export default function Proposta() {
       setHistory(resp.attributes.business.data.attributes.history);
       const nome = resp.attributes.empresa.data.attributes.nome;
       setNomeEmpresa(nome);
+      setLoadingGeral(false)
     })();
   }, []);
 
@@ -373,6 +377,11 @@ export default function Proposta() {
     const filterItens = ListItens.filter((i: any) => i.id !== itemFinal);
     setItens(filterItens);
   }
+
+  if (loadingGeral) {
+    return <Loading size="200px">Carregando...</Loading>;
+  }
+
 
   return (
     <>
