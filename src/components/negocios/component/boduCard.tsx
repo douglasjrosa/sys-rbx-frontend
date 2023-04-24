@@ -4,25 +4,34 @@ import { useEffect, useState } from "react";
 import Loading from "../../elements/loading";
 import CardBusiness from "./card";
 
-
-export const BodyCard = (props: { reload: any, itens: any }) => {
+export const BodyCard = (props: { reload: any }) => {
   const [dados, setDados] = useState<any | null>([]);
   const [loading, setLoading] = useState<boolean>(true);
-
+  
+  useEffect(() => {
+    setLoading(props.reload);
+  }, [props.reload]);
+  
   useEffect(() => {
     (async () => {
-      setDados(props.itens);
-      setLoading(false);
+      await axios({
+        method: "GET",
+        url: "/api/db/business/get",
+      })
+        .then((res) => {
+          setDados(res.data);
+          setTimeout(() => setLoading(false), 1000);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     })();
-  }, [props.itens]);
+  }, [loading]);
 
   function reload(Loading: boolean | ((prevState: boolean) => boolean)) {
     setLoading(Loading);
   }
 
-  useEffect(() => {
-    setLoading(props.reload);
-  }, [props.reload]);
 
   return (
     <>

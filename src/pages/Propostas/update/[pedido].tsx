@@ -73,7 +73,6 @@ export default function Proposta() {
       const PEDIDO = router.query.pedido;
       const request = await axios("/api/db/proposta/get/pedido/" + PEDIDO);
       const [resp]: any = request.data;
-      console.log(resp);
       setId(resp.id);
       setCnpj(resp.attributes.CNPJClinet);
       const retornoProd = await fetch(

@@ -9,7 +9,6 @@ export const ListaEmpresa = (props: { onChangeValue: any }) => {
       const id = localStorage.getItem('id');
       const resposta = await fetch('/api/db/business/get/id/' + id);
       const resp = await resposta.json();
-      // console.log(resp.attributes.empresa.data);
       const retorno = resp.attributes.empresa.data;
       setDados(retorno.attributes.nome);
       props.onChangeValue(retorno.attributes.CNPJ);

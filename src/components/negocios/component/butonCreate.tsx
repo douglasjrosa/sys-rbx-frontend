@@ -77,13 +77,13 @@ export const BtCreate = (props: { onLoading: any }) => {
 
   useEffect(() => {
     (async () => {
-      let url = "/api/db/empresas/getEmpresas/get";
+      let url = "/api/db/empresas/getEmpresaMin";
       await axios({
         method: "GET",
         url: url,
       })
         .then(function (response) {
-          setWork(response.data.data);
+          setWork(response.data);
         })
         .catch(function (error) {
           console.log(error);
@@ -131,7 +131,7 @@ export const BtCreate = (props: { onLoading: any }) => {
   };
 
   const salve = async () => {
-    // props.onLoading(true);
+    props.onLoading(true);
     const data = {
       status: true,
       deadline: Deadline,
@@ -156,8 +156,9 @@ export const BtCreate = (props: { onLoading: any }) => {
     })
       .then((res) => {
         console.log(res);
-        props.onLoading(true);
+        props.onLoading(false);
         Reset();
+      
       })
       .catch((err) => console.error(err));
   };

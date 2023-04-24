@@ -64,9 +64,9 @@ export default function Proposta() {
       const id: any = localStorage.getItem("id");
       const resposta = await fetch("/api/db/business/get/id/" + id);
       const resp = await resposta.json();
-      setSaveNegocio(resp.attributes.history);
-      setHistory(resp.attributes.incidentRecord)
-      setIncidentRecord(resp.attributes.incidentRecord)
+      setSaveNegocio(resp.attributes.nBusiness);
+      setHistory(resp.attributes.incidentRecord);
+      setIncidentRecord(resp.attributes.incidentRecord);
     })();
   }, []);
 
@@ -216,13 +216,18 @@ export default function Proposta() {
 
           const msg = {
             vendedor: session?.user.name,
-            date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
+            date:
+              new Date().toLocaleDateString() +
+              " " +
+              new Date().toLocaleTimeString(),
             msg: `Vendedor ${session?.user.name} criou essa proposta `,
           };
           const msg2 = {
             date: DateAtua,
-            msg: `Proposta criada com o valor total ${totalGeral} contendo ${parseInt(ListItens.length) + 1} items`,
-            user: 'Sistema',
+            msg: `Proposta criada com o valor total ${totalGeral} contendo ${
+              parseInt(ListItens.length) + 1
+            } items`,
+            user: "Sistema",
           };
 
           const record = [...hirtori, msg];
@@ -237,7 +242,7 @@ export default function Proposta() {
 
           await axios({
             method: "PUT",
-            url: '/api/db/business/put/id/' + id,
+            url: "/api/db/business/put/id/" + id,
             data: data,
           });
           setTimeout(() => {
@@ -262,6 +267,7 @@ export default function Proposta() {
   function getCnpj(CNPJ: SetStateAction<string>) {
     setCnpj(CNPJ);
   }
+ 
   function getIten(resposta: SetStateAction<any>) {
     const lista = ListItens;
     const maxSum =

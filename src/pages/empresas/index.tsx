@@ -1,28 +1,32 @@
-
 import { useRouter } from "next/router";
-import {
-  Box,
-  Button,
-  Flex,
-  Select,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, Select } from "@chakra-ui/react";
 import CardEmpresa from "../../components/empresa/lista/card/card";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { InferGetStaticPropsType } from "next";
 
 export async function getStaticProps() {
+
+  const Token =  process.env.ATORIZZATION_TOKEN
   const data = await fetch(
-    process.env.NEXTAUTH_URL + "/api/db/empresas/getEmpresaMin"
+    process.env.NEXT_PUBLIC_STRAPI_API_URL +
+      "/empresas?filters[status][$eq]=true&&fields[0]=nome",{
+        headers:{
+            Authorization: `Bearer ${Token}`,
+        }
+      }
   );
-  const ListEmpesa = await data.json();
+  const resposta =  await data.json();
+  const ListEmpesa = await resposta.data;
 
   return {
     props: { ListEmpesa },
   };
 }
 
-export default function Empresas({ ListEmpesa }: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Empresas({
+  ListEmpesa,
+}: InferGetStaticPropsType<typeof getStaticProps>) {
   const router = useRouter();
   const { data: session } = useSession();
   const [Data, setData] = useState<any[]>([]);

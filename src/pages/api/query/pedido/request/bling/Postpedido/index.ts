@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
 
-import fs from 'fs';
-import { ApiErrorResponse } from '../../../../../../../types/axiosErrosPedido';
-import { SaveRespose } from '../../db/post/SaveRespose';
+import fs from "fs";
+import { ApiErrorResponse } from "../../../../../../../types/axiosErrosPedido";
+import { SaveRespose } from "../../db/post/SaveRespose";
 
 export const PostPedido = async (dados: any) => {
   const url = process.env.BLING_API_URL;
@@ -12,9 +12,9 @@ export const PostPedido = async (dados: any) => {
   const Produto = await DaDos.itens;
 
   const Produtos = Produto.map((i: any) => {
-    const Mont = i.prodId + '-mont';
-    const Expo = i.prodId + '-expo';
-    const montExpo = i.prodId + '-mont-expo';
+    const Mont = i.prodId + "-mont";
+    const Expo = i.prodId + "-expo";
+    const montExpo = i.prodId + "-mont-expo";
 
     const codg =
       i.expo === true && i.mont === true
@@ -28,7 +28,13 @@ export const PostPedido = async (dados: any) => {
     const setItens = `
     <item>
       <codigo>${codg}</codigo>
-      <descricao>${i.titulo}</descricao>
+      <descricao>${
+        i.expo === true && i.mont === true
+          ? i.nomeProd + " -mont-expo"
+          : i.expo === true && i.mont === false
+          ? i.nomeProd + " -expo"
+          : i.nomeProd + " -mont"
+      }</descricao>
       <un>Un</un>
       <qtde>${i.Qtd}</qtde>
       <vlr_unit>${i.total}</vlr_unit>
@@ -41,15 +47,15 @@ export const PostPedido = async (dados: any) => {
     ? Produtos.reduce((acc: any, cur: any) => acc + cur)
     : Produtos;
 
-  const prazo1 = DaDos.prazo === '' ? '5 Dias' : DaDos.prazo;
+  const prazo1 = DaDos.prazo === "" ? "5 Dias" : DaDos.prazo;
   const Valor = DaDos.totalGeral
-    .replace('R$', '')
-    .replace('.', '')
-    .replace(',', '.');
+    .replace("R$", "")
+    .replace(".", "")
+    .replace(",", ".");
   const ValorTotal = Valor;
-  const prazo = prazo1.replace('Dias', '');
+  const prazo = prazo1.replace("Dias", "");
 
-  const parcelasDay = prazo.split(' / ');
+  const parcelasDay = prazo.split(" / ");
   const ParcelasMult = parcelasDay.length;
   const hoje = new Date();
 
@@ -66,7 +72,7 @@ export const PostPedido = async (dados: any) => {
       dataParcela.setDate(dataParcela.getDate() + 1); // Adiciona um dia para cair na segunda-feira
     }
 
-    const obs = x === 0 ? 'Entrada' : `Parcela N°:${x + 1}`;
+    const obs = x === 0 ? "Entrada" : `Parcela N°:${x + 1}`;
     const templateParcela = `<parcela>
           <data>${dataParcela.toLocaleDateString()}</data>
           <vlr>${valorParcela.toFixed(2)}</vlr>
@@ -76,15 +82,15 @@ export const PostPedido = async (dados: any) => {
   });
 
   const parcela = () => {
-    const prazo1 = '5 Dias';
-    const prazo = prazo1.replace('Dias', '');
+    const prazo1 = "5 Dias";
+    const prazo = prazo1.replace("Dias", "");
     const pp = parseInt(prazo);
     const dataParcela = new Date();
     dataParcela.setDate(dataParcela.getDate() + pp);
     const Valor = DaDos.totalGeral
-      .replace('R$', '')
-      .replace('.', '')
-      .replace(',', '.');
+      .replace("R$", "")
+      .replace(".", "")
+      .replace(",", ".");
     const ValorTotal = parseFloat(Valor);
 
     if (dataParcela.getDay() === 6) {
@@ -93,10 +99,10 @@ export const PostPedido = async (dados: any) => {
       dataParcela.setDate(dataParcela.getDate() + 1); // Adiciona um dia para cair na segunda-feira
     }
     const obs =
-      DaDos.condi === 'Antecipado'
-        ? 'pagamento antecipado'
-        : DaDos.condi === 'À vista'
-        ? 'pagamento a vista'
+      DaDos.condi === "Antecipado"
+        ? "pagamento antecipado"
+        : DaDos.condi === "À vista"
+        ? "pagamento a vista"
         : null;
 
     const retorno = `
@@ -110,14 +116,14 @@ export const PostPedido = async (dados: any) => {
   };
 
   const xmlParcelas =
-    DaDos.condi === 'Antecipado' || DaDos.condi === 'À vista'
+    DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
       ? parcela()
       : datasParcelas;
 
   const desconto = DaDos.desconto
-    .replace('R$', '')
-    .replace('.', '')
-    .replace(',', '.');
+    .replace("R$", "")
+    .replace(".", "")
+    .replace(",", ".");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
@@ -133,7 +139,7 @@ export const PostPedido = async (dados: any) => {
         <cep>${empresa.cep}</cep>
         <cidade>${empresa.cidade}</cidade>
         <uf>${empresa.uf}</uf>
-        <fone>${empresa.celular === '' ? empresa.fone : empresa.celular}</fone>
+        <fone>${empresa.celular === "" ? empresa.fone : empresa.celular}</fone>
         <email>${empresa.email}</email>
      </cliente>
      <transporte />
@@ -146,15 +152,15 @@ export const PostPedido = async (dados: any) => {
   </pedido>`;
   try {
     const formData = new FormData();
-    formData.append('apikey', apiKey);
-    formData.append('xml', xml);
+    formData.append("apikey", apiKey);
+    formData.append("xml", xml);
 
     var requestOptions = {
-      method: 'POST',
+      method: "POST",
       body: formData,
     };
 
-    const requet = await fetch(url + '/pedido/json/', requestOptions);
+    const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
     console.log(response);
 
@@ -172,7 +178,7 @@ export const PostPedido = async (dados: any) => {
 
     const resposta = {
       msg:
-        'pedido gerando com susseso, pedido N°: ' + pedidos[0].pedido.idPedido,
+        "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
       pedido: pedidos[0].pedido.idPedido,
       status: 201,
     };
@@ -186,8 +192,8 @@ export const PostPedido = async (dados: any) => {
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
       status: error.response?.status ?? 400,
-      erro: error.erro ?? '[]',
-      detalhes: error.detalhes ?? 'null',
+      erro: error.erro ?? "[]",
+      detalhes: error.detalhes ?? "null",
     };
     throw errorResponse;
   }

@@ -36,7 +36,7 @@ export const ProdutiList = (props: {
         })
           .then((resp) => resp.json())
           .then((resposta) => {
-            console.log(resposta)
+           
             const retonoIdeal =
               resposta.length === 0
                 ? false
@@ -79,7 +79,7 @@ export const ProdutiList = (props: {
     })
       .then((resp) => resp.json())
       .then((resposta) => {
-        console.log("🚀 ~ file: produt.tsx:82 ~ .then ~ resposta:", resposta)
+        
         props.onResp(resposta);
         setLoad(false);
       })

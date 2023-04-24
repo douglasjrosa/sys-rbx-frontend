@@ -5,6 +5,10 @@ import { CardList } from "../../components/Proposta/listaItens";
 export default function ListaProposta() {
   const router = useRouter();
   const ID: any = router.query.id;
+  console.log("🚀 ~ file: [id].tsx:8 ~ ListaProposta ~ ID:", ID)
+
+
+
 
   return (
     <>
