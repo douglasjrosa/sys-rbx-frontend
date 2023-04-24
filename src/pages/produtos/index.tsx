@@ -5,7 +5,8 @@ import { useSession } from 'next-auth/react';
 
 function Produtos() {
   const { data: session } = useSession();
-  const email = 'douglasjrosa@gmail.com';
+  // const email = 'douglasjrosa@gmail.com';
+  const email = localStorage.getItem('email');
   return (
     <>
       <iframe
