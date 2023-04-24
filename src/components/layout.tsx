@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import Loading from './elements/loading';
 import MobileNavbar from './elements/mobile-navbar';
 import Navbar from './elements/navbar';
+import { useEffect } from 'react';
 
 function Layout({ children }: { children: React.ReactNode }): JSX.Element {
   const toast = useToast();
@@ -62,6 +63,8 @@ function Layout({ children }: { children: React.ReactNode }): JSX.Element {
     (status && router.asPath === '/auth/signin')
   ) {
     router.push('/');
+    const UserEmail: any|null = session?.user.email
+    localStorage.setItem("email", UserEmail);
     return <Loading size="200px">Redirecionando...</Loading>;
   }
 
@@ -69,6 +72,8 @@ function Layout({ children }: { children: React.ReactNode }): JSX.Element {
     router.push('/auth/signin');
     return <Loading size="200px">Redirecionando...</Loading>;
   }
+
+      
 
   return (
     <Flex
