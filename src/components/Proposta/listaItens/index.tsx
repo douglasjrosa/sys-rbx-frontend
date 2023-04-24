@@ -12,6 +12,8 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+
+
 export const CardList = (props: { id: string }) => {
   const router = useRouter();
   const toast = useToast();

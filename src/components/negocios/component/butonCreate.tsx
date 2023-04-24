@@ -135,19 +135,12 @@ export const BtCreate = (props: { onLoading: any }) => {
     const data = {
       status: true,
       deadline: Deadline,
-<<<<<<< Updated upstream
-      Budget: !budgets? 'R$ 0,00': parseFloat(budgets).toLocaleString('pt-br', {
-        style: 'currency',
-        currency: 'BRL',
-      }),
-=======
       Budget: !budgets
         ? "R$ 0,00"
         : parseFloat(budgets).toLocaleString("pt-br", {
             style: "currency",
             currency: "BRL",
           }),
->>>>>>> Stashed changes
       Approach: Approach,
       empresa: Empresa,
       history: historico,
@@ -189,11 +182,7 @@ export const BtCreate = (props: { onLoading: any }) => {
         onClose={onClose}
       >
         <PopoverTrigger>
-<<<<<<< Updated upstream
-          <Button h={{ md: '40%', sm: '70%' }} colorScheme="whatsapp">
-=======
           <Button h={{ md: "40%", sm: "70%" }} colorScheme="whatsapp">
->>>>>>> Stashed changes
             Novo Negocio
           </Button>
         </PopoverTrigger>

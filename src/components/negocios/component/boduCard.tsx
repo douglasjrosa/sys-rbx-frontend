@@ -4,26 +4,17 @@ import { useEffect, useState } from "react";
 import Loading from "../../elements/loading";
 import CardBusiness from "./card";
 
-export const BodyCard = (props: { reload: any }) => {
+
+export const BodyCard = (props: { reload: any, itens: any }) => {
   const [dados, setDados] = useState<any | null>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     await axios({
-  //       method: "GET",
-  //       url: "/api/db/business/get",
-  //     })
-  //       .then((res) => {
-  //         setDados(res.data);
-  //         setLoading(false);
-  //       })
-  //       .catch((err) => {
-  //         console.error(err);
-  //         setDados(null);
-  //       });
-  //   })();
-  // }, []);
+  useEffect(() => {
+    (async () => {
+      setDados(props.itens);
+      setLoading(false);
+    })();
+  }, [props.itens]);
 
   function reload(Loading: boolean | ((prevState: boolean) => boolean)) {
     setLoading(Loading);
@@ -32,24 +23,6 @@ export const BodyCard = (props: { reload: any }) => {
   useEffect(() => {
     setLoading(props.reload);
   }, [props.reload]);
-
-  useEffect(() => {
-    (async () => {
-      await axios({
-        method: "GET",
-        url: "/api/db/business/get",
-      })
-        .then((res) => {
-          console.log("🚀 ~ file: boduCard.tsx:43 ~ .then ~ res:", res)
-          setDados(res.data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setDados(null);
-        });
-    })();
-  }, [loading]);
 
   return (
     <>

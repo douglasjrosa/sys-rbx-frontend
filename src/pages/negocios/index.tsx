@@ -12,8 +12,19 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { BodyCard } from '../../components/negocios/component/boduCard';
 import { BtCreate } from '../../components/negocios/component/butonCreate';
+import { InferGetStaticPropsType } from 'next';
 
-export default function Negocios() {
+export async function getStaticProps() {
+  // const data = await fetch("http://localhost:3000/api/db/business/get");
+  const data = await fetch(process.env.NEXTAUTH_URL + "/api/db/business/get");
+  const Listnegocios: any = await data.json();
+
+  return {
+    props: { Listnegocios },
+  };
+}
+
+export default function Negocios({Listnegocios}: InferGetStaticPropsType<typeof getStaticProps>) {
   const router = useRouter();
   const [Cnpj, setCnpj] = useState(false);
   const [Pedido, setPedido] = useState(false);
@@ -125,7 +136,7 @@ export default function Negocios() {
             flexDirection="column"
             gap={5}
           >
-            <BodyCard reload={load} />
+            <BodyCard reload={load} itens={Listnegocios} />
           </Flex>
         </Box>
       </Flex>

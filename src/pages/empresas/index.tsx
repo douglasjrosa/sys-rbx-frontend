@@ -1,46 +1,36 @@
-import { Search2Icon } from "@chakra-ui/icons";
+
 import { useRouter } from "next/router";
 import {
   Box,
   Button,
   Flex,
-  FormLabel,
-  Input,
-  InputGroup,
-  InputRightElement,
   Select,
-  useToast,
 } from "@chakra-ui/react";
 import CardEmpresa from "../../components/empresa/lista/card/card";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { InferGetStaticPropsType } from "next";
 
-export default function Empresas() {
+export async function getStaticProps() {
+  const data = await fetch(
+    process.env.NEXTAUTH_URL + "/api/db/empresas/getEmpresaMin"
+  );
+  const ListEmpesa = await data.json();
+
+  return {
+    props: { ListEmpesa },
+  };
+}
+
+export default function Empresas({ ListEmpesa }: InferGetStaticPropsType<typeof getStaticProps>) {
   const router = useRouter();
   const { data: session } = useSession();
   const [Data, setData] = useState<any[]>([]);
-  const [id, setId] = useState('')
-  const toast = useToast();
+  const [id, setId] = useState("");
 
   useEffect(() => {
-    (async () => {
-      await fetch("/api/db/empresas/getEmpresaMin")
-        .then((resp: any) => resp.json())
-        .then((result: any) => {
-          console.log("🚀 ~ file: index.tsx:29 ~ .then ~ result:", result);
-          setData(result);
-        })
-        .catch((err) => {
-          toast({
-            title: "Ops!.. Não tem empresa?.",
-            description:
-              "Algo de errado esta acontecendo, entre em contato com o adm do sistema.",
-            status: "warning",
-            duration: 12000,
-          });
-        });
-    })();
-  }, [toast]);
+    setData(ListEmpesa);
+  }, [ListEmpesa]);
 
   return (
     <Flex h="100%" w="100%" flexDir={"column"} justifyContent="center">
@@ -55,7 +45,7 @@ export default function Empresas() {
         alignItems={"center"}
         flexDir={{ sm: "column", md: "row" }}
       >
-        <Flex gap='1rem' alignItems={'center'}>
+        <Flex gap="1rem" alignItems={"center"}>
           <Select
             borderColor="gray.600"
             focusBorderColor="brand.400"
@@ -75,11 +65,11 @@ export default function Empresas() {
                 ))}
           </Select>
           <Button
-              colorScheme="blackAlpha"
-              onClick={() => router.push(`/empresas/atualizar/${id}`)}
-            >
-              Editar Empresa
-            </Button>
+            colorScheme="blackAlpha"
+            onClick={() => router.push(`/empresas/atualizar/${id}`)}
+          >
+            Editar Empresa
+          </Button>
         </Flex>
         <Box
           display={"flex"}
