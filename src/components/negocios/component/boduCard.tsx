@@ -6,26 +6,24 @@ import CardBusiness from "./card";
 
 export const BodyCard = (props: { reload: any }) => {
   const [dados, setDados] = useState<any | null>([]);
-  console.log("🚀 ~ file: boduCard.tsx:9 ~ BodyCard ~ dados:", dados)
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    (async () => {
-      await axios({
-        method: "GET",
-        url: "/api/db/business/get",
-      })
-        .then((res) => {
-          console.log(res.data);
-          setDados(res.data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setDados(null);
-        });
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     await axios({
+  //       method: "GET",
+  //       url: "/api/db/business/get",
+  //     })
+  //       .then((res) => {
+  //         setDados(res.data);
+  //         setLoading(false);
+  //       })
+  //       .catch((err) => {
+  //         console.error(err);
+  //         setDados(null);
+  //       });
+  //   })();
+  // }, []);
 
   function reload(Loading: boolean | ((prevState: boolean) => boolean)) {
     setLoading(Loading);
@@ -42,6 +40,7 @@ export const BodyCard = (props: { reload: any }) => {
         url: "/api/db/business/get",
       })
         .then((res) => {
+          console.log("🚀 ~ file: boduCard.tsx:43 ~ .then ~ res:", res)
           setDados(res.data);
           setLoading(false);
         })

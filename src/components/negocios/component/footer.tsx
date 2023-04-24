@@ -51,7 +51,7 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
           props.onGetValue(true);
           console.error(err);
           toast({
-            title: 'opss erro',
+            title: 'ops erro',
             description: err,
             status: 'error',
             duration: 9000,

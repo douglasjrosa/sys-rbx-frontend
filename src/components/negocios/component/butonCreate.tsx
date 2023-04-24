@@ -20,15 +20,15 @@ import {
   Select,
   Tooltip,
   useDisclosure,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { BeatLoader } from 'react-spinners';
-import { mask, unMask } from 'remask';
+} from "@chakra-ui/react";
+import axios from "axios";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { BeatLoader } from "react-spinners";
+import { mask, unMask } from "remask";
 
 const activeLabelStyles = {
-  transform: 'scale(0.85) translateY(-24px)',
+  transform: "scale(0.85) translateY(-24px)",
 };
 export const theme = extendTheme({
   components: {
@@ -41,7 +41,7 @@ export const theme = extendTheme({
                 ...activeLabelStyles,
               },
             },
-            'input:not(:placeholder-shown) + label, .chakra-select__wrapper + label, textarea:not(:placeholder-shown) ~ label':
+            "input:not(:placeholder-shown) + label, .chakra-select__wrapper + label, textarea:not(:placeholder-shown) ~ label":
               {
                 ...activeLabelStyles,
               },
@@ -49,14 +49,14 @@ export const theme = extendTheme({
               top: 0,
               left: 0,
               zIndex: 2,
-              position: 'absolute',
-              backgroundColor: 'blue.600',
-              rounded: '6px',
-              pointerEvents: 'none',
+              position: "absolute",
+              backgroundColor: "blue.600",
+              rounded: "6px",
+              pointerEvents: "none",
               mx: 3,
               px: 1,
               my: 2,
-              transformOrigin: 'left top',
+              transformOrigin: "left top",
             },
           },
         },
@@ -68,18 +68,18 @@ export const theme = extendTheme({
 export const BtCreate = (props: { onLoading: any }) => {
   const { data: session } = useSession();
   const [work, setWork] = useState([]);
-  const [budgets, setBudgets] = useState('');
-  const [budgetsMask, setBudgetsMask] = useState('');
-  const [Approach, setApproach] = useState('');
-  const [Empresa, setEmpresa] = useState('');
-  const [Deadline, setDeadline] = useState('');
+  const [budgets, setBudgets] = useState("");
+  const [budgetsMask, setBudgetsMask] = useState("");
+  const [Approach, setApproach] = useState("");
+  const [Empresa, setEmpresa] = useState("");
+  const [Deadline, setDeadline] = useState("");
   const { onOpen, onClose, isOpen } = useDisclosure();
 
   useEffect(() => {
     (async () => {
-      let url = '/api/db/empresas/getEmpresas/get';
+      let url = "/api/db/empresas/getEmpresas/get";
       await axios({
-        method: 'GET',
+        method: "GET",
         url: url,
       })
         .then(function (response) {
@@ -94,24 +94,24 @@ export const BtCreate = (props: { onLoading: any }) => {
   const maskPreco = (e: any) => {
     const originalVelue: any = unMask(e.target.value);
     const maskedValue = mask(originalVelue, [
-      ', 9',
-      ',99',
-      '9,99',
-      '99,99',
-      '999,99',
-      '9.999,99',
-      '99.999,99',
-      '999.999,99',
-      '9.999.999,99',
-      '99.999.999,99',
-      '999.999.999,99',
+      ", 9",
+      ",99",
+      "9,99",
+      "99,99",
+      "999,99",
+      "9.999,99",
+      "99.999,99",
+      "999.999,99",
+      "9.999.999,99",
+      "99.999.999,99",
+      "999.999.999,99",
     ]);
     const valor =
       originalVelue > 99
         ? originalVelue
-            .replace(/[^\d]/g, '')
-            .replace(/^0+/, '')
-            .replace(/(\d{1,})(\d{2})$/, '$1.$2')
+            .replace(/[^\d]/g, "")
+            .replace(/^0+/, "")
+            .replace(/(\d{1,})(\d{2})$/, "$1.$2")
         : originalVelue;
     setBudgets(valor);
     setBudgetsMask(maskedValue);
@@ -120,25 +120,34 @@ export const BtCreate = (props: { onLoading: any }) => {
   const historico = {
     vendedor: session?.user.name,
     date:
-      new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
-    msg: `Vendedor ${session?.user.name}, criou esse Busines`,
+      new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
+    msg: `Vendedor ${session?.user.name}, criou esse Business`,
   };
 
-  const MSG =  {
-    msg: `Vendedor ${session?.user.name}, criou esse Busines`,
-    date:  new Date().toLocaleString(),
-    user: "Sistema"
-  }
+  const MSG = {
+    msg: `Vendedor ${session?.user.name}, criou esse Business`,
+    date: new Date().toISOString(),
+    user: "Sistema",
+  };
 
   const salve = async () => {
     // props.onLoading(true);
     const data = {
       status: true,
       deadline: Deadline,
+<<<<<<< Updated upstream
       Budget: !budgets? 'R$ 0,00': parseFloat(budgets).toLocaleString('pt-br', {
         style: 'currency',
         currency: 'BRL',
       }),
+=======
+      Budget: !budgets
+        ? "R$ 0,00"
+        : parseFloat(budgets).toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          }),
+>>>>>>> Stashed changes
       Approach: Approach,
       empresa: Empresa,
       history: historico,
@@ -146,9 +155,9 @@ export const BtCreate = (props: { onLoading: any }) => {
       incidentRecord: [MSG],
     };
 
-    const url = '/api/db/business/post';
+    const url = "/api/db/business/post";
     await axios({
-      method: 'POST',
+      method: "POST",
       url: url,
       data: data,
     })
@@ -161,12 +170,12 @@ export const BtCreate = (props: { onLoading: any }) => {
   };
 
   const Reset = () => {
-    setBudgets('');
-    setBudgetsMask('');
-    setApproach('');
-    setEmpresa('');
-    setDeadline('');
-    setBudgetsMask('');
+    setBudgets("");
+    setBudgetsMask("");
+    setApproach("");
+    setEmpresa("");
+    setDeadline("");
+    setBudgetsMask("");
     onClose();
   };
 
@@ -180,7 +189,11 @@ export const BtCreate = (props: { onLoading: any }) => {
         onClose={onClose}
       >
         <PopoverTrigger>
+<<<<<<< Updated upstream
           <Button h={{ md: '40%', sm: '70%' }} colorScheme="whatsapp">
+=======
+          <Button h={{ md: "40%", sm: "70%" }} colorScheme="whatsapp">
+>>>>>>> Stashed changes
             Novo Negocio
           </Button>
         </PopoverTrigger>
@@ -190,7 +203,7 @@ export const BtCreate = (props: { onLoading: any }) => {
           </PopoverHeader>
           <PopoverArrow bg="blue.800" />
           <PopoverBody>
-            Preencha comas informaçoes abaixo
+            Preencha com as informações abaixo
             <Select
               mt={2}
               placeholder="Selecione uma empresa"
@@ -200,7 +213,7 @@ export const BtCreate = (props: { onLoading: any }) => {
               {work.map((item: any) => {
                 return (
                   <option
-                    style={{ backgroundColor: '#2A4365' }}
+                    style={{ backgroundColor: "#2A4365" }}
                     key={item.id}
                     value={item.id}
                   >
@@ -212,25 +225,25 @@ export const BtCreate = (props: { onLoading: any }) => {
             <Tooltip label="tipo de atendimento">
               <Select
                 mt={2}
-                placeholder="Selecione o tipo de Approach"
+                placeholder="Selecione o tipo de Atendimento"
                 onChange={(e) => setApproach(e.target.value)}
                 value={Approach}
               >
                 return (
-                <option style={{ backgroundColor: '#2A4365' }} value="">
-                  {' '}
+                <option style={{ backgroundColor: "#2A4365" }} value="">
+                  {" "}
                 </option>
-                <option style={{ backgroundColor: '#2A4365' }} value="interno">
+                <option style={{ backgroundColor: "#2A4365" }} value="interno">
                   Cliente entrou em contato
                 </option>
-                <option style={{ backgroundColor: '#2A4365' }} value="externo">
+                <option style={{ backgroundColor: "#2A4365" }} value="externo">
                   vendedor entrou em contato
                 </option>
                 );
               </Select>
             </Tooltip>
             <InputGroup mt={2}>
-              <InputLeftElement pointerEvents="none" children={'R$'} />
+              <InputLeftElement pointerEvents="none" children={"R$"} />
               <Input
                 type="text"
                 placeholder="Orçamento estimado"
@@ -238,14 +251,14 @@ export const BtCreate = (props: { onLoading: any }) => {
                 onChange={maskPreco}
               />
             </InputGroup>
-            <Tooltip label="Prazo limite de entrega">
+            <Tooltip label="Prazo de entrega">
               <FormControl variant="floating" mt={5} id="first-name">
                 <Input
-                  type={'date'}
+                  type={"date"}
                   onChange={(e) => setDeadline(e.target.value)}
                   value={Deadline}
                 />
-                <FormLabel>Deadline</FormLabel>
+                <FormLabel>Prazo de entrega</FormLabel>
               </FormControl>
             </Tooltip>
           </PopoverBody>

@@ -4,20 +4,17 @@ import Loading from '../../elements/loading';
 
 interface MyTextAreaElement extends HTMLTextAreaElement {}
 
-export const BodyChat = (props: { conteudo: any; loading: boolean }) => {
+export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
   const textareaRef = useRef<MyTextAreaElement>(null);
   const [Load, setLoad] = useState(false);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any | null>([]);
   const [dataUser, setDataUser] = useState([]);
   const [dataSistema, setDataSistema] = useState([]);
   useEffect(() => {
     setLoad(props.loading);
     setData(props.conteudo);
   }, [props.conteudo, props.loading]);
-  // console.log(data)
-
-
-
+ 
   useEffect(() => {
     if (textareaRef.current) {
       (textareaRef.current as HTMLTextAreaElement).style.height = 'auto';
@@ -47,7 +44,7 @@ export const BodyChat = (props: { conteudo: any; loading: boolean }) => {
 
   return (
     <Box display={'flex'} flexDirection={'column'} w={'100%'} h={'100%'} p={5}>
-      {data.map((mensagem: any, index: number) => {
+      {!data? null : data.map((mensagem: any, index: number) => {
         const estilo =
           mensagem.user === 'Sistema'
             ? estiloMensagem.mensagemSistema

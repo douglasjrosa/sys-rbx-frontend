@@ -55,7 +55,7 @@ export const NegocioHeader = (props: {
   const historicomsg = {
     vendedor: session?.user.name,
     date: new Date().toLocaleString(),
-    msg: `Vendedor(a) ${session?.user.name}, alterou as informaçoes desse Busines`,
+    msg: `Vendedor(a) ${session?.user.name}, alterou as informações desse Busines`,
   };
 
   const history = [...props.historia, historicomsg];
@@ -83,7 +83,7 @@ export const NegocioHeader = (props: {
       .then((res) => {
         toast({
           title: "Atualização feita",
-          description: "Atualização das inforaçoes foi efetuada com sucesso",
+          description: "Atualização das informações foi efetuada com sucesso",
           status: "success",
           duration: 9000,
           isClosable: true,
@@ -121,6 +121,7 @@ export const NegocioHeader = (props: {
               w="full"
               fontSize="xs"
               rounded="md"
+              border={'1px solid #6666'}
               onChange={(e) => setBusines(e.target.value)}
               value={props.nBusiness}
             />
@@ -141,7 +142,7 @@ export const NegocioHeader = (props: {
                 color: "gray.50",
               }}
             >
-              Budget
+              Orçamento estimado
             </FormLabel>
             <Input
               shadow="sm"
@@ -149,6 +150,7 @@ export const NegocioHeader = (props: {
               w="full"
               fontSize="xs"
               rounded="md"
+              border={'1px solid #6666'}
               onChange={(e) => setBudget(e.target.value)}
               value={props.Budget}
             />
@@ -163,7 +165,7 @@ export const NegocioHeader = (props: {
                 color: "gray.50",
               }}
             >
-              Deadline
+              Prazo de Entrega
             </FormLabel>
             <Input
               shadow="sm"
@@ -172,6 +174,7 @@ export const NegocioHeader = (props: {
               type={"date"}
               fontSize="xs"
               rounded="md"
+              border={'1px solid #6666'}
               onChange={(e) => setDeadline(e.target.value)}
               value={Deadline}
             />
@@ -190,11 +193,12 @@ export const NegocioHeader = (props: {
             </FormLabel>
             <Select
               shadow="sm"
-              size="xs"
+              size="sm"
               w="full"
               fontSize="xs"
               rounded="md"
               placeholder=" "
+              border={'1px solid #6666'}
               onChange={(e) => setEtapa(e.target.value)}
               value={Etapa}
             >
@@ -224,11 +228,12 @@ export const NegocioHeader = (props: {
                 </FormLabel>
                 <Select
                   shadow="sm"
-                  size="xs"
+                  size="sm"
                   w="full"
                   fontSize="xs"
                   rounded="md"
                   placeholder=" "
+                  border={'1px solid #6666'}
                   onChange={(e)=> setMperca(e.target.value)}
                   value={Mperca}
                 >
@@ -262,6 +267,7 @@ export const NegocioHeader = (props: {
                   type={"date"}
                   fontSize="xs"
                   rounded="md"
+                  border={'1px solid #6666'}
                   onChange={(e) => setDataRetorno(e.target.value)}
                   value={DataRetorno}
                 />

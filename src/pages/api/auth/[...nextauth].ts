@@ -2,7 +2,6 @@
 /* eslint-disable no-unreachable */
 /* eslint-disable no-undef */
 import axios from "axios";
-import { any } from "joi";
 import NextAuth, { DefaultUser } from "next-auth";
 import { Session } from "next-auth/core/types";
 import { JWT } from "next-auth/jwt";
@@ -56,10 +55,9 @@ export default NextAuth({
             blocked: blocked,
             pemission: pemission,
           };
-          console.log("🚀 ~ file: [...nextauth].ts:60 ~ authorize ~ res:", res)
 
           if (!jwt || !id || !username || !email) {
-            throw new Error("Usuario e senha incorreto");
+            throw new Error("Usuário e senha incorreto");
             return null;
           }
           return response;
@@ -78,7 +76,7 @@ export default NextAuth({
     // verifyRequest: '/auth/verify-request', // (used for check email message)
     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
-    
+
   callbacks: {
     jwt: async ({ token, user }): Promise<any> => {
       const isSignIn = !!user;

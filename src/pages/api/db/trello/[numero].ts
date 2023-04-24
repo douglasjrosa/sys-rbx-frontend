@@ -56,8 +56,8 @@ export default async function PostTrello(
     const Prefuncionario = await GetTrelloId();
     const funcionario = Prefuncionario.filter((f: string) => f !== null);
 
-    const list = "6438073ecc85f294325f74"; //teste erro
-    // const list = "6438073ecc85f294325f74ac"; //teste
+    // const list = "6438073ecc85f294325f74"; //teste erro
+    const list = "6438073ecc85f294325f74ac"; //teste
     // const list = "5fac446c22f5d05364052362";
     const Bord = "5fac445b3c5274707a309d61"
 

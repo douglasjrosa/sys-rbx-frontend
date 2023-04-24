@@ -41,7 +41,7 @@ export default function CreateNegocio() {
     (async () => {
       const url = '/api/db/business/get/id/' + id;
       console.log(url);
-      //cunsulta informaçoes geraris do cliente
+      //cunsulta informações gerais do cliente
       await axios({
         method: 'GET',
         url: url,
@@ -63,8 +63,8 @@ export default function CreateNegocio() {
         .catch((err) => {
           console.log(err);
           toast({
-            title: 'Opss',
-            description: 'erro ao recuperar as informaçoes',
+            title: 'Ops',
+            description: 'erro ao recuperar as informações',
             status: 'error',
             duration: 9000,
             isClosable: true,
@@ -81,7 +81,7 @@ export default function CreateNegocio() {
         setLoading(true);
         const url = '/api/db/business/get/id/' + id;
         console.log(url);
-        //cunsulta informaçoes geraris do cliente
+        //cunsulta informações gerais do cliente
         await axios({
           method: 'GET',
           url: url,
@@ -95,8 +95,8 @@ export default function CreateNegocio() {
           .catch((err) => {
             console.log(err);
             toast({
-              title: 'Opss',
-              description: 'erro ao recuperar as informaçoes',
+              title: 'Ops',
+              description: 'erro ao recuperar as informações',
               status: 'error',
               duration: 9000,
               isClosable: true,

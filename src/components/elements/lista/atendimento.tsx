@@ -43,11 +43,12 @@ export const SelecAtendimento = (props: { Resp: string; onAddResp: any }) => {
       </FormLabel>
       <Select
         shadow="sm"
-        size="xs"
+        size="sm"
         w="full"
         fontSize="xs"
         rounded="md"
         placeholder=" "
+        border={'1px solid #6666'}
         onChange={atualizarValor}
         value={valor}
       >

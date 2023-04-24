@@ -78,7 +78,7 @@ export default async function GetEmpresa(
 
         const txt = {
           date: isoDateTime,
-          vendedors: data.vendedor,
+          vendedor: data.vendedor,
           msg: `Business numero: ${nBusiness}, foi criado pelo vendedor ${respVendedor} para o cliente ${respCliente} no dia ${VisibliDateTime}`,
         };
         const url = `empresas/${data.empresa}`;
@@ -92,12 +92,13 @@ export default async function GetEmpresa(
         });
       })
       .catch(async (error) => {
+        console.log("🚀 ~ file: index.ts:95 ~ error:", error.response.data)
         // console.log(error.response);
         const isoDateTime = new Date().toISOString();
 
         const txt = {
           date: isoDateTime,
-          vendedors: data.vendedor,
+          vendedor: data.vendedor,
           msg: 'Proposta não foi criada devido a erro',
           error: error.response,
         };

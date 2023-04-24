@@ -64,7 +64,7 @@ export default function CardBusiness(props: {
               color: 'gray.400',
             }}
           >
-            <b>Crieate:</b> {new Date(props.criateed).toLocaleString()}
+            <b>Create:</b> {new Date(props.criateed).toLocaleString()}
           </chakra.span>
           <chakra.span
             fontSize="sm"
@@ -262,7 +262,7 @@ export default function CardBusiness(props: {
                   color: 'gray.300',
                 }}
               >
-                Qtd pdidos:
+                Qtd pedidos:
               </chakra.p>
               <chakra.p
                 mt={2}

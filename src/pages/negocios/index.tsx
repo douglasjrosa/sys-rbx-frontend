@@ -99,33 +99,7 @@ export default function Negocios() {
           flexDir={{ sm: 'column', md: 'row' }}
         >
           <Box>
-            {/* <Box h={'3rem'} w="400px">
-              {!Data && !Pedido && !Cnpj
-                ? null
-                : Data
-                ? pesquisaDate()
-                : pesquisaTxt()}
-            </Box>
-            <Flex gap={8} justifyContent={'center'}>
-              <Checkbox
-                isDisabled={Pedido || Data ? true : false}
-                onChange={(e) => setCnpj(e.target.checked)}
-              >
-                CNPJ
-              </Checkbox>
-              <Checkbox
-                isDisabled={Cnpj || Data ? true : false}
-                onChange={(e) => setPedido(e.target.checked)}
-              >
-                Numero do pedido
-              </Checkbox>
-              <Checkbox
-                isDisabled={Pedido || Cnpj ? true : false}
-                onChange={(e) => setData(e.target.checked)}
-              >
-                Data
-              </Checkbox>
-            </Flex> */}
+         
           </Box>
           <Box
             display={'flex'}

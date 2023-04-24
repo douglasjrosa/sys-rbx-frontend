@@ -46,7 +46,7 @@ export default function Proposta() {
   const [tipoprazo, setTipoPrazo] = useState("");
   const [totalGeral, setTotalGeral] = useState("");
   const [Desconto, setDesconto] = useState("");
-  const [negocio, setNegocio] = useState([]);
+  const [incidentRecord, setIncidentRecord] = useState([]);
   const [hirtori, setHistory] = useState([]);
   const [saveNegocio, setSaveNegocio] = useState("");
   const [obs, setObs] = useState("");
@@ -64,8 +64,9 @@ export default function Proposta() {
       const id: any = localStorage.getItem("id");
       const resposta = await fetch("/api/db/business/get/id/" + id);
       const resp = await resposta.json();
-      setSaveNegocio(resp.attributes.nBusiness);
-      setHistory(resp.attributes.history)
+      setSaveNegocio(resp.attributes.history);
+      setHistory(resp.attributes.incidentRecord)
+      setIncidentRecord(resp.attributes.incidentRecord)
     })();
   }, []);
 
@@ -109,7 +110,6 @@ export default function Proposta() {
   }, [DescontoGeral, ListItens, TotalGreal]);
 
   useEffect(() => {
-    console.log(prazo);
     if (prazo === "Antecipado") {
       setItens(
         ListItens.map((f: any) => {
@@ -215,16 +215,23 @@ export default function Proposta() {
           const DateAtua = date.toISOString();
 
           const msg = {
+            vendedor: session?.user.name,
+            date: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
+            msg: `Vendedor ${session?.user.name} criou essa proposta `,
+          };
+          const msg2 = {
             date: DateAtua,
-            user: 'Sistema',
             msg: `Proposta criada com o valor total ${totalGeral} contendo ${parseInt(ListItens.length) + 1} items`,
+            user: 'Sistema',
           };
 
           const record = [...hirtori, msg];
+          const record2 = [...incidentRecord, msg2];
 
           const data = {
             data: {
-              incidentRecord: record,
+              history: record,
+              incidentRecord: record2,
             },
           };
 

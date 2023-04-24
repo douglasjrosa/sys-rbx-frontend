@@ -48,7 +48,7 @@ export const ProdutiList = (props: {
             } else {
               setProdutos([]);
               toast({
-                title: "opss.",
+                title: "ops.",
                 description: "Esta empresa não possui produtos.",
                 status: "warning",
                 duration: 9000,
@@ -79,6 +79,7 @@ export const ProdutiList = (props: {
     })
       .then((resp) => resp.json())
       .then((resposta) => {
+        console.log("🚀 ~ file: produt.tsx:82 ~ .then ~ resposta:", resposta)
         props.onResp(resposta);
         setLoad(false);
       })

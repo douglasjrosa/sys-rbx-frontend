@@ -19,11 +19,17 @@ export default async function GetEmpresa(
         "Content-Type": "application/json",
       },
     })
+<<<<<<< Updated upstream
       .then((resp: any) => {
         res.status(200).json(resp.data.data);
+=======
+      .then((resposta: any) => {
+        console.log(resposta.data);
+        res.status(200).json(resposta.data.data);
+>>>>>>> Stashed changes
       })
       .catch((err) => {
-        res.status(400).send(err.response.data.console.error.massage);
+        res.status(err.response.status || 400).send(err.response.data.error.message);
       });
 
   } else {

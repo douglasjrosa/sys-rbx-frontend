@@ -40,6 +40,64 @@ export default async function GetEmpresa(
       console.log(error);
       res.status(500).send('Ocorreu um erro ao gerar o PDF');
     }
+<<<<<<< Updated upstream
+=======
+    let htmls = "";
+    const resphtml = linkis.map(async (l) => {
+      await axios(l, {
+        method: "post",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: data,
+      })
+        .then(function (html) {
+          htmls += html.data;
+        })
+        .catch(function (error) {
+          console.log(error.response.data.error);
+        });
+    });
+
+    await Promise.all(resphtml);
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    await page.setContent(htmls);
+
+    // Gera o PDF
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: {
+        top: "0.2in",
+        bottom: "0.2in",
+        left: "0.2in",
+        right: "0.2in",
+      },
+    });
+
+    await browser.close();
+
+    const today = new Date();
+    const formattedDate =
+      today.getDate() +
+      "_" +
+      (today.getMonth() + 1) +
+      "_" +
+      today.getFullYear();
+    const docname =
+      proposta + "-" + cliente.nome + "-" + formattedDate + ".pdf";
+
+    const retorno = pdf
+    
+    setTimeout(()=>{
+      res.setHeader("Content-disposition", `inline; filename=${docname}`);
+      res.setHeader("Content-Type", "application/pdf");
+      res.send(retorno);
+    }, 7300)
+>>>>>>> Stashed changes
   } else {
     return res.status(405).send({ message: "Only GET requests are allowed" });
   }
