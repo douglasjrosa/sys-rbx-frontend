@@ -33,7 +33,9 @@ export const PostPedido = async (dados: any) => {
           ? i.nomeProd + " -mont-expo"
           : i.expo === true && i.mont === false
           ? i.nomeProd + " -expo"
-          : i.nomeProd + " -mont"
+          : i.expo === false && i.mont === true
+          ? i.nomeProd + " -mont"
+          : i.nomeProd
       }</descricao>
       <un>Un</un>
       <qtde>${i.Qtd}</qtde>

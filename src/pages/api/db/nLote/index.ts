@@ -16,7 +16,7 @@ export const nLote = async () => {
     const resposta = await baseUrl.get(
       "/lotes?fields[0]=lote&sort=lote%3Adesc&pagination[limit]=1"
     );
-    
+
     const [NLote]: any = resposta.data.data;
 
     if (!NloteEnvi && !NLote) {
@@ -36,23 +36,27 @@ export const nLote = async () => {
       return ALote;
     }
 
-    if (NLote.attributes.lote === ''|| NLote.attributes.lote === null || NLote.attributes.lote === undefined) {
+    if (
+      NLote.attributes.lote === "" ||
+      NLote.attributes.lote === null ||
+      NLote.attributes.lote === undefined
+    ) {
       const ALote = parseInt(NloteEnvi) + 1;
       return ALote;
     }
 
     const AnLote = parseInt(NLote.attributes.lote) + 1;
     return AnLote;
-
+    
   } catch (error: any) {
     console.log(error);
     const status = error.response?.status || 500;
-    const message = error.message || 'Erro do Servidor Interno';
+    const message = error.message || "Erro do Servidor Interno";
     const errorResponse: ApiErrorResponse = {
       message,
       status,
-      erro: error.erro || '[]',
-      detalhes: error.detalhes || 'null',
+      erro: error.erro || "[]",
+      detalhes: error.detalhes || "null",
     };
     throw errorResponse;
   }

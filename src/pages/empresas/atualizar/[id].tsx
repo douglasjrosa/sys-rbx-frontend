@@ -399,7 +399,7 @@ export default function EmpresaId() {
   return (
     <>
       <Box
-        h={'100%'}
+        // h={'100%'}
         bg="#edf3f8"
         _dark={{
           bg: '#111',

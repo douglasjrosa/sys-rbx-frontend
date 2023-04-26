@@ -98,6 +98,7 @@ export const NegocioHeader = (props: {
   function getAtendimento(atendimento: SetStateAction<string>) {
     setApproach(atendimento);
   }
+ 
 
   return (
     <>
@@ -116,9 +117,7 @@ export const NegocioHeader = (props: {
               N° Negocio
             </FormLabel>
             <Input
-              shadow="sm"
-              size="sm"
-              w="full"
+              shadow="sm"  
               fontSize="xs"
               rounded="md"
               border={'1px solid #6666'}
@@ -212,7 +211,7 @@ export const NegocioHeader = (props: {
           <Box>
             <BtnStatus Resp={props.Status} onAddResp={getStatus} />
           </Box>
-          {Status !== 6 ? null : (
+          {Status !== "6" ? null : (
             <>
               <Box>
                 <FormLabel
@@ -246,7 +245,7 @@ export const NegocioHeader = (props: {
               </Box>
             </>
           )}
-          {Status !== 4 ? null : (
+          {Status !== "4" ? null : (
             <>
               <Box>
                 <FormLabel

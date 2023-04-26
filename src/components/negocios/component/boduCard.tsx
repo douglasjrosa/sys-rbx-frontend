@@ -64,13 +64,15 @@ export const BodyCard = (props: { reload: any }) => {
                 {!dados
                   ? null
                   : dados.map((i: any) => {
+                    console.log("🚀 ~ file: boduCard.tsx:67 ~ BodyCard ~ i:", i)
+                    
                       return (
                         <>
                           <CardBusiness
                             id={i?.id}
                             deadline={i?.attributes.deadline}
                             nBusiness={i?.attributes.nBusiness}
-                            Budget={i?.attributes.budget}
+                            Budget={i?.attributes.Budget}
                             pedidos={i?.attributes.pedidos.data.length}
                             pedidosQtd={i?.attributes.pedidos.data}
                             empresa={i?.attributes.empresa}

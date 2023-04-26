@@ -60,7 +60,6 @@ export default async function GetEmpresa(
         result.push(res.data.data);
       }
 
-      console.log(result);
       res.status(201).json(result);
 
     } catch (error) {

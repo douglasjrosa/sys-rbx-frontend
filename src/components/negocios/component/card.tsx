@@ -64,7 +64,7 @@ export default function CardBusiness(props: {
               color: 'gray.400',
             }}
           >
-            <b>Create:</b> {new Date(props.criateed).toLocaleString()}
+            <b>Criado em:</b> {new Date(props.criateed).toLocaleString()}
           </chakra.span>
           <chakra.span
             fontSize="sm"
@@ -73,7 +73,7 @@ export default function CardBusiness(props: {
               color: 'gray.400',
             }}
           >
-            <b>Deadline:</b> {new Date(props.deadline).toLocaleDateString()}
+            <b>Data de Emtrega:</b> {new Date(props.deadline).toLocaleDateString()}
           </chakra.span>
           <Flex
             justifyContent="space-between"
@@ -112,7 +112,7 @@ export default function CardBusiness(props: {
                   });
               }}
             >
-              Delete
+              Excluir
             </Link>
             <Link
               px={3}
@@ -129,7 +129,7 @@ export default function CardBusiness(props: {
                 await router.push('/negocios/' + props.id);
               }}
             >
-              History
+              Historia
             </Link>
           </Flex>
         </Flex>

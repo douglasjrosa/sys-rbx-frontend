@@ -120,7 +120,7 @@ export default function CreateNegocio() {
   return (
     <>
       <Box w="full" h="full">
-        <Box bg={"gray.200"} w="full" h="20%" p={5}>
+        <Box bg={"gray.200"} w="full" p={5}>
           <NegocioHeader
             nBusiness={nBusiness}
             Approach={Approach}

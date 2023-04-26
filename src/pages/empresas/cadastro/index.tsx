@@ -326,11 +326,8 @@ export default function Cadastro() {
   return (
     <>
       <Box
-        h={"100%"}
+        // h={"100%"}
         bg="#edf3f8"
-        _dark={{
-          bg: "#111",
-        }}
         px={5}
         pt={3}
         display={"flex"}
@@ -370,9 +367,6 @@ export default function Cadastro() {
                   px={4}
                   py={3}
                   bg="gray.50"
-                  _dark={{
-                    bg: "#141517",
-                  }}
                   spacing={6}
                 >
                   <SimpleGrid columns={12} spacing={3}>
