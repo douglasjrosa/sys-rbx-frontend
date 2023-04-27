@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "cross-env NODE_OPTIONS='--inspect' next dev"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.18",
@@ -43,6 +44,7 @@
     "@types/axios": "^0.14.0",
     "@types/cheerio": "^0.22.31",
     "@types/ejs": "^3.1.2",
-    "@types/pdfkit": "^0.12.9"
+    "@types/pdfkit": "^0.12.9",
+    "cross-env": "^7.0.3"
   }
 }

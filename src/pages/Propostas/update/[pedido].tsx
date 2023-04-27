@@ -412,7 +412,6 @@ export default function Proposta() {
               w="full"
               fontSize="xs"
               rounded="md"
-              placeholder="Selecione uma Empresa"
               onChange={(e) => setDate(e.target.value)}
               value={date}
             />
@@ -466,12 +465,12 @@ export default function Proposta() {
               w="full"
               fontSize="xs"
               rounded="md"
-              placeholder="tipos de pagamentos"
+              placeholder="Tipos de pagamentos"
               onChange={(e) => setPrazo(e.target.value)}
               value={prazo}
             >
               <option value="Antecipado">Antecipado</option>
-              <option value="A vista">Avista</option>
+              <option value="À vista">Avista</option>
               <option value="A Prazo">A prazo</option>
             </Select>
           </Box>

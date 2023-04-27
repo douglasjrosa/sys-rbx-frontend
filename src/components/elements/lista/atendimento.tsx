@@ -2,23 +2,7 @@ import { Box, FormLabel, Select } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
 export const SelecAtendimento = (props: { Resp: string; onAddResp: any }) => {
-  const [dados, setDados] = useState<any>([]);
   const [valor, setValor] = useState('');
-
-  useEffect(() => {
-    const fetchData = async () => {
-      // try {
-      //   const url = '/api/query/get/atendimento';
-      //   const get = await fetch(url);
-      //   const response = await get.json();
-      //   console.log("🚀 ~ file: atendimento.tsx:14 ~ fetchData ~ response:", response)
-      //   setDados(response);
-      // } catch (error) {
-      //   console.error(error);
-      // }
-    };
-    fetchData();
-  }, []);
 
   function atualizarValor(event: any) {
     setValor(event.target.value);
@@ -54,7 +38,7 @@ export const SelecAtendimento = (props: { Resp: string; onAddResp: any }) => {
       >
         <option value=""> </option>
         <option value="interno">Cliente entrou em contato</option>
-        <option value="externo">vendedor entrou em contato</option>
+        <option value="externo">Vendedor entrou em contato</option>
       </Select>
     </Box>
   );

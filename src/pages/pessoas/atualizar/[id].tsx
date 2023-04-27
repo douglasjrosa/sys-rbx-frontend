@@ -314,7 +314,7 @@ export default function PessoaId() {
                             color: 'gray.50',
                           }}
                         >
-                          nome
+                          Nome
                         </FormLabel>
                         <Input
                           type="text"
@@ -404,7 +404,7 @@ export default function PessoaId() {
                             color: 'gray.50',
                           }}
                         >
-                          cep
+                          Cep
                         </FormLabel>
                         <Input
                           type="text"
@@ -530,7 +530,7 @@ export default function PessoaId() {
                             color: 'gray.50',
                           }}
                         >
-                          uf
+                          Uf
                         </FormLabel>
                         <Input
                           type="text"
@@ -606,7 +606,7 @@ export default function PessoaId() {
                             color: 'gray.50',
                           }}
                         >
-                          whatsapp
+                          Whatsapp
                         </FormLabel>
                         <Input
                           type="text"
@@ -734,7 +734,7 @@ export default function PessoaId() {
                       fontWeight="md"
                       onClick={save}
                     >
-                      Save
+                      Salvar
                     </Button>
                   </Box>
                 </chakra.form>

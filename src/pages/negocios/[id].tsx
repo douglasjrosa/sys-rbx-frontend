@@ -133,7 +133,7 @@ export default function CreateNegocio() {
             etapa={Etapa}
           />
         </Box>
-        <Box bg="#edeae6" w="full" h="70%" ref={divRef} overflowY={"auto"}>
+        <Box bg="#edeae6" w="full" h="79%" ref={divRef} overflowY={"auto"}>
           <BodyChat conteudo={ChatHistory} loading={loading} />
         </Box>
         <Box w="full" h="10%">

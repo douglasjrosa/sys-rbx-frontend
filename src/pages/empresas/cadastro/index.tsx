@@ -81,7 +81,7 @@ export default function Cadastro() {
   const toast = useToast();
 
   const consulta = () => {
-    console.log(CNPJ);
+
     const validCnpj = cnpj.isValid(CNPJ);
     if (CNPJ.length < 13) {
       Toast({
@@ -103,7 +103,7 @@ export default function Cadastro() {
         isClosable: true,
       });
     } else {
-      console.log(CNPJ);
+
       let url = "https://publica.cnpj.ws/cnpj/" + CNPJ;
 
       axios({
@@ -578,13 +578,10 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        Pais
+                        País
                       </FormLabel>
                       <Input
                         type="text"
-                        name="pais"
-                        id="pais"
-                        autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -605,13 +602,10 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        Cod.pais
+                        Cod.País
                       </FormLabel>
                       <Input
                         type="text"
-                        name="cod.pais"
-                        id="cod.pais"
-                        autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -632,13 +626,10 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        end
+                        End
                       </FormLabel>
                       <Input
                         type="text"
-                        name="endereço"
-                        id="endereço"
-                        autoComplete="street-address"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -663,9 +654,6 @@ export default function Cadastro() {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="numero"
-                        id="numero"
-                        autoComplete="street-address"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -690,9 +678,6 @@ export default function Cadastro() {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="complemento"
-                        id="complemento"
-                        autoComplete="street-address"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -717,9 +702,6 @@ export default function Cadastro() {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="bairro"
-                        id="bairro"
-                        autoComplete="postal-code"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -744,9 +726,6 @@ export default function Cadastro() {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="cep"
-                        id="cep"
-                        autoComplete="postal-code"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -771,9 +750,6 @@ export default function Cadastro() {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="cidade"
-                        id="cidade"
-                        autoComplete="cidade"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -794,13 +770,10 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        uf
+                        Uf
                       </FormLabel>
                       <Input
                         type="text"
-                        name="uf"
-                        id="uf"
-                        autoComplete="uf"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -820,13 +793,10 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        site
+                        Site
                       </FormLabel>
                       <Input
                         type="text"
-                        name="cidade"
-                        id="cidade"
-                        autoComplete="cidade"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -847,7 +817,7 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        email para emvio de Nfe
+                        Email para emvio de Nfe
                       </FormLabel>
                       <Input
                         type="text"
@@ -870,7 +840,7 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        whatsapp
+                        Whatsapp
                       </FormLabel>
                       <Input
                         type="text"
@@ -886,7 +856,6 @@ export default function Cadastro() {
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
                       <FormLabel
-                        htmlFor="tabela de calculo"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -904,7 +873,7 @@ export default function Cadastro() {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="selecine uma opção"
+                        placeholder="Selecine uma opção"
                         onChange={(e) => setContribuinte(e.target.value)}
                         value={contribuinte}
                       >
@@ -931,7 +900,6 @@ export default function Cadastro() {
 
                     <FormControl as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
-                        htmlFor="tabela de calculo"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
@@ -949,7 +917,7 @@ export default function Cadastro() {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="selecine uma opção"
+                        placeholder="Selecine uma opção"
                         onChange={(e) => setTablecalc(e.target.value)}
                         value={tablecalc}
                       >
@@ -978,8 +946,6 @@ export default function Cadastro() {
                         Máximo prazo p/ pagamento:
                       </FormLabel>
                       <Select
-                        name="prazo pagamento"
-                        id="prazo pagamento"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -1016,8 +982,6 @@ export default function Cadastro() {
                         Preferência de pagamento:
                       </FormLabel>
                       <Select
-                        name="pagamento"
-                        id="pagamento"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -1031,7 +995,7 @@ export default function Cadastro() {
                       >
                         <option value="desconto">Desconto À VISTA</option>
                         <option value="prazo">
-                          maior prazo para pagamento
+                          Maior prazo para pagamento
                         </option>
                       </Select>
                     </FormControl>
@@ -1049,8 +1013,6 @@ export default function Cadastro() {
                         Frete
                       </FormLabel>
                       <Select
-                        name="frete"
-                        id="frete"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -1142,7 +1104,7 @@ export default function Cadastro() {
                       Modelos de Caixas
                     </Heading>
                     {modCaix.map((item) => {
-                      console.log(cxEco);
+
                       const val =
                         item.id === "1"
                           ? cxEco

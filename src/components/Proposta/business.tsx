@@ -11,7 +11,7 @@ export const CompBusiness = (props: { Resp: string }) => {
           color: 'gray.50',
         }}
       >
-        N° Business
+        N° Negócio
       </FormLabel>
       <Input
         focusBorderColor="brand.400"

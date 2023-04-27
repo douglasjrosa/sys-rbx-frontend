@@ -57,7 +57,6 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any }) => {
         {!dados
           ? null
           : dados.map((i: any) => {
-              console.log(i.attributes.nome);
               return (
                 <option key={i.id} value={i.id}>
                   {i.attributes.nome}

@@ -121,11 +121,11 @@ export const BtCreate = (props: { onLoading: any }) => {
     vendedor: session?.user.name,
     date:
       new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
-    msg: `Vendedor ${session?.user.name}, criou esse Business`,
+    msg: `Vendedor ${session?.user.name}, criou esse Negócio`,
   };
 
   const MSG = {
-    msg: `Vendedor ${session?.user.name}, criou esse Business`,
+    msg: `Vendedor ${session?.user.name}, criou esse Negócio`,
     date: new Date().toISOString(),
     user: "Sistema",
   };
@@ -158,7 +158,7 @@ export const BtCreate = (props: { onLoading: any }) => {
         console.log(res);
         props.onLoading(false);
         Reset();
-      
+
       })
       .catch((err) => console.error(err));
   };
@@ -184,12 +184,12 @@ export const BtCreate = (props: { onLoading: any }) => {
       >
         <PopoverTrigger>
           <Button h={{ md: "40%", sm: "70%" }} colorScheme="whatsapp">
-            Novo Negocio
+            Novo Negócio
           </Button>
         </PopoverTrigger>
         <PopoverContent color="white" bg="blue.800" borderColor="blue.800">
           <PopoverHeader pt={4} fontWeight="bold" border="0">
-            Criar novo Negocio
+            Criar novo Negócio
           </PopoverHeader>
           <PopoverArrow bg="blue.800" />
           <PopoverBody>
@@ -212,7 +212,7 @@ export const BtCreate = (props: { onLoading: any }) => {
                 );
               })}
             </Select>
-            <Tooltip label="tipo de atendimento">
+            <Tooltip label="Tipo de atendimento">
               <Select
                 mt={2}
                 placeholder="Selecione o tipo de Atendimento"
@@ -227,7 +227,7 @@ export const BtCreate = (props: { onLoading: any }) => {
                   Cliente entrou em contato
                 </option>
                 <option style={{ backgroundColor: "#2A4365" }} value="externo">
-                  vendedor entrou em contato
+                  Vendedor entrou em contato
                 </option>
                 );
               </Select>

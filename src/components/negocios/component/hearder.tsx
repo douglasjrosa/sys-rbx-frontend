@@ -98,12 +98,12 @@ export const NegocioHeader = (props: {
   function getAtendimento(atendimento: SetStateAction<string>) {
     setApproach(atendimento);
   }
- 
+
 
   return (
     <>
       <Flex>
-        <Flex gap={8} w={"60%"} flexWrap={"wrap"}>
+        <Flex gap={8} w={"85%"} flexWrap={"wrap"}>
           <Box>
             <FormLabel
               htmlFor="cidade"
@@ -114,10 +114,10 @@ export const NegocioHeader = (props: {
                 color: "gray.50",
               }}
             >
-              N° Negocio
+              N° Negócio 
             </FormLabel>
             <Input
-              shadow="sm"  
+              shadow="sm"
               fontSize="xs"
               rounded="md"
               border={'1px solid #6666'}
@@ -188,7 +188,7 @@ export const NegocioHeader = (props: {
                 color: "gray.50",
               }}
             >
-              Etapa do Negocio
+              Etapa do Negócio 
             </FormLabel>
             <Select
               shadow="sm"
@@ -274,9 +274,9 @@ export const NegocioHeader = (props: {
             </>
           )}
         </Flex>
-        <Flex alignItems={"center"} justifyContent={"space-around"} w={"34%"}>
+        <Flex alignItems={"center"} justifyContent={"space-around"} w={"20%"}>
           <Button colorScheme={"whatsapp"} onClick={Salve}>
-            salve
+            Salvar
           </Button>
           <Button
             colorScheme={"green"}
@@ -284,7 +284,6 @@ export const NegocioHeader = (props: {
           >
             Propostas
           </Button>
-          {/* <Button colorScheme={'messenger'}>Gerar pedido</Button> */}
         </Flex>
       </Flex>
     </>

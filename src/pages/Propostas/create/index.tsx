@@ -147,7 +147,7 @@ export default function Proposta() {
       toast({
         title: "Esta Faltando informação",
         description:
-          "Você deve vincular essa proposta a um n° Business ou negocio",
+          "Você deve vincular essa proposta a um n° Negócio",
         status: "warning",
         duration: 3000,
         isClosable: true,
@@ -267,7 +267,7 @@ export default function Proposta() {
   function getCnpj(CNPJ: SetStateAction<string>) {
     setCnpj(CNPJ);
   }
- 
+
   function getIten(resposta: SetStateAction<any>) {
     const lista = ListItens;
     const maxSum =
@@ -341,7 +341,6 @@ export default function Proposta() {
               w="full"
               fontSize="xs"
               rounded="md"
-              placeholder="Selecione uma Empresa"
               onChange={(e) => setDate(e.target.value)}
               value={date}
             />
@@ -395,12 +394,12 @@ export default function Proposta() {
               w="full"
               fontSize="xs"
               rounded="md"
-              placeholder="tipos de pagamentos"
+              placeholder="Tipos de pagamentos"
               onChange={(e) => setPrazo(e.target.value)}
               value={prazo}
             >
               <option value="Antecipado">Antecipado</option>
-              <option value="A vista">Avista</option>
+              <option value="À vista">Avista</option>
               <option value="A Prazo">A prazo</option>
             </Select>
           </Box>
