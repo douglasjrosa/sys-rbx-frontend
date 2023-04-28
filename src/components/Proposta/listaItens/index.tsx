@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { BTMPdf } from "../BTMPdf";
 
 
 
@@ -29,7 +30,7 @@ export const CardList = (props: { id: string }) => {
   }, [url]);
 
   const pedido = async (numero: string) => {
-    const lotes: any = [];
+
     const url = "/api/query/pedido/" + numero;
     await axios({
       url: url,
@@ -40,46 +41,47 @@ export const CardList = (props: { id: string }) => {
         console.log(err.response.data);
       });
 
-    await axios({
-      url: `/api/db/nLote/${numero}`,
-      method: "POST",
-    })
-      .then((res: any) => {
-        console.log(res.data);
-        lotes.push(res.data);
-      })
-      .catch((err: any) => {
-        console.log(err.response.data);
-      });
+    // await axios({
+    //   url: `/api/db/nLote/${numero}`,
+    //   method: "POST",
+    // })
+    //   .then((res: any) => {
+    //     console.log(res.data);
+    //     lotes.push(res.data);
+    //   })
+    //   .catch((err: any) => {
+    //     console.log(err.response.data);
+    //   });
 
-    await axios({
-      url: `/api/ribermax/lote/${numero}`,
-      method: "POST",
-    })
-      .then((res) => {
-        console.log(res.data);
-      })
-      .catch((err: any) => {
-        console.log(err.response.data);
-      });
+    // await axios({
+    //   url: `/api/ribermax/lote/${numero}`,
+    //   method: "POST",
+    // })
+    //   .then((res) => {
+    //     console.log(res.data);
+    //   })
+    //   .catch((err: any) => {
+    //     console.log(err.response.data);
+    //   });
 
-    await axios({
-      url: `/api/db/trello/${numero}`,
-      method: "POST",
-    })
-      .then((res: any) => {
-        console.log(res.data);
-      })
-      .catch(async (err: any) => {
-        toast({
-          title: "Opss.",
-          description: "Entre en contata com o suporte",
-          status: "error",
-          duration: 9000,
-        });
-      });
+    // await axios({
+    //   url: `/api/db/trello/${numero}`,
+    //   method: "POST",
+    // })
+    //   .then((res: any) => {
+    //     console.log(res.data);
+    //   })
+    //   .catch(async (err: any) => {
+    //     toast({
+    //       title: "Opss.",
+    //       description: "Entre en contata com o suporte",
+    //       status: "error",
+    //       duration: 9000,
+    //     });
+    //   });
   };
-
+  
+ console.log(Data)
   return (
     <>
       <SimpleGrid
@@ -224,19 +226,7 @@ export const CardList = (props: { id: string }) => {
                           >
                             Editar Proposta
                           </Button>
-                          <Button
-                            p={5}
-                            w={"full"}
-                            colorScheme={"whatsapp"}
-                            onClick={() =>
-                              window.open(
-                                `/api/db/proposta/pdf/${i.attributes.nPedido}`,
-                                "_blank"
-                              )
-                            }
-                          >
-                            Gerar PDF
-                          </Button>
+                         <BTMPdf nPedido={i.attributes.nPedido} empresa={i.attributes.empresa.data.attributes.nome} />
                           <Button
                             p={5}
                             w={"full"}

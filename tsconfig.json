@@ -18,6 +18,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/pages/api/db/trello/[numero]ts"],
-  "exclude": ["node_modules"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/pages/api/db/trello/[numero]ts", "node_modules/@types"],
+  "exclude": ["node_modules"],
+
 }

@@ -11,10 +11,12 @@ export const PostPedido = async (dados: any) => {
   const empresa = DaDos.empresa.data.attributes;
   const Produto = await DaDos.itens;
 
+  // console.log(empresa)
   const Produtos = Produto.map((i: any) => {
     const Mont = i.prodId + "-mont";
     const Expo = i.prodId + "-expo";
     const montExpo = i.prodId + "-mont-expo";
+    console.log(i)
 
     const codg =
       i.expo === true && i.mont === true
@@ -27,19 +29,24 @@ export const PostPedido = async (dados: any) => {
 
     const setItens = `
     <item>
-      <codigo>${codg}</codigo>
+      <codigo>${i.prodId}</codigo>
       <descricao>${
         i.expo === true && i.mont === true
-          ? i.nomeProd + " -mont-expo"
+          ? i.nomeProd + " -EXP -MONTADA"
           : i.expo === true && i.mont === false
-          ? i.nomeProd + " -expo"
+          ? i.nomeProd + " -EXP"
           : i.expo === false && i.mont === true
-          ? i.nomeProd + " -mont"
+          ? i.nomeProd + " -MONTADA"
           : i.nomeProd
       }</descricao>
       <un>Un</un>
       <qtde>${i.Qtd}</qtde>
       <vlr_unit>${i.total}</vlr_unit>
+      <tipo>P</tipo>
+      <peso_bruto>${i.pesoCx}</peso_bruto>
+      <peso_liq>${i.pesoCx}</peso_liq>
+      <class_fiscal>${i.ncm}</class_fiscal>
+      <origem>0</origem>
     </item>
     `;
     return setItens;
@@ -127,6 +134,8 @@ export const PostPedido = async (dados: any) => {
     .replace(".", "")
     .replace(",", ".");
 
+
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
      <cliente>
@@ -147,11 +156,19 @@ export const PostPedido = async (dados: any) => {
      <transporte />
      <itens>${xmlprodutos}</itens>
      <parcelas>${xmlParcelas}</parcelas>
-     <vlr_frete></vlr_frete>
+     <nf_produtor_rural_referenciada />
+     <vlr_frete>${
+       DaDos.valorFrete === "0"
+         ? ""
+         : DaDos.valorFrete === ""
+         ? ""
+         : DaDos.valorFrete
+     }</vlr_frete>
      <vlr_desconto>${desconto}</vlr_desconto>
      <obs>${DaDos.obs}</obs>
-     <obs_internas></obs_internas>
   </pedido>`;
+
+
   try {
     const formData = new FormData();
     formData.append("apikey", apiKey);
@@ -162,11 +179,13 @@ export const PostPedido = async (dados: any) => {
       body: formData,
     };
 
-    const requet = await fetch(url + "/pedido/json/", requestOptions);
+    const requet = await fetch(url + "/propostacomercial/json/", requestOptions);
     const response = await requet.json();
-    console.log(response);
+    console.log("🚀 ~ file: index.ts:183 ~ PostPedido ~ response:", response)
 
     const { pedidos, erros } = response.retorno;
+    console.log("🚀 ~ file: index.ts:185 ~ PostPedido ~ pedidos:", pedidos)
+    console.log("🚀 ~ file: index.ts:185 ~ PostPedido ~ erros:", erros)
 
     if (erros) {
       throw Object.assign(new Error(erros[0].erro.msg), {
@@ -178,18 +197,18 @@ export const PostPedido = async (dados: any) => {
       });
     }
 
-    const resposta = {
-      msg:
-        "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
-      pedido: pedidos[0].pedido.idPedido,
-      status: 201,
-    };
-    const nPedido = dados.id;
-    const Bpedido = pedidos[0].pedido.idPedido;
-    const IdNegocio = DaDos.business.data.id;
-    await SaveRespose(nPedido, Bpedido, IdNegocio);
+    // const resposta = {
+    //   msg:
+    //     "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
+    //   pedido: pedidos[0].pedido.idPedido,
+    //   status: 201,
+    // };
+    // const nPedido = dados.id;
+    // const Bpedido = pedidos[0].pedido.idPedido;
+    // const IdNegocio = DaDos.business.data.id;
+    // await SaveRespose(nPedido, Bpedido, IdNegocio);
 
-    return resposta;
+    // return resposta;
   } catch (error: any) {
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,

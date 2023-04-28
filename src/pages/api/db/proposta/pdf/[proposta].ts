@@ -20,22 +20,22 @@ export default async function GetEmpresa(
       const chunks = await chunkArray(items, 6);
       const htmls = chunks.map((chunk: any, x:number) => generateHtml(chunk,infos, x));
       const html: any = await Promise.all(htmls)
-      const pdfs = await generatePdf(html);
-    
+      // const pdfs = await generatePdf(html);
 
-      const today = new Date();
-      const formattedDate =
-        today.getDate() +
-        "_" +
-        (today.getMonth() + 1) +
-        "_" +
-        today.getFullYear();
-      const docname =
-        proposta + "-" + infos.cliente.fantasia + "-" + formattedDate + ".pdf";
 
-      res.setHeader("Content-disposition", `inline; filename=${docname}`);
-      res.setHeader("Content-Type", "application/pdf");
-      res.send(pdfs);
+      // const today = new Date();
+      // const formattedDate =
+      //   today.getDate() +
+      //   "_" +
+      //   (today.getMonth() + 1) +
+      //   "_" +
+      //   today.getFullYear();
+      // const docname =
+      //   proposta + "-" + infos.cliente.fantasia + "-" + formattedDate + ".pdf";
+
+      // res.setHeader("Content-disposition", `inline; filename=${docname}`);
+      // res.setHeader("Content-Type", "application/pdf");
+      res.send(html);
     } catch (error) {
       console.log(error);
       res.status(500).send('Ocorreu um erro ao gerar o PDF');
