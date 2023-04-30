@@ -49,228 +49,106 @@ export default function CardBusiness(props: {
         shadow="lg"
         boxShadow="dark-lg"
         bg="white"
-        _dark={{
-          bg: 'gray.900',
-        }}
-        w={'100%'}
+        w={'33rem'}
         key={props.id}
-        fontSize="sm"
+        fontSize="0.5rem"
+        cursor={'pointer'}
+        onClick={() => router.push('/negocios/' + props.id)}
       >
         <Flex justifyContent="space-between" alignItems="center">
           <chakra.span
-            fontSize="sm"
-            color="gray.600"
-            _dark={{
-              color: 'gray.400',
-            }}
+            fontSize="lg"
+            fontWeight={'bold'}
           >
-            <b>Criado em:</b> {new Date(props.criateed).toLocaleString()}
+          {empresa}
           </chakra.span>
-          <chakra.span
-            fontSize="sm"
-            color="gray.600"
-            _dark={{
-              color: 'gray.400',
-            }}
-          >
-            <b>Data de Emtrega:</b> {new Date(props.deadline).toLocaleDateString()}
-          </chakra.span>
-          <Flex
-            justifyContent="space-between"
-            alignItems="center"
-            flexDirection={['column', 'row', 'row']}
-            w={36}
-            gap={5}
-          >
-            <Link
-              px={3}
-              py={1}
-              bg="gray.600"
-              color="gray.100"
-              fontSize="sm"
-              fontWeight="700"
-              rounded="md"
-              _hover={{
-                bg: 'gray.500',
-              }}
-              onClick={async () => {
-                props.onloading(true);
-                await axios('/api/db/business/delete/' + props.id)
-                  .then((res: any) => {
-                    Toast({
-                      title: 'Business Deleted',
-                      description: res.data,
-                      status: 'info',
-                      duration: 3000,
-                      isClosable: true,
-                    });
-                    props.onloading(false);
-                  })
-                  .catch((err: any) => {
-                    console.error(err);
-                    props.onloading(false);
-                  });
-              }}
-            >
-              Excluir
-            </Link>
-            <Link
-              px={3}
-              py={1}
-              bg="gray.600"
-              color="gray.100"
-              fontSize="sm"
-              fontWeight="700"
-              rounded="md"
-              _hover={{
-                bg: 'gray.500',
-              }}
-              onClick={async () => {
-                await router.push('/negocios/' + props.id);
-              }}
-            >
-              Historia
-            </Link>
-          </Flex>
+
         </Flex>
 
         <Box mt={2}>
-          <Flex>
-            <Box w={'15rem'}>
-              <Link
-                fontSize="2xl"
-                color="gray.700"
-                _dark={{
-                  color: 'white',
-                }}
-                fontWeight="700"
-                _hover={{
-                  color: 'gray.600',
-                  _dark: {
-                    color: 'gray.200',
-                  },
-                  textDecor: 'underline',
-                }}
-              >
-                {props.nBusiness}
-              </Link>
-            </Box>
-            <Flex>
-              <chakra.p
-                mt={2}
-                color="gray.600"
-                ms={5}
-                _dark={{
-                  color: 'gray.300',
-                }}
-              >
-                Andamento:
-              </chakra.p>
-              <chakra.p
-                mt={2}
-                color="gray.600"
-                ms={2}
-                _dark={{
-                  color: 'gray.300',
-                }}
-              >
-                {props.andamento}
-              </chakra.p>
-            </Flex>
-          </Flex>
-
           <Box
-            mt={2}
             display={'flex'}
             flexDirection={['column', 'column', 'row', 'row']}
           >
-            <Flex w={'12rem'}>
+          </Box>
+          <Box
+            display={'flex'}
+            alignItems={'center'}
+            gap={5}
+            flexWrap={'wrap'}
+            lineHeight={'0.5rem'}
+          >
+            <Flex>
               <chakra.p
-                mt={2}
                 color="gray.600"
-                _dark={{
-                  color: 'gray.300',
-                }}
+                fontSize="0.8rem"
               >
                 Estimativa:
               </chakra.p>
               <chakra.p
-                mt={2}
                 color="gray.600"
                 ms={2}
-                _dark={{
-                  color: 'gray.300',
-                }}
+                fontSize="0.8rem"
               >
                 {props.Budget}
               </chakra.p>
             </Flex>
             <Flex>
               <chakra.p
-                mt={2}
                 color="gray.600"
-                ms={5}
-                _dark={{
-                  color: 'gray.300',
-                }}
+                fontSize="0.8rem"
               >
-                Total do Pedido:
+                Data de Emtrega:
               </chakra.p>
               <chakra.p
-                mt={2}
                 color="gray.600"
                 ms={2}
-                _dark={{
-                  color: 'gray.300',
-                }}
+                fontSize="0.8rem"
               >
-                {soma()}
-              </chakra.p>
-            </Flex>
-          </Box>
-          <Box
-            display={'flex'}
-            alignItems={'center'}
-            justifyContent={'space-between'}
-          >
-            <Flex alignItems="center">
-              <chakra.p
-                mt={2}
-                color="gray.600"
-                _dark={{
-                  color: 'gray.300',
-                }}
-              >
-                Empresa:
-              </chakra.p>
-              <chakra.p
-                mt={2}
-                color="gray.600"
-                ms={2}
-                _dark={{
-                  color: 'gray.300',
-                }}
-              >
-                {empresa}
+                {new Date(props.deadline).toLocaleDateString()}
               </chakra.p>
             </Flex>
             <Flex alignItems="center">
               <chakra.p
-                mt={2}
                 color="gray.600"
-                _dark={{
-                  color: 'gray.300',
-                }}
+                fontSize="0.8rem"
               >
-                Qtd pedidos:
+                pedidi:
               </chakra.p>
               <chakra.p
-                mt={2}
                 color="gray.600"
                 ms={2}
-                _dark={{
-                  color: 'gray.300',
-                }}
+                fontWeight={'semibold'}
+              >
+                {props.nBusiness}
+              </chakra.p>
+            </Flex>
+            <Flex alignItems="center">
+              <chakra.p
+                color="gray.600"
+                fontSize="0.8rem"
+              >
+                Andamento:
+              </chakra.p>
+              <chakra.p
+                color="gray.600"
+                ms={2}
+                fontWeight={'semibold'}
+              >
+                {props.nBusiness}
+              </chakra.p>
+            </Flex>
+            <Flex alignItems="center">
+              <chakra.p
+                color="gray.600"
+                fontSize="0.8rem"
+              >
+                Qtd proposta:
+              </chakra.p>
+              <chakra.p
+                color="gray.600"
+                ms={2}
+                fontSize="0.8rem"
               >
                 {props.pedidos}
               </chakra.p>

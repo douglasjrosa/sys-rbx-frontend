@@ -7,16 +7,16 @@ import { InferGetStaticPropsType } from "next";
 
 export async function getStaticProps() {
 
-  const Token =  process.env.ATORIZZATION_TOKEN
+  const Token = process.env.ATORIZZATION_TOKEN
   const data = await fetch(
     process.env.NEXT_PUBLIC_STRAPI_API_URL +
-      "/empresas?filters[status][$eq]=true&&fields[0]=nome",{
-        headers:{
-            Authorization: `Bearer ${Token}`,
-        }
-      }
+    "/empresas?filters[status][$eq]=true&&fields[0]=nome", {
+    headers: {
+      Authorization: `Bearer ${Token}`,
+    }
+  }
   );
-  const resposta =  await data.json();
+  const resposta = await data.json();
   const ListEmpesa = await resposta.data;
 
   return {
@@ -63,10 +63,10 @@ export default function Empresas({
             {!Data
               ? null
               : Data.map((item: any) => (
-                  <option key={item.id} value={item.id}>
-                    {item.attributes.nome}
-                  </option>
-                ))}
+                <option key={item.id} value={item.id}>
+                  {item.attributes.nome}
+                </option>
+              ))}
           </Select>
           <Button
             colorScheme="blackAlpha"
@@ -77,9 +77,10 @@ export default function Empresas({
         </Flex>
         <Box
           display={"flex"}
-          flexDir={{ md: "column", sm: "row" }}
+          gap={3}
           h="100%"
-          justifyContent={"space-evenly"}
+          justifyContent={'center'}
+          alignItems="center"
         >
           <Button
             h={{ md: "40%", sm: "70%" }}
@@ -88,6 +89,7 @@ export default function Empresas({
           >
             Cadastrar Empresa
           </Button>
+          <Button h={{ md: "40%", sm: "70%" }} colorScheme="cyan" onClick={() => router.push('/pessoas/cadastro')}>Add Nova Pessoa</Button>
           {session?.user.pemission !== "Adm" ? null : (
             <Button
               h={{ md: "40%", sm: "70%" }}

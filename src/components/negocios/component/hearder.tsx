@@ -114,7 +114,7 @@ export const NegocioHeader = (props: {
                 color: "gray.50",
               }}
             >
-              N° Negócio 
+              N° Negócio
             </FormLabel>
             <Input
               shadow="sm"
@@ -151,7 +151,7 @@ export const NegocioHeader = (props: {
               rounded="md"
               border={'1px solid #6666'}
               onChange={(e) => setBudget(e.target.value)}
-              value={props.Budget}
+              value={Budget.toLocaleString()}
             />
           </Box>
           <Box>
@@ -188,7 +188,7 @@ export const NegocioHeader = (props: {
                 color: "gray.50",
               }}
             >
-              Etapa do Negócio 
+              Etapa do Negócio
             </FormLabel>
             <Select
               shadow="sm"

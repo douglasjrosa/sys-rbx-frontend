@@ -165,7 +165,7 @@ export default function Cadastro() {
           });
           setTimeout(() => {
             const Id = localStorage.getItem("id");
-            router.push("/pessoas/" + Id);
+            router.push("/");
             localStorage.removeItem("id");
           }, 500);
         })

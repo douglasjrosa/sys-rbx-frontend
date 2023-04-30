@@ -73,7 +73,7 @@ function Layout({ children }: { children: React.ReactNode }): JSX.Element {
     return <Loading size="200px">Redirecionando...</Loading>;
   }
 
-      
+
 
   return (
     <Flex
@@ -81,6 +81,7 @@ function Layout({ children }: { children: React.ReactNode }): JSX.Element {
       flexDir={['column', 'column', 'row']}
       overflow="hidden"
       maxW="2000px"
+      fontSize={'1rem'}
     >
       <Flex
         alignItems="center"

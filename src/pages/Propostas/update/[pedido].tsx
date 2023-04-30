@@ -384,9 +384,9 @@ export default function Proposta() {
 
   return (
     <>
-      <Flex h="100vh" px={10} w="100%" flexDir={"column"} mt="5">
-        <Heading size="lg">Proposta comercial</Heading>
-        <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
+      <Flex h="100vh" px={10} w="100%" flexDir={"column"} mt="5" justifyContent={'space-between'}>
+        <Heading size="md">Proposta comercial</Heading>
+        <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
           <Box>
             <ListaEmpresa onChangeValue={getCnpj} />
           </Box>
@@ -525,11 +525,11 @@ export default function Proposta() {
             />
           </Box>
         </Box>
-        <Box mt={12}>
-          <Heading size="md">Itens da proposta comercial</Heading>
+        <Box mt={7}>
+          <Heading size="sm">Itens da proposta comercial</Heading>
         </Box>
-        <Box display="flex" gap={8} alignItems="center" mt={5} mx={5}>
-          <Box gap={8} w={"320px"} alignItems="center">
+        <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
+          <Box w={"320px"} alignItems="center">
             <ProdutiList
               onCnpj={cnpj}
               onResp={getIten}
@@ -539,7 +539,7 @@ export default function Proposta() {
             />
           </Box>
           <Box w={"40rem"}>
-            <Box display="flex" gap={8} alignItems="center">
+            <Box display="flex" gap={5} alignItems="center">
               <Box w="full">
                 <FormLabel
                   htmlFor="cidade"
@@ -563,44 +563,44 @@ export default function Proposta() {
             </Box>
           </Box>
         </Box>
-        <Box mt={12} w={"100%"} h={"46%"} overflowY={"auto"}>
+        <Box mt={8} w={"100%"} mb={5}>
           <Box>
             <TableContainer>
               <Table variant="striped" colorScheme="green">
                 <Thead>
                   <Tr>
-                    <Th w={"2%"}></Th>
-                    <Th w={"28%"}>Item</Th>
-                    <Th w={"8%"} textAlign={"center"}>
-                      Código
-                    </Th>
-                    <Th w={"10%"} textAlign={"center"}>
-                      Qtd
-                    </Th>
-                    <Th w={"7%"} textAlign={"center"}>
-                      altura
-                    </Th>
-                    <Th w={"7%"} textAlign={"center"}>
-                      largura
-                    </Th>
-                    <Th w={"7%"} textAlign={"center"}>
-                      comprimento
-                    </Th>
-                    <Th w={"5%"} textAlign={"center"}>
-                      Mont.
-                    </Th>
-                    <Th w={"5%"} textAlign={"center"}>
-                      Expo.
-                    </Th>
-                    <Th w={"5%"} textAlign={"center"}>
-                      Preço un
-                    </Th>
-                    <Th w={"5%"} textAlign={"center"}>
-                      Preço total
-                    </Th>
-                    <Th textAlign={"center"} w={"5%"}>
-                      <Icon as={BsTrash} boxSize={5} color={"whatsapp.600"} />
-                    </Th>
+                  <Th px='0' w={"1.3rem"}></Th>
+                      <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>Item</Th>
+                      <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        Código
+                      </Th>
+                      <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        Qtd
+                      </Th>
+                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        altura
+                      </Th>
+                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        largura
+                      </Th>
+                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        comprimento
+                      </Th>
+                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        Mont.
+                      </Th>
+                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        Expo.
+                      </Th>
+                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        Preço un
+                      </Th>
+                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                        Preço total
+                      </Th>
+                      <Th px='0' textAlign={"center"} w={"3rem"}>
+                        <Icon as={BsTrash} boxSize={4} color={"whatsapp.600"} />
+                      </Th>
                   </Tr>
                 </Thead>
                 <TableConteudo
@@ -613,16 +613,7 @@ export default function Proposta() {
             </TableContainer>
           </Box>
         </Box>
-        <chakra.p
-          textAlign={"center"}
-          color={"gray.500"}
-          fontSize={"sm"}
-          mt={5}
-          mb={8}
-        >
-          Lista de produtos adicionados para proposta comercial
-        </chakra.p>
-        <Box display={"flex"} justifyContent={"space-between"} me={10}>
+        <Box  display={"flex"} justifyContent={"space-between"} me={10} mb={5}>
           <Flex gap={20}>
             <chakra.p>
               Total de itens: {ListItens.length === 0 ? "" : ListItens.length}
