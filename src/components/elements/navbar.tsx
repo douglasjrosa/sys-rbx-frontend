@@ -50,10 +50,11 @@ function Navbar() {
           <List spacing={5}>
             {Dados.map((navItem: any) => (
               <ListItem key={`navbar-${navItem.id}`}>
-                <Text fontSize="lg">
-                  <ListIcon color="greenyellow" as={navItem.icon} />
+                <Text>
+                  <ListIcon fontSize="2xl" color="greenyellow" as={navItem.icon} />
                   <NextLink href={navItem.url} as={navItem.url} passHref>
                     <Link
+                      fontSize="lg"
                       color={
                         router.asPath === navItem.url
                           ? 'greenyellow'

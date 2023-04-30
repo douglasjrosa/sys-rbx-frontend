@@ -18,6 +18,7 @@ export const getData = async (proposta: any) => {
 
     const inf = result.attributes;
 
+    const Vendedor = inf.user.data.attributes.username
     const empresaFornec = inf.fornecedorId.data.attributes;
 
     const dadosFornecedor = {
@@ -85,7 +86,7 @@ export const getData = async (proposta: any) => {
       obs,
       business,
       logo,
-      pagina
+      Vendedor
     };
     return data;
   } catch (error) {

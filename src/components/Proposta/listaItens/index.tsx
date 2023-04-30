@@ -226,7 +226,7 @@ export const CardList = (props: { id: string }) => {
                           >
                             Editar Proposta
                           </Button>
-                         {/* <BTMPdf nPedido={i.attributes.nPedido} empresa={i.attributes.empresa.data.attributes.nome} /> */}
+                         <BTMPdf nPedido={i.attributes.nPedido} empresa={i.attributes.empresa.data.attributes.nome} />
                           <Button
                             p={5}
                             w={"full"}
