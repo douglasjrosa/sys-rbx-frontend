@@ -63,37 +63,38 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
 
   return (
     <>
-      <Box bg={'#f0f2f5'} w={'100%'} h={'100%'}>
-        <Flex
-          px={'4rem'}
-          h={'100%'}
-          justifyContent={'space-between'}
-          alignItems={'center'}
-        >
-          <Textarea
-            resize={'none'}
-            overflowY={'hidden'}
-            fontSize={'15px'}
-            lineHeight={'1.2'}
-            bg={'#f0f0f0'}
-            p={'10px'}
-            w={'95%'}
-            rounded={'5px'}
-            borderColor={'gray.300'}
-            rows={1}
-            boxShadow={'dark-lg'}
-            onChange={(e: any) => setValor(e.target.value)}
-            value={Valor}
-          />
-          <IconButton
-            aria-label="Send"
-            fontSize={'xl'}
-            icon={<FaLocationArrow />}
-            color="gray.600"
-            onClick={addItens}
-          />
-        </Flex>
-      </Box>
+
+      <Flex
+        px={'4rem'}
+        // h={'100%'}
+        justifyContent={'space-between'}
+        alignItems={'center'}
+        bg={'#f0f2f5'}
+      >
+        <Textarea
+          resize={'none'}
+          overflowY={'hidden'}
+          fontSize={'15px'}
+          lineHeight={'1.2'}
+          bg={'#f0f0f0'}
+          p={'10px'}
+          w={'95%'}
+          rounded={'5px'}
+          borderColor={'gray.300'}
+          rows={1}
+          boxShadow={'dark-lg'}
+          onChange={(e: any) => setValor(e.target.value)}
+          value={Valor}
+        />
+        <IconButton
+          aria-label="Send"
+          fontSize={'xl'}
+          icon={<FaLocationArrow />}
+          color="gray.600"
+          onClick={addItens}
+        />
+      </Flex>
+
     </>
   );
 };

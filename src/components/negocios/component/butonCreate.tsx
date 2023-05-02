@@ -7,6 +7,7 @@ import {
   extendTheme,
   FormControl,
   FormLabel,
+  IconButton,
   Input,
   InputGroup,
   InputLeftElement,
@@ -24,6 +25,8 @@ import {
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { FaLocationArrow } from "react-icons/fa";
+import { MdOutlineAddCircleOutline } from "react-icons/md";
 import { BeatLoader } from "react-spinners";
 import { mask, unMask } from "remask";
 
@@ -42,9 +45,9 @@ export const theme = extendTheme({
               },
             },
             "input:not(:placeholder-shown) + label, .chakra-select__wrapper + label, textarea:not(:placeholder-shown) ~ label":
-              {
-                ...activeLabelStyles,
-              },
+            {
+              ...activeLabelStyles,
+            },
             label: {
               top: 0,
               left: 0,
@@ -109,9 +112,9 @@ export const BtCreate = (props: { onLoading: any }) => {
     const valor =
       originalVelue > 99
         ? originalVelue
-            .replace(/[^\d]/g, "")
-            .replace(/^0+/, "")
-            .replace(/(\d{1,})(\d{2})$/, "$1.$2")
+          .replace(/[^\d]/g, "")
+          .replace(/^0+/, "")
+          .replace(/(\d{1,})(\d{2})$/, "$1.$2")
         : originalVelue;
     setBudgets(valor);
     setBudgetsMask(maskedValue);
@@ -138,9 +141,9 @@ export const BtCreate = (props: { onLoading: any }) => {
       Budget: !budgets
         ? "R$ 0,00"
         : parseFloat(budgets).toLocaleString("pt-br", {
-            style: "currency",
-            currency: "BRL",
-          }),
+          style: "currency",
+          currency: "BRL",
+        }),
       Approach: Approach,
       empresa: Empresa,
       history: historico,
@@ -183,9 +186,11 @@ export const BtCreate = (props: { onLoading: any }) => {
         onClose={onClose}
       >
         <PopoverTrigger>
-          <Button h={{ md: "40%", sm: "70%" }} colorScheme="whatsapp">
-            Novo Negócio
-          </Button>
+          <IconButton
+          aria-label="Add Negocio"
+          rounded={'3xl'}
+          colorScheme="whatsapp"
+          ><MdOutlineAddCircleOutline color="#ffff" size={'2rem'} /></IconButton>
         </PopoverTrigger>
         <PopoverContent color="white" bg="blue.800" borderColor="blue.800">
           <PopoverHeader pt={4} fontWeight="bold" border="0">

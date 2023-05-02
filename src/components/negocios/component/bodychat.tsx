@@ -14,7 +14,7 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
     setLoad(props.loading);
     setData(props.conteudo);
   }, [props.conteudo, props.loading]);
- 
+
   useEffect(() => {
     if (textareaRef.current) {
       (textareaRef.current as HTMLTextAreaElement).style.height = 'auto';

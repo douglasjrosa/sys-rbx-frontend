@@ -18,32 +18,22 @@ export default function Negocios() {
     <>
       <Flex h="100%" w="100%" flexDir={"column"} justifyContent="center">
         <Flex
-          h={28}
+          h={16}
           w={{ md: "80%", sm: "100%" }}
           borderBottom={"2px"}
           borderColor={"gray.200"}
           m="auto"
           mt={{ md: 5, sm: "1.5rem" }}
-          justifyContent={"space-evenly"}
+j
           alignItems={"center"}
-          flexDir={{ sm: "column", md: "row" }}
+
         >
-          <Box></Box>
-          <Box
-            display={"flex"}
-            flexDir={{ md: "column", sm: "row" }}
-            h="100%"
-            justifyContent={"space-evenly"}
-          >
+
             <BtCreate onLoading={tragetReload} />
-          </Box>
         </Flex>
-        <Box h={"85%"} overflow={"auto"}>
+        <Box h={"95%"} overflow={"auto"}>
           <Flex
             bg="#edf3f8"
-            _dark={{
-              bg: "#3e3e3e",
-            }}
             pt={"3rem"}
             pb={"2rem"}
             px={"2rem"}

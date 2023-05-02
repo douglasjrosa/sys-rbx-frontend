@@ -41,6 +41,7 @@ export const NegocioHeader = (props: {
   const [Deadline, setDeadline] = useState("");
   const [DataRetorno, setDataRetorno] = useState<any>("");
 
+
   useEffect(() => {
     setStatus(props.Status);
     setBudget(props.Budget);
@@ -233,7 +234,7 @@ export const NegocioHeader = (props: {
                   rounded="md"
                   placeholder=" "
                   border={'1px solid #6666'}
-                  onChange={(e)=> setMperca(e.target.value)}
+                  onChange={(e) => setMperca(e.target.value)}
                   value={Mperca}
                 >
                   {StatusPerca.map((i: any) => (
@@ -274,7 +275,7 @@ export const NegocioHeader = (props: {
             </>
           )}
         </Flex>
-        <Flex alignItems={"center"} justifyContent={"space-around"} w={"20%"}>
+        <Flex alignItems={"center"} flexWrap={'wrap'} gap={3} w={"20%"}>
           <Button colorScheme={"whatsapp"} onClick={Salve}>
             Salvar
           </Button>
@@ -283,6 +284,29 @@ export const NegocioHeader = (props: {
             onClick={() => router.push("/Propostas/" + ID)}
           >
             Propostas
+          </Button>
+          <Button
+            colorScheme={"red"}
+            onClick={async () => {
+              await axios('/api/db/business/delete/' + ID)
+                .then(() => {
+                  toast({
+                    title: 'Negocio foi Deletado',
+                    status: 'info',
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                  setTimeout(()=>{
+                    router.push("/negocios")
+                  },1200)
+
+                })
+                .catch((err: any) => {
+                  console.error(err);
+                });
+            }}
+          >
+            Excluir
           </Button>
         </Flex>
       </Flex>
