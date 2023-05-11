@@ -1,50 +1,32 @@
 import { useRouter } from "next/router";
 import { Box, Button, Flex, Select } from "@chakra-ui/react";
-import CardEmpresa from "../../components/empresa/lista/card/card";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { InferGetStaticPropsType } from "next";
 
-export async function getStaticProps() {
 
-  const Token = process.env.ATORIZZATION_TOKEN
-  const data = await fetch(
-    process.env.NEXT_PUBLIC_STRAPI_API_URL +
-    "/empresas?filters[status][$eq]=true&&fields[0]=nome", {
-    headers: {
-      Authorization: `Bearer ${Token}`,
-    }
-  }
-  );
-  const resposta = await data.json();
-  const ListEmpesa = await resposta.data;
-
-  return {
-    props: { ListEmpesa },
-  };
-}
-
-export default function Empresas({
-  ListEmpesa,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+function Empresas() {
   const router = useRouter();
   const { data: session } = useSession();
   const [Data, setData] = useState<any[]>([]);
   const [id, setId] = useState("");
 
   useEffect(() => {
-    setData(ListEmpesa);
-  }, [ListEmpesa]);
+    (async()=> {
+      await fetch("/api/db/empresas/getEmpresaMin")
+      .then((Response) => Response.json())
+      .then((resposta: any) => setData(resposta) )
+      .catch((err) => console.log)
+    })()
+  }, []);
 
   return (
     <Flex h="100%" w="100%" flexDir={"column"} justifyContent="center">
       <Flex
-        h={24}
-        w={{ md: "80%", sm: "100%" }}
+        w={"100%"}
         borderBottom={"2px"}
         borderColor={"gray.200"}
-        m="auto"
-        mt={{ md: 5, sm: "1.5rem" }}
+        py={'1rem'}
+        px={'3rem'}
         justifyContent={"space-evenly"}
         alignItems={"center"}
         flexDir={{ sm: "column", md: "row" }}
@@ -54,7 +36,7 @@ export default function Empresas({
             borderColor="gray.600"
             focusBorderColor="brand.400"
             size="md"
-            w="20rem"
+            w="18rem"
             fontSize="xs"
             rounded="md"
             placeholder="selecine uma opção"
@@ -68,12 +50,7 @@ export default function Empresas({
                 </option>
               ))}
           </Select>
-          <Button
-            colorScheme="blackAlpha"
-            onClick={() => router.push(`/empresas/atualizar/${id}`)}
-          >
-            Editar Empresa
-          </Button>
+
         </Flex>
         <Box
           display={"flex"}
@@ -81,19 +58,28 @@ export default function Empresas({
           h="100%"
           justifyContent={'center'}
           alignItems="center"
+          flexWrap={'wrap'}
         >
           <Button
-            h={{ md: "40%", sm: "70%" }}
+            fontSize={'0.8rem'}
+            colorScheme="blackAlpha"
+            onClick={() => router.push(`/empresas/atualizar/${id}`)}
+          >
+            Editar Empresa
+          </Button>
+          <Button
             colorScheme="whatsapp"
+            fontSize={'0.8rem'}
             onClick={() => router.push("/empresas/cadastro")}
           >
             Cadastrar Empresa
           </Button>
-          <Button h={{ md: "40%", sm: "70%" }} colorScheme="cyan" onClick={() => router.push('/pessoas/cadastro')}>Add Nova Pessoa</Button>
+          <Button fontSize={'0.8rem'} colorScheme="cyan" onClick={() => router.push('/pessoas/cadastro')}>Add Nova Pessoa</Button>
           {session?.user.pemission !== "Adm" ? null : (
             <Button
               h={{ md: "40%", sm: "70%" }}
               colorScheme="telegram"
+              fontSize={'0.8rem'}
               onClick={() => router.push("/empresas/ativate/")}
             >
               Ativar Cadastro
@@ -103,9 +89,10 @@ export default function Empresas({
       </Flex>
       <Box h={"95%"} bg="#edf3f8" overflow={"auto"}>
         <Flex py={50} justifyContent={"center"} px={5} w="full">
-          {/* <CardEmpresa /> */}
         </Flex>
       </Box>
     </Flex>
   );
 }
+
+export default Empresas;

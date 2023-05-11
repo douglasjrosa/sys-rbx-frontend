@@ -247,7 +247,7 @@ export default function Cadastro() {
       { mudulo: nome, valor: "Nome" },
       { mudulo: CNPJ, valor: "cnpj" },
       { mudulo: celular, valor: "WhatsApp" },
-      { mudulo: Responsavel, valor: "Responsavel" },
+      { mudulo: Responsavel, valor: "Responsável" },
     ];
     const filter = validateString.filter((m) => m.mudulo === "");
     if (tablecalc === "") {
@@ -455,7 +455,7 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        Email
+                        E-mail
                       </FormLabel>
                       <Input
                         type="text"
@@ -817,7 +817,7 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        Email para emvio de Nfe
+                        E-mail para emvio de Nfe
                       </FormLabel>
                       <Input
                         type="text"
@@ -873,7 +873,7 @@ export default function Cadastro() {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="Selecine uma opção"
+                        placeholder="Selecione uma opção"
                         onChange={(e) => setContribuinte(e.target.value)}
                         value={contribuinte}
                       >
@@ -895,7 +895,7 @@ export default function Cadastro() {
                 >
                   <SimpleGrid columns={12} spacing={3}>
                     <Heading as={GridItem} colSpan={12} size="sd">
-                      Configurações da Emprsa
+                      Configurações da Empresa
                     </Heading>
 
                     <FormControl as={GridItem} colSpan={[6, 3]}>
@@ -907,7 +907,7 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        Tabela de calculo
+                        Tabela de cálculo
                       </FormLabel>
                       <Select
                         borderColor="gray.600"
@@ -917,14 +917,14 @@ export default function Cadastro() {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="Selecine uma opção"
+                        placeholder="Selecione uma opção"
                         onChange={(e) => setTablecalc(e.target.value)}
                         value={tablecalc}
                       >
                         <option value=""></option>
                         <option value="0.30">Balcão</option>
                         <option value="0.26" selected>
-                          vip
+                          Vip
                         </option>
                         <option value="0.23">Bronze</option>
                         <option value="0.20">Prata</option>
@@ -957,12 +957,12 @@ export default function Cadastro() {
                         onChange={(e) => setMaxpg(e.target.value)}
                         value={maxPg}
                       >
-                        <option value="0">Á vista (antecipado)</option>
+                        <option value="0">À vista (antecipado)</option>
                         <option value="5">5 dias</option>
                         <option value="15">15 dias</option>
                         <option value="28">28 Dias</option>
                         <option value="35">28 e 35 dias</option>
-                        <option value="42">28,35 e 42 dias</option>
+                        <option value="42">28, 35 e 42 dias</option>
                         <option value="90">
                           90 dias (Casos muito excepcionais)
                         </option>

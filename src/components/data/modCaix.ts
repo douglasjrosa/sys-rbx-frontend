@@ -5,7 +5,7 @@ export const modCaix = [
   },
   {
     id: '2',
-    title: 'Caixa estrturada',
+    title: 'Caixa estruturada',
   },
   {
     id: '3',

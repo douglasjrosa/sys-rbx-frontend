@@ -271,10 +271,10 @@ export default function Proposta() {
         ? Math.max(...ListItens.map((obj: any) => parseInt(obj.id) + 1))
         : 1;
     resposta.id = maxSum;
-    const valor1 = Number(resposta.vFinal.replace(".", "").replace(",", "."));
+    const valor1 = parseFloat(resposta.vFinal.replace(".", "")).toFixed(2);
     const ValorGeral = valor1;
-    const valor = Math.round(parseFloat(valor1.toFixed(2)) * 100) / 100;
-    resposta.total = Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
+    const valor = Math.round(parseFloat(valor1) * 100) / 100;
+    resposta.total = Math.round(parseFloat(ValorGeral) * 100) / 100;
     resposta.expo = false;
     resposta.mont = false;
     resposta.codg = resposta.prodId;

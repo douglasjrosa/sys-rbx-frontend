@@ -165,7 +165,7 @@ export default function Cadastro() {
           });
           setTimeout(() => {
             const Id = localStorage.getItem("id");
-            router.push("/");
+            router.push("/empresas");
             localStorage.removeItem("id");
           }, 500);
         })
@@ -476,7 +476,7 @@ export default function Cadastro() {
                             color: "gray.50",
                           }}
                         >
-                          Email
+                          E-mail
                         </FormLabel>
                         <Input
                           type="text"
@@ -501,7 +501,7 @@ export default function Cadastro() {
                             color: "gray.50",
                           }}
                         >
-                          Telelfone
+                          Telefone
                         </FormLabel>
                         <Input
                           type="text"

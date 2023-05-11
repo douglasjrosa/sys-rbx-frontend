@@ -5,7 +5,7 @@ export const ListFornecedor = [
   },
   {
     id: '17757153000180',
-    title: 'Ribermax',
+    title: 'Max Brasil',
   },
   {
     id: '04586593000170',

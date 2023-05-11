@@ -29,6 +29,7 @@ export const ProdutiList = (props: {
     (async () => {
       const email = localStorage.getItem("email");
       const url = "/api/query/get/produto/cnpj/" + props.onCnpj;
+      console.log("🚀 ~ file: produt.tsx:32 ~ url:", url)
       if (props.onCnpj !== "" && Produtos.length === 0) {
         await fetch(url, {
           method: "POST",
@@ -36,7 +37,7 @@ export const ProdutiList = (props: {
         })
           .then((resp) => resp.json())
           .then((resposta) => {
-           
+
             const retonoIdeal =
               resposta.length === 0
                 ? false
@@ -79,7 +80,7 @@ export const ProdutiList = (props: {
     })
       .then((resp) => resp.json())
       .then((resposta) => {
-        
+
         props.onResp(resposta);
         setLoad(false);
       })
@@ -133,6 +134,7 @@ export const ProdutiList = (props: {
             value={itenId}
           >
             {Produtos.map((item: any) => {
+          
               return (
                 <>
                   <option value={item.prodId}>{item.nomeProd}</option>

@@ -13,10 +13,10 @@ export default async function GetEmpresa(
   if (req.method === "GET") {
     const { proposta } = req.query;
 
-    // const infos = await getData(proposta);
-    // console.log("🚀 ~ file: [proposta].ts:16 ~ infos:", infos);
+    const infos = await getData(proposta);
+    // console.log("🚀 ~ file: [proposta].ts:17 ~ infos:", infos)
 
-    const infos = TestDb;
+    // const infos = TestDb;
 
     const imagePath2 = path.join(
       process.cwd(),
@@ -31,7 +31,7 @@ export default async function GetEmpresa(
       process.cwd(),
       "public",
       "img",
-      "logomarca-bragheto-escuro.png"
+      "Bragheto - Logomarca com nome (Fundo transparente).png"
     );
     const imageContent = fs.readFileSync(imagePath).toString("base64");
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
@@ -50,7 +50,7 @@ export default async function GetEmpresa(
 
     const Product = infos.itens;
     const products = Product.map((i: any, x: number) => {
-      const preco = parseFloat(i.preco.replace(/','+/g, ".")).toLocaleString(
+      const preco = parseFloat(i.vFinal.replace(/','+/g, ".")).toLocaleString(
         "pt-br",
         { style: "currency", currency: "BRL" }
       );
@@ -60,20 +60,24 @@ export default async function GetEmpresa(
       });
 
       return [
-        x,
-        i.nomeProd,
-        i.codg,
-        i.Qtd,
-        i.altura,
-        i.largura,
-        i.comprimento,
-        !!i.mont ? "SIM" : "NÃO",
-        !!i.expo ? "SIM" : "NÃO",
-        preco,
-        total,
+       {text: x, margin: [0, 10, 0, 8]},
+      {text:i.nomeProd, margin: [0, 10, 0, 8]},
+        {text:i.codg, margin: [0, 10, 0, 8]},
+       {text: i.Qtd, margin: [0, 10, 0, 8]},
+       {text: !i.altura ? 0 : i.altura, margin: [0, 10, 0, 8]},
+       {text: !i.largura ? 0 : i.largura, margin: [0, 10, 0, 8]},
+        {text:!i.comprimento ? 0 : i.comprimento, margin: [0, 10, 0, 8]},
+        {text:!!i.mont ? "SIM" : "NÃO", margin: [0, 10, 0, 8]},
+        {text:!!i.expo ? "SIM" : "NÃO", margin: [0, 10, 0, 8]},
+        {text:preco, margin: [0, 10, 0, 8]},
+        {text:total, margin: [0, 10, 0, 8]},
       ];
     });
 
+    const logo =
+      infos.fornecedor.data.razao === "BRAGHETO PALETES E EMBALAGENS LTDA"
+        ? dataUrl
+        : dataUrl2;
     const docDefinitions: TDocumentDefinitions = {
       defaultStyle: { font: "Helvetica" },
       content: [
@@ -100,7 +104,7 @@ export default async function GetEmpresa(
               [
                 {
                   border: [false, false, false, false],
-                  image: dataUrl,
+                  image: logo,
                   fit: [80, 80], // Define o tamanho da imagem
                   margin: [30, 3, 30, 3],
                 },
@@ -141,8 +145,10 @@ export default async function GetEmpresa(
                               [
                                 {
                                   text: "Fornecedor",
+                                  bold: "true",
                                   fillColor: "#979797",
                                   color: "#ffff",
+                                  fontSize: 10,
                                   border: [false, false, false, false],
                                 },
                                 {
@@ -153,7 +159,7 @@ export default async function GetEmpresa(
                               ],
                               [
                                 {
-                                  text: "nome/razão :",
+                                  text: "Nome/Razão :",
                                   border: [false, false, false, false],
                                 },
                                 {
@@ -227,6 +233,8 @@ export default async function GetEmpresa(
                               [
                                 {
                                   text: "Cliente",
+                                  bold: "true",
+                                  fontSize: 9,
                                   fillColor: "#979797",
                                   color: "#ffff",
                                   border: [false, false, false, false],
@@ -239,7 +247,7 @@ export default async function GetEmpresa(
                               ],
                               [
                                 {
-                                  text: "nome/razão :",
+                                  text: "Nome/Razão :",
                                   border: [false, false, false, false],
                                 },
                                 {
@@ -253,7 +261,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.fornecedor.data.cnpj,
+                                  text: infos.cliente.cnpj,
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -263,7 +271,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.fornecedor.data.endereco,
+                                  text: infos.cliente.endereco,
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -274,9 +282,9 @@ export default async function GetEmpresa(
                                 },
                                 {
                                   text:
-                                    infos.fornecedor.data.cidade +
+                                    infos.cliente.cidade +
                                     ", " +
-                                    infos.fornecedor.data.uf,
+                                    infos.cliente.uf,
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -286,7 +294,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.fornecedor.data.tel,
+                                  text: infos.cliente.fone,
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -296,7 +304,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.fornecedor.data.email,
+                                  text: infos.cliente.email,
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -357,7 +365,7 @@ export default async function GetEmpresa(
                       [
                         {
                           border: [false, false, false, false],
-                          text: "A montagen deve ser solicitada no ato da cotação.",
+                          text: "A montagem deve ser solicitada no ato da cotação.",
                           style: "clienteFornecedor",
                         },
                       ],
@@ -386,18 +394,63 @@ export default async function GetEmpresa(
                     body: [
                       [
                         {
-                          margin: [0, 85, 0, 0],
                           border: [false, false, false, false],
                           table: {
-                            widths: ["25%", "*"],
+                            widths: ["40%", "*"],
                             body: [
                               [
                                 {
+                                  border: [false, false, false, false],
+                                  text: "Condição de pagamento:",
+                                  bold: "true",
+                                  fontSize: 8,
+                                },
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
+                                  text: infos.condi,
+                                  style: "clienteFornecedor"
+                                },
+                              ],
+                              [
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
+                                  text: "Prazo:",
+                                  bold: "true",
+                                  style: "clienteFornecedor"
+                                },
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
+                                  text: infos.prazo,
+                                  style: "clienteFornecedor"
+                                },
+                              ],
+                              [
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
+                                  text: "Tipo de frete:",
+                                  bold: "true",
+                                  fontSize: 8,
+                                },
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
+                                  text: infos.frete,
+                                  style: "clienteFornecedor",
+                                },
+                              ],
+                              [
+                                {
+                                  margin: [20, 45, 0, 0],
                                   border: [false, false, false, false],
                                   text: "Total",
                                   bold: "true",
                                 },
                                 {
+                                  margin: [0, 45, 0, 0],
                                   border: [false, false, false, false],
                                   text: infos.totoalGeral,
                                 },
@@ -413,6 +466,7 @@ export default async function GetEmpresa(
             ],
           },
         },
+
         {
           table: {
             widths: ["*"],
@@ -432,26 +486,27 @@ export default async function GetEmpresa(
           table: {
             widths: [
               "2%",
-              "22%",
-              "8%",
+              "25%",
+              "7%",
               "5%",
               "7%",
-              "10%",
-              "10%",
+              "8%",
+              "8%",
               "6%",
               "6%",
               "12%",
-              "12%",
+              "14%",
             ],
             headerRows: 1,
+            heights:4,
             body: [
               [
                 { text: "x", style: "tableTitle" },
                 { text: "Produto", style: "tableTitle" },
-                { text: "Código", style: "tableTitle" },
+                { text: "Codg.", style: "tableTitle" },
                 { text: "Qtd", style: "tableTitle" },
-                { text: "Altura", style: "tableTitle" },
-                { text: "Largura", style: "tableTitle" },
+                { text: "Alt.", style: "tableTitle" },
+                { text: "Larg.", style: "tableTitle" },
                 { text: "Compr.", style: "tableTitle" },
                 { text: "MONT.", style: "tableTitle" },
                 { text: "EXP.", style: "tableTitle" },
@@ -480,7 +535,7 @@ export default async function GetEmpresa(
           alignment: "center",
         },
         tableConteudo: {
-          fontSize: 7,
+          fontSize: 9,
           alignment: "center",
         },
       },
@@ -495,9 +550,11 @@ export default async function GetEmpresa(
     });
 
     pdfDoc.end();
-
+    const filename = infos.nPedido + ' - ' + infos.cliente.nome + '++' + new Date().toISOString();
     pdfDoc.on("end", () => {
       const pdf = Buffer.concat(chunks);
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      res.setHeader('Content-Type', 'application/pdf');
       res.end(pdf);
     });
   } else {

@@ -7,11 +7,11 @@ import CardBusiness from "./card";
 export const BodyCard = (props: { reload: any }) => {
   const [dados, setDados] = useState<any | null>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  
+
   useEffect(() => {
     setLoading(props.reload);
   }, [props.reload]);
-  
+
   useEffect(() => {
     (async () => {
       await axios({
@@ -55,17 +55,13 @@ export const BodyCard = (props: { reload: any }) => {
             </Flex>
           ) : (
             <>
-              <SimpleGrid
-                p="1rem"
-                columns={{ base: 1, md: 2 }}
-                row={{ base: 1, md: 1 }}
-                spacing={{ base: 3, md: 5 }}
+              <Flex
+              flexWrap={'wrap'}
               >
                 {!dados
                   ? null
                   : dados.map((i: any) => {
-                    console.log("🚀 ~ file: boduCard.tsx:67 ~ BodyCard ~ i:", i)
-                    
+
                       return (
                         <>
                           <CardBusiness
@@ -77,13 +73,13 @@ export const BodyCard = (props: { reload: any }) => {
                             pedidosQtd={i?.attributes.pedidos.data}
                             empresa={i?.attributes.empresa}
                             criateed={i?.attributes.createdAt}
-                            andamento={i?.attributes.statusAnd}
+                            andamento={i?.attributes.andamento}
                             onloading={reload}
                           />
                         </>
                       );
                     })}
-              </SimpleGrid>
+              </Flex>
             </>
           )}
         </Box>

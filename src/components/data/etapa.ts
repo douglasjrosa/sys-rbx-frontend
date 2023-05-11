@@ -1,7 +1,7 @@
 export const EtapasNegocio = [
   {
     id: '1',
-    title: 'Emviar proposta',
+    title: 'Enviar proposta',
   },
   {
     id: '2',
@@ -17,6 +17,6 @@ export const EtapasNegocio = [
   },
   {
     id: '5',
-    title: 'Concluido',
+    title: 'Concluído',
   }
 ];

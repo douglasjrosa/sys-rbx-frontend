@@ -25,7 +25,6 @@ import {
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { FaLocationArrow } from "react-icons/fa";
 import { MdOutlineAddCircleOutline } from "react-icons/md";
 import { BeatLoader } from "react-spinners";
 import { mask, unMask } from "remask";
@@ -187,10 +186,13 @@ export const BtCreate = (props: { onLoading: any }) => {
       >
         <PopoverTrigger>
           <IconButton
-          aria-label="Add Negocio"
-          rounded={'3xl'}
-          colorScheme="whatsapp"
-          ><MdOutlineAddCircleOutline color="#ffff" size={'2rem'} /></IconButton>
+            aria-label="Add Negocio"
+            rounded={'3xl'}
+            colorScheme="whatsapp"
+            me={'5rem'}
+          >
+            <MdOutlineAddCircleOutline color="#ffff" size={'2rem'} />
+          </IconButton>
         </PopoverTrigger>
         <PopoverContent color="white" bg="blue.800" borderColor="blue.800">
           <PopoverHeader pt={4} fontWeight="bold" border="0">

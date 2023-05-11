@@ -109,7 +109,7 @@ export const TableConteudo = (props: {
         const dt = { expo: valor };
         handleAdd(dt, i.id);
       };
-      const ValorFinal = parseFloat(i.vFinal.replace(/','+/g, '.')).toLocaleString("pt-br", {
+      const ValorFinal = parseFloat(i.vFinal.replace('.', '').replace(',', '.')).toLocaleString("pt-br", {
         style: "currency",
         currency: "BRL",
       })

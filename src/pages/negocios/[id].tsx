@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Box, useToast } from "@chakra-ui/react";
+import { Box, Flex, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
@@ -51,7 +51,7 @@ export default function CreateNegocio() {
           setnBusiness(res.data.attributes.nBusiness);
           setApproach(res.data.attributes.Approach);
           setBudget(res.data.attributes.Budget);
-          setStatus(res.data.attributes.statusAnd);
+          setStatus(res.data.attributes.andamento);
           setDeadline(res.data.attributes.deadline);
           setDataRetorno(res.data.attributes.DataRetorno);
           setHistoria(res.data.attributes.history);
@@ -119,7 +119,10 @@ export default function CreateNegocio() {
 
   return (
     <>
-      <Box w="full" h="full">
+      <Flex w="100%" h="100vh" flexDirection={'column'} justifyContent={'space-between'}>
+<Box>
+
+</Box>
         <Box bg={"gray.200"} w="full" p={5}>
           <NegocioHeader
             nBusiness={nBusiness}
@@ -133,13 +136,13 @@ export default function CreateNegocio() {
             etapa={Etapa}
           />
         </Box>
-        <Box bg="#edeae6" w="full" h="79%" ref={divRef} overflowY={"auto"}>
+        <Box bg="#edeae6" w="full" h={'full'} ref={divRef} overflowY={"auto"}>
           <BodyChat conteudo={ChatHistory} loading={loading} />
         </Box>
-        <Box w="full" h="10%">
+        <Box w="full">
           <NegocioFooter data={ChatHistory} onGetValue={getMsg} />
         </Box>
-      </Box>
+      </Flex>
     </>
   );
 }

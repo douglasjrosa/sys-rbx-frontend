@@ -541,7 +541,7 @@ export default function EmpresaId() {
                           color: 'gray.50',
                         }}
                       >
-                        Email
+                        E-mail
                       </FormLabel>
                       <Input
                         type="text"
@@ -881,7 +881,7 @@ export default function EmpresaId() {
                           color: 'gray.50',
                         }}
                       >
-                        Email para emvio de Nfe
+                        E-mail para emvio de Nfe
                       </FormLabel>
                       <Input
                         type="text"
@@ -938,7 +938,7 @@ export default function EmpresaId() {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="Selecine uma opção"
+                        placeholder="Selecione uma opção"
                         onChange={(e) => setContribuinte(e.target.value)}
                         value={contribuinte}
                       >
@@ -960,7 +960,7 @@ export default function EmpresaId() {
                 >
                   <SimpleGrid columns={12} spacing={3}>
                     <Heading as={GridItem} colSpan={12} size="sd">
-                      Configurações da Emprsa
+                      Configurações da Empresa
                     </Heading>
 
                     <FormControl as={GridItem} colSpan={[6, 3]}>
@@ -972,7 +972,7 @@ export default function EmpresaId() {
                           color: 'gray.50',
                         }}
                       >
-                        Tabela de calculo
+                        Tabela de cálculo
                       </FormLabel>
                       <Select
                         borderColor="gray.600"
@@ -982,14 +982,14 @@ export default function EmpresaId() {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="Selecine uma opção"
+                        placeholder="Selecione uma opção"
                         onChange={(e) => setTablecalc(e.target.value)}
                         value={tablecalc}
                       >
                         <option value=""></option>
                         <option value="0.30">Balcão</option>
                         <option value="0.26" selected>
-                          vip
+                          Vip
                         </option>
                         <option value="0.23">Bronze</option>
                         <option value="0.20">Prata</option>
@@ -1021,12 +1021,12 @@ export default function EmpresaId() {
                         onChange={(e) => setMaxpg(e.target.value)}
                         value={maxPg}
                       >
-                        <option value="0">Á vista (antecipado)</option>
+                        <option value="0">À vista (antecipado)</option>
                         <option value="5">5 dias</option>
                         <option value="15">15 dias</option>
-                        <option value="28">28 Dias</option>
+                        <option value="28">28 dias</option>
                         <option value="35">28 e 35 dias</option>
-                        <option value="42">28,35 e 42 dias</option>
+                        <option value="42">28, 35 e 42 dias</option>
                         <option value="90">
                           90 dias (Casos muito excepcionais)
                         </option>
@@ -1282,7 +1282,7 @@ export default function EmpresaId() {
                     fontWeight="md"
                     onClick={save}
                   >
-                    Save
+                    Salvar
                   </Button>
                 </Box>
               </chakra.form>

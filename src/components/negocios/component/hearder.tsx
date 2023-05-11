@@ -2,6 +2,7 @@
 import {
   Box,
   Button,
+  Center,
   Flex,
   FormLabel,
   Input,
@@ -16,6 +17,7 @@ import { SelecAtendimento } from "../../elements/lista/atendimento";
 import { BtnStatus } from "../../elements/lista/status";
 import { StatusPerca } from "@/components/data/perca";
 import { EtapasNegocio } from "@/components/data/etapa";
+import { BtmRetorno } from "@/components/elements/btmRetorno";
 
 export const NegocioHeader = (props: {
   nBusiness: string;
@@ -105,6 +107,9 @@ export const NegocioHeader = (props: {
     <>
       <Flex>
         <Flex gap={8} w={"85%"} flexWrap={"wrap"}>
+          <Flex alignItems={"center"}>
+          <BtmRetorno Url="/negocios" />
+          </Flex>
           <Box>
             <FormLabel
               htmlFor="cidade"

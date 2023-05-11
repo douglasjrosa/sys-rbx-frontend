@@ -16,7 +16,7 @@ export const PostPedido = async (dados: any) => {
     const Mont = i.prodId + "-mont";
     const Expo = i.prodId + "-expo";
     const montExpo = i.prodId + "-mont-expo";
-    console.log(i)
+
 
     const codg =
       i.expo === true && i.mont === true
@@ -87,8 +87,10 @@ export const PostPedido = async (dados: any) => {
           <vlr>${valorParcela.toFixed(2)}</vlr>
           <obs>${obs}</obs>
         </parcela>`;
+
     return templateParcela;
   });
+
 
   const parcela = () => {
     const prazo1 = "5 Dias";
@@ -124,10 +126,12 @@ export const PostPedido = async (dados: any) => {
     return retorno;
   };
 
-  const xmlParcelas =
-    DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
-      ? parcela()
-      : datasParcelas;
+  const [xmlParcelas] =
+  DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
+  ? parcela()
+  : datasParcelas;
+  console.log("🚀 ~ file: index.ts:129 ~ PostPedido ~ xmlParcelas:", DaDos.condi)
+  console.log("🚀 ~ file: index.ts:129 ~ PostPedido ~ xmlParcelas:", xmlParcelas)
 
   const desconto = DaDos.desconto
     .replace("R$", "")
@@ -167,6 +171,7 @@ export const PostPedido = async (dados: any) => {
      <vlr_desconto>${desconto}</vlr_desconto>
      <obs>${DaDos.obs}</obs>
   </pedido>`;
+  
 
 
   try {
@@ -179,13 +184,11 @@ export const PostPedido = async (dados: any) => {
       body: formData,
     };
 
-    const requet = await fetch(url + "/propostacomercial/json/", requestOptions);
+    const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
-    console.log("🚀 ~ file: index.ts:183 ~ PostPedido ~ response:", response)
+
 
     const { pedidos, erros } = response.retorno;
-    console.log("🚀 ~ file: index.ts:185 ~ PostPedido ~ pedidos:", pedidos)
-    console.log("🚀 ~ file: index.ts:185 ~ PostPedido ~ erros:", erros)
 
     if (erros) {
       throw Object.assign(new Error(erros[0].erro.msg), {
@@ -197,18 +200,18 @@ export const PostPedido = async (dados: any) => {
       });
     }
 
-    // const resposta = {
-    //   msg:
-    //     "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
-    //   pedido: pedidos[0].pedido.idPedido,
-    //   status: 201,
-    // };
-    // const nPedido = dados.id;
-    // const Bpedido = pedidos[0].pedido.idPedido;
-    // const IdNegocio = DaDos.business.data.id;
-    // await SaveRespose(nPedido, Bpedido, IdNegocio);
+    const resposta = {
+      msg:
+        "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
+      pedido: pedidos[0].pedido.idPedido,
+      status: 201,
+    };
+    const nPedido = dados.id;
+    const Bpedido = pedidos[0].pedido.idPedido;
+    const IdNegocio = DaDos.business.data.id;
+    await SaveRespose(nPedido, Bpedido, IdNegocio);
 
-    // return resposta;
+    return resposta;
   } catch (error: any) {
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,

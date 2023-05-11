@@ -57,15 +57,7 @@ export default async function PUTEmpresa(
     };
 
     const now = new Date();
-    const VisibliDateTime = `${
-      now.getDate() < 10 ? "0" + now.getDate() : now.getDate()
-    }/${
-      now.getMonth() + 1 < 10
-        ? "0" + (now.getMonth() + 1)
-        : now.getMonth() + 1
-    }/${now.getFullYear()}, as ${now.getHours()} H ${now.getMinutes()} mim ${
-      now.getSeconds() < 10 ? "0" + now.getSeconds() : now.getSeconds()
-    } Seconds.`;
+    const VisibliDateTime =  new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString();
     const isoDateTime = now.toISOString();
     const txt = {
       date: isoDateTime,

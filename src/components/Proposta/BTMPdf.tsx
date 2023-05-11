@@ -7,7 +7,7 @@ export const BTMPdf = (props: { nPedido: any; empresa: string }) => {
 
   return (
     <>
-      <Button p={5} w={"full"} colorScheme={"whatsapp"} onClick={() => window.open(
+      <Button p={3} fontSize={'0.9rem'} colorScheme={"whatsapp"} onClick={() => window.open(
         `/api/db/proposta/pdf/${props.nPedido}`,
         "_blank"
       )}>

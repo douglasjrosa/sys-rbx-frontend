@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { StatusAndamento } from '@/components/data/status';
 import { Box, chakra, Flex, Link, Toast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -37,6 +38,8 @@ export default function CardBusiness(props: {
       currency: 'BRL',
     });
   };
+
+  const [Andmento] = StatusAndamento.filter((s) => s.id == props.andamento?.toString()).map((i)=> i.title)
 
   return (
     <>
@@ -98,7 +101,7 @@ export default function CardBusiness(props: {
                 color="gray.600"
                 fontSize="0.8rem"
               >
-                Data de Emtrega:
+                Data de Entrega:
               </chakra.p>
               <chakra.p
                 color="gray.600"
@@ -113,7 +116,7 @@ export default function CardBusiness(props: {
                 color="gray.600"
                 fontSize="0.8rem"
               >
-                pedidi:
+                Pedido:
               </chakra.p>
               <chakra.p
                 color="gray.600"
@@ -135,7 +138,8 @@ export default function CardBusiness(props: {
                 ms={2}
                 fontWeight={'semibold'}
               >
-                {props.nBusiness}
+                {/* {props.nBusiness} */}
+                {Andmento}
               </chakra.p>
             </Flex>
             <Flex alignItems="center">
