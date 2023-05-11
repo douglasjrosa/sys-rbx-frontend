@@ -30,71 +30,61 @@ export const CardList = (props: { id: string }) => {
   }, [url]);
 
   const pedido = async (numero: string) => {
-
     toast({
-      title: "Só um momento estou procesando!",
+      title: "Só um momento estou processando!",
       status: "warning",
       isClosable: true,
       position: 'top-right',
     });
 
-    await axios({
-      url: `/api/db/nLote/${numero}`,
-      method: "POST",
-    })
-      .then((res: any) => {
-        console.log(res.data);
-      })
-      .catch((err: any) => {
-        console.log(err.response.data);
+    try {
+      const requests = [
+        axios({
+          url: `/api/db/nLote/${numero}`,
+          method: "POST",
+        }),
+        axios({
+          url: `/api/ribermax/lote/${numero}`,
+          method: "POST",
+        }),
+        axios({
+          url: `/api/db/trello/${numero}`,
+          method: "POST",
+        }),
+        axios({
+          url: "/api/query/pedido/" + numero,
+          method: "POST",
+        })
+      ];
+
+      // Executa todas as requisições em paralelo
+      const [res1, res2, res3] = await Promise.all(requests.slice(0, 3));
+      const res4 = await requests[3];
+
+      console.log(res1.data);
+      console.log(res2.data);
+      console.log(res3.data);
+
+      toast({
+        title: "Pedido realizado com sucesso!",
+        status: "success",
+        duration: 5000,
+        position: 'top-right',
       });
 
-    await axios({
-      url: `/api/ribermax/lote/${numero}`,
-      method: "POST",
-    })
-      .then((res) => {
-        console.log(res.data);
-      })
-      .catch((err: any) => {
-        console.log(err.response.data);
-      });
+      setTimeout(() => router.push("/negocios/" + props.id), 1500);
 
-    await axios({
-      url: `/api/db/trello/${numero}`,
-      method: "POST",
-    })
-      .then((res: any) => {
-        console.log(res.data);
-      })
-      .catch(async (err: any) => {
-        toast({
-          title: "Opss.",
-          description: "Entre en contata com o suporte",
-          status: "error",
-          duration: 9000,
-          position: 'top-right',
-        });
-      });
+    } catch (err: any) {
+      console.log(err.response.data);
 
-    const url = "/api/query/pedido/" + numero;
-    await axios({
-      url: url,
-      method: "POST",
-    })
-      .then(() => {
-        toast({
-          title: "Pedido realizado com sucesso!",
-          status: "success",
-          duration: 5000,
-          position: 'top-right',
-        });
-        setTimeout(() => router.push("/negocios/" + props.id), 1500)
-
-      })
-      .catch((err: any) => {
-        console.log(err.response.data);
+      toast({
+        title: "Opss.",
+        description: "Entre en contata com o suporte",
+        status: "error",
+        duration: 9000,
+        position: 'top-right',
       });
+    }
   };
 
   return (
