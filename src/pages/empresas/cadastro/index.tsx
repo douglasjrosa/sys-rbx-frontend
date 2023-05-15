@@ -88,8 +88,7 @@ export default function Cadastro() {
         title: "erro no CNPJ",
         description: "CNPJ incorreto",
         status: "error",
-        duration: 7000,
-        position: "top-right",
+        duration: 2000,
         isClosable: true,
       });
     }
@@ -98,8 +97,7 @@ export default function Cadastro() {
         title: "erro no CNPJ",
         description: "CNPJ incorreto",
         status: "error",
-        duration: 7000,
-        position: "top-right",
+        duration: 2000,
         isClosable: true,
       });
     } else {
@@ -114,8 +112,8 @@ export default function Cadastro() {
         },
       })
         .then(function (response) {
-          setNome(response.data.razao_social);
-          setFantasia(response.data.estabelecimento.nome_fantasia);
+
+          setFantasia(response.data.razao_social);
           setTipoPessoa("cnpj");
           setIE(
             response.data.estabelecimento.inscricoes_estaduais[0]
@@ -172,8 +170,8 @@ export default function Cadastro() {
 
   const reload = () => {
     setTimeout(() => {
-      router.back();
-    }, 2000);
+      router.push('/empresas');
+    }, 500);
   };
   const date = new Date();
   const dateIsso = date.toISOString();
@@ -254,8 +252,7 @@ export default function Cadastro() {
       toast({
         title: `A Tabela de calculo deve ser definida`,
         status: "warning",
-        duration: 7000,
-        position: "top-right",
+        duration: 2000,
       });
     }
     if (filter.length > 1) {
@@ -263,8 +260,8 @@ export default function Cadastro() {
         toast({
           title: `Favor verificar campo ${i.valor}`,
           status: "warning",
-          duration: 7000,
-          position: "top-right",
+          duration: 2000,
+
         });
       });
       return alert;
@@ -273,8 +270,7 @@ export default function Cadastro() {
       toast({
         title: `Favor verificar campo ${resp}`,
         status: "warning",
-        duration: 7000,
-        position: "top-right",
+        duration: 2000,
       });
     } else {
       axios({
@@ -286,7 +282,7 @@ export default function Cadastro() {
           toast({
             title: "Cliente criado com sucesso",
             status: "success",
-            duration: 9000,
+            duration: 3000,
             isClosable: true,
           });
           reload();
@@ -428,7 +424,7 @@ export default function Cadastro() {
                           color: "gray.50",
                         }}
                       >
-                        Razão social
+                        Nome de exibição
                       </FormLabel>
                       <Input
                         type="text"
@@ -441,6 +437,7 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setNome(e.target.value)}
                         value={nome}
                       />
                     </FormControl>

@@ -72,6 +72,8 @@ export const getData = async (proposta: any) => {
     const logo =
       fornecedor.data.fantasia !== "BRAGHETO PALETES" ? link1 : link2;
 
+    const cliente_pedido = inf.cliente_pedido;
+
     const data = {
       nPedido,
       frete,
@@ -86,7 +88,8 @@ export const getData = async (proposta: any) => {
       obs,
       business,
       logo,
-      Vendedor
+      Vendedor,
+      cliente_pedido
     };
     return data;
   } catch (error) {

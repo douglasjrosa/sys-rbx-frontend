@@ -53,6 +53,7 @@ export default async function PUTEmpresa(
         valorFrete: data.valorFrete,
         vencPrint: data.vencPrint,
         obs: data.obs,
+        cliente_pedido: data.cliente_pedido
       },
     };
 

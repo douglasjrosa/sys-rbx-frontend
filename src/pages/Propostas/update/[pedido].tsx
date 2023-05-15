@@ -27,7 +27,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { SetStateAction, useEffect, useState } from "react";
-import { BsTrash } from "react-icons/bs";
+import { BsArrowLeftCircleFill, BsTrash } from "react-icons/bs";
 import { ListFornecedor } from "../../../components/data/fornecedor";
 import { ListaEmpresa } from "@/components/Proposta/ListaEmpresa";
 import { CompBusiness } from "@/components/Proposta/business";
@@ -64,6 +64,7 @@ export default function Proposta() {
   const [obs, setObs] = useState("");
   const [Id, setId] = useState("");
   const [BId, setBId] = useState("");
+  const [clientePedido, setClientePedido] = useState("");
 
   const toast = useToast();
 
@@ -104,6 +105,7 @@ export default function Proposta() {
       const nome = resp.attributes.empresa.data.attributes.nome;
       setNomeEmpresa(nome);
       setLoadingGeral(false)
+      setClientePedido(resp.attributes.cliente_pedido)
     })();
   }, []);
 
@@ -271,6 +273,7 @@ export default function Proposta() {
         valorFrete: freteCif,
         business: id,
         obs: obs,
+        cliente_pedido: clientePedido
       };
       const url = `/api/db/proposta/put/${Id}`;
       await axios({
@@ -283,7 +286,7 @@ export default function Proposta() {
             title: "Proposta Atualizada",
             description: res.data.message,
             status: "success",
-            duration: 3000,
+            duration: 1000,
             isClosable: true,
           });
 
@@ -314,7 +317,7 @@ export default function Proposta() {
 
           setTimeout(() => {
             router.back();
-          }, 3100);
+          }, 1000);
         })
         .catch((err) => {
           console.log(err);
@@ -385,7 +388,15 @@ export default function Proposta() {
   return (
     <>
       <Flex h="100vh" px={10} w="100%" flexDir={"column"} mt="5" justifyContent={'space-between'}>
-        <Heading size="md">Proposta comercial</Heading>
+      <Flex gap={3}>
+            <BsArrowLeftCircleFill
+              color="blue"
+              cursor={'pointer'}
+              size={30}
+              onClick={() => router.back()}
+            />
+            <Heading size="md">Proposta comercial</Heading>
+          </Flex>
         <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
           <Box>
             <ListaEmpresa onChangeValue={getCnpj} />
@@ -538,6 +549,29 @@ export default function Proposta() {
               idProd={ListItens.length}
             />
           </Box>
+          <Box alignItems="center">
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: "gray.50",
+                }}
+              >
+                Pedido do Clienet N°:
+              </FormLabel>
+              <Input
+                shadow="sm"
+                type={"text"}
+                size="sm"
+                w="full"
+                fontSize="xs"
+                rounded="md"
+                onChange={(e) => setClientePedido(e.target.value)}
+                value={clientePedido}
+              />
+            </Box>
           <Box w={"40rem"}>
             <Box display="flex" gap={5} alignItems="center">
               <Box w="full">

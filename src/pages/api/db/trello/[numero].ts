@@ -52,6 +52,7 @@ export default async function PostTrello(
     const fornecedorName = pedido.attributes.fornecedorId.data.attributes.nome;
     const userKey = pedido.attributes.user.data.attributes.trello_key;
     const userToken = pedido.attributes.user.data.attributes.trello_token;
+    const pedidoCliente = pedido.attributes.cliente_pedido
 
     const Prefuncionario = await GetTrelloId();
     const funcionario = Prefuncionario.filter((f: string) => f !== null);
@@ -104,7 +105,7 @@ export default async function PostTrello(
         Empresa: ${fornecedorName},
         Tipo de frete: ${frete},
         Bling: Nº. ${Bpedido},
-        Pedido: Nº. ,
+        Pedido: Nº. ${pedidoCliente},
         Lote: Nº. ${nlote},
         Forma de pagamento: ${pgto},
         Modelo: ${i.titulo}`,

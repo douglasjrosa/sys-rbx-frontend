@@ -102,6 +102,7 @@ export default async function PostEmpresa(
         business: data.business,
         businessId: data.business,
         obs: data.obs,
+        cliente_pedido: data.cliente_pedido
       },
     };
     // console.log(DataPost);

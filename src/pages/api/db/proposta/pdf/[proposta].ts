@@ -114,9 +114,10 @@ export default async function GetEmpresa(
                   table: {
                     widths: [55, "*"],
                     body: [
-                      ["Data", date],
-                      ["Proposta N°", infos.nPedido],
-                      ["Vendedor", infos.Vendedor],
+                      ["Data:", date],
+                      ["Proposta N°:", infos.nPedido],
+                      ["Vendedor:", infos.Vendedor],
+                      ["Pedido N°:", infos.cliente_pedido],
                     ],
                   },
                 },
@@ -351,21 +352,21 @@ export default async function GetEmpresa(
                         {
                           margin: [0, 5, 0, 0],
                           border: [false, false, false, false],
-                          text: "As embalagens são enviadas desmontadas,",
+                          text: "As embalagens são enviadas desmontadas.",
                           style: "clienteFornecedor",
                         },
                       ],
                       [
                         {
                           border: [false, false, false, false],
-                          text: "Para envio das embalegens montada, há uma acréscimo de 10%",
+                          text: "Para o envio das embalagens montadas, há um acréscimo de 10%.",
                           style: "clienteFornecedor",
                         },
                       ],
                       [
                         {
                           border: [false, false, false, false],
-                          text: "A montagem deve ser solicitada no ato da cotação.",
+                          text: "A montagem deve ser solicitada no momento da cotação.",
                           style: "clienteFornecedor",
                         },
                       ],
@@ -503,11 +504,11 @@ export default async function GetEmpresa(
               [
                 { text: "x", style: "tableTitle" },
                 { text: "Produto", style: "tableTitle" },
-                { text: "Codg.", style: "tableTitle" },
+                { text: "Cód.", style: "tableTitle" },
                 { text: "Qtd", style: "tableTitle" },
                 { text: "Alt.", style: "tableTitle" },
                 { text: "Larg.", style: "tableTitle" },
-                { text: "Compr.", style: "tableTitle" },
+                { text: "Comp.", style: "tableTitle" },
                 { text: "MONT.", style: "tableTitle" },
                 { text: "EXP.", style: "tableTitle" },
                 { text: "Valor Un.", style: "tableTitle" },

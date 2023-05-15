@@ -12,7 +12,7 @@ function Empresas() {
 
   useEffect(() => {
     (async()=> {
-      await fetch("/api/db/empresas/getEmpresaMin")
+      await fetch("/api/db/empresas/getEmpresamin")
       .then((Response) => Response.json())
       .then((resposta: any) => setData(resposta) )
       .catch((err) => console.log)

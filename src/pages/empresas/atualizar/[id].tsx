@@ -193,8 +193,7 @@ export default function EmpresaId() {
         title: 'erro no CNPJ',
         description: 'CNPJ incorreto',
         status: 'error',
-        duration: 7000,
-        position: 'top-right',
+        duration: 2000,
         isClosable: true,
       });
     }
@@ -203,8 +202,7 @@ export default function EmpresaId() {
         title: 'erro no CNPJ',
         description: 'CNPJ incorreto',
         status: 'error',
-        duration: 7000,
-        position: 'top-right',
+        duration: 2000,
         isClosable: true,
       });
     } else {
@@ -219,8 +217,8 @@ export default function EmpresaId() {
         },
       })
         .then(function (response) {
-          setNome(response.data.razao_social);
-          setFantasia(response.data.estabelecimento.nome_fantasia);
+
+          setFantasia(response.data.razao_social);
           setTipoPessoa('cnpj');
           setIE(
             response.data.estabelecimento.inscricoes_estaduais[0]
@@ -277,7 +275,7 @@ export default function EmpresaId() {
 
   const reload = () => {
     setTimeout(() => {
-      router.back();
+      router.push('/empresas');
     }, 500);
   };
 
@@ -357,8 +355,8 @@ export default function EmpresaId() {
         toast({
           title: 'Cliente atualizado',
           status: 'success',
-          duration: 9000,
-          position: 'top-right',
+          duration: 2000,
+
         });
         reload();
         return response.data;
@@ -518,7 +516,7 @@ export default function EmpresaId() {
                           color: 'gray.50',
                         }}
                       >
-                        Razão social
+                        Nome de exibição
                       </FormLabel>
                       <Input
                         type="text"
@@ -528,6 +526,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setNome(e.target.value)}
                         value={nome}
                       />
                     </FormControl>
