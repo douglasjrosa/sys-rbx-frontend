@@ -45,14 +45,14 @@ export default function CardBusiness(props: {
     <>
       <Box
         mx="auto"
-        px={8}
+        px={4}
         py={5}
         mb={5}
         rounded="lg"
         shadow="lg"
         boxShadow="dark-lg"
         bg="white"
-        w={'33rem'}
+        w={'23rem'}
         key={props.id}
         fontSize="0.5rem"
         cursor={'pointer'}

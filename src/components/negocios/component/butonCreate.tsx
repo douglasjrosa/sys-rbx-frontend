@@ -79,7 +79,7 @@ export const BtCreate = (props: { onLoading: any }) => {
 
   useEffect(() => {
     (async () => {
-      let url = "/api/db/empresas/getEmpresaMin";
+      let url = "/api/db/empresas/getEmpresamin";
       await axios({
         method: "GET",
         url: url,
