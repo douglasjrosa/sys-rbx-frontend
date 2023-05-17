@@ -112,6 +112,9 @@ export default function CreateNegocio() {
   function getMsg(menssage: React.SetStateAction<any>) {
     setMsg(menssage);
   }
+  function getLoad(lading: React.SetStateAction<any>) {
+    setLoadingGeral(lading);
+  }
 
   if (loadingGeral) {
     return <Loading size="200px">Carregando...</Loading>;
@@ -134,6 +137,7 @@ export default function CreateNegocio() {
             DataRetorno={DataRetorno}
             Mperca={Mperca}
             etapa={Etapa}
+            onLoad={getLoad}
           />
         </Box>
         <Box bg="#edeae6" w="full" h={'full'} ref={divRef} overflowY={"auto"}>

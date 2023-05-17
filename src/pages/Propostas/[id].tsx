@@ -41,30 +41,33 @@ export default function ListaProposta() {
             Nova Proposta
           </Button>
         </Flex>
-        <Box h={"85%"} overflow={"auto"}>
+        <Box h={"90%"}>
           <Flex
             bg="#edf3f8"
-            pt={"3rem"}
+            pt={"1rem"}
             pb={"0.5rem"}
-            px={"2rem"}
+            px={"1rem"}
             h="full"
             alignItems="center"
             justifyContent="center"
             flexDirection="column"
-            gap={5}
           >
             <Box
               h="full"
               border={"1px solid"}
+              p={4}
               w="full"
               borderColor={"gray.400"}
-              rounded={"3rem"}
+              rounded={"1rem"}
+              boxShadow={'2xl'}
             >
-              <Flex w={"full"} p={10}>
+              <Flex w={"full"} overflowX={"hidden"} >
                 <Flex
                   h={"full"}
-                  overflowX={"hidden"}
                   flexWrap={'wrap'}
+                  justifyContent={'center'}
+                  gap='4'
+                  px='4'
                 >
                   <CardList id={ID} />
                 </Flex>

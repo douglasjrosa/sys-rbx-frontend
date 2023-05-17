@@ -37,5 +37,8 @@
     "totoal",
     "trello",
     "xktum"
-  ]
+  ],
+  "editor.fontFamily": "Fira Code",
+  "editor.fontLigatures": false,
+  "terminal.integrated.fontFamily": "monospace",
 }

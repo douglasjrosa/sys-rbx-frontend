@@ -18,6 +18,7 @@ import { BtnStatus } from "../../elements/lista/status";
 import { StatusPerca } from "@/components/data/perca";
 import { EtapasNegocio } from "@/components/data/etapa";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
+import Loading from "@/components/elements/loading";
 
 export const NegocioHeader = (props: {
   nBusiness: string;
@@ -29,6 +30,7 @@ export const NegocioHeader = (props: {
   DataRetorno?: string;
   etapa?: any;
   Mperca?: any;
+  onLoad: any;
 }) => {
   const router = useRouter();
   const ID = router.query.id;
@@ -53,6 +55,7 @@ export const NegocioHeader = (props: {
     setDataRetorno(props.DataRetorno);
     setMperca(props.Mperca)
     setEtapa(props.etapa)
+    props.onLoad(false)
   }, []);
 
   const historicomsg = {
@@ -293,6 +296,7 @@ export const NegocioHeader = (props: {
           <Button
             colorScheme={"red"}
             onClick={async () => {
+              props.onLoad(true)
               await axios('/api/db/business/delete/' + ID)
                 .then(() => {
                   toast({
@@ -303,8 +307,7 @@ export const NegocioHeader = (props: {
                   });
                   setTimeout(()=>{
                     router.push("/negocios")
-                  },1200)
-
+                  },500)
                 })
                 .catch((err: any) => {
                   console.error(err);

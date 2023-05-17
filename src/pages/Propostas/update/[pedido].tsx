@@ -113,8 +113,8 @@ export default function Proposta() {
     prazo === ""
       ? true
       : prazo === "A Prazo" && tipoprazo === ""
-      ? true
-      : false;
+        ? true
+        : false;
 
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
@@ -190,6 +190,7 @@ export default function Proposta() {
   }, [prazo]);
 
   const SalvarProdutos = async () => {
+    setLoadingGeral(true)
     if (!saveNegocio || saveNegocio === "") {
       toast({
         title: "Esta Faltando informação",
@@ -202,24 +203,20 @@ export default function Proposta() {
     } else {
       const Date5 = new Date(date);
       Date5.setDate(Date5.getDate() + 5);
-      const VencDate = `${Date5.getUTCFullYear()}-${
-        Date5.getUTCMonth() + 1 < 10
+      const VencDate = `${Date5.getUTCFullYear()}-${Date5.getUTCMonth() + 1 < 10
           ? "0" + (Date5.getUTCMonth() + 1)
           : Date5.getUTCMonth() + 1
-      }-${
-        Date5.getUTCDate() < 10 ? "0" + Date5.getUTCDate() : Date5.getUTCDate()
-      }`;
-      const VencDatePrint = `${
-        Date5.getUTCDate() < 10 ? "0" + Date5.getUTCDate() : Date5.getUTCDate()
-      }/${
-        Date5.getUTCMonth() + 1 < 10
+        }-${Date5.getUTCDate() < 10 ? "0" + Date5.getUTCDate() : Date5.getUTCDate()
+        }`;
+      const VencDatePrint = `${Date5.getUTCDate() < 10 ? "0" + Date5.getUTCDate() : Date5.getUTCDate()
+        }/${Date5.getUTCMonth() + 1 < 10
           ? "0" + (Date5.getUTCMonth() + 1)
           : Date5.getUTCMonth() + 1
-      }/${Date5.getUTCFullYear()}`;
+        }/${Date5.getUTCFullYear()}`;
 
       const id: any = localStorage.getItem("id");
 
-      const ProdutosItems =  await ListItens.map((i: any) => {
+      const ProdutosItems = await ListItens.map((i: any) => {
         const valor2Original = i.vFinal.replace(".", "");
         const ValorProd = Number(valor2Original.replace(",", "."));
         const ValorOriginal =
@@ -228,10 +225,10 @@ export default function Proposta() {
           i.mont === true && i.expo === true
             ? 1.2
             : i.expo === true && i.mont === false
-            ? 1.1
-            : i.expo === false && i.mont === true
-            ? 1.1
-            : 0;
+              ? 1.1
+              : i.expo === false && i.mont === true
+                ? 1.1
+                : 0;
         const descont = tipoprazo === "Antecipado" ? ValorOriginal * 0.05 : 0;
         const somaAcrescimo =
           acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
@@ -263,10 +260,10 @@ export default function Proposta() {
         deconto: !Desconto
           ? "R$ 0,00"
           : Desconto === undefined
-          ? "R$ 0,00"
-          : Desconto === ""
-          ? "R$ 0,00"
-          : Desconto,
+            ? "R$ 0,00"
+            : Desconto === ""
+              ? "R$ 0,00"
+              : Desconto,
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
@@ -296,9 +293,8 @@ export default function Proposta() {
           const msg = {
             date: DateAtua,
             user: "Sistema",
-            msg: `Proposta atualizada, valor total agora é ${totalGeral}, pasando a ter ${
-              parseInt(ListItens.length) + 1
-            } items`,
+            msg: `Proposta atualizada, valor total agora é ${totalGeral}, pasando a ter ${parseInt(ListItens.length) + 1
+              } items`,
           };
 
           const record = [...hirtori, msg];
@@ -315,9 +311,7 @@ export default function Proposta() {
             data: data,
           });
 
-          setTimeout(() => {
-            router.back();
-          }, 1000);
+          router.back();
         })
         .catch((err) => {
           console.log(err);
@@ -387,8 +381,9 @@ export default function Proposta() {
 
   return (
     <>
-      <Flex h="100vh" px={10} w="100%" flexDir={"column"} mt="5" justifyContent={'space-between'}>
-      <Flex gap={3}>
+      <Flex h="100vh" px={10} w="100%" flexDir={"column"} mt="5" justifyContent={'space-between'} >
+        <Box>
+          <Flex gap={3}>
             <BsArrowLeftCircleFill
               color="blue"
               cursor={'pointer'}
@@ -397,159 +392,159 @@ export default function Proposta() {
             />
             <Heading size="md">Proposta comercial</Heading>
           </Flex>
-        <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
-          <Box>
-            <ListaEmpresa onChangeValue={getCnpj} />
+          <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
+            <Box>
+              <ListaEmpresa onChangeValue={getCnpj} />
+            </Box>
+            <Box>
+              <CompBusiness Resp={saveNegocio} />
+            </Box>
+            <Box>
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: "gray.50",
+                }}
+              >
+                Data
+              </FormLabel>
+              <Input
+                shadow="sm"
+                type={"date"}
+                size="sm"
+                w="full"
+                fontSize="xs"
+                rounded="md"
+                onChange={(e) => setDate(e.target.value)}
+                value={date}
+              />
+            </Box>
+            <Box>
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: "gray.50",
+                }}
+              >
+                Fornecedor
+              </FormLabel>
+              <Select
+                shadow="sm"
+                size="xs"
+                w="full"
+                fontSize="xs"
+                rounded="md"
+                placeholder="Selecione um Fornecedor"
+                onChange={(e) => setLoja(e.target.value)}
+                value={Loja}
+              >
+                {ListFornecedor.map((item) => {
+                  return (
+                    <option key={item.id} value={item.id}>
+                      {item.title}
+                    </option>
+                  );
+                })}
+              </Select>
+            </Box>
+            <Box>
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: "gray.50",
+                }}
+              >
+                Condição de pagamento
+              </FormLabel>
+              <Select
+                shadow="sm"
+                size="xs"
+                w="full"
+                fontSize="xs"
+                rounded="md"
+                placeholder="Tipos de pagamentos"
+                onChange={(e) => setPrazo(e.target.value)}
+                value={prazo}
+              >
+                <option value="Antecipado">Antecipado</option>
+                <option value="À vista">Avista</option>
+                <option value="A Prazo">A prazo</option>
+              </Select>
+            </Box>
+            <Box hidden={prazo === "A Prazo" ? false : true}>
+              <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} />
+            </Box>
+            <Box>
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: "gray.50",
+                }}
+              >
+                Frete
+              </FormLabel>
+              <Select
+                shadow="sm"
+                size="xs"
+                w="full"
+                fontSize="xs"
+                rounded="md"
+                placeholder="Selecione um tipo de Frete"
+                onChange={(e) => setFrete(e.target.value)}
+              >
+                <option value="CIF">CIF</option>
+                <option value="FOB">FOB</option>
+              </Select>
+            </Box>
+            <Box hidden={frete === "CIF" ? false : true}>
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: "gray.50",
+                }}
+              >
+                Valor de Frete
+              </FormLabel>
+              <Input
+                textAlign={"end"}
+                size="xs"
+                w={"7rem"}
+                fontSize="xs"
+                rounded="md"
+                onChange={handleInputChange}
+                value={freteCif}
+              />
+            </Box>
           </Box>
-          <Box>
-            <CompBusiness Resp={saveNegocio} />
+          <Box mt={7}>
+            <Heading size="sm">Itens da proposta comercial</Heading>
           </Box>
-          <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
-            >
-              Data
-            </FormLabel>
-            <Input
-              shadow="sm"
-              type={"date"}
-              size="sm"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              onChange={(e) => setDate(e.target.value)}
-              value={date}
-            />
-          </Box>
-          <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
-            >
-              Fornecedor
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder="Selecione um Fornecedor"
-              onChange={(e) => setLoja(e.target.value)}
-              value={Loja}
-            >
-              {ListFornecedor.map((item) => {
-                return (
-                  <option key={item.id} value={item.id}>
-                    {item.title}
-                  </option>
-                );
-              })}
-            </Select>
-          </Box>
-          <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
-            >
-              Condição de pagamento
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder="Tipos de pagamentos"
-              onChange={(e) => setPrazo(e.target.value)}
-              value={prazo}
-            >
-              <option value="Antecipado">Antecipado</option>
-              <option value="À vista">Avista</option>
-              <option value="A Prazo">A prazo</option>
-            </Select>
-          </Box>
-          <Box hidden={prazo === "A Prazo" ? false : true}>
-            <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} />
-          </Box>
-          <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
-            >
-              Frete
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="xs"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              placeholder="Selecione um tipo de Frete"
-              onChange={(e) => setFrete(e.target.value)}
-            >
-              <option value="CIF">CIF</option>
-              <option value="FOB">FOB</option>
-            </Select>
-          </Box>
-          <Box hidden={frete === "CIF" ? false : true}>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
-            >
-              Valor de Frete
-            </FormLabel>
-            <Input
-              textAlign={"end"}
-              size="xs"
-              w={"7rem"}
-              fontSize="xs"
-              rounded="md"
-              onChange={handleInputChange}
-              value={freteCif}
-            />
-          </Box>
-        </Box>
-        <Box mt={7}>
-          <Heading size="sm">Itens da proposta comercial</Heading>
-        </Box>
-        <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
-          <Box w={"320px"} alignItems="center">
-            <ProdutiList
-              onCnpj={cnpj}
-              onResp={getIten}
-              ontime={disbleProd}
-              retunLoading={getLoading}
-              idProd={ListItens.length}
-            />
-          </Box>
-          <Box alignItems="center">
+          <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
+            <Box w={"320px"} alignItems="center">
+              <ProdutiList
+                onCnpj={cnpj}
+                onResp={getIten}
+                ontime={disbleProd}
+                retunLoading={getLoading}
+                idProd={ListItens.length}
+              />
+            </Box>
+            <Box alignItems="center">
               <FormLabel
                 htmlFor="cidade"
                 fontSize="xs"
@@ -572,43 +567,43 @@ export default function Proposta() {
                 value={clientePedido}
               />
             </Box>
-          <Box w={"40rem"}>
-            <Box display="flex" gap={5} alignItems="center">
-              <Box w="full">
-                <FormLabel
-                  htmlFor="cidade"
-                  fontSize="xs"
-                  fontWeight="md"
-                  color="gray.700"
-                  _dark={{
-                    color: "gray.50",
-                  }}
-                >
-                  Observação
-                </FormLabel>
-                <Textarea
-                  w="full"
-                  onChange={(e) => setObs(e.target.value)}
-                  placeholder="Breve descrição sobre o andamento"
-                  size="sm"
-                  value={obs}
-                />
+            <Box w={"40rem"}>
+              <Box display="flex" gap={5} alignItems="center">
+                <Box w="full">
+                  <FormLabel
+                    htmlFor="cidade"
+                    fontSize="xs"
+                    fontWeight="md"
+                    color="gray.700"
+                    _dark={{
+                      color: "gray.50",
+                    }}
+                  >
+                    Observação
+                  </FormLabel>
+                  <Textarea
+                    w="full"
+                    onChange={(e) => setObs(e.target.value)}
+                    placeholder="Breve descrição sobre o andamento"
+                    size="sm"
+                    value={obs}
+                  />
+                </Box>
               </Box>
             </Box>
           </Box>
-        </Box>
-        <Box mt={8} w={"100%"} mb={5}>
-          <Box>
-            <TableContainer>
-              <Table variant="striped" colorScheme="green">
-                <Thead>
-                  <Tr>
-                  <Th px='0' w={"1.3rem"}></Th>
+          <Box mt={8} w={"100%"} mb={5}>
+            <Box>
+              <TableContainer>
+                <Table variant="striped" colorScheme="green">
+                  <Thead>
+                    <Tr>
+                      <Th px='0' w={"1.3rem"}></Th>
                       <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>Item</Th>
-                      <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Código
                       </Th>
-                      <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Qtd
                       </Th>
                       <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
@@ -626,28 +621,29 @@ export default function Proposta() {
                       <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Expo.
                       </Th>
-                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"6rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Preço un
                       </Th>
-                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"6rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Preço total
                       </Th>
-                      <Th px='0' textAlign={"center"} w={"3rem"}>
+                      <Th px='0' textAlign={"center"} w={"5rem"}>
                         <Icon as={BsTrash} boxSize={4} color={"whatsapp.600"} />
                       </Th>
-                  </Tr>
-                </Thead>
-                <TableConteudo
-                  Itens={ListItens}
-                  Prazo={prazo}
-                  loading={loadingTable}
-                  returnItem={getItemFinal}
-                />
-              </Table>
-            </TableContainer>
+                    </Tr>
+                  </Thead>
+                  <TableConteudo
+                    Itens={ListItens}
+                    Prazo={prazo}
+                    loading={loadingTable}
+                    returnItem={getItemFinal}
+                  />
+                </Table>
+              </TableContainer>
+            </Box>
           </Box>
         </Box>
-        <Box  display={"flex"} justifyContent={"space-between"} me={10} mb={5}>
+        <Box display={"flex"} justifyContent={"space-between"} me={10} mb={5}>
           <Flex gap={20}>
             <chakra.p>
               Total de itens: {ListItens.length === 0 ? "" : ListItens.length}

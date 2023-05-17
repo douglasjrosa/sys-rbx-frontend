@@ -30,6 +30,7 @@ import { CompBusiness } from "@/components/Proposta/business";
 import { CompPrazo } from "@/components/Proposta/prazo";
 import { ProdutiList } from "@/components/Proposta/produt";
 import { TableConteudo } from "@/components/Proposta/tabela";
+import Loading from "@/components/elements/loading";
 
 const tempo = DateIso;
 
@@ -37,6 +38,7 @@ export default function Proposta() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
+  const [loadingGeral, setLoadingGeral] = useState<boolean>(false);
   const [ListItens, setItens] = useState<any>([]);
   const [date, setDate] = useState(tempo);
   const [cnpj, setCnpj] = useState("");
@@ -145,6 +147,7 @@ export default function Proposta() {
   }, [prazo]);
 
   const SalvarProdutos = async () => {
+    setLoadingGeral(true)
     if (!saveNegocio || saveNegocio === "") {
       toast({
         title: "Esta Faltando informação",
@@ -243,9 +246,8 @@ export default function Proposta() {
             url: "/api/db/business/put/id/" + id,
             data: data,
           });
-          setTimeout(() => {
-            router.back();
-          }, 1000);
+
+          router.back();
         })
         .catch((err) => {
           console.error(err.data);
@@ -307,6 +309,10 @@ export default function Proposta() {
   function getItemFinal(itemFinal: SetStateAction<any>) {
     const filterItens = ListItens.filter((i: any) => i.id !== itemFinal);
     setItens(filterItens);
+  }
+
+  if (loadingGeral) {
+    return <Loading size="200px">Carregando...</Loading>;
   }
 
   return (
@@ -530,10 +536,10 @@ export default function Proposta() {
                     <Tr>
                       <Th px='0' w={"1.3rem"}></Th>
                       <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>Item</Th>
-                      <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Código
                       </Th>
-                      <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Qtd
                       </Th>
                       <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
@@ -551,13 +557,13 @@ export default function Proposta() {
                       <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Expo.
                       </Th>
-                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"6rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Preço un
                       </Th>
-                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"6rem"} textAlign={"center"} fontSize={'0.7rem'}>
                         Preço total
                       </Th>
-                      <Th px='0' textAlign={"center"} w={"3rem"}>
+                      <Th px='0' textAlign={"center"} w={"5rem"}>
                         <Icon as={BsTrash} boxSize={4} color={"whatsapp.600"} />
                       </Th>
                     </Tr>

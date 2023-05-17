@@ -93,7 +93,7 @@ export const TableConteudo = (props: {
         return Id;
       };
       const GetQtd = (e: any) => {
-        const valor = e.target.value;
+        const valor = e.target.value === "0"? 1 :e.target.value;
         const dt = { Qtd: valor };
         handleAdd(dt, i.id);
       };
@@ -123,7 +123,6 @@ export const TableConteudo = (props: {
               <Input
                 type={"text"}
                 size="xs"
-                w="3rem"
                 me={0}
                 borderColor="whatsapp.600"
                 rounded="md"
@@ -131,7 +130,6 @@ export const TableConteudo = (props: {
                 _hover={{
                   borderColor: "whatsapp.600",
                 }}
-                maxLength={4}
                 onChange={GetQtd}
                 value={i.Qtd}
               />
@@ -166,7 +164,7 @@ export const TableConteudo = (props: {
                 currency: "BRL",
               })}
             </Td>
-            <Td px='0' py='1' fontSize={'0.8rem'}>
+            <Td px='5' py='1' fontSize={'0.8rem'}>
               <Button onClick={remove} boxShadow={'lg'} border={'1px solid'} borderColor={'whatsapp.500'} p={'3'}>
                 <BsTrash />
               </Button>
