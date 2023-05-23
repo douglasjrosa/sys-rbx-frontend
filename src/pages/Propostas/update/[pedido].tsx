@@ -476,12 +476,12 @@ export default function Proposta() {
                 value={prazo}
               >
                 <option value="Antecipado">Antecipado</option>
-                <option value="À vista">Avista</option>
+                <option value="À vista">À vista</option>
                 <option value="A Prazo">A prazo</option>
               </Select>
             </Box>
             <Box hidden={prazo === "A Prazo" ? false : true}>
-              <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} />
+              <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} oncnpj={cnpj}/>
             </Box>
             <Box>
               <FormLabel
@@ -554,7 +554,7 @@ export default function Proposta() {
                   color: "gray.50",
                 }}
               >
-                Pedido do Clienet N°:
+                Pedido do Cliente N°:
               </FormLabel>
               <Input
                 shadow="sm"

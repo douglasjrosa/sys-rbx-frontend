@@ -138,7 +138,7 @@ export const PostPedido = async (dados: any) => {
     .replace(".", "")
     .replace(",", ".");
 
-
+console.log(empresa.CNPJ)
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
@@ -171,7 +171,7 @@ export const PostPedido = async (dados: any) => {
      <vlr_desconto>${desconto}</vlr_desconto>
      <obs>${DaDos.obs}</obs>
   </pedido>`;
-  
+
 
 
   try {

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { listPrazo } from '../data/listPrazo';
 
 
-export const CompPrazo = (props: { Resp: string; onAddResp: any }) => {
+export const CompPrazo = (props: { Resp: string; onAddResp: any; oncnpj: string }) => {
   const dados: any = listPrazo;
   const [valor, setValor] = useState('');
 
@@ -22,6 +22,17 @@ export const CompPrazo = (props: { Resp: string; onAddResp: any }) => {
       setValor(!filter ? props.Resp : filter.id);
     }
   }, [props.Resp, valor, dados]);
+
+  const listEmpr = [
+    { nome: 'Alliage', cnpj: '55979736001460' },
+    { nome: 'Dentemed', cnpj: '07897039000100' },
+    { nome: 'Picelli', cnpj: '07570870000145' },
+    { nome: 'Latam', cnpj: '02012862006109' },
+    { nome: 'Picelli', cnpj: "53342523000182" },
+  ]
+  const [selectLista] = listEmpr.filter((i: any) => i.cnpj == props.oncnpj).map((i: any) => i.nome)
+  const PropPrazo = selectLista === undefined ? 'Padão' : selectLista
+  const data = dados.filter((i: any)=> i.propriedade == PropPrazo)
 
   return (
     <Box>
@@ -45,9 +56,9 @@ export const CompPrazo = (props: { Resp: string; onAddResp: any }) => {
         onChange={atualizarValor}
         value={valor}
       >
-        {dados.map((i: any) => {
+        {data.map((i: any) => {
           return (
-            <option key={i.id} value={i.id}>
+            <option key={i.id} value={i.titulo}>
               {i.titulo}
             </option>
           );

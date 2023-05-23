@@ -108,7 +108,7 @@ export const ProdutiList = (props: {
                 color: "gray.50",
               }}
             >
-              produtos
+              Produtos
             </FormLabel>
             <Select
               shadow="sm"

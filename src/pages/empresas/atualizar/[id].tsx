@@ -475,7 +475,6 @@ export default function EmpresaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          maxLength={14}
                           onChange={maskCnpj}
                           value={MaskCNPJ}
                         />

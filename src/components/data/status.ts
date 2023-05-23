@@ -9,7 +9,7 @@ export const StatusAndamento = [
   },
   {
     id: '3',
-    title: 'Parado por tenpo indeterminado',
+    title: 'Parado por tempo indeterminado',
   },
   {
     id: '4',

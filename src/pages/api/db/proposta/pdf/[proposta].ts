@@ -197,7 +197,7 @@ export default async function GetEmpresa(
                                   text:
                                     infos.fornecedor.data.cidade +
                                     ", " +
-                                    infos.fornecedor.data.uf,
+                                    infos.fornecedor.data.uf.toUpperCase(),
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -285,7 +285,7 @@ export default async function GetEmpresa(
                                   text:
                                     infos.cliente.cidade +
                                     ", " +
-                                    infos.cliente.uf,
+                                    infos.cliente.uf.toUpperCase(),
                                   border: [false, false, false, false],
                                 },
                               ],

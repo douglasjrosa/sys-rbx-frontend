@@ -388,9 +388,6 @@ export default function Cadastro() {
                       </FormLabel>
                       <Input
                         type="text"
-                        name="cnpj"
-                        id="cnpj"
-                        autoComplete="family-name"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
