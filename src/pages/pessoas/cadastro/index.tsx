@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { capitalizeWords } from "@/function/captalize";
 import {
   Box,
   Button,
@@ -35,6 +36,7 @@ export default function Cadastro() {
   const [CPF, setCPF] = useState("");
   const [cep, setCep] = useState("");
   const [endereco, setEndereco] = useState("");
+  const [complemento, setComplemento] = useState("");
   const [numero, setNumero] = useState("");
   const [bairro, setBairro] = useState("");
   const [cidade, setCidade] = useState("");
@@ -128,6 +130,7 @@ export default function Cadastro() {
         history: [historico],
         departamento: Departamento,
         cargo: Cargo,
+        complemento: complemento,
       },
     };
 
@@ -256,7 +259,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e: any) => setNome(e.target.value)}
+                          onChange={(e: any) => setNome(capitalizeWords(e.target.value))}
                           value={nome}
                         />
                       </FormControl>
@@ -370,7 +373,33 @@ export default function Cadastro() {
                           w="full"
                           rounded="md"
                           textTransform={"uppercase"}
+                          onChange={(e: any) => setEndereco(capitalizeWords(e.target.value))}
                           value={endereco}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 3]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                          color="gray.700"
+                          _dark={{
+                            color: "gray.50",
+                          }}
+                        >
+                          Complemento
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          borderColor="gray.600"
+                          focusBorderColor="brand.400"
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          textTransform={"uppercase"}
+                          onChange={(e: any) => setComplemento(capitalizeWords(e.target.value))}
+                          value={complemento}
                         />
                       </FormControl>
 
@@ -417,6 +446,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
+                          onChange={(e: any) => setCidade(capitalizeWords(e.target.value))}
                           value={cidade}
                         />
                       </FormControl>
@@ -440,6 +470,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
+                          onChange={(e: any) => setBairro(capitalizeWords(e.target.value))}
                           value={bairro}
                         />
                       </FormControl>
@@ -453,7 +484,7 @@ export default function Cadastro() {
                             color: "gray.50",
                           }}
                         >
-                          Uf
+                          UF.
                         </FormLabel>
                         <Input
                           type="text"
@@ -463,6 +494,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
+                          onChange={(e: any) => setUf(e.target.value)}
                           value={uf}
                         />
                       </FormControl>
@@ -560,7 +592,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => setDepartamento(e.target.value)}
+                          onChange={(e) => setDepartamento(capitalizeWords(e.target.value))}
                           value={Departamento}
                         />
                       </FormControl>
@@ -583,7 +615,7 @@ export default function Cadastro() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => setCargo(e.target.value)}
+                          onChange={(e) => setCargo(capitalizeWords(e.target.value))}
                           value={Cargo}
                         />
                       </FormControl>
@@ -608,7 +640,7 @@ export default function Cadastro() {
                           placeholder="Especifique aqui, todos os detalhes do cliente"
                           size="sm"
                           resize={"none"}
-                          onChange={(e: any) => setObs(e.target.value)}
+                          onChange={(e: any) => setObs(capitalizeWords(e.target.value))}
                           value={obs}
                         />
                       </Box>

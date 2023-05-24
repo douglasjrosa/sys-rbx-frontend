@@ -80,6 +80,20 @@ export default function Cadastro() {
   const [Responsavel, setResponsavel] = useState("");
   const toast = useToast();
 
+  function capitalizeWords(str: string) {
+    // Divide a string em um array de palavras
+    var words = str.split(' ');
+
+    // Itera por cada palavra no array
+    for (var i = 0; i < words.length; i++) {
+      // Converte a primeira letra da palavra para maiúscula e mantém o restante da palavra em minúscula
+      words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1).toLowerCase();
+    }
+
+    // Junta as palavras de volta em uma única string e retorna o resultado
+    return words.join(' ');
+  }
+
   const consulta = () => {
 
     const validCnpj = cnpj.isValid(CNPJ);
@@ -113,7 +127,7 @@ export default function Cadastro() {
       })
         .then(function (response) {
 
-          setFantasia(response.data.razao_social);
+          setFantasia(capitalizeWords(response.data.razao_social));
           setTipoPessoa("cnpj");
           setIE(
             response.data.estabelecimento.inscricoes_estaduais[0]
@@ -122,22 +136,19 @@ export default function Cadastro() {
           setIeStatus(
             response.data.estabelecimento.inscricoes_estaduais[0].ativo
           );
-          setEndereco(
-            response.data.estabelecimento.tipo_logradouro +
-              " " +
-              response.data.estabelecimento.logradouro
-          );
+          const end =capitalizeWords( response.data.estabelecimento.tipo_logradouro + " " + response.data.estabelecimento.logradouro)
+          setEndereco(end);
           setNumero(response.data.estabelecimento.numero);
           setComplemento(response.data.estabelecimento.complemento);
-          setBairro(response.data.estabelecimento.bairro);
+          setBairro(capitalizeWords(response.data.estabelecimento.bairro));
           setCep(response.data.estabelecimento.cep);
-          setCidade(response.data.estabelecimento.cidade.nome);
+          setCidade(capitalizeWords(response.data.estabelecimento.cidade.nome));
           setUf(response.data.estabelecimento.estado.sigla);
           let ddd = response.data.estabelecimento.ddd1;
           let tel1 = response.data.estabelecimento.telefone1;
           setFone(ddd + tel1);
           setEmail(response.data.estabelecimento.email);
-          setPais(response.data.estabelecimento.pais.nome);
+          setPais(capitalizeWords(response.data.estabelecimento.pais.nome));
           setCodpais(response.data.estabelecimento.pais.id);
           setCNAE(response.data.estabelecimento.atividade_principal.id);
           setPorte(response.data.porte.descricao);
@@ -299,9 +310,7 @@ export default function Cadastro() {
   function getResponsavel(respons: React.SetStateAction<string>) {
     setResponsavel(respons);
   }
-  function getFornecedor(fornecedor: React.SetStateAction<string>) {
-    setEmpresa(fornecedor);
-  }
+
 
   const maskCnpj = (e: any) => {
     const valor = e.target.value;
@@ -318,6 +327,8 @@ export default function Cadastro() {
     setCelular(valorLinpo);
     setWhatsMask(masked);
   };
+
+
 
   return (
     <>
@@ -418,76 +429,67 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Nome de exibição
                       </FormLabel>
                       <Input
                         type="text"
-                        name="rozao"
-                        id="rozao"
-                        autoComplete="given-name"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={(e) => setNome(e.target.value)}
+                        onChange={(e) => setNome(capitalizeWords(e.target.value))}
                         value={nome}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
-                        htmlFor="email"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         E-mail
                       </FormLabel>
                       <Input
                         type="text"
-                        name="email"
-                        id="email"
-                        autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setEmail(e.target.value)}
                         value={email}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
-                        htmlFor="cnae"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         CNAE
                       </FormLabel>
                       <Input
                         type="text"
-                        name="cnae"
-                        id="cnae"
-                        autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setCNAE(e.target.value)}
                         value={CNAE}
                       />
                     </FormControl>
@@ -499,43 +501,37 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         IE
                       </FormLabel>
                       <Input
                         type="text"
-                        name="ie"
-                        id="ie"
-                        autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setIE(e.target.value)}
                         value={Ie}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 1]}>
                       <FormLabel
-                        htmlFor="status"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         IE Status
                       </FormLabel>
                       <Input
                         type="text"
-                        name="status"
-                        id="status"
-                        autoComplete="email"
                         borderColor="gray.600"
                         focusBorderColor="brand.400"
                         shadow="sm"
@@ -545,10 +541,10 @@ export default function Cadastro() {
                         value={(() => {
                           const val =
                             ieStatus === true && nome.length !== 0
-                              ? "sim"
+                              ? 'sim'
                               : ieStatus === false && nome.length !== 0
-                              ? "não"
-                              : " ";
+                              ? 'não'
+                              : ' ';
                           return val;
                         })()}
                       />
@@ -569,7 +565,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         País
@@ -582,18 +578,18 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setPais(capitalizeWords(e.target.value))}
                         value={pais}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 2, 1]}>
                       <FormLabel
-                        htmlFor="cod.pais"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Cod.País
@@ -606,21 +602,21 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setCodpais(e.target.value)}
                         value={codpais}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
-                        htmlFor="endereço"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
-                        End
+                        Endereço
                       </FormLabel>
                       <Input
                         type="text"
@@ -630,6 +626,7 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setEndereco(capitalizeWords(e.target.value))}
                         value={endereco}
                       />
                     </FormControl>
@@ -641,7 +638,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         N°
@@ -654,18 +651,18 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setNumero(e.target.value)}
                         value={numero}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
-                        htmlFor="complemento"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Complemento
@@ -678,18 +675,18 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setComplemento(e.target.value)}
                         value={complemento}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 3, null, 3]}>
                       <FormLabel
-                        htmlFor="bairro"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Bairro
@@ -702,18 +699,18 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setBairro(capitalizeWords(e.target.value))}
                         value={bairro}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 3, null, 1]}>
                       <FormLabel
-                        htmlFor="cep"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Cep
@@ -726,18 +723,18 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setCep(e.target.value)}
                         value={cep}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
                       <FormLabel
-                        htmlFor="cidade"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Cidade
@@ -750,21 +747,21 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setCidade(capitalizeWords(e.target.value))}
                         value={cidade}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[3, null, 1]}>
                       <FormLabel
-                        htmlFor="uf"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
-                        Uf
+                        UF.
                       </FormLabel>
                       <Input
                         type="text"
@@ -774,17 +771,17 @@ export default function Cadastro() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setUf(e.target.value)}
                         value={uf}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
                       <FormLabel
-                        htmlFor="cidade"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Site
@@ -798,20 +795,20 @@ export default function Cadastro() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setSite(e.target.value)}
+                        value={site}
                       />
                     </FormControl>
 
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
                       <FormLabel
-                        htmlFor="cidade"
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
-                        E-mail para emvio de Nfe
+                        E-mail NF-e
                       </FormLabel>
                       <Input
                         type="text"
@@ -822,6 +819,7 @@ export default function Cadastro() {
                         w="full"
                         rounded="md"
                         onChange={(e) => setEmailNfe(e.target.value)}
+                        value={emailNfe}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
@@ -831,7 +829,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Whatsapp
@@ -854,7 +852,7 @@ export default function Cadastro() {
                         fontWeight="md"
                         color="gray.700"
                         _dark={{
-                          color: "gray.50",
+                          color: 'gray.50',
                         }}
                       >
                         Contribuinte
@@ -877,6 +875,7 @@ export default function Cadastro() {
                       </Select>
                     </FormControl>
                   </SimpleGrid>
+
                 </Stack>
                 <Stack
                   px={4}

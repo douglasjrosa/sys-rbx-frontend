@@ -39,7 +39,7 @@ function Empresas() {
             w="18rem"
             fontSize="xs"
             rounded="md"
-            placeholder="selecine uma opção"
+            placeholder="Selecione uma opção"
             onChange={(e) => setId(e.target.value)}
           >
             {!Data

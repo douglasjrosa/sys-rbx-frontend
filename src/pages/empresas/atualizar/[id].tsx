@@ -83,6 +83,19 @@ export default function EmpresaId() {
   const [Responsavel, setResponsavel] = useState('');
   const toast = useToast();
 
+  function capitalizeWords(str: string) {
+    // Divide a string em um array de palavras
+    var words = str.split(' ');
+
+    // Itera por cada palavra no array
+    for (var i = 0; i < words.length; i++) {
+      // Converte a primeira letra da palavra para maiúscula e mantém o restante da palavra em minúscula
+      words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1).toLowerCase();
+    }
+
+    // Junta as palavras de volta em uma única string e retorna o resultado
+    return words.join(' ');
+  }
 
 
   useEffect(() => {
@@ -128,21 +141,21 @@ export default function EmpresaId() {
       setSimples(empresa.attributes.simples);
       setSite(empresa.attributes.site === null ? '' : empresa.attributes.site);
       setEndereco(
-        empresa.attributes.endereco === null ? '' : empresa.attributes.endereco,
+        empresa.attributes.endereco === null ? '' : capitalizeWords(empresa.attributes.endereco),
       );
       setNumero(
         empresa.attributes.numero === null ? '' : empresa.attributes.numero,
       );
       setBairro(
-        empresa.attributes.bairro === null ? '' : empresa.attributes.bairro,
+        empresa.attributes.bairro === null ? '' : capitalizeWords(empresa.attributes.bairro),
       );
       setComplemento(
         empresa.attributes.complemento === null
           ? ''
-          : empresa.attributes.complemento,
+          : capitalizeWords(empresa.attributes.complemento),
       );
       setCidade(
-        empresa.attributes.cidade === null ? '' : empresa.attributes.cidade,
+        empresa.attributes.cidade === null ? '' : capitalizeWords(empresa.attributes.cidade),
       );
       setUf(empresa.attributes.uf === null ? '' : empresa.attributes.uf);
       setCep(empresa.attributes.cep === null ? '' : empresa.attributes.cep);
@@ -227,16 +240,13 @@ export default function EmpresaId() {
           setIeStatus(
             response.data.estabelecimento.inscricoes_estaduais[0].ativo,
           );
-          setEndereco(
-            response.data.estabelecimento.tipo_logradouro +
-              ' ' +
-              response.data.estabelecimento.logradouro,
-          );
+          const end =capitalizeWords( response.data.estabelecimento.tipo_logradouro + " " + response.data.estabelecimento.logradouro)
+          setEndereco(end);
           setNumero(response.data.estabelecimento.numero);
-          setComplemento(response.data.estabelecimento.complemento);
-          setBairro(response.data.estabelecimento.bairro);
+          setComplemento(capitalizeWords(response.data.estabelecimento.complemento));
+          setBairro(capitalizeWords(response.data.estabelecimento.bairro));
           setCep(response.data.estabelecimento.cep);
-          setCidade(response.data.estabelecimento.cidade.nome);
+          setCidade(capitalizeWords(response.data.estabelecimento.cidade.nome));
           setUf(response.data.estabelecimento.estado.sigla);
           let ddd = response.data.estabelecimento.ddd1;
           let tel1 = response.data.estabelecimento.telefone1;
@@ -525,7 +535,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
-                        onChange={(e) => setNome(e.target.value)}
+                        onChange={(e) => setNome(capitalizeWords(e.target.value))}
                         value={nome}
                       />
                     </FormControl>
@@ -549,6 +559,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setEmail(e.target.value)}
                         value={email}
                       />
                     </FormControl>
@@ -571,6 +582,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setCNAE(e.target.value)}
                         value={CNAE}
                       />
                     </FormControl>
@@ -595,6 +607,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setIE(e.target.value)}
                         value={Ie}
                       />
                     </FormControl>
@@ -658,6 +671,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setPais(capitalizeWords(e.target.value))}
                         value={pais}
                       />
                     </FormControl>
@@ -681,6 +695,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setCodpais(e.target.value)}
                         value={codpais}
                       />
                     </FormControl>
@@ -694,7 +709,7 @@ export default function EmpresaId() {
                           color: 'gray.50',
                         }}
                       >
-                        End
+                        Endereço
                       </FormLabel>
                       <Input
                         type="text"
@@ -704,6 +719,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setEndereco(capitalizeWords(e.target.value))}
                         value={endereco}
                       />
                     </FormControl>
@@ -728,6 +744,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setNumero(e.target.value)}
                         value={numero}
                       />
                     </FormControl>
@@ -751,6 +768,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setComplemento(e.target.value)}
                         value={complemento}
                       />
                     </FormControl>
@@ -774,6 +792,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setBairro(capitalizeWords(e.target.value))}
                         value={bairro}
                       />
                     </FormControl>
@@ -797,6 +816,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setCep(e.target.value)}
                         value={cep}
                       />
                     </FormControl>
@@ -820,6 +840,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setCidade(capitalizeWords(e.target.value))}
                         value={cidade}
                       />
                     </FormControl>
@@ -833,7 +854,7 @@ export default function EmpresaId() {
                           color: 'gray.50',
                         }}
                       >
-                        Uf
+                        UF.
                       </FormLabel>
                       <Input
                         type="text"
@@ -843,6 +864,7 @@ export default function EmpresaId() {
                         size="xs"
                         w="full"
                         rounded="md"
+                        onChange={(e) => setUf(e.target.value)}
                         value={uf}
                       />
                     </FormControl>
@@ -879,7 +901,7 @@ export default function EmpresaId() {
                           color: 'gray.50',
                         }}
                       >
-                        E-mail para emvio de Nfe
+                        E-mail NF-e
                       </FormLabel>
                       <Input
                         type="text"
@@ -947,6 +969,7 @@ export default function EmpresaId() {
                     </FormControl>
                   </SimpleGrid>
                 </Stack>
+                
                 <Stack
                   px={4}
                   py={3}
