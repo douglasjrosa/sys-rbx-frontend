@@ -35,6 +35,7 @@ import { CompPrazo } from "@/components/Proposta/prazo";
 import { ProdutiList } from "@/components/Proposta/produt";
 import { TableConteudo } from "@/components/Proposta/tabela";
 import Loading from "@/components/elements/loading";
+import { mask, unMask } from "remask";
 
 export default function Proposta() {
   const { data: session } = useSession();
@@ -51,7 +52,7 @@ export default function Proposta() {
   const [date, setDate] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [frete, setFrete] = useState("");
-  const [freteCif, setFreteCif] = useState(0.0);
+  const [freteCif, setFreteCif] = useState('');
   const [Loja, setLoja] = useState("");
   const [prazo, setPrazo] = useState("");
   const [tipoprazo, setTipoPrazo] = useState("");
@@ -119,7 +120,7 @@ export default function Proposta() {
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const totalItem = ListItens.reduce((acc: number, item: any) => {
-      const valor: number = parseFloat(item.vFinal.replace(",", "."));
+      const valor: number = parseFloat(item.vFinal.replace(".", ""));
       const valorOriginal: number = parseFloat(item.vFinal.replace(",", "."));
       const qtd: number = item.Qtd;
       const mont: boolean = item.mont;
@@ -128,8 +129,11 @@ export default function Proposta() {
         mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
       const somaAcrescimo: number =
         acrec === 0 ? 0 : (valorOriginal * acrec - valorOriginal) * qtd;
-      const total: number = valor * qtd + somaAcrescimo;
-      return acc + total;
+      const total1 = valor * qtd + somaAcrescimo.toFixed(2);
+      const total = parseFloat(total1)
+      const somaTota = (acc + total).toFixed(2)
+      const TotoalConvert = parseFloat(somaTota)
+      return TotoalConvert;
     }, 0);
 
     return totalItem.toLocaleString("pt-br", {
@@ -204,8 +208,8 @@ export default function Proposta() {
       const Date5 = new Date(date);
       Date5.setDate(Date5.getDate() + 5);
       const VencDate = `${Date5.getUTCFullYear()}-${Date5.getUTCMonth() + 1 < 10
-          ? "0" + (Date5.getUTCMonth() + 1)
-          : Date5.getUTCMonth() + 1
+        ? "0" + (Date5.getUTCMonth() + 1)
+        : Date5.getUTCMonth() + 1
         }-${Date5.getUTCDate() < 10 ? "0" + Date5.getUTCDate() : Date5.getUTCDate()
         }`;
       const VencDatePrint = `${Date5.getUTCDate() < 10 ? "0" + Date5.getUTCDate() : Date5.getUTCDate()
@@ -321,7 +325,12 @@ export default function Proposta() {
 
   function handleInputChange(event: any) {
     const valor = event.target.value;
-    setFreteCif(parseFloat(valor));
+    const Valor1 = parseFloat(valor)
+    const Total = Valor1.toLocaleString("pt-br", {
+      style: "currency",
+      currency: "BRL",
+    });
+    setFreteCif(Total);
   }
 
   function getPrazo(prazo: SetStateAction<string>) {
@@ -481,7 +490,7 @@ export default function Proposta() {
               </Select>
             </Box>
             <Box hidden={prazo === "A Prazo" ? false : true}>
-              <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} oncnpj={cnpj}/>
+              <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} oncnpj={cnpj} />
             </Box>
             <Box>
               <FormLabel
@@ -650,10 +659,7 @@ export default function Proposta() {
             </chakra.p>
             <chakra.p>
               Frete:{" "}
-              {freteCif.toLocaleString("pt-br", {
-                style: "currency",
-                currency: "BRL",
-              })}
+              {freteCif}
             </chakra.p>
             <chakra.p>Desconto: {Desconto}</chakra.p>
             <chakra.p>Valor Total: {totalGeral}</chakra.p>

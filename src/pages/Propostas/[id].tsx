@@ -6,9 +6,6 @@ import { BsArrowLeftCircleFill } from "react-icons/bs";
 export default function ListaProposta() {
   const router = useRouter();
   const ID: any = router.query.id;
-  console.log("🚀 ~ file: [id].tsx:8 ~ ListaProposta ~ ID:", ID)
-
-
 
 
   return (

@@ -353,7 +353,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={"uppercase"}
+                
                           onChange={MaskCpf}
                           onBlur={(e: any) => {
                             const cpfv = unMask(e.target.value);
@@ -415,7 +415,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={"uppercase"}
+                
                           onChange={CEP}
                           onBlur={checkCep}
                           value={CepMask}
@@ -441,7 +441,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={"uppercase"}
+                
                           onChange={(e: any) => setEndereco(capitalizeWords(e.target.value))}
                           value={endereco}
                         />
@@ -466,7 +466,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={"uppercase"}
+                
                           onChange={(e: any) => setComplemento(capitalizeWords(e.target.value))}
                           value={complemento}
                         />

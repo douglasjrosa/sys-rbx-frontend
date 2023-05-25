@@ -74,10 +74,11 @@ export default function Proposta() {
     })();
   }, []);
 
+
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const totalItem = ListItens.reduce((acc: number, item: any) => {
-      const valor: number = item.total;
+      const valor: number = parseFloat(item.vFinal.replace(".", ""));
       const valorOriginal: number = parseFloat(item.vFinal.replace(",", "."));
       const qtd: number = item.Qtd;
       const mont: boolean = item.mont;
@@ -86,8 +87,11 @@ export default function Proposta() {
         mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
       const somaAcrescimo: number =
         acrec === 0 ? 0 : (valorOriginal * acrec - valorOriginal) * qtd;
-      const total: number = valor * qtd + somaAcrescimo;
-      return acc + total;
+      const total1 = valor * qtd + somaAcrescimo.toFixed(2);
+      const total = parseFloat(total1)
+      const somaTota = (acc + total).toFixed(2)
+      const TotoalConvert = parseFloat(somaTota)
+      return TotoalConvert;
     }, 0);
 
     return totalItem.toLocaleString("pt-br", {
@@ -95,6 +99,7 @@ export default function Proposta() {
       currency: "BRL",
     });
   };
+
 
   const DescontoGeral = () => {
     if (ListItens.length === 0) return "R$ 0,00";
@@ -417,7 +422,7 @@ export default function Proposta() {
               </Select>
             </Box>
             <Box hidden={prazo === "A Prazo" ? false : true}>
-              <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} oncnpj={cnpj}/>
+              <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} oncnpj={cnpj} />
             </Box>
             <Box>
               <FormLabel

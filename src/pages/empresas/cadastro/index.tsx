@@ -428,9 +428,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Nome de exibição
                       </FormLabel>
@@ -452,9 +449,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         E-mail
                       </FormLabel>
@@ -475,9 +469,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         CNAE
                       </FormLabel>
@@ -500,9 +491,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         IE
                       </FormLabel>
@@ -524,9 +512,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         IE Status
                       </FormLabel>
@@ -564,9 +549,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         País
                       </FormLabel>
@@ -588,9 +570,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Cod.País
                       </FormLabel>
@@ -612,9 +591,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Endereço
                       </FormLabel>
@@ -637,9 +613,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         N°
                       </FormLabel>
@@ -661,9 +634,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Complemento
                       </FormLabel>
@@ -685,9 +655,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Bairro
                       </FormLabel>
@@ -709,9 +676,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Cep
                       </FormLabel>
@@ -733,9 +697,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Cidade
                       </FormLabel>
@@ -757,9 +718,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         UF.
                       </FormLabel>
@@ -780,9 +738,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Site
                       </FormLabel>
@@ -804,9 +759,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         E-mail NF-e
                       </FormLabel>
@@ -828,9 +780,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Whatsapp
                       </FormLabel>
@@ -851,9 +800,6 @@ export default function Cadastro() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Contribuinte
                       </FormLabel>

@@ -451,9 +451,6 @@ export default function EmpresaId() {
                   px={4}
                   py={3}
                   bg="gray.50"
-                  _dark={{
-                    bg: '#141517',
-                  }}
                   spacing={6}
                 >
                   <SimpleGrid columns={12} spacing={3}>
@@ -471,9 +468,6 @@ export default function EmpresaId() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
                           Cnpj
                         </FormLabel>
@@ -521,9 +515,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Nome de exibição
                       </FormLabel>
@@ -545,9 +536,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         E-mail
                       </FormLabel>
@@ -568,9 +556,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         CNAE
                       </FormLabel>
@@ -593,9 +578,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         IE
                       </FormLabel>
@@ -617,9 +599,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         IE Status
                       </FormLabel>
@@ -657,9 +636,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         País
                       </FormLabel>
@@ -681,9 +657,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Cod.País
                       </FormLabel>
@@ -705,9 +678,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Endereço
                       </FormLabel>
@@ -730,9 +700,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         N°
                       </FormLabel>
@@ -754,9 +721,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Complemento
                       </FormLabel>
@@ -778,9 +742,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Bairro
                       </FormLabel>
@@ -802,9 +763,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Cep
                       </FormLabel>
@@ -826,9 +784,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Cidade
                       </FormLabel>
@@ -850,9 +805,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         UF.
                       </FormLabel>
@@ -873,9 +825,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Site
                       </FormLabel>
@@ -897,9 +846,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         E-mail NF-e
                       </FormLabel>
@@ -921,9 +867,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Whatsapp
                       </FormLabel>
@@ -944,9 +887,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Contribuinte
                       </FormLabel>
@@ -969,14 +909,11 @@ export default function EmpresaId() {
                     </FormControl>
                   </SimpleGrid>
                 </Stack>
-                
+
                 <Stack
                   px={4}
                   py={3}
                   bg="gray.50"
-                  _dark={{
-                    bg: '#141517',
-                  }}
                   spacing={6}
                 >
                   <SimpleGrid columns={12} spacing={3}>
@@ -989,9 +926,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Tabela de cálculo
                       </FormLabel>
@@ -1024,9 +958,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Máximo prazo p/ pagamento:
                       </FormLabel>
@@ -1060,9 +991,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Preferência de pagamento:
                       </FormLabel>
@@ -1091,9 +1019,6 @@ export default function EmpresaId() {
                         fontSize="xs"
                         fontWeight="md"
                         color="gray.700"
-                        _dark={{
-                          color: 'gray.50',
-                        }}
                       >
                         Frete
                       </FormLabel>
