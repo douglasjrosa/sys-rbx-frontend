@@ -36,7 +36,14 @@ export default async function PostTrello(
     const { numero } = req.query;
     const data = req.body;
 
-    const [pedido] = await GetPedido(numero);
+    const requestPedido = await axios({
+      url: `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/pedidos?populate=*&filters[nPedido][$eq]=${numero}`,
+      headers: {
+        Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const pedido = requestPedido.data.data[0];
 
     const lote = await GetLoteProposta(numero);
 

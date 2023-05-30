@@ -75,7 +75,7 @@ export const CardList = (props: { id: string }) => {
       setTimeout(() => router.push("/negocios/" + props.id), 1500);
 
     } catch (err: any) {
-      console.log(err.response.data);
+      console.log(err);
 
       toast({
         title: "Opss.",

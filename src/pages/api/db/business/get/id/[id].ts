@@ -28,12 +28,8 @@ export default async function GetEmpresa(
         res.status(200).json(Response.data.data);
       })
       .catch((err) => {
-        console.log(err.response.data);
-        res.status(400).json({
-          error: err.response.data,
-          mensage: err.response.data.error,
-          detalhe: err.response.data.error.details,
-        });
+        console.log(err.response.data.error.details);
+        res.status(400).json({err});
       });
   } else {
     return res.status(405).send({ message: 'Only GET requests are allowed' });

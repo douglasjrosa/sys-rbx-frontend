@@ -130,8 +130,6 @@ export const PostPedido = async (dados: any) => {
   DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
   ? parcela()
   : datasParcelas;
-  console.log("🚀 ~ file: index.ts:129 ~ PostPedido ~ xmlParcelas:", DaDos.condi)
-  console.log("🚀 ~ file: index.ts:129 ~ PostPedido ~ xmlParcelas:", xmlParcelas)
 
   const desconto = DaDos.desconto
     .replace("R$", "")
@@ -186,9 +184,12 @@ console.log(empresa.CNPJ)
 
     const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
+    console.log("🚀 ~ file: index.ts:189 ~ PostPedido ~ response:", response)
 
 
     const { pedidos, erros } = response.retorno;
+    console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ erros:", erros)
+    console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ pedidos:", pedidos)
 
     if (erros) {
       throw Object.assign(new Error(erros[0].erro.msg), {

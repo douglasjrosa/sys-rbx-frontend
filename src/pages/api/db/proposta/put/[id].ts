@@ -93,7 +93,7 @@ export default async function PUTEmpresa(
     await axiosRequet
       .put(`/pedidos/${ID}`, DataPost)
       .then(async (response) => {
-        // console.log(response.data);
+        console.log(response.data);
 
         const url = `empresas/${clienteId}`;
         const Register = await Historico(txt, url);
@@ -110,7 +110,7 @@ export default async function PUTEmpresa(
         console.log(error);
         // console.log(error.data)
         // console.log(error.response.data.error.details);
-        // console.log(error.response.data.error.details.errors);
+        console.log(error.response.data.error.details.errors);
 
         const now = new Date();
         const isoDateTime = now.toISOString();

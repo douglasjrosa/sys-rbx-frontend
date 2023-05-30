@@ -3,6 +3,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { GetPedido } from './request/db/get';
 import { PostPedido } from './request/bling/Postpedido';
+import axios from 'axios';
 
 export default async function PedidoBling(
   req: NextApiRequest,
@@ -12,7 +13,14 @@ export default async function PedidoBling(
     // const data = JSON.parse(req.body);
     const { nPedido } = req.query;
     try {
-      const infos = await GetPedido(nPedido);
+      const request = await axios({
+        url: `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/pedidos?populate=*&filters[nPedido][$eq]=${nPedido}`,
+        headers: {
+          Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const infos = request.data.data;
       const [data]: any = infos;
       const getPedido = await PostPedido(data);
       console.log("🚀 ~ file: [nPedido].ts:18 ~ getPedido:", getPedido)

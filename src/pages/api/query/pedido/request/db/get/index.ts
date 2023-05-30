@@ -1,53 +1,22 @@
 /* eslint-disable no-undef */
 
-import axios from 'axios';
-import { ApiErrorResponse } from '../../../../../../../types/axiosErrosPedido';
-
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
-  timeout: 1000,
-  headers: {
-    Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
-    'Content-Type': 'application/json',
-  },
-});
+import axios from "axios";
+import { ApiErrorResponse } from "../../../../../../../types/axiosErrosPedido";
 
 export const GetPedido = async (nPedido: any) => {
-  try {
-    const resP = await api.get('/pedidos', {
-      params: {
-        populate: '*',
-        'filters[nPedido][$eq]': nPedido,
-      },
+  await axios({
+    url: `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/pedidos?populate=*&filters[nPedido][$eq]=${nPedido}`,
+    headers: {
+      Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response: any) => {
+      console.log("🚀 ~ file: index.ts:15 ~ .then ~ response:", response)
+      return response.data;
+    })
+    .catch((error: ApiErrorResponse) => {
+      console.log("🚀 ~ file: index.ts:19 ~ GetPedido ~ error:", error)
+      throw new Error(error.message);
     });
-
-    const data = resP.data;
-    if (data.error) {
-      return data.error.response.data.error
-    }
-
-    if (data.data.length === 0) {
-      throw {
-        response: {
-          status: 404,
-        },
-        message: 'Esse Negocio não possui pedidos',
-        erro: '[]',
-        detalhes:
-          'A solicitação de pedidos referente a esse Negocio retornou 0',
-      };
-    }
-
-    return data.data;
-  } catch (erro: any) {
-    const status = erro.response?.status || 500;
-    const message = erro.message || 'Erro do Servidor Interno';
-    const errorResponse: ApiErrorResponse = {
-      message,
-      status,
-      erro: erro.erro || '[]',
-      detalhes: erro.detalhes || 'null',
-    };
-    throw errorResponse;
-  }
 };

@@ -22,6 +22,7 @@ export const TableConteudo = (props: {
 }): ReactJSXElement => {
   const [ListItens, setItens] = useState<any>([]);
   const [LoadingTable, setLoadingTable] = useState<boolean>(false);
+  const [Qta, setQta] = useState<any>(1)
 
 
   useEffect(() => {
@@ -60,11 +61,13 @@ export const TableConteudo = (props: {
       if (!i.Qtd) {
         i.Qtd = 1;
       }
+
+
+
       const total = () => {
         if (i.Qtd === 1) {
           return i.total;
         }
-
         const ValorOriginal =
           Math.round(parseFloat(ValorProd.toFixed(2)) * 100) / 100;
         const acrec =
@@ -93,7 +96,7 @@ export const TableConteudo = (props: {
         return Id;
       };
       const GetQtd = (e: any) => {
-        const valor = e.target.value === "0"? 1 :e.target.value;
+        const valor = e.target.value;
         const dt = { Qtd: valor };
         handleAdd(dt, i.id);
       };

@@ -19,7 +19,16 @@ export default async function postLotePHP(
   if (req.method === "POST") {
     const { nPedido } = req.query;
 
-    const lote = await GetLoteProposta(nPedido);
+    const loteRequest  = await axios({
+      url: `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/pedidos?populate=*&filters[nPedido][$eq]=${nPedido}`,
+      headers: {
+        Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const lote = loteRequest.data.data;
+
     const items = lote;
     const promessas = [];
 
@@ -33,12 +42,14 @@ export default async function postLotePHP(
 
       const promessa = PHP.post("/lotes", formData)
         .then(async (response) => {
+          console.log("🚀 ~ file: [nPedido].ts:45 ~ .then ~ response:", response)
           return {
             msg: await response.data.message,
             lote: await response.data.lote.lote,
           };
         })
         .catch(async(error) => {
+          console.log("🚀 ~ file: [nPedido].ts:51 ~ error:", error)
           const data = {
             log: {
               "cliente[CNPJ]": i.attributes.CNPJClinet,
@@ -47,7 +58,7 @@ export default async function postLotePHP(
               nLote: i.attributes.lote,
               qtde: i.attributes.qtde,
               pedido: nPedido,
-              error: error.response.data,
+              error: error,
             },
           };
           return await ErroPHP(data);

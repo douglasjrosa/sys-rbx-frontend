@@ -52,7 +52,7 @@ export default function Proposta() {
   const [date, setDate] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [frete, setFrete] = useState("");
-  const [freteCif, setFreteCif] = useState('');
+  const [freteCif, setFreteCif] = useState<number>();
   const [Loja, setLoja] = useState("");
   const [prazo, setPrazo] = useState("");
   const [tipoprazo, setTipoPrazo] = useState("");
@@ -97,7 +97,7 @@ export default function Proposta() {
       setPrazo(resp.attributes.condi);
       setRelatEmpresa(resp.attributes.empresa.data);
       setRelatEmpresaId(resp.attributes.empresa.data.id);
-      setFreteCif(resp.attributes.valorFrete);
+      setFreteCif(parseFloat(resp.attributes.valorFrete.replace("R$", "").replace(".", "").replace(",", ".")));
       setLoja(resp.attributes.fornecedor);
       setObs(resp.attributes.obs);
       setSaveNegocio(resp.attributes.business.data.attributes.nBusiness);
@@ -120,21 +120,24 @@ export default function Proposta() {
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const totalItem = ListItens.reduce((acc: number, item: any) => {
-      const valor: number = parseFloat(item.vFinal.replace(".", ""));
-      const valorOriginal: number = parseFloat(item.vFinal.replace(",", "."));
+      console.log("🚀 ~ file: [pedido].tsx:123 ~ totalItem ~ item:", item)
+      const valorOriginal= Number(item.vFinal.replace(".", "").replace(",", "."))
+      const valor: number = valorOriginal - item.desconto;
       const qtd: number = item.Qtd;
       const mont: boolean = item.mont;
       const expo: boolean = item.expo;
       const acrec: number =
         mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
-      const somaAcrescimo: number =
-        acrec === 0 ? 0 : (valorOriginal * acrec - valorOriginal) * qtd;
-      const total1 = valor * qtd + somaAcrescimo.toFixed(2);
-      const total = parseFloat(total1)
-      const somaTota = (acc + total).toFixed(2)
-      const TotoalConvert = parseFloat(somaTota)
+      const somaAcrescimo: number = acrec === 0
+        ? 0
+        : (valor * acrec - valor) * qtd;
+      const total1 = valor * qtd + somaAcrescimo;
+      const total = Number(total1.toFixed(2))
+      const somaTota = acc + total
+      const TotoalConvert = Number(somaTota.toFixed(2));
       return TotoalConvert;
     }, 0);
+    console.log("🚀 ~ file: [pedido].tsx:138 ~ totalItem ~ ListItens:", ListItens)
 
     return totalItem.toLocaleString("pt-br", {
       style: "currency",
@@ -271,7 +274,10 @@ export default function Proposta() {
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
-        valorFrete: freteCif,
+        valorFrete: freteCif?.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        }),
         business: id,
         obs: obs,
         cliente_pedido: clientePedido
@@ -324,13 +330,8 @@ export default function Proposta() {
   };
 
   function handleInputChange(event: any) {
-    const valor = event.target.value;
-    const Valor1 = parseFloat(valor)
-    const Total = Valor1.toLocaleString("pt-br", {
-      style: "currency",
-      currency: "BRL",
-    });
-    setFreteCif(Total);
+    const valor: any = event.target.value;
+    setFreteCif(parseFloat(valor));
   }
 
   function getPrazo(prazo: SetStateAction<string>) {
