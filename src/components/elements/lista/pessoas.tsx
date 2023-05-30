@@ -3,7 +3,7 @@ import { Box, Button, Flex, FormLabel, GridItem, Select } from '@chakra-ui/react
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-export const CompPessoa = (props: { Resp: string; onAddResp: any }) => {
+export const CompPessoa = (props: { Resp: string; onAddResp: any; ID?: string }) => {
   const [dados, setDados] = useState<any>([]);
   const [valor, setValor] = useState('');
   const { push } = useRouter()
@@ -77,7 +77,14 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any }) => {
             mt={5}
             colorScheme="orange"
             isDisabled={!valor}
-            onClick={() => push(`/pessoas/atualizar/${valor}`)}
+            onClick={() => {
+              if (props.ID) {
+                localStorage.setItem('idRetorno', props.ID)
+                push(`/pessoas/atualizar/${valor}`)
+              } else {
+                push(`/pessoas/atualizar/${valor}`)
+              }
+            }}
           >
             Atualizar pessoa
           </Button>

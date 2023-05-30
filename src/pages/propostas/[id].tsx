@@ -32,7 +32,7 @@ export default function ListaProposta() {
             colorScheme="whatsapp"
             onClick={() => {
               localStorage.setItem("id", ID);
-              router.push("/Propostas/create");
+              router.push("/propostas/create");
             }}
           >
             Nova Proposta

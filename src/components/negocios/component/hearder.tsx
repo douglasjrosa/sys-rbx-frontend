@@ -111,7 +111,7 @@ export const NegocioHeader = (props: {
       <Flex>
         <Flex gap={8} w={"85%"} flexWrap={"wrap"}>
           <Flex alignItems={"center"}>
-          <BtmRetorno Url="/negocios" />
+            <BtmRetorno Url="/negocios" />
           </Flex>
           <Box>
             <FormLabel
@@ -289,7 +289,7 @@ export const NegocioHeader = (props: {
           </Button>
           <Button
             colorScheme={"green"}
-            onClick={() => router.push("/Propostas/" + ID)}
+            onClick={() => router.push("/propostas/" + ID)}
           >
             Propostas
           </Button>
@@ -305,9 +305,7 @@ export const NegocioHeader = (props: {
                     duration: 3000,
                     isClosable: true,
                   });
-                  setTimeout(()=>{
-                    router.push("/negocios")
-                  },500)
+                  router.push("/negocios")
                 })
                 .catch((err: any) => {
                   console.error(err);

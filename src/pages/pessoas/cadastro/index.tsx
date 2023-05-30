@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { capitalizeWords } from "@/function/captalize";
 import {
   Box,
@@ -52,7 +51,7 @@ export default function Cadastro() {
 
   useEffect(() => {
     setWork(Empresa.map((i: { id: any }) => i.id));
-  }, []);
+  }, [Empresa]);
 
   const MaskWhatsapp = (e: any) => {
     const originalVelue = unMask(e.target.value);
@@ -167,10 +166,8 @@ export default function Cadastro() {
             position: "top-right",
           });
           setTimeout(() => {
-            const Id = localStorage.getItem("id");
-            router.push("/empresas");
-            localStorage.removeItem("id");
-          }, 500);
+            router.push('/empresas')
+          }, 100);
         })
         .catch((err) => {
           console.log(err);
@@ -244,9 +241,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Nome
                         </FormLabel>
@@ -269,9 +263,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           CPF
                         </FormLabel>
@@ -330,9 +321,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Cep
                         </FormLabel>
@@ -356,9 +344,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Endereço
                         </FormLabel>
@@ -380,9 +365,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Complemento
                         </FormLabel>
@@ -404,9 +386,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Nº
                         </FormLabel>
@@ -428,9 +407,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Cidade
                         </FormLabel>
@@ -452,9 +428,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Bairro
                         </FormLabel>
@@ -476,9 +449,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           UF.
                         </FormLabel>
@@ -500,9 +470,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           E-mail
                         </FormLabel>
@@ -525,9 +492,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Telefone
                         </FormLabel>
@@ -550,9 +514,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Whatsapp
                         </FormLabel>
@@ -574,9 +535,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Departamento
                         </FormLabel>
@@ -597,9 +555,6 @@ export default function Cadastro() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Cargo
                         </FormLabel>
@@ -620,9 +575,6 @@ export default function Cadastro() {
                   <Stack
                     px={4}
                     py={3}
-                    _dark={{
-                      bg: "#141517",
-                    }}
                     spacing={3}
                   >
                     <SimpleGrid columns={12} spacing={3}>
@@ -649,32 +601,19 @@ export default function Cadastro() {
                     }}
                     py={5}
                     pb={[12, null, 5]}
-                    _dark={{
-                      bg: "#121212",
-                    }}
                     textAlign="right"
                   >
                     <Button
                       type="submit"
                       colorScheme="red"
                       me={5}
-                      _focus={{
-                        shadow: "",
-                      }}
                       fontWeight="md"
-                      onClick={() => {
-                        const Id = localStorage.getItem("id");
-                        router.push("/pessoas/" + Id);
-                        localStorage.removeItem("id");
-                      }}
+                      onClick={() => router.push('/empresas')}
                     >
                       Cancelar
                     </Button>
                     <Button
                       colorScheme="whatsapp"
-                      _focus={{
-                        shadow: "",
-                      }}
                       fontWeight="md"
                       onClick={save}
                     >

@@ -120,7 +120,6 @@ export default function Proposta() {
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const totalItem = ListItens.reduce((acc: number, item: any) => {
-      console.log("🚀 ~ file: [pedido].tsx:123 ~ totalItem ~ item:", item)
       const valorOriginal= Number(item.vFinal.replace(".", "").replace(",", "."))
       const valor: number = valorOriginal - item.desconto;
       const qtd: number = item.Qtd;
@@ -130,15 +129,13 @@ export default function Proposta() {
         mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
       const somaAcrescimo: number = acrec === 0
         ? 0
-        : (valor * acrec - valor) * qtd;
+        : (valorOriginal * acrec - valorOriginal) * qtd;
       const total1 = valor * qtd + somaAcrescimo;
       const total = Number(total1.toFixed(2))
       const somaTota = acc + total
       const TotoalConvert = Number(somaTota.toFixed(2));
       return TotoalConvert;
     }, 0);
-    console.log("🚀 ~ file: [pedido].tsx:138 ~ totalItem ~ ListItens:", ListItens)
-
     return totalItem.toLocaleString("pt-br", {
       style: "currency",
       currency: "BRL",

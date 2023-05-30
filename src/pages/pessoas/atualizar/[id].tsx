@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-key */
 /* eslint-disable react-hooks/exhaustive-deps */
+import Loading from '@/components/elements/loading';
 import { capitalizeWords } from '@/function/captalize';
 import {
   Box,
@@ -52,9 +53,11 @@ export default function PessoaId() {
   const [Cargo, setCargo] = useState('');
   const [Dados, setDados] = useState([]);
   const [historico, sethistorico] = useState([]);
+  const [loading, setloading] = useState(false);
 
   useEffect(() => {
     (async () => {
+      setloading(true)
       const url = `/api/db/pessoas/consulta/${id}`;
       const response = await axios(url);
       const pessoa = await response.data.data;
@@ -87,6 +90,7 @@ export default function PessoaId() {
       setDepartamento(capitalizeWords(pessoa.attributes.departamento));
       setCargo(capitalizeWords(pessoa.attributes.cargo));
       sethistorico(pessoa.attributes.history);
+      setloading(false);
     })();
   }, []);
 
@@ -140,6 +144,7 @@ export default function PessoaId() {
   };
 
   const save = async () => {
+    setloading(true)
     const date = new Date();
     const dateIsso = date.toISOString();
 
@@ -235,20 +240,26 @@ export default function PessoaId() {
             duration: 6000,
             isClosable: true,
           });
+          setloading(false)
           setTimeout(() => {
-            const Id = localStorage.getItem('id');
-            router.push('/pessoas/' + Id);
-            localStorage.removeItem('id');
-          }, 1000);
+            const idRet: any = localStorage.getItem('idRetorno')
+            if(idRet){
+            router.push(`/empresas/atualizar/${idRet}`)
+            localStorage.removeItem('idRetorno')
+            } else {
+              router.push(`/empresas`)
+            }
+          }, 100);
         })
         .catch((err) => {
+          setloading(false)
           console.log(err);
         });
     }
   };
 
-  function getEmpresa(empresa: any) {
-    setEmpresa([empresa]);
+  if (loading) {
+    return <Loading size="200px">Carregando...</Loading>;
   }
 
   return (
@@ -353,7 +364,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                
+
                           onChange={MaskCpf}
                           onBlur={(e: any) => {
                             const cpfv = unMask(e.target.value);
@@ -415,7 +426,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                
+
                           onChange={CEP}
                           onBlur={checkCep}
                           value={CepMask}
@@ -441,7 +452,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                
+
                           onChange={(e: any) => setEndereco(capitalizeWords(e.target.value))}
                           value={endereco}
                         />
@@ -466,7 +477,7 @@ export default function PessoaId() {
                           size="xs"
                           w="full"
                           rounded="md"
-                
+
                           onChange={(e: any) => setComplemento(capitalizeWords(e.target.value))}
                           value={complemento}
                         />
@@ -549,9 +560,6 @@ export default function PessoaId() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           UF.
                         </FormLabel>
@@ -573,9 +581,6 @@ export default function PessoaId() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           E-mail
                         </FormLabel>
@@ -598,9 +603,6 @@ export default function PessoaId() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Telefone
                         </FormLabel>
@@ -623,9 +625,6 @@ export default function PessoaId() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Whatsapp
                         </FormLabel>
@@ -647,9 +646,6 @@ export default function PessoaId() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Departamento
                         </FormLabel>
@@ -670,9 +666,6 @@ export default function PessoaId() {
                           fontSize="xs"
                           fontWeight="md"
                           color="gray.700"
-                          _dark={{
-                            color: "gray.50",
-                          }}
                         >
                           Cargo
                         </FormLabel>
@@ -693,9 +686,6 @@ export default function PessoaId() {
                   <Stack
                     px={4}
                     py={3}
-                    _dark={{
-                      bg: "#141517",
-                    }}
                     spacing={3}
                   >
                     <SimpleGrid columns={12} spacing={3}>
@@ -722,32 +712,23 @@ export default function PessoaId() {
                     }}
                     py={5}
                     pb={[12, null, 5]}
-                    _dark={{
-                      bg: "#121212",
-                    }}
                     textAlign="right"
                   >
                     <Button
                       type="submit"
                       colorScheme="red"
                       me={5}
-                      _focus={{
-                        shadow: "",
-                      }}
                       fontWeight="md"
-                      onClick={() => {
-                        const Id = localStorage.getItem("id");
-                        router.push("/pessoas/" + Id);
-                        localStorage.removeItem("id");
+                      onClick={() =>{
+                        const idRet: any = localStorage.getItem('idRetorno')
+                        router.push(`/empresas/atualizar/${idRet}`)
+                        localStorage.removeItem('idRetorno')
                       }}
                     >
                       Cancelar
                     </Button>
                     <Button
                       colorScheme="whatsapp"
-                      _focus={{
-                        shadow: "",
-                      }}
                       fontWeight="md"
                       onClick={save}
                     >

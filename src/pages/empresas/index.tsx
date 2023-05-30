@@ -62,8 +62,9 @@ function Empresas() {
         >
           <Button
             fontSize={'0.8rem'}
-            colorScheme="blackAlpha"
+            colorScheme="teal"
             onClick={() => router.push(`/empresas/atualizar/${id}`)}
+            isDisabled={!id}
           >
             Editar Empresa
           </Button>

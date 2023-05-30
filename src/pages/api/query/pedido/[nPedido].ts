@@ -23,7 +23,6 @@ export default async function PedidoBling(
       const infos = request.data.data;
       const [data]: any = infos;
       const getPedido = await PostPedido(data);
-      console.log("🚀 ~ file: [nPedido].ts:18 ~ getPedido:", getPedido)
 
       res.status(200).send(getPedido)
     } catch (error: any) {

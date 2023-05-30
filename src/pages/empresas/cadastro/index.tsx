@@ -535,7 +535,7 @@ export default function Cadastro() {
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
-                      <CompPessoa
+                    <CompPessoa
                         Resp={Responsavel}
                         onAddResp={getResponsavel}
                       />

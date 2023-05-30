@@ -75,15 +75,26 @@ export const CardList = (props: { id: string }) => {
       setTimeout(() => router.push("/negocios/" + props.id), 1500);
 
     } catch (err: any) {
-      console.log(err);
-
-      toast({
-        title: "Opss.",
-        description: "Entre en contata com o suporte",
-        status: "error",
-        duration: 9000,
-        position: 'top-right',
-      });
+      console.log(err.response.data.message);
+      if (err.response.data.message) {
+        toast({
+          title: "Opss.",
+          description: err.response.data.message,
+          status: "info",
+          duration: 5000,
+          position: 'top-right',
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: "Opss.",
+          description: "Entre en contata com o suporte",
+          status: "error",
+          duration: 3000,
+          position: 'top-right',
+          isClosable: true,
+        });
+      }
     }
   };
 

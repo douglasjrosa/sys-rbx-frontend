@@ -191,28 +191,41 @@ console.log(empresa.CNPJ)
     console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ erros:", erros)
     console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ pedidos:", pedidos)
 
+    const txt = 'Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)'
+
     if (erros) {
-      throw Object.assign(new Error(erros[0].erro.msg), {
-        response: {
-          status: response.status,
-        },
-        erro: erros[0].erro,
-        detalhes: erros[0].erro.msg,
-      });
+      if(erros.erro?.msg === txt){
+        const resposta = {
+          msg:
+            `${erros.erro.msg}, mas Pedido, foi salvo`,
+          status: 201,
+        };
+
+        return resposta;
+      } else {
+        throw Object.assign(new Error(erros[0].erro.msg), {
+          response: {
+            status: response.status,
+          },
+          erro: erros[0].erro?.cod,
+          detalhes: erros[0].erro.msg,
+        });
+      }
     }
 
-    const resposta = {
-      msg:
-        "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
-      pedido: pedidos[0].pedido.idPedido,
-      status: 201,
-    };
-    const nPedido = dados.id;
-    const Bpedido = pedidos[0].pedido.idPedido;
-    const IdNegocio = DaDos.business.data.id;
-    await SaveRespose(nPedido, Bpedido, IdNegocio);
+      const resposta = {
+        msg:
+          "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
+        pedido: pedidos[0].pedido.idPedido,
+        status: 201,
+      };
+      const nPedido = dados.id;
+      const Bpedido = pedidos[0].pedido.idPedido;
+      const IdNegocio = DaDos.business.data.id;
+      await SaveRespose(nPedido, Bpedido, IdNegocio);
 
-    return resposta;
+      return resposta;
+
   } catch (error: any) {
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,

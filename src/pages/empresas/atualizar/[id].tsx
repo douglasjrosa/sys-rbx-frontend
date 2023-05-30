@@ -26,6 +26,8 @@ import { modCaix } from '../../../components/data/modCaix';
 import { CompPessoa } from '../../../components/elements/lista/pessoas';
 import { mask, unMask } from 'remask';
 import { useSession } from 'next-auth/react';
+import Loading from '@/components/elements/loading';
+import { capitalizeWords } from '@/function/captalize';
 
 export default function EmpresaId() {
   const router = useRouter();
@@ -81,26 +83,15 @@ export default function EmpresaId() {
   const [status, setStatus] = useState(false);
   const [ID, setID] = useState('');
   const [Responsavel, setResponsavel] = useState('');
+  const [loading, setloading] = useState(false);
   const toast = useToast();
-
-  function capitalizeWords(str: string) {
-    // Divide a string em um array de palavras
-    var words = str.split(' ');
-
-    // Itera por cada palavra no array
-    for (var i = 0; i < words.length; i++) {
-      // Converte a primeira letra da palavra para maiúscula e mantém o restante da palavra em minúscula
-      words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1).toLowerCase();
-    }
-
-    // Junta as palavras de volta em uma única string e retorna o resultado
-    return words.join(' ');
-  }
 
 
   useEffect(() => {
+
     const getempresa = async () => {
       const id = router.query.id;
+      setloading(true)
 
       const url = `/api/db/empresas/getId/${id}`;
       const response = await axios(url);
@@ -194,6 +185,7 @@ export default function EmpresaId() {
       setStatus(
         empresa.attributes.status === null ? '' : empresa.attributes.status,
       );
+      setloading(false);
     };
     getempresa();
   }, []);
@@ -230,6 +222,7 @@ export default function EmpresaId() {
         },
       })
         .then(function (response) {
+        console.log("🚀 ~ file: [id].tsx:238 ~ response:", response.data)
 
           setFantasia(response.data.razao_social);
           setTipoPessoa('cnpj');
@@ -277,6 +270,7 @@ export default function EmpresaId() {
               ? true
               : false;
         })
+
         .catch(function (error) {
           console.log(error);
         });
@@ -403,6 +397,10 @@ export default function EmpresaId() {
     const maskedCel = mask(celular, ['(99) 9 9999-9999']);
     setWhatsMask(maskedCel);
   }, 50);
+
+  if (loading) {
+    return <Loading size="200px">Carregando...</Loading>;
+  }
 
   return (
     <>
@@ -625,6 +623,7 @@ export default function EmpresaId() {
                       <CompPessoa
                         Resp={Responsavel}
                         onAddResp={getResponsavel}
+                        ID={ID}
                       />
                     </FormControl>
                   </SimpleGrid>

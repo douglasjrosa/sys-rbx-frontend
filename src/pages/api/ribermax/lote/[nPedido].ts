@@ -42,10 +42,10 @@ export default async function postLotePHP(
 
       const promessa = PHP.post("/lotes", formData)
         .then(async (response) => {
-          console.log("🚀 ~ file: [nPedido].ts:45 ~ .then ~ response:", response)
+          
           return {
             msg: await response.data.message,
-            lote: await response.data.lote.lote,
+            lote: await response.data.lotes,
           };
         })
         .catch(async(error) => {
