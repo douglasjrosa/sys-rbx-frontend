@@ -25,6 +25,7 @@ export default async function GetEmpresa(
         'Content-Type': 'application/json',
       },
     })
+    
       .then(async (Response) => {
         res.status(200).json(Response.data);
       })

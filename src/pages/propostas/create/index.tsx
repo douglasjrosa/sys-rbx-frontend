@@ -69,7 +69,7 @@ export default function Proposta() {
       const resposta = await fetch("/api/db/business/get/id/" + id);
       const resp = await resposta.json();
       setSaveNegocio(resp.attributes.nBusiness);
-      setHistory(resp.attributes.incidentRecord);
+      setHistory(resp.attributes.history);
       setIncidentRecord(resp.attributes.incidentRecord);
     })();
   }, []);
@@ -77,7 +77,7 @@ export default function Proposta() {
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const totalItem = ListItens.reduce((acc: number, item: any) => {
-      const valorOriginal= Number(item.vFinal.replace(".", "").replace(",", "."))
+      const valorOriginal = Number(item.vFinal.replace(".", "").replace(",", "."))
       const valor: number = valorOriginal - item.desconto;
       const qtd: number = item.Qtd;
       const mont: boolean = item.mont;
@@ -221,10 +221,7 @@ export default function Proposta() {
 
           const msg = {
             vendedor: session?.user.name,
-            date:
-              new Date().toLocaleDateString() +
-              " " +
-              new Date().toLocaleTimeString(),
+            date: new Date().toISOString(),
             msg: `Vendedor ${session?.user.name} criou essa proposta `,
           };
           const msg2 = {
@@ -249,8 +246,7 @@ export default function Proposta() {
             url: "/api/db/business/put/id/" + id,
             data: data,
           });
-
-          router.back();
+          setTimeout(() => router.back(), 1000)
         })
         .catch((err) => {
           console.error(err.data);

@@ -7,6 +7,7 @@ import CardBusiness from "./card";
 export const BodyCard = (props: { reload: any }) => {
   const [dados, setDados] = useState<any | null>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [GetLoading, setGetLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setLoading(props.reload);
@@ -14,12 +15,14 @@ export const BodyCard = (props: { reload: any }) => {
 
   useEffect(() => {
     (async () => {
+      setGetLoading(true)
       await axios({
         method: "GET",
         url: "/api/db/business/get",
       })
         .then((res) => {
           setDados(res.data);
+          setGetLoading(false)
           setTimeout(() => setLoading(false), 1000);
         })
         .catch((err) => {
@@ -31,7 +34,9 @@ export const BodyCard = (props: { reload: any }) => {
   function reload(Loading: boolean | ((prevState: boolean) => boolean)) {
     setLoading(Loading);
   }
-
+if (GetLoading){
+  return <Loading size="200px">Carregando...</Loading>
+}
 
   return (
     <>

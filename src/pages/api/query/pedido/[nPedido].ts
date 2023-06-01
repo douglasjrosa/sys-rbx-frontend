@@ -1,7 +1,4 @@
-/* eslint-disable no-undef */
-
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GetPedido } from './request/db/get';
 import { PostPedido } from './request/bling/Postpedido';
 import axios from 'axios';
 
@@ -10,7 +7,6 @@ export default async function PedidoBling(
   res: NextApiResponse,
 ): Promise<void> {
   if (req.method === 'POST') {
-    // const data = JSON.parse(req.body);
     const { nPedido } = req.query;
     try {
       const request = await axios({

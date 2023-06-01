@@ -12,10 +12,15 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { BTMPdf } from "../BTMPdf";
+import { BeatLoader } from "react-spinners";
+import Loading from "@/components/elements/loading";
 
 
 
-export const CardList = (props: { id: string }) => {
+export const CardList = (props: { id: string; onloading: any }) => {
+  const [load, setLoad] = useState<boolean>(false)
+  const [LoadGeral, setLoadGeral] = useState<boolean>(false)
+  const [IdLoad, setIdLoad] = useState('')
   const router = useRouter();
   const toast = useToast();
   const url = "/api/db/proposta/get/business/" + props.id;
@@ -23,13 +28,16 @@ export const CardList = (props: { id: string }) => {
 
   useEffect(() => {
     (async () => {
+      setLoadGeral(true)
       const requeste = await axios(url);
       const response = requeste.data;
       setData(response);
+      setLoadGeral(false)
     })();
-  }, [url]);
+  }, [props, url]);
 
   const pedido = async (numero: string) => {
+    setLoad(true)
     toast({
       title: "Só um momento estou processando!",
       status: "warning",
@@ -71,8 +79,9 @@ export const CardList = (props: { id: string }) => {
         duration: 5000,
         position: 'top-right',
       });
-
-      setTimeout(() => router.push("/negocios/" + props.id), 1500);
+      setLoad(false)
+      setIdLoad('')
+      router.push("/negocios/" + props.id);
 
     } catch (err: any) {
       console.log(err.response.data.message);
@@ -85,6 +94,9 @@ export const CardList = (props: { id: string }) => {
           position: 'top-right',
           isClosable: true,
         });
+        setLoad(false)
+        setIdLoad('')
+        router.push("/negocios/" + props.id);
       } else {
         toast({
           title: "Opss.",
@@ -94,137 +106,193 @@ export const CardList = (props: { id: string }) => {
           position: 'top-right',
           isClosable: true,
         });
+        setLoad(false)
+        setIdLoad('')
       }
     }
   };
 
+  if (LoadGeral) {
+    return <Loading size="200px">Carregando...</Loading>;
+  }
+
   return (
     <>
+      <Box
+        h="full"
+        border={"1px solid"}
+        p={4}
+        w="full"
+        borderColor={"gray.400"}
+        rounded={"1rem"}
+        boxShadow={'2xl'}
+      >
+        <Flex w={"full"} overflowX={"hidden"} flexWrap={'wrap'} gap={4}>
 
-      {!Data
-        ? null
-        : Data.map((i: any) => {
-          console.log("🚀 ~ file: index.tsx:111 ~ CardList ~ i:", i)
-          const dat = new Date(i.attributes.dataPedido);
-          const meses = [
-            "Jan",
-            "Fev",
-            "Mar",
-            "Abr",
-            "Mai",
-            "Jun",
-            "Jul",
-            "Ago",
-            "Set",
-            "Out",
-            "Nov",
-            "Dez",
-          ];
-          const DataPedido = `${dat.getDate() + 1} ${meses[dat.getMonth()]
-            } ${dat.getFullYear()}`;
+          {!Data
+            ? null
+            : Data.map((i: any) => {
+              console.log("🚀 ~ file: index.tsx:111 ~ CardList ~ i:", i)
+              const dat = new Date(i.attributes.dataPedido);
+              const meses = [
+                "Jan",
+                "Fev",
+                "Mar",
+                "Abr",
+                "Mai",
+                "Jun",
+                "Jul",
+                "Ago",
+                "Set",
+                "Out",
+                "Nov",
+                "Dez",
+              ];
+              const DataPedido = `${dat.getDate() + 1} ${meses[dat.getMonth()]
+                } ${dat.getFullYear()}`;
 
-          return (
-            <>
-              <Box
-                rounded="xl"
-                shadow="md"
-                bg="white"
-                w="24rem"
-                px={4}
-                py={4}
-              >
-                <Box>
-                  <Flex w={"fill"} flexWrap={'wrap'} gap={3}>
-                    <Text fontSize="0.8rem" fontWeight="bold" color="gray.700">
-                      Proposta N°:{" "}
-                      <chakra.span
-                        fontSize="0.8rem"
-                        fontWeight="light"
-                        textTransform="uppercase"
-                        color="brand.600"
-                      >
-                        {i.attributes.nPedido}
-                      </chakra.span>
-                    </Text>
-                    <Text fontSize="0.8rem" fontWeight="bold" color="gray.700">
-                      Negocio N°:{" "}
-                      <chakra.span
-                        fontSize="0.8rem"
-                        fontWeight="light"
-                        textTransform="uppercase"
-                        color="brand.600"
-                      >
-                        {i.attributes.business.data.attributes.nBusiness}
-                      </chakra.span>
-                    </Text>
-                    <Text
-                      mx={2}
-                      fontWeight="bold"
-                      color="gray.700"
-                      fontSize="0.8rem"
-                    >
-                      Pedido gerado em : {''}
-                      <chakra.span
-                        mx={1}
-                        fontSize="0.8rem"
-                        color="gray.600"
-                        fontWeight="light"
-                      >
-                        {DataPedido}
-                      </chakra.span>
-                    </Text>
-                  </Flex>
-                  <Flex
-                    mt={2}
-                    justifyContent={"center"}
-                    alignItems={"center"}
-                    flexDir={"column"}
+              return (
+                <>
+                  <Box
+                    rounded="xl"
+                    shadow="md"
+                    bg="white"
+                    w="25rem"
+                    px={4}
+                    py={4}
+                    key={i.id}
                   >
-                    <Text
-                      display="block"
-                      color="gray.800"
-                      fontWeight="bold"
-                      fontSize="lg"
-                      mt={2}
-                      textAlign={"center"}
-                    >
-                      {!i.attributes.empresa
-                        ? null
-                        : i.attributes.empresa.data.attributes.nome}
-                    </Text>
-                  </Flex>
+                    <Box>
+                      <Flex w={"fill"} flexWrap={'wrap'} gap={1}>
+                        <Text mx={2} fontSize="0.8rem" fontWeight="bold" color="gray.700">
+                          Proposta N°:{" "}
+                          <chakra.span
+                            fontSize="0.8rem"
+                            fontWeight="light"
+                            textTransform="uppercase"
+                            color="brand.600"
+                          >
+                            {i.attributes.nPedido}
+                          </chakra.span>
+                        </Text>
+                        <Text fontSize="0.8rem" fontWeight="bold" color="gray.700">
+                          Negocio N°:{" "}
+                          <chakra.span
+                            fontSize="0.8rem"
+                            fontWeight="light"
+                            textTransform="uppercase"
+                            color="brand.600"
+                          >
+                            {i.attributes.business.data.attributes.nBusiness}
+                          </chakra.span>
+                        </Text>
 
-                  <Box mt={3}>
-                    <Flex flexWrap={'wrap'} gap={3}>
-                      <Button
-                        fontSize={'0.8rem'}
-                        p={3}
-                        colorScheme={"blackAlpha"}
-                        onClick={() =>
-                          router.push(
-                            "/Propostas/update/" + i.attributes.nPedido
-                          )
-                        }
+                        <Text
+                          mx={2}
+                          fontWeight="bold"
+                          color="gray.700"
+                          fontSize="0.8rem"
+                        >
+                          Pedido gerado em : {''}
+                          <chakra.span
+                            mx={1}
+                            fontSize="0.8rem"
+                            color="gray.600"
+                            fontWeight="light"
+                          >
+                            {DataPedido}
+                          </chakra.span>
+                        </Text>
+                      </Flex>
+                      <Flex hidden={i.attributes.itens.length < 1 ? false : true}>
+                        <Box mx={2} bg={'yellow'} w={4} h={4} rounded={10} />
+                        <Text
+                          mx={1}
+                          fontWeight="bold"
+                          color="gray.700"
+                          fontSize="0.8rem"
+                        >
+                          Verifique a Proposta antes de de gerar o Pedido
+                        </Text>
+                      </Flex>
+
+                      <Box hidden={i.attributes.Bpedido !== null ? false : true}>
+                        <Text
+                          mx={2}
+                          fontWeight="bold"
+                          color="gray.700"
+                          fontSize="0.8rem"
+                        >
+                          N° Bling : {''}
+                          <chakra.span
+                            mx={1}
+                            fontSize="0.8rem"
+                            color="gray.600"
+                            fontWeight="light"
+                          >
+                            {i.attributes.Bpedido}
+                          </chakra.span>
+                        </Text>
+                      </Box>
+                      <Flex
+                        mt={1}
+                        justifyContent={"center"}
+                        alignItems={"center"}
+                        flexDir={"column"}
                       >
-                        Editar Proposta
-                      </Button>
-                      <BTMPdf nPedido={i.attributes.nPedido} empresa={i.attributes.empresa.data.attributes.nome} />
-                      <Button
-                        fontSize={'0.8rem'}
-                        p={3}
-                        colorScheme={"messenger"}
-                        onClick={() => pedido(i.attributes.nPedido)}
-                        isDisabled={i.attributes.business.data.attributes.andamento === 5 ? false : true}
-                      >
-                        Gerar Pedido
-                      </Button>
-                    </Flex>
+                        <Text
+                          display="block"
+                          color="gray.800"
+                          fontWeight="bold"
+                          fontSize="lg"
+                          mt={2}
+                          textAlign={"center"}
+                        >
+                          {!i.attributes.empresa
+                            ? null
+                            : i.attributes.empresa.data.attributes.nome}
+                        </Text>
+                      </Flex>
+
+                      <Box mt={3}>
+                        <Flex flexWrap={'wrap'} gap={3}>
+                          <Button
+                            fontSize={'0.8rem'}
+                            p={3}
+                            colorScheme={"blackAlpha"}
+                            onClick={() =>
+                              router.push(
+                                "/propostas/update/" + i.attributes.nPedido
+                              )
+                            }
+                            isDisabled={i.attributes.Bpedido !== null ? true : false}
+                          >
+                            Editar Proposta
+                          </Button>
+                          <BTMPdf nPedido={i.attributes.nPedido} empresa={i.attributes.empresa.data.attributes.nome} />
+                          <Button
+                            isLoading={load && IdLoad == i.id}
+                            spinner={<BeatLoader size={8} color="white" />}
+                            fontSize={'0.8rem'}
+                            p={3}
+                            colorScheme={"messenger"}
+                            onClick={() => {
+                              setIdLoad(i.id)
+                              pedido(i.attributes.nPedido)
+                            }}
+                            isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
+                          >
+                            Gerar Pedido
+                          </Button>
+                        </Flex>
+                      </Box>
+                    </Box>
                   </Box>
-                </Box>
-              </Box>
-            </>
-          );
-        })}
+                </>
+              );
+            })}
+        </Flex>
+      </Box>
     </>
   );
 };

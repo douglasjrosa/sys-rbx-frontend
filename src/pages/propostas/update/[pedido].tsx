@@ -62,6 +62,7 @@ export default function Proposta() {
   const [saveNegocio, setSaveNegocio] = useState("");
   const [dados, setDados] = useState<any>([]);
   const [hirtori, setHistory] = useState([]);
+  const [MSG, setMSG] = useState([]);
   const [obs, setObs] = useState("");
   const [Id, setId] = useState("");
   const [BId, setBId] = useState("");
@@ -104,6 +105,7 @@ export default function Proposta() {
       setBId(resp.attributes.business.data.id);
       setHistory(resp.attributes.business.data.attributes.history);
       const nome = resp.attributes.empresa.data.attributes.nome;
+      setMSG(resp.attributes.business.data.attributes.incidentRecord)
       setNomeEmpresa(nome);
       setLoadingGeral(false)
       setClientePedido(resp.attributes.cliente_pedido)
@@ -261,13 +263,9 @@ export default function Proposta() {
         condi: prazo,
         prazo: tipoprazo,
         totalGeral: totalGeral,
-        deconto: !Desconto
-          ? "R$ 0,00"
-          : Desconto === undefined
+        deconto: prazo !== 'Antecipado'
             ? "R$ 0,00"
-            : Desconto === ""
-              ? "R$ 0,00"
-              : Desconto,
+            : Desconto,
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
@@ -304,7 +302,7 @@ export default function Proposta() {
               } items`,
           };
 
-          const record = [...hirtori, msg];
+          const record = [...MSG, msg];
 
           const data = {
             data: {

@@ -16,7 +16,7 @@ export const nLote = async () => {
     const resposta = await baseUrl.get(
       "/lotes?fields[0]=lote&sort=lote%3Adesc&pagination[limit]=1"
     );
-    console.log("🚀 ~ file: index.ts:19 ~ nLote ~ resposta:", resposta)
+    console.log("🚀 ~ file: index.ts:19 ~ nLote ~ resposta:", resposta.data.data)
 
     const [NLote]: any = resposta.data.data;
 

@@ -161,7 +161,6 @@ export default async function PostTrello(
                 erro_message: err.response.data,
               },
             }
-
            return await ErroTrello(data);
 
           });
@@ -170,7 +169,6 @@ export default async function PostTrello(
 
       res.status(201).json(result);
     } catch (error: any) {
-
       res.status(error.status || 400).json(error);
     }
   } else {

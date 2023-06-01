@@ -2,11 +2,17 @@ import { Box, Button, Flex } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { CardList } from "../../components/Proposta/listaItens";
 import { BsArrowLeftCircleFill } from "react-icons/bs";
+import { useState } from "react";
+import Loading from "@/components/elements/loading";
 
 export default function ListaProposta() {
   const router = useRouter();
   const ID: any = router.query.id;
+  const [Load, setLoad] = useState(false)
 
+  function getLoading(Loading: boolean | ((prevState: boolean) => boolean)) {
+    setLoad(Loading);
+  }
 
   return (
     <>
@@ -40,7 +46,7 @@ export default function ListaProposta() {
         </Flex>
         <Box h={"90%"}>
           <Flex
-            bg="#edf3f8"
+            bg="#ced3d8"
             pt={"1rem"}
             pb={"0.5rem"}
             px={"1rem"}
@@ -49,27 +55,7 @@ export default function ListaProposta() {
             justifyContent="center"
             flexDirection="column"
           >
-            <Box
-              h="full"
-              border={"1px solid"}
-              p={4}
-              w="full"
-              borderColor={"gray.400"}
-              rounded={"1rem"}
-              boxShadow={'2xl'}
-            >
-              <Flex w={"full"} overflowX={"hidden"} >
-                <Flex
-                  h={"full"}
-                  flexWrap={'wrap'}
-                  justifyContent={'center'}
-                  gap='4'
-                  px='4'
-                >
-                  <CardList id={ID} />
-                </Flex>
-              </Flex>
-            </Box>
+              <CardList id={ID} onloading={getLoading} />
           </Flex>
         </Box>
       </Flex>

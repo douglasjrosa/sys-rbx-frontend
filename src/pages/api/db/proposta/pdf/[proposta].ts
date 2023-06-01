@@ -16,8 +16,6 @@ export default async function GetEmpresa(
     const infos = await getData(proposta);
     // console.log("🚀 ~ file: [proposta].ts:17 ~ infos:", infos)
 
-    // const infos = TestDb;
-
     const imagePath2 = path.join(
       process.cwd(),
       "public",
@@ -37,6 +35,7 @@ export default async function GetEmpresa(
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
 
     const date = new Date().toLocaleDateString();
+    // console.log("🚀 ~ file: [proposta].ts:40 ~ date:", date)
 
     const fonts = {
       Helvetica: {
@@ -60,19 +59,48 @@ export default async function GetEmpresa(
       });
 
       return [
-       {text: x, margin: [0, 10, 0, 8]},
-      {text:i.nomeProd, margin: [0, 10, 0, 8]},
-        {text:i.codg, margin: [0, 10, 0, 8]},
-       {text: i.Qtd, margin: [0, 10, 0, 8]},
-       {text: !i.altura ? 0 : i.altura, margin: [0, 10, 0, 8]},
-       {text: !i.largura ? 0 : i.largura, margin: [0, 10, 0, 8]},
-        {text:!i.comprimento ? 0 : i.comprimento, margin: [0, 10, 0, 8]},
-        {text:!!i.mont ? "SIM" : "NÃO", margin: [0, 10, 0, 8]},
-        {text:!!i.expo ? "SIM" : "NÃO", margin: [0, 10, 0, 8]},
-        {text:preco, margin: [0, 10, 0, 8]},
-        {text:total, margin: [0, 10, 0, 8]},
+       {text: x, margin: [0, 10, 0, 8],fontSize: 7},
+      {text:i.nomeProd, margin: [0, 10, 0, 8],fontSize: 7},
+        {text:i.codg, margin: [0, 10, 0, 8],fontSize: 7},
+       {text: i.Qtd, margin: [0, 10, 0, 8],fontSize: 7},
+       {text: !i.altura ? 0 : i.altura, margin: [0, 10, 0, 8],fontSize: 7},
+       {text: !i.largura ? 0 : i.largura, margin: [0, 10, 0, 8],fontSize: 7},
+        {text:!i.comprimento ? 0 : i.comprimento, margin: [0, 10, 0, 8],fontSize: 7},
+        {text:!!i.mont ? "SIM" : "NÃO", margin: [0, 10, 0, 8],fontSize: 7},
+        {text:!!i.expo ? "SIM" : "NÃO", margin: [0, 10, 0, 8],fontSize: 7},
+        {text:preco, margin: [0, 10, 0, 8],fontSize: 7},
+        {text:total, margin: [0, 10, 0, 8],fontSize: 7},
       ];
     });
+
+    const comDesc =  [
+      {
+        margin: [0, 45, 0, 0],
+        border: [false, false, false, false],
+        text: "Desconto :",
+        bold: "true",
+      },
+      {
+        margin: [0, 45, 0, 0],
+        border: [false, false, false, false],
+        text: infos.Desconto,
+      },
+    ];
+
+    const semDesc =[
+      {
+        margin: [0, 49, 0, 0],
+        border: [false, false, false, false],
+        text: '',
+      },
+      {
+        margin: [0, 49, 0, 0],
+        border: [false, false, false, false],
+        text: '',
+      },
+    ];
+
+    const desconto = infos.condi !== "Antecipado" ? semDesc : comDesc
 
     const logo =
       infos.fornecedor.data.razao === "BRAGHETO PALETES E EMBALAGENS LTDA"
@@ -262,7 +290,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.cliente.cnpj,
+                                  text: infos.cliente.CNPJ,
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -397,7 +425,7 @@ export default async function GetEmpresa(
                         {
                           border: [false, false, false, false],
                           table: {
-                            widths: ["40%", "*"],
+                            widths: ["49%", "*"],
                             body: [
                               [
                                 {
@@ -443,15 +471,16 @@ export default async function GetEmpresa(
                                   style: "clienteFornecedor",
                                 },
                               ],
+                              desconto,
                               [
                                 {
-                                  margin: [20, 45, 0, 0],
+                                  margin: [8, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: "Total",
+                                  text: "Total :",
                                   bold: "true",
                                 },
                                 {
-                                  margin: [0, 45, 0, 0],
+                                  margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
                                   text: infos.totoalGeral,
                                 },
@@ -496,7 +525,7 @@ export default async function GetEmpresa(
               "6%",
               "6%",
               "12%",
-              "14%",
+              "18%",
             ],
             headerRows: 1,
             heights:4,

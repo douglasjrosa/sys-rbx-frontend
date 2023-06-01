@@ -13,7 +13,6 @@ const STRAPI = axios.create({
 export const GetLoteProposta = async (nProposta: any) => {
   try {
     const resposta = await STRAPI.get(`/lotes?populate=*&filters[nProposta][$eq]=${nProposta}&sort[0]=id%3Adesc`);
-
     const data: any = resposta.data;
 
     if (data.error) {
@@ -33,17 +32,16 @@ export const GetLoteProposta = async (nProposta: any) => {
 
     return data.data;
   } catch (error: any) {
-
     const status = error.response?.status || 500;
     const message =
       error.message ||
-      error.response.data.error.message ||
+      error.response?.message ||
       "Erro do Servidor Interno";
     const errorResponse: ApiErrorResponse = {
       message,
       status,
-      erro: error.erro || error.response.data.error.name || "[]",
-      detalhes: error.detalhes|| error.response.data.error.message || "null",
+      erro: error.erro || error.response|| "[]",
+      detalhes: error.detalhes|| error.response.message || "null",
     };
     throw errorResponse;
   }

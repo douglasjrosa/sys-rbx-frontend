@@ -1,6 +1,4 @@
-/* eslint-disable no-undef */
 
-import fs from "fs";
 import { ApiErrorResponse } from "../../../../../../../types/axiosErrosPedido";
 import { SaveRespose } from "../../db/post/SaveRespose";
 
@@ -184,12 +182,8 @@ console.log(empresa.CNPJ)
 
     const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
-    console.log("🚀 ~ file: index.ts:189 ~ PostPedido ~ response:", response)
-
-
+    
     const { pedidos, erros } = response.retorno;
-    console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ erros:", erros)
-    console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ pedidos:", pedidos)
 
     const txt = 'Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)'
 

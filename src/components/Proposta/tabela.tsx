@@ -58,9 +58,9 @@ export const TableConteudo = (props: {
       const ValorProd = Number(valor2Original.replace(",", "."));
       const somaDescont = ValorProd * i.Qtd;
       const somaDescontMin = parseInt(somaDescont.toFixed(2));
-      if (!i.Qtd) {
-        i.Qtd = 1;
-      }
+      // if (!i.Qtd) {
+      //   i.Qtd = 1;
+      // }
 
 
 
@@ -96,7 +96,7 @@ export const TableConteudo = (props: {
         return Id;
       };
       const GetQtd = (e: any) => {
-        const valor = e.target.value;
+        const valor = e.target.value.replace(/\D/g, '');
         const dt = { Qtd: valor };
         handleAdd(dt, i.id);
       };
@@ -124,7 +124,7 @@ export const TableConteudo = (props: {
             <Td px='0' py='1' fontSize={'0.8rem'} textAlign={"center"}>{codig()}</Td>
             <Td px='0' py='1' fontSize={'0.8rem'}>
               <Input
-                type={"text"}
+                type={"number"}
                 size="xs"
                 me={0}
                 borderColor="whatsapp.600"

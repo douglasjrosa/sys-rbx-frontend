@@ -15,9 +15,7 @@ export const getData = async (proposta: any) => {
   try {
     const response = await axios(config);
     const result = response.data?.data?.[0];
-
     const inf = result.attributes;
-
     const Vendedor = inf.user.data.attributes.username
     const empresaFornec = inf.fornecedorId.data.attributes;
 
@@ -36,13 +34,13 @@ export const getData = async (proposta: any) => {
         email: empresaFornec?.email,
       },
     };
-
     const nPedido = inf.nPedido;
     const frete = inf.frete;
     const datePop = inf.dataPedido;
     const fornecedor = dadosFornecedor;
     const cliente = inf.empresa.data.attributes;
     const condi = inf.condi;
+    const Desconto = inf.desconto
     const itens = inf.itens;
     const prazo = inf.prazo === null ? "" : inf.prazo;
     const venc = inf.vencPrint;
@@ -89,7 +87,8 @@ export const getData = async (proposta: any) => {
       business,
       logo,
       Vendedor,
-      cliente_pedido
+      cliente_pedido,
+      Desconto
     };
     return data;
   } catch (error) {
