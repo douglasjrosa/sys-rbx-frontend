@@ -34,7 +34,7 @@ export default async function GetEmpresa(
     const imageContent = fs.readFileSync(imagePath).toString("base64");
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
 
-    const date = new Date().toLocaleDateString('pt-BR');
+    const date = new Date().toLocaleDateString("pt-BR");
 
     const fonts = {
       Helvetica: {
@@ -48,33 +48,56 @@ export default async function GetEmpresa(
 
     const Product = infos.itens;
     const products = Product.map((i: any, x: number) => {
+      const preco = parseFloat(
+        i.vFinal.replace(".", "").replace(",", ".")
+      ).toLocaleString("pt-br", { style: "currency", currency: "BRL" });
 
-      const preco = parseFloat(i.vFinal.replace('.', "").replace(',', ".")).toLocaleString(
-        "pt-br",
-        { style: "currency", currency: "BRL" }
-      );
-
-      const total = parseFloat(i.total).toLocaleString("pt-br", {
+      const ValorOriginal = i.vFinal.replace(".", "").replace(",", ".");
+      const acrec =
+        i.mont === true && i.expo === true
+          ? 1.2
+          : i.expo === true && i.mont === false
+          ? 1.1
+          : i.expo === false && i.mont === true
+          ? 1.1
+          : 0;
+      const descont = infos.condi === "Antecipado" ? ValorOriginal * 0.05 : 0;
+      const somaAcrescimo =
+        acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
+      const somaDescont = descont * i.Qtd;
+      const somaDescontMin =
+        Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
+      const TotalItem = somaAcrescimo - somaDescontMin;
+      const result = Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
+      const total = result.toLocaleString("pt-br", {
         style: "currency",
         currency: "BRL",
       });
 
       return [
-       {text: x, margin: [0, 10, 0, 8],fontSize: 7},
-      {text:i.nomeProd, margin: [0, 10, 0, 8],fontSize: 7},
-        {text:i.codg, margin: [0, 10, 0, 8],fontSize: 7},
-       {text: i.Qtd, margin: [0, 10, 0, 8],fontSize: 7},
-       {text: !i.altura ? 0 : i.altura, margin: [0, 10, 0, 8],fontSize: 7},
-       {text: !i.largura ? 0 : i.largura, margin: [0, 10, 0, 8],fontSize: 7},
-        {text:!i.comprimento ? 0 : i.comprimento, margin: [0, 10, 0, 8],fontSize: 7},
-        {text:!!i.mont ? "SIM" : "NÃO", margin: [0, 10, 0, 8],fontSize: 7},
-        {text:!!i.expo ? "SIM" : "NÃO", margin: [0, 10, 0, 8],fontSize: 7},
-        {text:preco, margin: [0, 10, 0, 8],fontSize: 7},
-        {text:total, margin: [0, 10, 0, 8],fontSize: 7},
+        { text: x, margin: [0, 10, 0, 8], fontSize: 7 },
+        { text: i.nomeProd, margin: [0, 10, 0, 8], fontSize: 7 },
+        { text: i.codg, margin: [0, 10, 0, 8], fontSize: 7 },
+        { text: i.Qtd, margin: [0, 10, 0, 8], fontSize: 7 },
+        { text: !i.altura ? 0 : i.altura, margin: [0, 10, 0, 8], fontSize: 7 },
+        {
+          text: !i.largura ? 0 : i.largura,
+          margin: [0, 10, 0, 8],
+          fontSize: 7,
+        },
+        {
+          text: !i.comprimento ? 0 : i.comprimento,
+          margin: [0, 10, 0, 8],
+          fontSize: 7,
+        },
+        { text: !!i.mont ? "SIM" : "NÃO", margin: [0, 10, 0, 8], fontSize: 7 },
+        { text: !!i.expo ? "SIM" : "NÃO", margin: [0, 10, 0, 8], fontSize: 7 },
+        { text: preco, margin: [0, 10, 0, 8], fontSize: 7 },
+        { text: total, margin: [0, 10, 0, 8], fontSize: 7 },
       ];
     });
 
-    const comDesc =  [
+    const comDesc = [
       {
         margin: [0, 45, 0, 0],
         border: [false, false, false, false],
@@ -88,20 +111,20 @@ export default async function GetEmpresa(
       },
     ];
 
-    const semDesc =[
+    const semDesc = [
       {
         margin: [0, 49, 0, 0],
         border: [false, false, false, false],
-        text: '',
+        text: "",
       },
       {
         margin: [0, 49, 0, 0],
         border: [false, false, false, false],
-        text: '',
+        text: "",
       },
     ];
 
-    const desconto = infos.condi !== "Antecipado" ? semDesc : comDesc
+    const desconto = infos.condi !== "Antecipado" ? semDesc : comDesc;
 
     const logo =
       infos.fornecedor.data.razao === "BRAGHETO PALETES E EMBALAGENS LTDA"
@@ -439,7 +462,7 @@ export default async function GetEmpresa(
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
                                   text: infos.condi,
-                                  style: "clienteFornecedor"
+                                  style: "clienteFornecedor",
                                 },
                               ],
                               [
@@ -448,13 +471,13 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                   text: "Prazo:",
                                   bold: "true",
-                                  style: "clienteFornecedor"
+                                  style: "clienteFornecedor",
                                 },
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
                                   text: infos.prazo,
-                                  style: "clienteFornecedor"
+                                  style: "clienteFornecedor",
                                 },
                               ],
                               [
@@ -469,6 +492,21 @@ export default async function GetEmpresa(
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
                                   text: infos.frete,
+                                  style: "clienteFornecedor",
+                                },
+                              ],
+                              [
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
+                                  text: "Valor do frete:",
+                                  bold: "true",
+                                  fontSize: 8,
+                                },
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
+                                  text: infos.Valfrete,
                                   style: "clienteFornecedor",
                                 },
                               ],
@@ -529,7 +567,7 @@ export default async function GetEmpresa(
               "18%",
             ],
             headerRows: 1,
-            heights:4,
+            heights: 4,
             body: [
               [
                 { text: "x", style: "tableTitle" },
@@ -581,11 +619,16 @@ export default async function GetEmpresa(
     });
 
     pdfDoc.end();
-    const filename = infos.nPedido + ' - ' + infos.cliente.nome + '++' + new Date().toISOString();
+    const filename =
+      infos.nPedido +
+      " - " +
+      infos.cliente.nome +
+      "++" +
+      new Date().toISOString();
     pdfDoc.on("end", () => {
       const pdf = Buffer.concat(chunks);
-      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
-      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+      res.setHeader("Content-Type", "application/pdf");
       res.end(pdf);
     });
   } else {

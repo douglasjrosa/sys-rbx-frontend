@@ -43,7 +43,7 @@ export default function Proposta() {
   const [date, setDate] = useState(tempo);
   const [cnpj, setCnpj] = useState("");
   const [frete, setFrete] = useState("");
-  const [freteCif, setFreteCif] = useState(0.0);
+  const [freteCif, setFreteCif] = useState('');
   const [Loja, setLoja] = useState("");
   const [prazo, setPrazo] = useState("");
   const [tipoprazo, setTipoPrazo] = useState("");
@@ -196,7 +196,10 @@ export default function Proposta() {
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
-        valorFrete: freteCif,
+        valorFrete: freteCif === ""? "R$ 0,00" :parseFloat(freteCif).toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        }),
         business: id,
         obs: obs,
         cliente_pedido: clientePedido
@@ -256,7 +259,7 @@ export default function Proposta() {
 
   function handleInputChange(event: any) {
     const valor = event.target.value;
-    setFreteCif(parseFloat(valor));
+    setFreteCif(event.target.value.replace(".", ""));
   }
 
   function getPrazo(prazo: SetStateAction<string>) {
@@ -449,19 +452,17 @@ export default function Proposta() {
                 fontSize="xs"
                 fontWeight="md"
                 color="gray.700"
-                _dark={{
-                  color: "gray.50",
-                }}
               >
                 Valor de Frete
               </FormLabel>
               <Input
+                type="number"
                 textAlign={"end"}
                 size="xs"
                 w={"7rem"}
                 fontSize="xs"
                 rounded="md"
-                onChange={handleInputChange}
+                onChange={(e) => setFreteCif(e.target.value.replace(".", ""))}
                 value={freteCif}
               />
             </Box>
@@ -581,11 +582,11 @@ export default function Proposta() {
         <Box display={"flex"} justifyContent={"space-between"} me={10} mb={5}>
           <Flex gap={20}>
             <chakra.p>
-              Total de itens: {ListItens.length === 0 ? "" : ListItens.length}
+              Total de itens: {ListItens.length}
             </chakra.p>
             <chakra.p>
               Frete:{" "}
-              {freteCif.toLocaleString("pt-br", {
+              {freteCif === "" ? "R$ 0,00" : parseFloat(freteCif).toLocaleString("pt-br", {
                 style: "currency",
                 currency: "BRL",
               })}

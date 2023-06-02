@@ -16,6 +16,7 @@ export const getData = async (proposta: any) => {
     const response = await axios(config);
     const result = response.data?.data?.[0];
     const inf = result.attributes;
+    console.log("🚀 ~ file: getinf.ts:19 ~ getData ~ inf:", inf)
     const Vendedor = inf.user.data.attributes.username
     const empresaFornec = inf.fornecedorId.data.attributes;
 
@@ -36,6 +37,7 @@ export const getData = async (proposta: any) => {
     };
     const nPedido = inf.nPedido;
     const frete = inf.frete;
+    const Valfrete = inf.valorFrete;
     const datePop = inf.dataPedido;
     const fornecedor = dadosFornecedor;
     const cliente = inf.empresa.data.attributes;
@@ -61,6 +63,7 @@ export const getData = async (proposta: any) => {
     const data = {
       nPedido,
       frete,
+      Valfrete,
       datePop,
       fornecedor,
       cliente,

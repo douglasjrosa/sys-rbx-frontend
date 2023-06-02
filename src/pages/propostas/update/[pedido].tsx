@@ -52,7 +52,7 @@ export default function Proposta() {
   const [date, setDate] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [frete, setFrete] = useState("");
-  const [freteCif, setFreteCif] = useState<number>();
+  const [freteCif, setFreteCif] = useState('');
   const [Loja, setLoja] = useState("");
   const [prazo, setPrazo] = useState("");
   const [tipoprazo, setTipoPrazo] = useState("");
@@ -70,6 +70,7 @@ export default function Proposta() {
 
   const toast = useToast();
 
+
   useEffect(() => {
     (async () => {
       setLoadingGeral(true)
@@ -77,7 +78,9 @@ export default function Proposta() {
       const request = await axios("/api/db/proposta/get/pedido/" + PEDIDO);
       const [resp]: any = request.data;
       console.log("🚀 ~ file: [pedido].tsx:79 ~ resp:", resp)
-      setId(resp.id);
+      if (resp.attributes.Bpedido !== null) {
+        router.back()
+      }
       setCnpj(resp.attributes.CNPJClinet);
       const retornoProd = await fetch(
         "/api/query/get/produto/cnpj/" + resp.attributes.CNPJClinet,
@@ -90,27 +93,28 @@ export default function Proposta() {
       const requestPrazo = await fetch("/api/db/prazo/get");
       const RespPrazoB: any = await requestPrazo.json();
       setReqPrazo(RespPrazoB.data);
-      setAndamento(resp.attributes.andamento);
-      setDados(resp.attributes);
+      setDados(resp);
       SetProdutos(respProd);
-      setFrete(resp.attributes.frete);
-      setDate(resp.attributes.dataPedido);
-      setItens(resp.attributes.itens);
-      setPrazo(resp.attributes.condi);
-      setRelatEmpresa(resp.attributes.empresa.data);
-      setRelatEmpresaId(resp.attributes.empresa.data.id);
-      setFreteCif(parseFloat(resp.attributes.valorFrete.replace("R$", "").replace(".", "").replace(",", ".")));
-      setLoja(resp.attributes.fornecedor);
-      setObs(resp.attributes.obs);
-      setSaveNegocio(resp.attributes.business.data.attributes.nBusiness);
-      setBId(resp.attributes.business.data.id);
-      setHistory(resp.attributes.business.data.attributes.history);
-      const nome = resp.attributes.empresa.data.attributes.nome;
-      setMSG(resp.attributes.business.data.attributes.incidentRecord)
+      setId(resp.id);
+      setAndamento(resp.attributes?.andamento);
+      setFrete(resp.attributes?.frete);
+      setDate(resp.attributes?.dataPedido);
+      setItens(resp.attributes?.itens);
+      setPrazo(resp.attributes?.condi);
+      setRelatEmpresa(resp.attributes?.empresa.data);
+      setRelatEmpresaId(resp.attributes?.empresa.data.id);
+      setFreteCif(resp.attributes?.valorFrete.replace("R$", "").replace(".", "").replace(",", "."));
+      setLoja(resp.attributes?.fornecedor);
+      setObs(resp.attributes?.obs);
+      setSaveNegocio(resp.attributes?.business.data.attributes?.nBusiness);
+      setBId(resp.attributes?.business.data.id);
+      setHistory(resp.attributes?.business.data.attributes?.history);
+      const nome = resp.attributes?.empresa.data.attributes?.nome;
+      setMSG(resp.attributes?.business.data.attributes?.incidentRecord)
       setNomeEmpresa(nome);
       setLoadingGeral(false)
-      setClientePedido(resp.attributes.cliente_pedido)
-      setTipoPrazo(resp.attributes.prazo)
+      setClientePedido(resp.attributes?.cliente_pedido)
+      setTipoPrazo(resp.attributes?.prazo)
     })();
   }, []);
 
@@ -124,7 +128,7 @@ export default function Proposta() {
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const totalItem = ListItens.reduce((acc: number, item: any) => {
-      const valorOriginal= Number(item.vFinal.replace(".", "").replace(",", "."))
+      const valorOriginal = Number(item.vFinal.replace(".", "").replace(",", "."))
       const valor: number = valorOriginal - item.desconto;
       const qtd: number = item.Qtd;
       const mont: boolean = item.mont;
@@ -197,6 +201,8 @@ export default function Proposta() {
     }
   }, [prazo]);
 
+
+
   const SalvarProdutos = async () => {
     setLoadingGeral(true)
     if (!saveNegocio || saveNegocio === "") {
@@ -266,12 +272,12 @@ export default function Proposta() {
         prazo: tipoprazo,
         totalGeral: totalGeral,
         deconto: prazo !== 'Antecipado'
-            ? "R$ 0,00"
-            : Desconto,
+          ? "R$ 0,00"
+          : Desconto,
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
-        valorFrete: freteCif?.toLocaleString("pt-br", {
+        valorFrete: freteCif === ""? "R$ 0,00" :parseFloat(freteCif).toLocaleString("pt-br", {
           style: "currency",
           currency: "BRL",
         }),
@@ -328,7 +334,7 @@ export default function Proposta() {
 
   function handleInputChange(event: any) {
     const valor: any = event.target.value;
-    setFreteCif(parseFloat(valor));
+    setFreteCif(valor);
   }
 
   function getPrazo(prazo: SetStateAction<string>) {
@@ -372,6 +378,7 @@ export default function Proposta() {
     setItens(ListaRetorno);
   }
 
+
   function getLoading(load: SetStateAction<boolean>) {
     setLoadingTable(load);
   }
@@ -380,6 +387,7 @@ export default function Proposta() {
     const filterItens = ListItens.filter((i: any) => i.id !== itemFinal);
     setItens(filterItens);
   }
+
 
   if (loadingGeral) {
     return <Loading size="200px">Carregando...</Loading>;
@@ -528,12 +536,13 @@ export default function Proposta() {
                 Valor de Frete
               </FormLabel>
               <Input
+              type="number"
                 textAlign={"end"}
                 size="xs"
                 w={"7rem"}
                 fontSize="xs"
                 rounded="md"
-                onChange={handleInputChange}
+                onChange={(e) => setFreteCif(e.target.value.replace(".", ""))}
                 value={freteCif}
               />
             </Box>
@@ -657,7 +666,10 @@ export default function Proposta() {
             </chakra.p>
             <chakra.p>
               Frete:{" "}
-              {freteCif}
+              {freteCif === "" ? "R$ 0,00" : parseFloat(freteCif).toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              })}
             </chakra.p>
             <chakra.p>Desconto: {Desconto}</chakra.p>
             <chakra.p>Valor Total: {totalGeral}</chakra.p>
