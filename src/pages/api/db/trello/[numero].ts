@@ -59,7 +59,7 @@ export default async function PostTrello(
     const fornecedorName = pedido.attributes.fornecedorId.data.attributes.nome;
     const userKey = pedido.attributes.user.data.attributes.trello_key;
     const userToken = pedido.attributes.user.data.attributes.trello_token;
-    const pedidoCliente = pedido.attributes.cliente_pedido
+    const pedidoCliente = pedido.attributes.cliente_pedido;
 
     const Prefuncionario = await GetTrelloId();
     const funcionario = Prefuncionario.filter((f: string) => f !== null);
@@ -67,10 +67,7 @@ export default async function PostTrello(
     // const list = "6438073ecc85f294325f74"; //teste erro
     const list = "6438073ecc85f294325f74ac"; //teste
     // const list = "5fac446c22f5d05364052362";
-    const Bord = "5fac445b3c5274707a309d61"
-
-    // //Membros
-    // const trelloMembers: string[] = funcionario;
+    const Bord = "5fac445b3c5274707a309d61";
 
     //Membros
     const trelloMembers: string[] = [
@@ -86,7 +83,7 @@ export default async function PostTrello(
         const Prenlote = lote
           .filter(
             (f: any) =>
-              f.attributes.produtosId == i.prodId && f.attributes.qtde == i.Qtd
+              f.attributes.produtosId == i.prodId && f.attributes.qtde == i.Qtd && f.attributes.item_id == i.id
           )
           .map((p: any) => p.attributes.lote);
         const nlote = Prenlote[0];
@@ -96,9 +93,13 @@ export default async function PostTrello(
             ? "MONT"
             : i.mont === false && i.expo === true
             ? "EXP"
+            : i.mont === false && i.expo === false
+            ? ""
             : "EXP - MONT";
 
-        const nomeCard = `${cliente} - ${i.Qtd} - ${i.titulo} - Medidas ${i.comprimento} x ${i.largura} x ${i.altura} - peso ${i.pesoCx}(kg) - ${type} - Lote Nº ${nlote}`;
+        const nomeCard = i.titulo
+          ? `${cliente} - ${i.Qtd} - ${i.titulo} - Medidas ${i.comprimento} x ${i.largura} x ${i.altura} - peso ${i.pesoCx}(kg) - ${type} - Lote Nº ${nlote}`
+          : `${cliente} - ${i.Qtd} - ${i.nomeProd} - peso ${i.pesoCx}(kg) - ${type} - Lote Nº ${nlote}`;
 
         const dataBoard = JSON.stringify({
           key: userKey,
@@ -115,7 +116,7 @@ export default async function PostTrello(
         Pedido: Nº. ${pedidoCliente},
         Lote: Nº. ${nlote},
         Forma de pagamento: ${pgto},
-        Modelo: ${i.titulo}`,
+        Modelo: ${i.modelo}`,
           idMembers: trelloMembers,
           due: estrega,
           dueReminder: 2880,
@@ -134,12 +135,13 @@ export default async function PostTrello(
           data: dataBoard,
         };
 
-        await axios
+        return await axios
           .request(config)
           .then((res: any) => {
-            return res.data.data;
+            const resposta = {card: `card id: ${res.data.id} pode ser acessado pelo link: ${res.data.shortUrl}`}
+            return resposta;
           })
-          .catch(async(err: any) => {
+          .catch(async (err: any) => {
             const data = {
               log: {
                 key: userKey,
@@ -160,13 +162,13 @@ export default async function PostTrello(
                 erro_status: err.response.status,
                 erro_message: err.response.data,
               },
-            }
-           return await ErroTrello(data);
-
+            };
+            return await ErroTrello(data);
           });
       });
-      const result = await Promise.all(promises);
 
+      const result = await Promise.all(promises);
+      console.log("🚀 ~ file: [numero].ts:172 ~ result:", result)
       res.status(201).json(result);
     } catch (error: any) {
       res.status(error.status || 400).json(error);

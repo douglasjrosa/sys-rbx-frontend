@@ -52,23 +52,9 @@ export const getData = async (proposta: any) => {
       ? ""
       : inf.business.data.id;
 
-    const link1 = {
-      url: "https://ribermax.com.br/images/logomarca-h.webp?w=1080&q=75",
-      alt: "Ribermax",
-      height: "30px",
-      margin: "1rem 0",
-    };
-    const link2 = {
-      url: "https://www.braghetopaletes.com.br/images/logomarca-bragheto-escuro.png?w=1080&q=75",
-      alt: "Bragheto",
-      height: "55px",
-      margin: "0",
-    };
-
     const pagina = Math.ceil(itens.length  / 6)
 
-    const logo =
-      fornecedor.data.fantasia !== "BRAGHETO PALETES" ? link1 : link2;
+
 
     const cliente_pedido = inf.cliente_pedido;
 
@@ -85,7 +71,6 @@ export const getData = async (proposta: any) => {
       totoalGeral,
       obs,
       business,
-      logo,
       Vendedor,
       cliente_pedido,
       Desconto

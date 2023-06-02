@@ -34,8 +34,7 @@ export default async function GetEmpresa(
     const imageContent = fs.readFileSync(imagePath).toString("base64");
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
 
-    const date = new Date().toLocaleDateString();
-    // console.log("🚀 ~ file: [proposta].ts:40 ~ date:", date)
+    const date = new Date().toLocaleDateString('pt-BR');
 
     const fonts = {
       Helvetica: {
@@ -49,10 +48,12 @@ export default async function GetEmpresa(
 
     const Product = infos.itens;
     const products = Product.map((i: any, x: number) => {
-      const preco = parseFloat(i.vFinal.replace(/','+/g, ".")).toLocaleString(
+
+      const preco = parseFloat(i.vFinal.replace('.', "").replace(',', ".")).toLocaleString(
         "pt-br",
         { style: "currency", currency: "BRL" }
       );
+
       const total = parseFloat(i.total).toLocaleString("pt-br", {
         style: "currency",
         currency: "BRL",

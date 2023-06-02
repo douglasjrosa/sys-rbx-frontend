@@ -19,11 +19,12 @@ import axios from "axios";
 import { cnpj } from "cpf-cnpj-validator";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { mask, unMask } from "remask";
 import { confgEnb } from "../../../components/data/confgEnb";
 import { modCaix } from "../../../components/data/modCaix";
 import { CompPessoa } from "../../../components/elements/lista/pessoas";
+import { capitalizeWords } from "@/function/captalize";
 
 export default function Cadastro() {
   const { data: session } = useSession();
@@ -78,104 +79,23 @@ export default function Cadastro() {
   const [frete, setFrete] = useState("");
   const [Empresa, setEmpresa] = useState("");
   const [Responsavel, setResponsavel] = useState("");
+  const [Data, setData] = useState<any>([]);
   const toast = useToast();
 
-  function capitalizeWords(str: string) {
-    // Divide a string em um array de palavras
-    var words = str.split(' ');
-
-    // Itera por cada palavra no array
-    for (var i = 0; i < words.length; i++) {
-      // Converte a primeira letra da palavra para maiúscula e mantém o restante da palavra em minúscula
-      words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1).toLowerCase();
-    }
-
-    // Junta as palavras de volta em uma única string e retorna o resultado
-    return words.join(' ');
-  }
-
-  const consulta = () => {
-
-    const validCnpj = cnpj.isValid(CNPJ);
-    if (CNPJ.length < 13) {
-      Toast({
-        title: "erro no CNPJ",
-        description: "CNPJ incorreto",
-        status: "error",
+  const consulta = async () => {
+    let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
+    try {
+      const request = await axios(url);
+      const response = request.data;
+      setData(response)
+    } catch (error: any) {
+      toast({
+        title: 'Opss',
+        description: error.response?.data.detalhes,
+        status: 'error',
         duration: 2000,
         isClosable: true,
       });
-    }
-    if (validCnpj === false) {
-      Toast({
-        title: "erro no CNPJ",
-        description: "CNPJ incorreto",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      });
-    } else {
-
-      let url = "https://publica.cnpj.ws/cnpj/" + CNPJ;
-
-      axios({
-        method: "GET",
-        url: url,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then(function (response) {
-
-          setFantasia(capitalizeWords(response.data.razao_social));
-          setTipoPessoa("cnpj");
-          setIE(
-            response.data.estabelecimento.inscricoes_estaduais[0]
-              .inscricao_estadual
-          );
-          setIeStatus(
-            response.data.estabelecimento.inscricoes_estaduais[0].ativo
-          );
-          const end =capitalizeWords( response.data.estabelecimento.tipo_logradouro + " " + response.data.estabelecimento.logradouro)
-          setEndereco(end);
-          setNumero(response.data.estabelecimento.numero);
-          setComplemento(response.data.estabelecimento.complemento);
-          setBairro(capitalizeWords(response.data.estabelecimento.bairro));
-          setCep(response.data.estabelecimento.cep);
-          setCidade(capitalizeWords(response.data.estabelecimento.cidade.nome));
-          setUf(response.data.estabelecimento.estado.sigla);
-          let ddd = response.data.estabelecimento.ddd1;
-          let tel1 = response.data.estabelecimento.telefone1;
-          setFone(ddd + tel1);
-          setEmail(response.data.estabelecimento.email);
-          setPais(capitalizeWords(response.data.estabelecimento.pais.nome));
-          setCodpais(response.data.estabelecimento.pais.id);
-          setCNAE(response.data.estabelecimento.atividade_principal.id);
-          setPorte(response.data.porte.descricao);
-          const cheksimples =
-            response.data.simples === null
-              ? false
-              : response.data.simples.simples === "Sim"
-              ? true
-              : false;
-          setSimples(cheksimples);
-          const ICMSisent =
-            response.data.simples !== null &&
-            response.data.simples.mei === "sim" &&
-            response.data.estabelecimento.inscricoes_estaduais[0].ativo === true
-              ? true
-              : false;
-          const ICMSncomtrib =
-            response.data.simples !== null &&
-            response.data.simples.mei === "sim" &&
-            response.data.estabelecimento.inscricoes_estaduais[0].ativo ===
-              false
-              ? true
-              : false;
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
     }
   };
 
@@ -327,6 +247,33 @@ export default function Cadastro() {
     setCelular(valorLinpo);
     setWhatsMask(masked);
   };
+
+  useEffect(()=>{
+    if (Data) {
+      setFantasia(Data.razao_social);
+      setTipoPessoa('cnpj');
+      setIE(Data.estabelecimento?.inscricoes_estaduais[0]?.inscricao_estadual);
+      setIeStatus(Data.estabelecimento?.inscricoes_estaduais[0]?.ativo);
+      const end = capitalizeWords(Data.estabelecimento?.tipo_logradouro + " " + Data.estabelecimento?.logradouro)
+      setEndereco(end === 'Undefined Undefined' ? "": end);
+      setNumero(Data.estabelecimento?.numero);
+      setComplemento(capitalizeWords(Data.estabelecimento?.complemento));
+      setBairro(capitalizeWords(Data.estabelecimento?.bairro));
+      setCep(Data.estabelecimento?.cep);
+      setCidade(capitalizeWords(Data.estabelecimento?.cidade.nome));
+      setUf(Data.estabelecimento?.estado.sigla);
+      let ddd = Data.estabelecimento?.ddd1;
+      let tel1 = Data.estabelecimento?.telefone1;
+      setFone(ddd + tel1);
+      setEmail(Data.estabelecimento?.email);
+      setPais(Data.estabelecimento?.pais.nome);
+      setCodpais(Data.estabelecimento?.pais.id);
+      setCNAE(Data.estabelecimento?.atividade_principal.id);
+      setPorte(Data.porte?.descricao);
+      const cheksimples = Data.simples?.simples === 'Sim' ? true : false;
+      setSimples(cheksimples);
+    }
+  }, [Data])
 
 
 
@@ -528,14 +475,14 @@ export default function Cadastro() {
                             ieStatus === true && nome.length !== 0
                               ? 'sim'
                               : ieStatus === false && nome.length !== 0
-                              ? 'não'
-                              : ' ';
+                                ? 'não'
+                                : ' ';
                           return val;
                         })()}
                       />
                     </FormControl>
                     <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
-                    <CompPessoa
+                      <CompPessoa
                         Resp={Responsavel}
                         onAddResp={getResponsavel}
                       />
@@ -978,16 +925,16 @@ export default function Cadastro() {
                         item.id === "12"
                           ? adFrailLat
                           : item.id === "13"
-                          ? adFrailCab
-                          : item.id === "14"
-                          ? adEspecialLat
-                          : item.id === "15"
-                          ? adEspecialCab
-                          : item.id === "16"
-                          ? latFCab
-                          : item.id === "17"
-                          ? cabChao
-                          : cabTop;
+                            ? adFrailCab
+                            : item.id === "14"
+                              ? adEspecialLat
+                              : item.id === "15"
+                                ? adEspecialCab
+                                : item.id === "16"
+                                  ? latFCab
+                                  : item.id === "17"
+                                    ? cabChao
+                                    : cabTop;
 
                       return (
                         <Box
@@ -1007,16 +954,16 @@ export default function Cadastro() {
                                     item.id === "12"
                                       ? setAdFragilLat(e.target.checked)
                                       : item.id === "13"
-                                      ? setAdFragilCab(e.target.checked)
-                                      : item.id === "14"
-                                      ? setAdEspecialLat(e.target.checked)
-                                      : item.id === "15"
-                                      ? setAdEspecialCab(e.target.checked)
-                                      : item.id === "16"
-                                      ? setLatFCab(e.target.checked)
-                                      : item.id === "17"
-                                      ? setCabChao(e.target.checked)
-                                      : setCabTop(e.target.checked);
+                                        ? setAdFragilCab(e.target.checked)
+                                        : item.id === "14"
+                                          ? setAdEspecialLat(e.target.checked)
+                                          : item.id === "15"
+                                            ? setAdEspecialCab(e.target.checked)
+                                            : item.id === "16"
+                                              ? setLatFCab(e.target.checked)
+                                              : item.id === "17"
+                                                ? setCabChao(e.target.checked)
+                                                : setCabTop(e.target.checked);
                                   return set;
                                 }}
                               />
@@ -1048,24 +995,24 @@ export default function Cadastro() {
                         item.id === "1"
                           ? cxEco
                           : item.id === "2"
-                          ? cxEst
-                          : item.id === "3"
-                          ? cxLev
-                          : item.id === "4"
-                          ? cxRef
-                          : item.id === "5"
-                          ? cxSupRef
-                          : item.id === "6"
-                          ? platSMed
-                          : item.id === "7"
-                          ? cxResi
-                          : item.id === "8"
-                          ? engEco
-                          : item.id === "9"
-                          ? engLev
-                          : item.id === "10"
-                          ? engRef
-                          : engResi;
+                            ? cxEst
+                            : item.id === "3"
+                              ? cxLev
+                              : item.id === "4"
+                                ? cxRef
+                                : item.id === "5"
+                                  ? cxSupRef
+                                  : item.id === "6"
+                                    ? platSMed
+                                    : item.id === "7"
+                                      ? cxResi
+                                      : item.id === "8"
+                                        ? engEco
+                                        : item.id === "9"
+                                          ? engLev
+                                          : item.id === "10"
+                                            ? engRef
+                                            : engResi;
                       return (
                         <Box
                           key={item.id}
@@ -1080,28 +1027,28 @@ export default function Cadastro() {
                                 rounded="md"
                                 isChecked={val || false}
                                 onChange={(e) => {
-                                  const set: any=
+                                  const set: any =
                                     item.id === "1"
                                       ? setCxEco
                                       : item.id === "2"
-                                      ? setCxEst
-                                      : item.id === "3"
-                                      ? setCxLev
-                                      : item.id === "4"
-                                      ? setCxRef
-                                      : item.id === "5"
-                                      ? setCxSupRef
-                                      : item.id === "6"
-                                      ? setPlatSMed
-                                      : item.id === "7"
-                                      ? setCxResi
-                                      : item.id === "8"
-                                      ? setEngEco
-                                      : item.id === "9"
-                                      ? setEngLev
-                                      : item.id === "10"
-                                      ? setEngRef
-                                      : setEngResi;
+                                        ? setCxEst
+                                        : item.id === "3"
+                                          ? setCxLev
+                                          : item.id === "4"
+                                            ? setCxRef
+                                            : item.id === "5"
+                                              ? setCxSupRef
+                                              : item.id === "6"
+                                                ? setPlatSMed
+                                                : item.id === "7"
+                                                  ? setCxResi
+                                                  : item.id === "8"
+                                                    ? setEngEco
+                                                    : item.id === "9"
+                                                      ? setEngLev
+                                                      : item.id === "10"
+                                                        ? setEngRef
+                                                        : setEngResi;
                                   if (set) {
                                     // Verificação antes de definir o valor do estado
                                     set(e.target.checked);

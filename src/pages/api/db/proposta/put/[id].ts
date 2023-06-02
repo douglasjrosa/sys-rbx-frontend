@@ -11,7 +11,6 @@ export default async function PUTEmpresa(
   if (req.method === "PUT") {
     // const data = JSON.parse(req.body);
     const data = req.body;
-    console.log("🚀 ~ file: [id].ts:14 ~ data:", data)
 
     const ID = req.query.id;
     const token = process.env.ATORIZZATION_TOKEN;
@@ -57,7 +56,6 @@ export default async function PUTEmpresa(
         cliente_pedido: data.cliente_pedido
       },
     };
-    console.log("🚀 ~ file: [id].ts:59 ~ DataPost:", DataPost)
 
     const now = new Date();
     const VisibliDateTime =  new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString();
@@ -110,8 +108,6 @@ export default async function PUTEmpresa(
       })
       .catch(async (error) => {
         console.log(error);
-        // console.log(error.data)
-        // console.log(error.response.data.error.details);
         console.log(error.response.data.error.details.errors);
 
         const now = new Date();

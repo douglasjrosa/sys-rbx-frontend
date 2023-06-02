@@ -45,71 +45,82 @@ export const CardList = (props: { id: string; onloading: any }) => {
       position: 'top-right',
     });
 
-    try {
-      const requests = [
-        axios({
-          url: `/api/db/nLote/${numero}`,
-          method: "POST",
-        }),
-        axios({
-          url: `/api/ribermax/lote/${numero}`,
-          method: "POST",
-        }),
-        axios({
+    await axios({
+      url: `/api/db/nLote/${numero}`,
+      method: "POST",
+    })
+      .then(() => {})
+      .catch((error) => {
+        console.log(error)
+      });
+
+    await axios({
+      url: "/api/query/pedido/" + numero,
+      method: "POST",
+    })
+      .then(async (response: any) => {
+        console.log(response.data)
+        await axios({
           url: `/api/db/trello/${numero}`,
           method: "POST",
-        }),
-        axios({
-          url: "/api/query/pedido/" + numero,
-          method: "POST",
         })
-      ];
-
-      // Executa todas as requisições em paralelo
-      const [res1, res2, res3] = await Promise.all(requests.slice(0, 3));
-      const res4 = await requests[3];
-
-      console.log(res1.data);
-      console.log(res2.data);
-      console.log(res3.data);
-
-      toast({
-        title: "Pedido realizado com sucesso!",
-        status: "success",
-        duration: 5000,
-        position: 'top-right',
-      });
-      setLoad(false)
-      setIdLoad('')
-      router.push("/negocios/" + props.id);
-
-    } catch (err: any) {
-      console.log(err.response.data.message);
-      if (err.response.data.message) {
+          .then((response) => {
+            console.log(response.data)
+          })
+          .catch((error) => {
+            console.log(error)
+          });
         toast({
-          title: "Opss.",
-          description: err.response.data.message,
-          status: "info",
+          title: "Pedido realizado com sucesso!",
+          status: "success",
           duration: 5000,
           position: 'top-right',
-          isClosable: true,
         });
+        const requeste = await axios(url);
+        const resp = requeste.data;
+        setData(resp);
         setLoad(false)
         setIdLoad('')
-        router.push("/negocios/" + props.id);
-      } else {
-        toast({
-          title: "Opss.",
-          description: "Entre en contata com o suporte",
-          status: "error",
-          duration: 3000,
-          position: 'top-right',
-          isClosable: true,
-        });
-        setLoad(false)
-        setIdLoad('')
-      }
-    }
+        // router.push("/negocios/" + props.id);
+      })
+      .catch(async(err) => {
+        console.log(err.response.data.message);
+        console.log(err);
+        if (err.response.data.message) {
+          await axios({
+            url: `/api/db/trello/${numero}`,
+            method: "POST",
+          })
+            .then((response) => {
+              console.log(response.data)
+            })
+            .catch((error) => {
+              console.log(error)
+            });
+          toast({
+            title: "Opss.",
+            description: err.response.data.message,
+            status: "info",
+            duration: 5000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          setLoad(false)
+          setIdLoad('')
+          // router.push("/negocios/" + props.id);
+        } else {
+          toast({
+            title: "Opss.",
+            description: "Entre en contata com o suporte",
+            status: "error",
+            duration: 3000,
+            position: 'top-right',
+            isClosable: true,
+          });
+          setLoad(false)
+          setIdLoad('')
+        }
+      });
   };
 
   if (LoadGeral) {
@@ -132,7 +143,6 @@ export const CardList = (props: { id: string; onloading: any }) => {
           {!Data
             ? null
             : Data.map((i: any) => {
-              console.log("🚀 ~ file: index.tsx:111 ~ CardList ~ i:", i)
               const dat = new Date(i.attributes.dataPedido);
               const meses = [
                 "Jan",

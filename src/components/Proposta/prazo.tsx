@@ -15,11 +15,12 @@ export const CompPrazo = (props: { Resp: string; onAddResp: any; oncnpj: string 
   useEffect(() => {
     if (props.Resp && valor === '') {
       const [filter] = dados.filter((objeto: any) =>
-        objeto.attributes.titulo
+        objeto.titulo
           .toLowerCase()
-          .includes(props.Resp.toLowerCase()),
+          == props.Resp.toLowerCase(),
       );
-      setValor(!filter ? props.Resp : filter.id);
+      console.log("🚀 ~ file: prazo.tsx:24 ~ useEffect ~ filter:", filter)
+      setValor(!filter ? props.Resp : filter.titulo);
     }
   }, [props.Resp, valor, dados]);
 

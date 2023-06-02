@@ -12,7 +12,6 @@ export const GetPedido = async (nPedido: any) => {
     },
   })
     .then((response: any) => {
-      console.log("🚀 ~ file: index.ts:15 ~ .then ~ response:", response)
       return response.data;
     })
     .catch((error: ApiErrorResponse) => {

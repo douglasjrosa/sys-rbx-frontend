@@ -2,6 +2,7 @@ import axios from "axios";
 import { nLote } from ".";
 import { GetPedido } from "../../query/pedido/request/db/get";
 import { NextApiRequest, NextApiResponse } from "next";
+import { PostLoteRibermmax } from "./lib/postLoteRibermax";
 
 const token = process.env.ATORIZZATION_TOKEN;
 const STRAPI = axios.create({
@@ -17,7 +18,7 @@ export default async function GetEmpresa(
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    const numero = req.query.psotLote;
+    const numero: any = req.query.psotLote;
 
     const request = await STRAPI.get(`/pedidos?populate=*&filters[nPedido][$eq]=${numero}`);
 
@@ -29,13 +30,12 @@ export default async function GetEmpresa(
     const fornecedor = pedido.attributes.fornecedorId;
     const fornecedorCNPJ = pedido.attributes.fornecedorId.data.attributes.CNPJ;
     const vendedor = pedido.attributes.user.data.id;
-
-
     try {
       const result = [];
 
       for (const i of items) {
         const NLote = await nLote();
+        const idCliente = `${i.id}`
         const postLote = {
           data: {
             lote: NLote,
@@ -53,19 +53,17 @@ export default async function GetEmpresa(
             vendedor: vendedor,
             nProposta: numero,
             CNPJClinet: empresaCNPJ,
-            CNPJEmitente: fornecedorCNPJ
+            CNPJEmitente: fornecedorCNPJ,
+            item_id: idCliente
           },
         };
-
         const res = await STRAPI.post("/lotes", postLote);
-        console.log("🚀 ~ file: [psotLote].ts:60 ~ res:", res)
         result.push(res.data.data);
       }
-
       res.status(201).json(result);
-
-    } catch (error) {
-      console.log(error);
+      await PostLoteRibermmax(numero)
+    } catch (error: any) {
+      console.log(error.response.data.error);
       res.status(400).json(error);
     }
   } else {

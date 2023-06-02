@@ -593,7 +593,7 @@ export default function Proposta() {
             <chakra.p>Desconto: {Desconto}</chakra.p>
             <chakra.p>Valor Total: {totalGeral}</chakra.p>
           </Flex>
-          <Button colorScheme={"whatsapp"} onClick={SalvarProdutos}>
+          <Button colorScheme={"whatsapp"} onClick={SalvarProdutos} isDisabled={loadingTable}>
             Salvar Proposta
           </Button>
         </Box>

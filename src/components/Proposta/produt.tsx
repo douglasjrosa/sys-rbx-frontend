@@ -2,6 +2,7 @@ import {
   Box,
   FormLabel,
   Icon,
+  IconButton,
   Select,
   Spinner,
   useToast,
@@ -10,6 +11,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { BiPlusCircle } from "react-icons/bi";
+import { MdOutlineAddCircleOutline } from "react-icons/md";
 
 export const ProdutiList = (props: {
   onCnpj: any;
@@ -131,14 +133,17 @@ export const ProdutiList = (props: {
             </Select>
           </Box>
           <Box>
-            <Icon
-              as={BiPlusCircle}
-              boxSize={8}
-              mt={8}
-              color="whatsapp.600"
-              cursor="pointer"
+            <IconButton
+              aria-label="Add Negocio"
+              rounded={'3xl'}
+              mt={6}
+              colorScheme="tranparent"
+              me={'5rem'}
               onClick={addItens}
-            />
+              isDisabled={Load}
+            >
+              <MdOutlineAddCircleOutline color="#179848" size={'2rem'} />
+            </IconButton>
           </Box>
         </Box>
       </Box>

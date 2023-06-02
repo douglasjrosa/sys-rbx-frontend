@@ -84,12 +84,12 @@ export default function EmpresaId() {
   const [ID, setID] = useState('');
   const [Responsavel, setResponsavel] = useState('');
   const [loading, setloading] = useState(false);
+  const [Data, setData] = useState<any>([]);
   const toast = useToast();
 
 
   useEffect(() => {
-
-    const getempresa = async () => {
+    (async () => {
       const id = router.query.id;
       setloading(true)
 
@@ -97,183 +97,72 @@ export default function EmpresaId() {
       const response = await axios(url);
       const empresa = await response.data.data;
 
-      setResponsavel(
-        empresa.attributes.responsavel.data === null
-          ? null
-          : empresa.attributes.responsavel.data.id,
-      );
+      setResponsavel(empresa.attributes?.responsavel.data.id);
       setID(empresa.id);
-      setCNPJ(empresa.attributes.CNPJ === null ? '' : empresa.attributes.CNPJ);
-      setNome(empresa.attributes.nome === null ? '' : empresa.attributes.nome);
-      setFantasia(
-        empresa.attributes.fantasia === null ? '' : empresa.attributes.fantasia,
-      );
-      setTipoPessoa(
-        empresa.attributes.tipoPessoa === null
-          ? ''
-          : empresa.attributes.tipoPessoa,
-      );
-      setFone(empresa.attributes.fone === null ? '' : empresa.attributes.fone);
-      setCelular(
-        empresa.attributes.celular === null ? '' : empresa.attributes.celular,
-      );
-      setEmail(
-        empresa.attributes.email === null ? '' : empresa.attributes.email,
-      );
-      setEmailNfe(
-        empresa.attributes.emailNfe === null ? '' : empresa.attributes.emailNfe,
-      );
-      setIeStatus(empresa.attributes.ieStatus);
-      setCNAE(empresa.attributes.CNAE === null ? '' : empresa.attributes.CNAE);
-      setIE(empresa.attributes.Ie === null ? '' : empresa.attributes.Ie);
-      setPorte(
-        empresa.attributes.porte === null ? '' : empresa.attributes.porte,
-      );
-      setSimples(empresa.attributes.simples);
-      setSite(empresa.attributes.site === null ? '' : empresa.attributes.site);
-      setEndereco(
-        empresa.attributes.endereco === null ? '' : capitalizeWords(empresa.attributes.endereco),
-      );
-      setNumero(
-        empresa.attributes.numero === null ? '' : empresa.attributes.numero,
-      );
-      setBairro(
-        empresa.attributes.bairro === null ? '' : capitalizeWords(empresa.attributes.bairro),
-      );
-      setComplemento(
-        empresa.attributes.complemento === null
-          ? ''
-          : capitalizeWords(empresa.attributes.complemento),
-      );
-      setCidade(
-        empresa.attributes.cidade === null ? '' : capitalizeWords(empresa.attributes.cidade),
-      );
-      setUf(empresa.attributes.uf === null ? '' : empresa.attributes.uf);
-      setCep(empresa.attributes.cep === null ? '' : empresa.attributes.cep);
-      setPais(empresa.attributes.pais === null ? '' : empresa.attributes.pais);
-      setCodpais(
-        empresa.attributes.codpais === null ? '' : empresa.attributes.codpais,
-      );
-      setAdFragilLat(empresa.attributes.adFrailLat);
-      setAdFragilCab(empresa.attributes.adFrailCab);
-      setAdEspecialLat(empresa.attributes.adEspecialLat);
-      setAdEspecialCab(empresa.attributes.adEspecialCab);
-      setLatFCab(empresa.attributes.latFCab);
-      setCabChao(empresa.attributes.cabChao);
-      setCabTop(empresa.attributes.cabTop);
-      setCxEco(empresa.attributes.cxEco);
-      setCxEst(empresa.attributes.cxEst);
-      setCxLev(empresa.attributes.cxLev);
-      setCxRef(empresa.attributes.cxRef);
-      setCxSupRef(empresa.attributes.cxSupRef);
-      setPlatSMed(empresa.attributes.platSMed);
-      setCxResi(empresa.attributes.cxResi);
-      setEngEco(empresa.attributes.engEco);
-      setEngLev(empresa.attributes.engLev);
-      setEngRef(empresa.attributes.engRef);
-      setEngResi(empresa.attributes.engResi);
-      setTablecalc(empresa.attributes.tablecalc);
-      setMaxpg(
-        empresa.attributes.maxPg === null ? '' : empresa.attributes.maxPg,
-      );
-      setForpg(
-        empresa.attributes.forpg === null ? '' : empresa.attributes.forpg,
-      );
-      setFrete(
-        empresa.attributes.frete === null ? '' : empresa.attributes.frete,
-      );
-      setStatus(
-        empresa.attributes.status === null ? '' : empresa.attributes.status,
-      );
+      setCNPJ(empresa.attributes?.CNPJ);
+      setNome(empresa.attributes?.nome);
+      setFantasia(empresa.attributes?.fantasia);
+      setTipoPessoa(empresa.attributes?.tipoPessoa);
+      setFone(empresa.attributes?.fone);
+      setCelular(empresa.attributes?.celular);
+      setEmail(empresa.attributes?.email);
+      setEmailNfe(empresa.attributes?.emailNfe);
+      setIeStatus(empresa.attributes?.ieStatus);
+      setCNAE(empresa.attributes?.CNAE);
+      setIE(empresa.attributes?.Ie);
+      setPorte(empresa.attributes?.porte);
+      setSimples(empresa.attributes?.simples);
+      setSite(empresa.attributes?.site);
+      setEndereco(capitalizeWords(empresa.attributes?.endereco));
+      setNumero(empresa.attributes?.numero);
+      setBairro(capitalizeWords(empresa.attributes?.bairro));
+      setComplemento(capitalizeWords(empresa.attributes?.complemento));
+      setCidade(capitalizeWords(empresa.attributes?.cidade));
+      setUf(empresa.attributes?.uf);
+      setCep(empresa.attributes?.cep);
+      setPais(empresa.attributes?.pais);
+      setCodpais(empresa.attributes?.codpais);
+      setAdFragilLat(empresa.attributes?.adFrailLat);
+      setAdFragilCab(empresa.attributes?.adFrailCab);
+      setAdEspecialLat(empresa.attributes?.adEspecialLat);
+      setAdEspecialCab(empresa.attributes?.adEspecialCab);
+      setLatFCab(empresa.attributes?.latFCab);
+      setCabChao(empresa.attributes?.cabChao);
+      setCabTop(empresa.attributes?.cabTop);
+      setCxEco(empresa.attributes?.cxEco);
+      setCxEst(empresa.attributes?.cxEst);
+      setCxLev(empresa.attributes?.cxLev);
+      setCxRef(empresa.attributes?.cxRef);
+      setCxSupRef(empresa.attributes?.cxSupRef);
+      setPlatSMed(empresa.attributes?.platSMed);
+      setCxResi(empresa.attributes?.cxResi);
+      setEngEco(empresa.attributes?.engEco);
+      setEngLev(empresa.attributes?.engLev);
+      setEngRef(empresa.attributes?.engRef);
+      setEngResi(empresa.attributes?.engResi);
+      setTablecalc(empresa.attributes?.tablecalc);
+      setMaxpg(empresa.attributes?.maxPg);
+      setForpg(empresa.attributes?.forpg);
+      setFrete(empresa.attributes?.frete);
+      setStatus(empresa.attributes?.status);
       setloading(false);
-    };
-    getempresa();
+    })()
   }, []);
 
-  const consulta = () => {
-
-    const validCnpj = cnpj.isValid(CNPJ);
-    if (CNPJ.length < 13) {
-      Toast({
-        title: 'erro no CNPJ',
-        description: 'CNPJ incorreto',
+  const consulta = async () => {
+    let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
+    try {
+      const request = await axios(url);
+      const response = request.data;
+      setData(response)
+    } catch (error: any) {
+      toast({
+        title: 'Opss',
+        description: error.response?.data.detalhes,
         status: 'error',
         duration: 2000,
         isClosable: true,
       });
-    }
-    if (validCnpj === false) {
-      Toast({
-        title: 'erro no CNPJ',
-        description: 'CNPJ incorreto',
-        status: 'error',
-        duration: 2000,
-        isClosable: true,
-      });
-    } else {
-
-      let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
-
-      axios({
-        method: 'GET',
-        url: url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-        .then(function (response) {
-        console.log("🚀 ~ file: [id].tsx:238 ~ response:", response.data)
-
-          setFantasia(response.data.razao_social);
-          setTipoPessoa('cnpj');
-          setIE(
-            response.data.estabelecimento.inscricoes_estaduais[0]
-              .inscricao_estadual,
-          );
-          setIeStatus(
-            response.data.estabelecimento.inscricoes_estaduais[0].ativo,
-          );
-          const end =capitalizeWords( response.data.estabelecimento.tipo_logradouro + " " + response.data.estabelecimento.logradouro)
-          setEndereco(end);
-          setNumero(response.data.estabelecimento.numero);
-          setComplemento(capitalizeWords(response.data.estabelecimento.complemento));
-          setBairro(capitalizeWords(response.data.estabelecimento.bairro));
-          setCep(response.data.estabelecimento.cep);
-          setCidade(capitalizeWords(response.data.estabelecimento.cidade.nome));
-          setUf(response.data.estabelecimento.estado.sigla);
-          let ddd = response.data.estabelecimento.ddd1;
-          let tel1 = response.data.estabelecimento.telefone1;
-          setFone(ddd + tel1);
-          setEmail(response.data.estabelecimento.email);
-          setPais(response.data.estabelecimento.pais.nome);
-          setCodpais(response.data.estabelecimento.pais.id);
-          setCNAE(response.data.estabelecimento.atividade_principal.id);
-          setPorte(response.data.porte.descricao);
-          const cheksimples =
-            response.data.simples === null
-              ? false
-              : response.data.simples.simples === 'Sim'
-              ? true
-              : false;
-          setSimples(cheksimples);
-          const ICMSisent =
-            response.data.simples !== null &&
-            response.data.simples.mei === 'sim' &&
-            response.data.estabelecimento.inscricoes_estaduais[0].ativo === true
-              ? true
-              : false;
-          const ICMSncomtrib =
-            response.data.simples !== null &&
-            response.data.simples.mei === 'sim' &&
-            response.data.estabelecimento.inscricoes_estaduais[0].ativo ===
-              false
-              ? true
-              : false;
-        })
-
-        .catch(function (error) {
-          console.log(error);
-        });
     }
   };
 
@@ -397,6 +286,33 @@ export default function EmpresaId() {
     const maskedCel = mask(celular, ['(99) 9 9999-9999']);
     setWhatsMask(maskedCel);
   }, 50);
+
+  useEffect(()=>{
+    if (Data) {
+      setFantasia(Data.razao_social);
+      setTipoPessoa('cnpj');
+      setIE(Data.estabelecimento?.inscricoes_estaduais[0]?.inscricao_estadual);
+      setIeStatus(Data.estabelecimento?.inscricoes_estaduais[0]?.ativo);
+      const end = capitalizeWords(Data.estabelecimento?.tipo_logradouro + " " + Data.estabelecimento?.logradouro)
+      setEndereco(end === 'Undefined Undefined' ? "": end);
+      setNumero(Data.estabelecimento?.numero);
+      setComplemento(capitalizeWords(Data.estabelecimento?.complemento));
+      setBairro(capitalizeWords(Data.estabelecimento?.bairro));
+      setCep(Data.estabelecimento?.cep);
+      setCidade(capitalizeWords(Data.estabelecimento?.cidade.nome));
+      setUf(Data.estabelecimento?.estado.sigla);
+      let ddd = Data.estabelecimento?.ddd1;
+      let tel1 = Data.estabelecimento?.telefone1;
+      setFone(ddd + tel1);
+      setEmail(Data.estabelecimento?.email);
+      setPais(Data.estabelecimento?.pais.nome);
+      setCodpais(Data.estabelecimento?.pais.id);
+      setCNAE(Data.estabelecimento?.atividade_principal.id);
+      setPorte(Data.porte?.descricao);
+      const cheksimples = Data.simples?.simples === 'Sim' ? true : false;
+      setSimples(cheksimples);
+    }
+  }, [Data])
 
   if (loading) {
     return <Loading size="200px">Carregando...</Loading>;
@@ -613,8 +529,8 @@ export default function EmpresaId() {
                             ieStatus === true && nome.length !== 0
                               ? 'sim'
                               : ieStatus === false && nome.length !== 0
-                              ? 'não'
-                              : ' ';
+                                ? 'não'
+                                : ' ';
                           return val;
                         })()}
                       />
@@ -1050,16 +966,16 @@ export default function EmpresaId() {
                         item.id === '12'
                           ? adFrailLat
                           : item.id === '13'
-                          ? adFrailCab
-                          : item.id === '14'
-                          ? adEspecialLat
-                          : item.id === '15'
-                          ? adEspecialCab
-                          : item.id === '16'
-                          ? latFCab
-                          : item.id === '17'
-                          ? cabChao
-                          : cabTop;
+                            ? adFrailCab
+                            : item.id === '14'
+                              ? adEspecialLat
+                              : item.id === '15'
+                                ? adEspecialCab
+                                : item.id === '16'
+                                  ? latFCab
+                                  : item.id === '17'
+                                    ? cabChao
+                                    : cabTop;
 
                       return (
                         <Box
@@ -1079,16 +995,16 @@ export default function EmpresaId() {
                                     item.id === '12'
                                       ? setAdFragilLat(e.target.checked)
                                       : item.id === '13'
-                                      ? setAdFragilCab(e.target.checked)
-                                      : item.id === '14'
-                                      ? setAdEspecialLat(e.target.checked)
-                                      : item.id === '15'
-                                      ? setAdEspecialCab(e.target.checked)
-                                      : item.id === '16'
-                                      ? setLatFCab(e.target.checked)
-                                      : item.id === '17'
-                                      ? setCabChao(e.target.checked)
-                                      : setCabTop(e.target.checked);
+                                        ? setAdFragilCab(e.target.checked)
+                                        : item.id === '14'
+                                          ? setAdEspecialLat(e.target.checked)
+                                          : item.id === '15'
+                                            ? setAdEspecialCab(e.target.checked)
+                                            : item.id === '16'
+                                              ? setLatFCab(e.target.checked)
+                                              : item.id === '17'
+                                                ? setCabChao(e.target.checked)
+                                                : setCabTop(e.target.checked);
                                   return set;
                                 }}
                               />
@@ -1119,24 +1035,24 @@ export default function EmpresaId() {
                         item.id === '1'
                           ? cxEco
                           : item.id === '2'
-                          ? cxEst
-                          : item.id === '3'
-                          ? cxLev
-                          : item.id === '4'
-                          ? cxRef
-                          : item.id === '5'
-                          ? cxSupRef
-                          : item.id === '6'
-                          ? platSMed
-                          : item.id === '7'
-                          ? cxResi
-                          : item.id === '8'
-                          ? engEco
-                          : item.id === '9'
-                          ? engLev
-                          : item.id === '10'
-                          ? engRef
-                          : engResi;
+                            ? cxEst
+                            : item.id === '3'
+                              ? cxLev
+                              : item.id === '4'
+                                ? cxRef
+                                : item.id === '5'
+                                  ? cxSupRef
+                                  : item.id === '6'
+                                    ? platSMed
+                                    : item.id === '7'
+                                      ? cxResi
+                                      : item.id === '8'
+                                        ? engEco
+                                        : item.id === '9'
+                                          ? engLev
+                                          : item.id === '10'
+                                            ? engRef
+                                            : engResi;
                       return (
                         <Box
                           key={item.id}
@@ -1155,24 +1071,24 @@ export default function EmpresaId() {
                                     item.id === '1'
                                       ? setCxEco(e.target.checked)
                                       : item.id === '2'
-                                      ? setCxEst(e.target.checked)
-                                      : item.id === '3'
-                                      ? setCxLev(e.target.checked)
-                                      : item.id === '4'
-                                      ? setCxRef(e.target.checked)
-                                      : item.id === '5'
-                                      ? setCxSupRef(e.target.checked)
-                                      : item.id === '6'
-                                      ? setPlatSMed(e.target.checked)
-                                      : item.id === '7'
-                                      ? setCxResi(e.target.checked)
-                                      : item.id === '8'
-                                      ? setEngEco(e.target.checked)
-                                      : item.id === '9'
-                                      ? setEngLev(e.target.checked)
-                                      : item.id === '10'
-                                      ? setEngRef(e.target.checked)
-                                      : setEngResi(e.target.checked);
+                                        ? setCxEst(e.target.checked)
+                                        : item.id === '3'
+                                          ? setCxLev(e.target.checked)
+                                          : item.id === '4'
+                                            ? setCxRef(e.target.checked)
+                                            : item.id === '5'
+                                              ? setCxSupRef(e.target.checked)
+                                              : item.id === '6'
+                                                ? setPlatSMed(e.target.checked)
+                                                : item.id === '7'
+                                                  ? setCxResi(e.target.checked)
+                                                  : item.id === '8'
+                                                    ? setEngEco(e.target.checked)
+                                                    : item.id === '9'
+                                                      ? setEngLev(e.target.checked)
+                                                      : item.id === '10'
+                                                        ? setEngRef(e.target.checked)
+                                                        : setEngResi(e.target.checked);
                                   return set;
                                 }}
                               />

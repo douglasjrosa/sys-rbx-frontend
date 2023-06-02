@@ -81,7 +81,6 @@ export default function CreateNegocio() {
       (async () => {
         setLoading(true);
         const url = "/api/db/business/get/id/" + id;
-        console.log(url);
         //cunsulta informações gerais do cliente
         await axios({
           method: "GET",
@@ -123,9 +122,9 @@ export default function CreateNegocio() {
   return (
     <>
       <Flex w="100%" h="100vh" flexDirection={'column'} justifyContent={'space-between'}>
-<Box>
+        <Box>
 
-</Box>
+        </Box>
         <Box bg={"gray.200"} w="full" p={5}>
           <NegocioHeader
             nBusiness={nBusiness}

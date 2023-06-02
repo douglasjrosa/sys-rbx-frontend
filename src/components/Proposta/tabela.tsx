@@ -22,8 +22,6 @@ export const TableConteudo = (props: {
 }): ReactJSXElement => {
   const [ListItens, setItens] = useState<any>([]);
   const [LoadingTable, setLoadingTable] = useState<boolean>(false);
-  const [Qta, setQta] = useState<any>(1)
-
 
   useEffect(() => {
     setLoadingTable(props.loading);
@@ -58,14 +56,9 @@ export const TableConteudo = (props: {
       const ValorProd = Number(valor2Original.replace(",", "."));
       const somaDescont = ValorProd * i.Qtd;
       const somaDescontMin = parseInt(somaDescont.toFixed(2));
-      // if (!i.Qtd) {
-      //   i.Qtd = 1;
-      // }
-
-
 
       const total = () => {
-        if (i.Qtd === 1) {
+        if (i.Qtd === 1 && i.mont === false && i.expo === false ) {
           return i.total;
         }
         const ValorOriginal =
@@ -88,7 +81,6 @@ export const TableConteudo = (props: {
         const TotalItem = somaAcrescimo - somaDescontMin;
         const result =
           Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
-
         return result;
       };
 

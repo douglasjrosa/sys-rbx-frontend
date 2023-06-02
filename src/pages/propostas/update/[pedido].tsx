@@ -76,6 +76,7 @@ export default function Proposta() {
       const PEDIDO = router.query.pedido;
       const request = await axios("/api/db/proposta/get/pedido/" + PEDIDO);
       const [resp]: any = request.data;
+      console.log("🚀 ~ file: [pedido].tsx:79 ~ resp:", resp)
       setId(resp.id);
       setCnpj(resp.attributes.CNPJClinet);
       const retornoProd = await fetch(
@@ -109,6 +110,7 @@ export default function Proposta() {
       setNomeEmpresa(nome);
       setLoadingGeral(false)
       setClientePedido(resp.attributes.cliente_pedido)
+      setTipoPrazo(resp.attributes.prazo)
     })();
   }, []);
 
@@ -660,7 +662,7 @@ export default function Proposta() {
             <chakra.p>Desconto: {Desconto}</chakra.p>
             <chakra.p>Valor Total: {totalGeral}</chakra.p>
           </Flex>
-          <Button colorScheme={"whatsapp"} onClick={SalvarProdutos}>
+          <Button colorScheme={"whatsapp"} onClick={SalvarProdutos} isDisabled={loadingTable}>
             Salvar Proposta
           </Button>
         </Box>

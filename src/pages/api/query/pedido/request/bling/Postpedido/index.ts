@@ -9,7 +9,6 @@ export const PostPedido = async (dados: any) => {
   const empresa = DaDos.empresa.data.attributes;
   const Produto = await DaDos.itens;
 
-  // console.log(empresa)
   const Produtos = Produto.map((i: any) => {
     const Mont = i.prodId + "-mont";
     const Expo = i.prodId + "-expo";
@@ -134,8 +133,6 @@ export const PostPedido = async (dados: any) => {
     .replace(".", "")
     .replace(",", ".");
 
-console.log(empresa.CNPJ)
-
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
      <cliente>
@@ -182,7 +179,7 @@ console.log(empresa.CNPJ)
 
     const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
-    
+
     const { pedidos, erros } = response.retorno;
 
     const txt = 'Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)'
