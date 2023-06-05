@@ -1,4 +1,3 @@
-
 import { ApiErrorResponse } from "../../../../../../../types/axiosErrosPedido";
 import { SaveRespose } from "../../db/post/SaveRespose";
 
@@ -10,19 +9,20 @@ export const PostPedido = async (dados: any) => {
   const Produto = await DaDos.itens;
 
   const Produtos = Produto.map((i: any) => {
-    const Mont = i.prodId + "-mont";
-    const Expo = i.prodId + "-expo";
-    const montExpo = i.prodId + "-mont-expo";
+    const valorOriginal = Number(i.vFinal.replace(".", "").replace(",", "."));
+    const acrec: number =
+      i.mont && i.expo
+        ? 1.2
+        : i.expo && !i.mont
+        ? 1.1
+        : !i.expo && i.mont
+        ? 1.1
+        : 0;
+    const somaAcrescimo: number =
+      acrec === 0 ? 0 : valorOriginal * acrec - valorOriginal;
+    const valor: number = valorOriginal - i.desconto;
 
-
-    const codg =
-      i.expo === true && i.mont === true
-        ? montExpo
-        : i.expo === true
-        ? Expo
-        : i.mont === true
-        ? Mont
-        : i.prodId;
+    const valorUnit = valor + somaAcrescimo;
 
     const setItens = `
     <item>
@@ -38,7 +38,7 @@ export const PostPedido = async (dados: any) => {
       }</descricao>
       <un>Un</un>
       <qtde>${i.Qtd}</qtde>
-      <vlr_unit>${i.total}</vlr_unit>
+      <vlr_unit>${valorUnit}</vlr_unit>
       <tipo>P</tipo>
       <peso_bruto>${i.pesoCx}</peso_bruto>
       <peso_liq>${i.pesoCx}</peso_liq>
@@ -88,7 +88,6 @@ export const PostPedido = async (dados: any) => {
     return templateParcela;
   });
 
-
   const parcela = () => {
     const prazo1 = "5 Dias";
     const prazo = prazo1.replace("Dias", "");
@@ -124,9 +123,9 @@ export const PostPedido = async (dados: any) => {
   };
 
   const [xmlParcelas] =
-  DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
-  ? parcela()
-  : datasParcelas;
+    DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
+      ? parcela()
+      : datasParcelas;
 
   const desconto = DaDos.desconto
     .replace("R$", "")
@@ -154,18 +153,10 @@ export const PostPedido = async (dados: any) => {
      <itens>${xmlprodutos}</itens>
      <parcelas>${xmlParcelas}</parcelas>
      <nf_produtor_rural_referenciada />
-     <vlr_frete>${
-       DaDos.valorFrete === "0"
-         ? ""
-         : DaDos.valorFrete === ""
-         ? ""
-         : DaDos.valorFrete
-     }</vlr_frete>
+     <vlr_frete>${parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
      <vlr_desconto>${desconto}</vlr_desconto>
      <obs>${DaDos.obs}</obs>
   </pedido>`;
-
-
 
   try {
     const formData = new FormData();
@@ -182,13 +173,13 @@ export const PostPedido = async (dados: any) => {
 
     const { pedidos, erros } = response.retorno;
 
-    const txt = 'Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)'
+    const txt =
+      "Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)";
 
     if (erros) {
-      if(erros.erro?.msg === txt){
+      if (erros.erro?.msg === txt) {
         const resposta = {
-          msg:
-            `${erros.erro.msg}, mas Pedido, foi salvo`,
+          msg: `${erros.erro.msg}, mas Pedido, foi salvo`,
           status: 201,
         };
 
@@ -204,19 +195,18 @@ export const PostPedido = async (dados: any) => {
       }
     }
 
-      const resposta = {
-        msg:
-          "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
-        pedido: pedidos[0].pedido.idPedido,
-        status: 201,
-      };
-      const nPedido = dados.id;
-      const Bpedido = pedidos[0].pedido.idPedido;
-      const IdNegocio = DaDos.business.data.id;
-      await SaveRespose(nPedido, Bpedido, IdNegocio);
+    const resposta = {
+      msg:
+        "pedido gerando com susseso, pedido N°: " + pedidos[0].pedido.idPedido,
+      pedido: pedidos[0].pedido.idPedido,
+      status: 201,
+    };
+    const nPedido = dados.id;
+    const Bpedido = pedidos[0].pedido.idPedido;
+    const IdNegocio = DaDos.business.data.id;
+    await SaveRespose(nPedido, Bpedido, IdNegocio);
 
-      return resposta;
-
+    return resposta;
   } catch (error: any) {
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,

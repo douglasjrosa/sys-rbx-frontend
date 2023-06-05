@@ -11,7 +11,6 @@ export default async function GetEmpresa(
     const token = process.env.ATORIZZATION_TOKEN;
 
     const resp = await nLote();
-    console.log(resp);
     res.status(200).json(resp);
 
     await axios({

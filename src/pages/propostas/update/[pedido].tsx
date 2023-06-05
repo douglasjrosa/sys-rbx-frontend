@@ -258,6 +258,29 @@ export default function Proposta() {
         };
       });
 
+      const totalItem = ListItens.reduce((acc: number, item: any) => {
+        const valorOriginal = Number(item.vFinal.replace(".", "").replace(",", "."))
+        const valor: number = valorOriginal - item.desconto;
+        const qtd: number = item.Qtd;
+        const mont: boolean = item.mont;
+        const expo: boolean = item.expo;
+        const acrec: number =
+          mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
+        const somaAcrescimo: number = acrec === 0
+          ? 0
+          : (valorOriginal * acrec - valorOriginal) * qtd;
+        const total1 = valor * qtd + somaAcrescimo;
+        const total = Number(total1.toFixed(2))
+        const somaTota = acc + total
+        const TotoalConvert = Number(somaTota.toFixed(2));
+        return TotoalConvert;
+      }, 0);
+
+      const totalValor = totalItem.toLocaleString("pt-br", {
+        style: "currency",
+        currency: "BRL",
+      });
+
       const data: any = {
         nPedido: router.query.pedido,
         matriz: Loja,
@@ -270,7 +293,7 @@ export default function Proposta() {
         vencPrint: VencDatePrint,
         condi: prazo,
         prazo: tipoprazo,
-        totalGeral: totalGeral,
+        totalGeral: totalValor,
         deconto: prazo !== 'Antecipado'
           ? "R$ 0,00"
           : Desconto,
@@ -518,6 +541,7 @@ export default function Proposta() {
                 rounded="md"
                 placeholder="Selecione um tipo de Frete"
                 onChange={(e) => setFrete(e.target.value)}
+                value={frete}
               >
                 <option value="CIF">CIF</option>
                 <option value="FOB">FOB</option>
