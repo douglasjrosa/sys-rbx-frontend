@@ -14,6 +14,7 @@ export default function CreateNegocio() {
   const toast = useToast();
   const divRef = useRef<HTMLDivElement>(null);
   const [msg, setMsg] = useState([]);
+  const [msg2, setMsg2] = useState(false);
   const [loadingGeral, setLoadingGeral] = useState(true);
   const [loading, setLoading] = useState(false);
   const [nBusiness, setnBusiness] = useState("");
@@ -107,9 +108,45 @@ export default function CreateNegocio() {
       })();
     }
   }, [msg]);
+  useEffect(() => {
+    if (msg2) {
+      (async () => {
+        setLoading(true);
+        const url = "/api/db/business/get/id/" + id;
+        //cunsulta informações gerais do cliente
+        await axios({
+          method: "GET",
+          url: url,
+        })
+          .then((res) => {
+            // console.log(res.data.attributes);
+            setChatHistory(res.data.attributes.incidentRecord);
+            // fim do loading
+            setLoading(false);
+            setMsg2(false)
+          })
+          .catch((err) => {
+            console.log(err);
+            toast({
+              title: "Ops",
+              description: "erro ao recuperar as informações",
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+            });
+            // fim do loading
+            setLoading(false);
+            setMsg2(false)
+          });
+      })();
+    }
+  }, [msg2]);
 
   function getMsg(menssage: React.SetStateAction<any>) {
     setMsg(menssage);
+  }
+  function chatRelaod(menssage: React.SetStateAction<any>) {
+    setMsg2(menssage);
   }
   function getLoad(lading: React.SetStateAction<any>) {
     setLoadingGeral(lading);
@@ -137,6 +174,8 @@ export default function CreateNegocio() {
             Mperca={Mperca}
             etapa={Etapa}
             onLoad={getLoad}
+            chat={ChatHistory}
+            onchat={chatRelaod}
           />
         </Box>
         <Box bg="#edeae6" w="full" h={'full'} ref={divRef} overflowY={"auto"}>

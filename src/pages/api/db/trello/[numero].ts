@@ -5,6 +5,7 @@ import { GetPedido } from "../../query/pedido/request/db/get";
 import { GetLoteProposta } from "../../lib/get_lote_nProposta";
 import { GetTrelloId } from "../../lib/get_trello_id";
 import { ErroTrello } from "../../lib/errtrello";
+import { IncidentRecord } from "../lib/businesses";
 
 interface TrelloCard {
   key: string;
@@ -50,6 +51,7 @@ export default async function PostTrello(
     const items = pedido.attributes.itens;
     const cliente = pedido.attributes.empresa.data.attributes.nome;
     const negocio = pedido.attributes.business.data.attributes.nBusiness;
+    const negocioId = pedido.attributes.business.data.id;
     const frete =
       pedido.attributes.frete === "" ? "Fob" : pedido.attributes.frete;
     const pgto = pedido.attributes.condi;
@@ -137,8 +139,14 @@ export default async function PostTrello(
 
         return await axios
           .request(config)
-          .then((res: any) => {
-            const resposta = {card: `card id: ${res.data.id} pode ser acessado pelo link: ${res.data.shortUrl}`}
+          .then(async(res: any) => {
+            const resposta = `card id: ${res.data.id} pode ser acessado pelo link: ${res.data.shortUrl}`
+            const text = {
+              "msg": resposta,
+              "date": new Date().toISOString(),
+              "user": "Sistema"
+            };
+            await IncidentRecord(text, negocioId)
             return resposta;
           })
           .catch(async (err: any) => {

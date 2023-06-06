@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Box,
   Button,
@@ -31,12 +30,15 @@ export const NegocioHeader = (props: {
   etapa?: any;
   Mperca?: any;
   onLoad: any;
+  chat: any;
+  onchat: any;
 }) => {
   const router = useRouter();
   const ID = router.query.id;
   const toast = useToast();
   const { data: session } = useSession();
-  const [Status, setStatus] = useState<any | null>();
+  const [Status, setStatus] = useState<any>();
+  const [StatusG, setStatusG] = useState<any | null>();
   const [Etapa, setEtapa] = useState<any | null>();
   const [Mperca, setMperca] = useState<any | null>();
   const [Busines, setBusines] = useState("");
@@ -47,6 +49,7 @@ export const NegocioHeader = (props: {
 
 
   useEffect(() => {
+    setStatusG(props.Status);
     setStatus(props.Status);
     setBudget(props.Budget);
     setDeadline(props.Deadline);
@@ -56,7 +59,7 @@ export const NegocioHeader = (props: {
     setMperca(props.Mperca)
     setEtapa(props.etapa)
     props.onLoad(false)
-  }, []);
+  }, [props]);
 
   const historicomsg = {
     vendedor: session?.user.name,
@@ -64,10 +67,16 @@ export const NegocioHeader = (props: {
     msg: `Vendedor(a) ${session?.user.name}, alterou as informações desse Busines`,
   };
 
+  const ChatConcluido = {
+    msg: `Vendedor(a) ${session?.user.name}, concluiu esse Negocio`,
+    date: new Date().toISOString(),
+    user: "Sistema",
+  };
+
   const history = [...props.historia, historicomsg];
 
   const Salve = async () => {
-    const data = {
+    const data1 = {
       data: {
         deadline: Deadline,
         nBusiness: Busines,
@@ -77,9 +86,27 @@ export const NegocioHeader = (props: {
         etapa: Etapa,
         andamento: Status,
         Mperca: Mperca,
-        DataRetorno: Status !== 4 ? null : DataRetorno,
+        incidentRecord: [...props.chat, ChatConcluido],
+        DataRetorno: Status !== 2 ? null : DataRetorno,
+        date_conclucao: new Date(Date.now())
       },
     };
+
+    const data2 = {
+      data: {
+        deadline: Deadline,
+        nBusiness: Busines,
+        Budget: Budget,
+        Approach: Approach,
+        history: history,
+        etapa: Etapa,
+        andamento: Status,
+        Mperca: Mperca,
+        DataRetorno: Status !== 2 ? null : DataRetorno,
+      },
+    };
+
+    const data = StatusG !== 5 && Status === '5' ? data1 : data2;
 
     await axios({
       url: "/api/db/business/put/id/" + ID,
@@ -87,6 +114,7 @@ export const NegocioHeader = (props: {
       data: data,
     })
       .then((res) => {
+        props.onchat(true);
         toast({
           title: "Atualização feita",
           description: "Atualização das informações foi efetuada com sucesso",
@@ -95,7 +123,10 @@ export const NegocioHeader = (props: {
           isClosable: true,
         });
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        props.onchat(true);
+        console.error(err);
+      });
   };
 
   function getStatus(statusinf: SetStateAction<any>) {
@@ -104,7 +135,6 @@ export const NegocioHeader = (props: {
   function getAtendimento(atendimento: SetStateAction<string>) {
     setApproach(atendimento);
   }
-
 
   return (
     <>
@@ -220,7 +250,7 @@ export const NegocioHeader = (props: {
           <Box>
             <BtnStatus Resp={props.Status} onAddResp={getStatus} />
           </Box>
-          {Status !== "6" ? null : (
+          {Status !== "1" ? null : (
             <>
               <Box>
                 <FormLabel
@@ -254,7 +284,7 @@ export const NegocioHeader = (props: {
               </Box>
             </>
           )}
-          {Status !== "4" ? null : (
+          {Status !== "2" ? null : (
             <>
               <Box>
                 <FormLabel

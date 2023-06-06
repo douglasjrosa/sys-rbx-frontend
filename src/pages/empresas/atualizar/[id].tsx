@@ -97,7 +97,7 @@ export default function EmpresaId() {
       const response = await axios(url);
       const empresa = await response.data.data;
 
-      setResponsavel(empresa.attributes?.responsavel.data.id);
+      setResponsavel(empresa.attributes?.responsavel.data?.id);
       setID(empresa.id);
       setCNPJ(empresa.attributes?.CNPJ);
       setNome(empresa.attributes?.nome);
@@ -154,6 +154,7 @@ export default function EmpresaId() {
     try {
       const request = await axios(url);
       const response = request.data;
+      console.log("🚀 ~ file: [id].tsx:157 ~ consulta ~ response:", response)
       setData(response)
     } catch (error: any) {
       toast({
@@ -166,9 +167,36 @@ export default function EmpresaId() {
     }
   };
 
+  useEffect(()=>{
+    if (Data) {
+      setFantasia(Data.razao_social);
+      setTipoPessoa('cnpj');
+      setIE(Data.estabelecimento?.inscricoes_estaduais[0]?.inscricao_estadual);
+      setIeStatus(Data.estabelecimento?.inscricoes_estaduais[0]?.ativo);
+      const end = capitalizeWords(Data.estabelecimento?.tipo_logradouro + " " + Data.estabelecimento?.logradouro)
+      setEndereco(end === 'Undefined Undefined' ? "": end);
+      setNumero(Data.estabelecimento?.numero);
+      setComplemento(capitalizeWords(Data.estabelecimento?.complemento));
+      setBairro(capitalizeWords(Data.estabelecimento?.bairro));
+      setCep(Data.estabelecimento?.cep);
+      setCidade(capitalizeWords(Data.estabelecimento?.cidade.nome));
+      setUf(Data.estabelecimento?.estado.sigla);
+      let ddd = Data.estabelecimento?.ddd1;
+      let tel1 = Data.estabelecimento?.telefone1;
+      setFone(ddd + tel1);
+      setEmail(Data.estabelecimento?.email);
+      setPais(Data.estabelecimento?.pais.nome);
+      setCodpais(Data.estabelecimento?.pais.id);
+      setCNAE(Data.estabelecimento?.atividade_principal.id);
+      setPorte(Data.porte?.descricao);
+      const cheksimples = Data.simples?.simples === 'Sim' ? true : false;
+      setSimples(cheksimples);
+    }
+  }, [Data])
+
   const reload = () => {
     setTimeout(() => {
-      router.push('/empresas');
+      router.back();
     }, 500);
   };
 
@@ -287,32 +315,7 @@ export default function EmpresaId() {
     setWhatsMask(maskedCel);
   }, 50);
 
-  useEffect(()=>{
-    if (Data) {
-      setFantasia(Data.razao_social);
-      setTipoPessoa('cnpj');
-      setIE(Data.estabelecimento?.inscricoes_estaduais[0]?.inscricao_estadual);
-      setIeStatus(Data.estabelecimento?.inscricoes_estaduais[0]?.ativo);
-      const end = capitalizeWords(Data.estabelecimento?.tipo_logradouro + " " + Data.estabelecimento?.logradouro)
-      setEndereco(end === 'Undefined Undefined' ? "": end);
-      setNumero(Data.estabelecimento?.numero);
-      setComplemento(capitalizeWords(Data.estabelecimento?.complemento));
-      setBairro(capitalizeWords(Data.estabelecimento?.bairro));
-      setCep(Data.estabelecimento?.cep);
-      setCidade(capitalizeWords(Data.estabelecimento?.cidade.nome));
-      setUf(Data.estabelecimento?.estado.sigla);
-      let ddd = Data.estabelecimento?.ddd1;
-      let tel1 = Data.estabelecimento?.telefone1;
-      setFone(ddd + tel1);
-      setEmail(Data.estabelecimento?.email);
-      setPais(Data.estabelecimento?.pais.nome);
-      setCodpais(Data.estabelecimento?.pais.id);
-      setCNAE(Data.estabelecimento?.atividade_principal.id);
-      setPorte(Data.porte?.descricao);
-      const cheksimples = Data.simples?.simples === 'Sim' ? true : false;
-      setSimples(cheksimples);
-    }
-  }, [Data])
+
 
   if (loading) {
     return <Loading size="200px">Carregando...</Loading>;

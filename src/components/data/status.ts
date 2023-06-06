@@ -1,26 +1,22 @@
 export const StatusAndamento = [
   {
     id: '1',
-    title: 'Em contato com cliente',
+    title: 'Perdido',
   },
   {
     id: '2',
-    title: 'Aguardando retorno',
+    title: 'Retorno em',
   },
   {
     id: '3',
-    title: 'Parado por tempo indeterminado',
+    title: 'Em contato com cliente',
   },
   {
     id: '4',
-    title: 'Retorno em',
+    title: 'Aguardando retorno',
   },
   {
     id: '5',
     title: 'Ganho',
-  },
-  {
-    id: '6',
-    title: 'Perdido',
   }
 ];

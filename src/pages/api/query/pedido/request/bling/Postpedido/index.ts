@@ -3,10 +3,18 @@ import { SaveRespose } from "../../db/post/SaveRespose";
 
 export const PostPedido = async (dados: any) => {
   const url = process.env.BLING_API_URL;
-  const apiKey: any = process.env.ATORIZZATION_TOKEN_BLING;
+  const apiKeyMax: any = process.env.ATORIZZATION_TOKEN_BLING_MAX;
+  const apiKeyBragheto: any = process.env.ATORIZZATION_TOKEN_BLING_BRAGHETO;
+  const apiKeyRenato: any = process.env.ATORIZZATION_TOKEN_BLING_RENATO;
+
   const DaDos = await dados.attributes;
   const empresa = DaDos.empresa.data.attributes;
   const Produto = await DaDos.itens;
+
+  console.log("🚀 ~ file: index.ts:11 ~ PostPedido ~ DaDos:", DaDos.fornecedorId.data.attributes.nome )
+
+  const apiKey = DaDos.fornecedorId.data.attributes.nome === 'MAX BRASIL DERIVADOS DE MADEIRA LTDA'? apiKeyMax : DaDos.fornecedorId.data.attributes.nome === 'BRAGHETO PALETES E EMBALAGENS LTDA'? apiKeyBragheto : apiKeyRenato
+
 
   const Produtos = Produto.map((i: any) => {
     const valorOriginal = Number(i.vFinal.replace(".", "").replace(",", "."));

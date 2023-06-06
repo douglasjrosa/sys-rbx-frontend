@@ -65,12 +65,32 @@ export default function Proposta() {
 
   useEffect(() => {
     (async () => {
+      setLoadingGeral(true)
       const id: any = localStorage.getItem("id");
       const resposta = await fetch("/api/db/business/get/id/" + id);
       const resp = await resposta.json();
+
+      const verific = resp.attributes.empresa.data.attributes.endereco
+      const verificId = resp.attributes.empresa.data.id
+
       setSaveNegocio(resp.attributes.nBusiness);
       setHistory(resp.attributes.history);
       setIncidentRecord(resp.attributes.incidentRecord);
+      setLoadingGeral(false)
+      setTimeout(() => {
+        if (verific === '') {
+          toast({
+            title: "Cadastro Desatualizado",
+            description:
+              "Você deve verificar os dodos desse cliente",
+            status: "warning",
+            duration: 3000,
+            isClosable: true,
+          });
+          setTimeout(() => router.push('/empresas/atualizar/' + verificId), 1000)
+        }
+      }, 5000)
+
     })();
   }, []);
 
@@ -219,7 +239,7 @@ export default function Proposta() {
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
-        valorFrete: freteCif === ""? "R$ 0,00" :parseFloat(freteCif).toLocaleString("pt-br", {
+        valorFrete: freteCif === "" ? "R$ 0,00" : parseFloat(freteCif).toLocaleString("pt-br", {
           style: "currency",
           currency: "BRL",
         }),

@@ -5,7 +5,6 @@ import {
 import { useState } from "react";
 import { BodyCard } from "../../components/negocios/component/boduCard";
 import { BtCreate } from "../../components/negocios/component/butonCreate";
-import Loading from "@/components/elements/loading";
 
 
 export default function Negocios() {
