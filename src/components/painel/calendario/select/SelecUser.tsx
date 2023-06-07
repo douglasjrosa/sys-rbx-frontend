@@ -11,6 +11,7 @@ export const SelectUser = (props: {
   const [user, setUser] = useState(sessesion?.user?.name);
   const [data, setData] = useState<any>([])
   useEffect(() => {
+    props.onValue(sessesion?.user?.name);
     (async () => {
       await axios({
         method: 'GET',
@@ -23,7 +24,7 @@ export const SelectUser = (props: {
           console.log(err);
         });
     })();
-  }, []);
+  }, [props, sessesion?.user?.name]);
 
   return (
     <>
@@ -35,6 +36,7 @@ export const SelectUser = (props: {
           props.onValue(value);
         }}
         value={user}
+
       >
         {data.map((i: any) => (
           <option key={i.id} value={i.username}>

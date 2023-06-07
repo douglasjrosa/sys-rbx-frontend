@@ -65,8 +65,8 @@ export default async function GetEmpresa(
         history: [data.history],
         incidentRecord: data.incidentRecord,
         empresa: Number(data.empresa),
-        user: data.user,
-        andamento: 1,
+        vendedor: data.vendedor,
+        andamento: 3,
         etapa: 3,
       },
     };

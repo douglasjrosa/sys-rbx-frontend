@@ -146,7 +146,7 @@ export const BtCreate = (props: { onLoading: any }) => {
       Approach: Approach,
       empresa: Empresa,
       history: historico,
-      user: session?.user.id,
+      vendedor: session?.user.id,
       incidentRecord: [MSG],
     };
 
