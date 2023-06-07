@@ -9,13 +9,9 @@ export default async function GetEmpresa(
     try {
       const token = process.env.ATORIZZATION_TOKEN;
       const { DataIncicio, DataFim } = req.query;
-      console.log("🚀 ~ file: index.ts:12 ~ DataFim:", DataFim)
-      console.log("🚀 ~ file: index.ts:12 ~ DataIncicio:", DataIncicio)
-
-
 
       const conclucaoResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[date_conclucao][$between]=${DataIncicio}&filters[date_conclucao][$between]=${DataFim}&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&populate[empresa][fields][0]=nome`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[date_conclucao][$between]=${DataIncicio}&filters[date_conclucao][$between]=${DataFim}&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -25,7 +21,7 @@ export default async function GetEmpresa(
       );
 
       const dataRetornoResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[DataRetorno][$between]=${DataIncicio}&filters[DataRetorno][$between]=${DataFim}&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&populate[empresa][fields][0]=nome`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[DataRetorno][$between]=${DataIncicio}&filters[DataRetorno][$between]=${DataFim}&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -35,7 +31,7 @@ export default async function GetEmpresa(
       );
 
       const deadlineResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[deadline][$between]=${DataIncicio}&filters[deadline][$between]=${DataFim}&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&populate[empresa][fields][0]=nome`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[deadline][$between]=${DataIncicio}&filters[deadline][$between]=${DataFim}&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -45,7 +41,7 @@ export default async function GetEmpresa(
       );
 
       const createdAtResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[deadline][$between]=${DataIncicio}&filters[deadline][$between]=${DataFim}&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&populate[empresa][fields][0]=nome`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[deadline][$between]=${DataIncicio}&filters[deadline][$between]=${DataFim}&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -53,8 +49,8 @@ export default async function GetEmpresa(
           },
         }
       );
-      
-      await Promise.all([conclucaoResponse, dataRetornoResponse, deadlineResponse, createdAtResponse]);
+
+      // await Promise.all([conclucaoResponse, dataRetornoResponse, deadlineResponse, createdAtResponse]);
 
       const data = {
         conclucao: conclucaoResponse.data.data,

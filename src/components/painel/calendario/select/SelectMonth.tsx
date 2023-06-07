@@ -10,18 +10,18 @@ export const SelectMonth = (props: {
   const [date, setDate] = useState<any>(Mes);
 
   const meses = [
-    { id: 1, nome: 'Janeiro' },
-    { id: 2, nome: 'Fevereiro' },
-    { id: 3, nome: 'Março' },
-    { id: 4, nome: 'Abril' },
-    { id: 5, nome: 'Maio' },
-    { id: 6, nome: 'Junho' },
-    { id: 7, nome: 'Julho' },
-    { id: 8, nome: 'Agosto' },
-    { id: 9, nome: 'Setembro' },
-    { id: 10, nome: 'Outubro' },
-    { id: 11, nome: 'Novembro' },
-    { id: 12, nome: 'Dezembro' }
+    { id: 1, nome: `Janeiro de ${new Date().getFullYear()}` },
+    { id: 2, nome: `Fevereiro de ${new Date().getFullYear()}` },
+    { id: 3, nome: `Março de ${new Date().getFullYear()}` },
+    { id: 4, nome: `Abril de ${new Date().getFullYear()}` },
+    { id: 5, nome: `Maio de ${new Date().getFullYear()}` },
+    { id: 6, nome: `Junho de ${new Date().getFullYear()}` },
+    { id: 7, nome: `Julho de ${new Date().getFullYear()}` },
+    { id: 8, nome: `Agosto de ${new Date().getFullYear()}` },
+    { id: 9, nome: `Setembro de ${new Date().getFullYear()}` },
+    { id: 10, nome: `Outubro de ${new Date().getFullYear()}` },
+    { id: 11, nome: `Novembro de ${new Date().getFullYear()}` },
+    { id: 12, nome: `Dezembro de ${new Date().getFullYear()}` }
   ];
 
   useEffect(() => {
