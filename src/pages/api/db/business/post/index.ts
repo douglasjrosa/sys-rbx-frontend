@@ -2,6 +2,7 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Historico } from "../../lib/historico";
+import { RegCompra } from "../../lib/empresa_reg_compra";
 
 export default async function GetEmpresa(
   req: NextApiRequest,
@@ -77,7 +78,8 @@ export default async function GetEmpresa(
         // console.log(response.data);
         const isoDateTime = new Date().toISOString();
         const VisibliDateTime = new Date().toISOString();
-
+        await RegCompra(Number(data.empresa), data.Budget)
+        
         const txt = {
           date: isoDateTime,
           vendedor: data.vendedor,

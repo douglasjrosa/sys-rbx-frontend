@@ -5,14 +5,19 @@ import { Box, Flex, FormLabel, chakra } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { parseISO, isSameDay } from 'date-fns';
+import { RenderCalendar } from '@/components/painel/calendario/render';
 
 const Painel: React.FC = () => {
   const [date, setDate] = useState<number>();
   const [User, setUser] = useState<string>();
+  const [Fase1, setFase1] = useState<number>(0);
+  const [Fase2, setFase2] = useState<number>(0);
+  const [Fase3, setFase3] = useState<number>(0);
   const [calendar, setCalendar] = useState<any>([]);
   const [data, setData] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [calendarData, setCalendarData] = useState([]);
+
 
   useEffect(() => {
     (async () => {
@@ -33,80 +38,112 @@ const Painel: React.FC = () => {
     })();
   }, [date]);
 
-  const negocioFilter = useMemo(() => {
+  useEffect(() => {
     const lowerBusca = User?.toLowerCase();
-    return data?.filter((E: any) => {
+    console.log("🚀 ~ file: index.tsx:39 ~ useEffect ~ User:", User)
+    const negocioFilter = data?.filter((E: any) => {
       const nome = E.attributes.vendedor.data?.attributes.username;
       return nome?.toLowerCase().includes(lowerBusca);
     });
-  }, [data, User]);
 
+    if (data && negocioFilter) {
+      const diasMesclados = calendar.map((dia: any) => {
+        const clientesCorrespondentes = negocioFilter.filter((c: any) => {
+          const createdAt = parseISO(c.attributes.createdAt);
+          const deadline = parseISO(c.attributes.deadline);
+          const dateConclusao = parseISO(c.attributes.date_conclucao);
 
-  useEffect(() => {
-    const diasMesclados = calendar.map((dia: any) => {
-      const clientesCorrespondentes = negocioFilter.filter((c: any) => {
-        const createdAt = parseISO(c.attributes.createdAt);
-        const deadline = parseISO(c.attributes.deadline);
-        const dateConclusao = parseISO(c.attributes.date_conclucao);
+          if (isSameDay(createdAt, parseISO(dia.date))) {
+            return true;
+          }
 
-        if (isSameDay(createdAt, parseISO(dia.date))) {
-          return true;
-        }
+          if (isSameDay(deadline, parseISO(dia.date))) {
+            return true;
+          }
 
-        if (isSameDay(deadline, parseISO(dia.date))) {
-          return true;
-        }
+          if (isSameDay(dateConclusao, parseISO(dia.date))) {
+            return true;
+          }
 
-        if (isSameDay(dateConclusao, parseISO(dia.date))) {
-          return true;
-        }
+          return false;
+        }).map((cliente: any) => {
+          let corresponding;
+          let correspondingDate;
 
-        return false;
-      }).map((cliente: any) => {
-        let corresponding;
-        let correspondingDate;
+          if (isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date))) {
+            corresponding = 'createdAt';
+            correspondingDate = cliente.attributes.createdAt;
 
-        if (isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date))) {
-          corresponding = 'createdAt';
-          correspondingDate = cliente.attributes.createdAt;
-        } else if (isSameDay(parseISO(cliente.attributes.deadline), parseISO(dia.date))) {
-          corresponding = 'deadline';
-          correspondingDate = cliente.attributes.deadline;
-        } else if (isSameDay(parseISO(cliente.attributes.date_conclucao), parseISO(dia.date))) {
-          corresponding = 'dateConclusao';
-          correspondingDate = cliente.attributes.date_conclucao;
-        }
+          } else if (isSameDay(parseISO(cliente.attributes.deadline), parseISO(dia.date))) {
+            corresponding = 'deadline';
+            correspondingDate = cliente.attributes.deadline;
+          } else if (isSameDay(parseISO(cliente.attributes.date_conclucao), parseISO(dia.date))) {
+            corresponding = 'dateConclusao';
+            correspondingDate = cliente.attributes.date_conclucao;
+          }
+
+          return {
+            ...cliente,
+            corresponding,
+            correspondingDate
+          };
+        });
 
         return {
-          ...cliente,
-          corresponding,
-          correspondingDate
+          id: dia.id,
+          date: dia.date,
+          clientes: clientesCorrespondentes
         };
       });
 
-      return {
-        id: dia.id,
-        date: dia.date,
-        clientes: clientesCorrespondentes
-      };
-    });
+      const filterCreatedAt = diasMesclados.filter((i: any) => {
+        const [mapClinet] = i.clientes.map((c: any) => c.corresponding)
+        return mapClinet === 'createdAt'
+      })
+      const filterDeadline = diasMesclados.filter((i: any) => {
+        const [mapClinet] = i.clientes.map((c: any) => c.corresponding)
+        const [mapClinet1] = i.clientes.map((c: any) => c.attributes.date_conclucao)
+        return mapClinet === 'deadline' && mapClinet1 === null
+      })
+      const filterDateConclusao = diasMesclados.filter((i: any) => {
+        const [mapClinet] = i.clientes.map((c: any) => c.corresponding)
+        return mapClinet === 'dateConclusao'
+      })
 
-    const parts: any = diasMesclados.reduce((accumulator: any, item: any) => {
-      const day = parseInt(item.date.slice(-2));
+      setFase1(filterCreatedAt.reduce((total: number, item: any) => {
+        const [budget] = item.clientes.map((c: any) => c.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."))
+        const valor = total + parseFloat(budget);
+        return valor
+      }, 0))
+      setFase2(filterDateConclusao.reduce((total: number, item: any) => {
+        const [budget] = item.clientes.map((c: any) => c.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."))
+        const valor = total + parseFloat(budget);
+        return valor
+      }, 0))
+      setFase3(filterDeadline.reduce((total: number, item: any) => {
+        const [budget] = item.clientes.map((c: any) => c.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."))
+        const valor = total + parseFloat(budget);
+        return valor
+      }, 0))
 
-      if (day >= 1 && day <= 10) {
-        accumulator[0].push(item);
-      } else if (day >= 11 && day <= 20) {
-        accumulator[1].push(item);
-      } else {
-        accumulator[2].push(item);
-      }
+      const parts: any = diasMesclados.reduce((accumulator: any, item: any) => {
+        const day = parseInt(item.date.slice(-2));
 
-      return accumulator;
-    }, [[], [], []]);
+        if (day >= 1 && day <= 10) {
+          accumulator[0].push(item);
+        } else if (day >= 11 && day <= 20) {
+          accumulator[1].push(item);
+        } else {
+          accumulator[2].push(item);
+        }
 
-    setCalendarData(parts);
-  }, [calendar, negocioFilter]);
+        return accumulator;
+      }, [[], [], []]);
+
+      setCalendarData(parts);
+    }
+  }, [calendar, data, User]);
+
 
   function handleDateChange(month: number) {
     setDate(month);
@@ -118,7 +155,7 @@ const Painel: React.FC = () => {
   return (
     <>
       <Box>
-        <Flex px={5} justifyContent={'space-between'} w={'100%'}>
+        <Flex px={5} pt={2} justifyContent={'space-between'} w={'100%'}>
           <Flex gap={16}>
             <Box>
               <SelectMonth onValue={handleDateChange} />
@@ -129,53 +166,20 @@ const Painel: React.FC = () => {
           </Flex>
           <Flex alignItems={'center'} gap={5}>
             <Flex w={'8rem'} h={'2rem'} py={1} bg={'orange.400'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-              <chakra.span>R$ 100,00</chakra.span>
+              <chakra.span>{Fase1.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
             </Flex>
-            <Flex w={'8rem'} h={'2rem'} py={1} bg={'green'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-              <chakra.span>R$ 100,00</chakra.span>
+            <Flex w={'8rem'} h={'2rem'} py={1} bg={'green.500'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
+              <chakra.span>{Fase2.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
             </Flex>
             <Flex w={'8rem'} h={'2rem'} py={1} bg={'red'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-              <chakra.span>R$ 100,00</chakra.span>
+              <chakra.span>{Fase3.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
             </Flex>
           </Flex>
 
         </Flex>
-        <Box>
+        <Box w='100%' bg="yellow.50">
           <Flex direction="column" gap={5} p={5}>
-            {calendarData.map((part: any, index: number) => (
-              <Flex key={index} bg={'gray.700'} w={'100%'} direction="column" alignItems={'center'} pt='3' pb='10' rounded={20}>
-                <Box>
-                  <chakra.span fontSize={'16px'} fontWeight={'medium'} color={'white'}>{index === 0 ? 'Vendas do 1° Decêndio' : index === 0 ? 'Vendas do 2° Decêndio' : 'Vendas do 3° Decêndio'}</chakra.span>
-                </Box>
-                <Box w={'100%'} px={10} pt={'4'}>
-                  <Flex flexWrap={'wrap'} gap={3} >
-                    {part?.map((item: any) => {
-                      console.log(item.clientes)
-                      const cliente = item.clientes
-                      return (
-                        <Box key={item.id} w={'11rem'} minH={'6rem'} rounded={'15px'} bg={'white'} p={1}>
-                          <Flex justifyContent={'center'}>{new Date(item.date).toLocaleDateString()}</Flex>
-                          <Box>{cliente?.map((i: any) => {
-                            const Colortext = i.corresponding === 'createdAt' ? 'orange' : i.corresponding === 'dateConclusao' ? 'green' : 'red'
-                            const Valor = i.attributes.pedidos.data.length === 0? i.attributes.Budget : i.attributes.pedidos.data.attributes?.totalGeral
-                            return (
-                              <>
-                                <Flex gap={1} fontSize={'9px'} mx={1} px={1} bg={Colortext}>
-                                  <chakra.span fontSize={'9px'} color={'white'} >{i.attributes.nBusiness}</chakra.span>
-                                  <chakra.span fontSize={'9px'} color={'white'}>{i.attributes.empresa.data.attributes.nome}</chakra.span>
-                                  <chakra.span fontSize={'9px'} color={'white'}>{Valor}</chakra.span>
-                                </Flex>
-                              </>
-                            )
-                          })}</Box>
-
-                        </Box>
-                      )
-                    })}
-                  </Flex>
-                </Box>
-              </Flex>
-            ))}
+            <RenderCalendar data={calendarData} />
           </Flex>
         </Box>
       </Box>

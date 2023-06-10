@@ -31,7 +31,7 @@ export const SelectMonth = (props: {
   return (
     <>
       <Select
-        w={'10rem'}
+        w={'12rem'}
         onChange={(e) => {
           const value = parseInt(e.target.value);
           setDate(value);

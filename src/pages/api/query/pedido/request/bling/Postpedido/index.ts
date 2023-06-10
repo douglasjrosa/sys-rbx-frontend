@@ -1,3 +1,4 @@
+import { RegCompraFim } from "@/pages/api/db/lib/empresa_reg_final";
 import { ApiErrorResponse } from "../../../../../../../types/axiosErrosPedido";
 import { SaveRespose } from "../../db/post/SaveRespose";
 
@@ -9,6 +10,8 @@ export const PostPedido = async (dados: any) => {
 
   const DaDos = await dados.attributes;
   const empresa = DaDos.empresa.data.attributes;
+  const empresaId = DaDos.empresa.data.id;
+  const empresaUlt = DaDos.empresa.data.attributes.ultima_compra;
   const Produto = await DaDos.itens;
 
   console.log("🚀 ~ file: index.ts:11 ~ PostPedido ~ DaDos:", DaDos.fornecedorId.data.attributes.nome )
@@ -213,6 +216,7 @@ export const PostPedido = async (dados: any) => {
     const Bpedido = pedidos[0].pedido.idPedido;
     const IdNegocio = DaDos.business.data.id;
     await SaveRespose(nPedido, Bpedido, IdNegocio);
+    await RegCompraFim(empresaId, DaDos.totalGeral, empresaUlt);
 
     return resposta;
   } catch (error: any) {

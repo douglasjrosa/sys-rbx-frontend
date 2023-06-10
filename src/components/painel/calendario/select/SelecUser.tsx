@@ -8,10 +8,12 @@ export const SelectUser = (props: {
   onValue: any;
 }) => {
   const { data: sessesion } = useSession();
-  const [user, setUser] = useState(sessesion?.user?.name);
+  const [user, setUser] = useState('');
   const [data, setData] = useState<any>([])
   useEffect(() => {
-    props.onValue(sessesion?.user?.name);
+    if(!user){
+      props.onValue(sessesion?.user?.name);
+    }
     (async () => {
       await axios({
         method: 'GET',
@@ -24,16 +26,25 @@ export const SelectUser = (props: {
           console.log(err);
         });
     })();
-  }, [props, sessesion?.user?.name]);
+  }, [props, sessesion?.user?.name, user]);
+
+  useEffect(() => {
+    if(!user){
+      const usuarioInit: any = sessesion?.user?.name
+      setUser(usuarioInit);
+    } else {
+      props.onValue(user)
+    }
+
+  }, [props, sessesion?.user?.name, user]);
 
   return (
     <>
       <Select
-        w={'10rem'}
+        w={'12rem'}
         onChange={(e) => {
           const value = e.target.value;
           setUser(value);
-          props.onValue(value);
         }}
         value={user}
 

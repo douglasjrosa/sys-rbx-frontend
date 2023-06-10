@@ -3,8 +3,8 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { BodyCard } from "../../components/negocios/component/boduCard";
 import { BtCreate } from "../../components/negocios/component/butonCreate";
+import { PowerBi } from "@/components/negocios/bi";
 
 
 export default function Negocios() {
@@ -30,17 +30,13 @@ export default function Negocios() {
 
           <BtCreate onLoading={tragetReload} />
         </Flex>
-        <Box h={"95%"} overflow={"auto"}>
+        <Box h={"95%"}>
           <Flex
-            bg="#edf3f8"
-            pt={"1.5rem"}
-            pb={"2rem"}
-            px={"0.8rem"}
+            bg="yellow.50"
             h="100%"
-            alignItems="center"
-            justifyContent="center"
+            w={'100%'}
           >
-            <BodyCard reload={load} />
+            <PowerBi />
           </Flex>
         </Box>
       </Flex>
