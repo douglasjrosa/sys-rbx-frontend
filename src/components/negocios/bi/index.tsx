@@ -10,80 +10,48 @@ import { Presente } from "./presente";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import { useRouter } from "next/router";
 import Loading from "@/components/elements/loading";
+import { useSession } from "next-auth/react";
 
-export const PowerBi = (props: {reload: any}) => {
+export const PowerBi = (props: { reload: boolean }) => {
+
   const [date, setDate] = useState<number>();
-  const [User, setUser] = useState<string>();
+  const [User, setUser] = useState<string | any>();
   const [data, setData] = useState<any>([]);
-  console.log("🚀 ~ file: index.tsx:12 ~ PowerBi ~ data:", data)
   const [calendar, setCalendar] = useState<any>([]);
   const [Negocios, setNegocios] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isReload, setIsReload] = useState(false);
   const router = useRouter()
 
+  const DateAt = new Date()
+  const MesAt = DateAt.getMonth() + 1
+
   useEffect(() => {
-    setIsReload(props.reload)
+    if(props.reload){
+      setIsReload(props.reload)
+    }
+
   }, [props.reload]);
 
-  useEffect(() => {
-    (async () => {
-      const daysOfMonth = await getAllDaysOfMonth(date);
-      setCalendar(daysOfMonth.Dias);
 
-      if (daysOfMonth.DataInicio && daysOfMonth.DataFim) {
-        setIsLoading(true);
-        try {
-          const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`);
-          setData(response.data);
-        } catch (error) {
-          console.log(error);
-        } finally {
-          if(User){
-            setIsLoading(false);
-          }
-        }
+  if (isReload === true) {
+    (async () => {
+      setIsLoading(true);
+      try {
+        const daysOfMonth = await getAllDaysOfMonth(MesAt);
+        setCalendar(daysOfMonth.Dias);
+        const response = await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${User}`);
+        setData(response.data);
+        setIsReload(false)
+        setIsLoading(false);
+      } catch (error) {
+        console.log(error);
       }
     })();
-  }, [User, date]);
-
-  useEffect(() => {
-    if(isReload) {
-      (async () => {
-        const daysOfMonth = await getAllDaysOfMonth(date);
-        setCalendar(daysOfMonth.Dias);
-
-        if (daysOfMonth.DataInicio && daysOfMonth.DataFim) {
-          setIsLoading(true);
-          try {
-            const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`);
-            setData(response.data);
-          } catch (error) {
-            console.log(error);
-          } finally {
-            if(User){
-              setIsLoading(false);
-            }
-          }
-        }
-      })();
-    }
-  }, [User, date, isReload]);
-
-  useEffect(() => {
-    const lowerBusca = User?.toLowerCase();
-    const negocioFilter = data?.filter((E: any) => {
-      const nome = E.attributes.vendedor.data?.attributes.username;
-      return nome?.toLowerCase().includes(lowerBusca);
-    });
-    setNegocios(negocioFilter)
-  }, [data, User]);
-
-  function handleDateChange(month: number) {
-    setDate(month);
   }
-  function handleUserChange(user: string) {
-    setUser(user);
+
+  function handleUserChange(user: React.SetStateAction<string>) {
+    setUser(user)
   }
 
   if (isLoading) {
@@ -101,9 +69,6 @@ export const PowerBi = (props: {reload: any}) => {
       <Box w={'100%'}>
         <Flex px={5} pt={2} justifyContent={'space-between'} w={'100%'}>
           <Flex gap={16}>
-            <Box>
-              <SelectMonth onValue={handleDateChange} />
-            </Box>
             <Box>
               <SelectUser onValue={handleUserChange} />
             </Box>
@@ -129,8 +94,7 @@ export const PowerBi = (props: {reload: any}) => {
                     </Tr>
                   </Thead>
                   <Tbody border={'2px'}>
-                    {Negocios.map((itens: any) => {
-                      console.log("🚀 ~ file: index.tsx:87 ~ {Negocios.map ~ itens:", itens)
+                    {data.map((itens: any) => {
                       const statusAtual = itens.attributes.andamento
                       const statusRepresente = statusAtual === 1 ? '⭐' : statusAtual === 2 ? '⭐⭐' : statusAtual === 3 ? '⭐⭐⭐' : statusAtual === 4 ? '⭐⭐⭐⭐' : '⭐⭐⭐⭐⭐';
                       const etapa = EtapasNegocio.filter((e: any) => e.id == itens.attributes.etapa).map((e: any) => e.title)

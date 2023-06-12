@@ -1,60 +1,54 @@
 import { Select } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
+interface User {
+  id: string;
+  username: string;
+}
 
 export const SelectUser = (props: {
   onValue: any;
 }) => {
-  const { data: sessesion } = useSession();
-  const [user, setUser] = useState('');
-  const [data, setData] = useState<any>([])
-  useEffect(() => {
-    if(!user){
-      props.onValue(sessesion?.user?.name);
-    }
-    (async () => {
-      await axios({
-        method: 'GET',
-        url: '/api/db/user',
-      })
-        .then((res) => {
-          setData(res.data);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    })();
-  }, [props, sessesion?.user?.name, user]);
+  const { data: session } = useSession();
+  const [user, setUser] = useState<string | any>(session?.user.name);
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    if(!user){
-      const usuarioInit: any = sessesion?.user?.name
-      setUser(usuarioInit);
-    } else {
-      props.onValue(user)
-    }
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('/api/db/user');
+        setUsers(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, [props, session?.user.name]);
 
-  }, [props, sessesion?.user?.name, user]);
+  const handleUserChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setUser(value);
+    // props.onValue(value);
+  };
+
+  if(users.length > 0){
+    props.onValue(user);
+  }
 
   return (
-    <>
-      <Select
-        w={'12rem'}
-        onChange={(e) => {
-          const value = e.target.value;
-          setUser(value);
-        }}
-        value={user}
-
-      >
-        {data.map((i: any) => (
-          <option key={i.id} value={i.username}>
-            {i.username}
-          </option>
-        ))}
-      </Select>
-    </>
+    <Select
+      w={'12rem'}
+      onChange={handleUserChange}
+      value={user}
+    >
+      {users.map((user) => (
+        <option key={user.id} value={user.username}>
+          {user.username}
+        </option>
+      ))}
+    </Select>
   );
 };
+

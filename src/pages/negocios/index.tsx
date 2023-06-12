@@ -10,7 +10,7 @@ import { PowerBi } from "@/components/negocios/bi";
 export default function Negocios() {
   const [load, setLoad] = useState<boolean>(false);
 
-  function tragetReload(Loading: boolean | ((prevState: boolean) => boolean)) {
+  function tragetReload(Loading: boolean ) {
     setLoad(Loading);
   }
 
