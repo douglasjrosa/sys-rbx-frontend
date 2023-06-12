@@ -99,9 +99,7 @@ export default async function PostTrello(
             ? ""
             : "EXP - MONT";
 
-        const nomeCard = i.titulo
-          ? `${cliente} - ${i.Qtd} - ${i.titulo} - Medidas ${i.comprimento} x ${i.largura} x ${i.altura} - peso ${i.pesoCx}(kg) - ${type} - Lote Nº ${nlote}`
-          : `${cliente} - ${i.Qtd} - ${i.nomeProd} - peso ${i.pesoCx}(kg) - ${type} - Lote Nº ${nlote}`;
+        const nomeCard = `${cliente} - ${i.Qtd} - ${i.nomeProd} - Medidas ${i.comprimento} x ${i.largura} x ${i.altura} - peso ${i.pesoCx}(kg) - ${type} - Lote Nº ${nlote}`;
 
         const dataBoard = JSON.stringify({
           key: userKey,

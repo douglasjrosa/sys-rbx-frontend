@@ -8,8 +8,10 @@ import { useEffect, useState } from "react";
 import { Ausente } from "./ausente";
 import { Presente } from "./presente";
 import { BsBoxArrowUpRight } from "react-icons/bs";
+import { useRouter } from "next/router";
+import Loading from "@/components/elements/loading";
 
-export const PowerBi = () => {
+export const PowerBi = (props: {reload: any}) => {
   const [date, setDate] = useState<number>();
   const [User, setUser] = useState<string>();
   const [data, setData] = useState<any>([]);
@@ -17,7 +19,12 @@ export const PowerBi = () => {
   const [calendar, setCalendar] = useState<any>([]);
   const [Negocios, setNegocios] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isReload, setIsReload] = useState(false);
+  const router = useRouter()
 
+  useEffect(() => {
+    setIsReload(props.reload)
+  }, [props.reload]);
 
   useEffect(() => {
     (async () => {
@@ -32,11 +39,36 @@ export const PowerBi = () => {
         } catch (error) {
           console.log(error);
         } finally {
-          setIsLoading(false);
+          if(User){
+            setIsLoading(false);
+          }
         }
       }
     })();
-  }, [date]);
+  }, [User, date]);
+
+  useEffect(() => {
+    if(isReload) {
+      (async () => {
+        const daysOfMonth = await getAllDaysOfMonth(date);
+        setCalendar(daysOfMonth.Dias);
+
+        if (daysOfMonth.DataInicio && daysOfMonth.DataFim) {
+          setIsLoading(true);
+          try {
+            const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`);
+            setData(response.data);
+          } catch (error) {
+            console.log(error);
+          } finally {
+            if(User){
+              setIsLoading(false);
+            }
+          }
+        }
+      })();
+    }
+  }, [User, date, isReload]);
 
   useEffect(() => {
     const lowerBusca = User?.toLowerCase();
@@ -47,12 +79,21 @@ export const PowerBi = () => {
     setNegocios(negocioFilter)
   }, [data, User]);
 
-  ///api/db/empresas/search/powerbi/ausente
   function handleDateChange(month: number) {
     setDate(month);
   }
   function handleUserChange(user: string) {
     setUser(user);
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <Box w={'100%'}>
+          <Loading size="200px">Carregando...</Loading>
+        </Box>
+      </>
+    );
   }
 
   return (
@@ -70,7 +111,7 @@ export const PowerBi = () => {
 
         </Flex>
         <Box w='100%' display={{ lg: 'flex', sm: 'block' }} p={{ lg: 3, sm: 5 }}>
-          <Box w={{ lg: '53%', sm: '100%' }} bg={'gray.700'} p={2} rounded={5}>
+          <Box w={{ lg: '60%', sm: '100%' }} bg={'gray.700'} p={2} rounded={5}>
 
             <Flex direction={'column'} w={'100%'} alignItems={'center'}>
               <chakra.span fontSize={'16px'} fontWeight={'medium'} color={'white'}>Funil de vendas</chakra.span>
@@ -80,11 +121,11 @@ export const PowerBi = () => {
                 <Table>
                   <Thead bg={'green.200'}>
                     <Tr>
-                      <Th border={'2px'} w={'17rem'}>Empresa</Th>
-                      <Th border={'2px'} w={'13rem'}>Etapa</Th>
-                      <Th border={'2px'} w={'9rem'}>Status</Th>
-                      <Th border={'2px'} w={'9rem'}>Valor</Th>
-                      <Th border={'2px'} w={'8px'}>Negocio</Th>
+                      <Th p={2} border={'2px'} w={'29px'}>Empresa</Th>
+                      <Th p={2} border={'2px'} w={'13rem'}>Etapa</Th>
+                      <Th p={2} border={'2px'} w={'9rem'}>Status</Th>
+                      <Th p={2} border={'2px'} w={'9rem'}>Valor</Th>
+                      <Th p={2} border={'2px'} w={'9rem'}>Negocio</Th>
                     </Tr>
                   </Thead>
                   <Tbody border={'2px'}>
@@ -96,16 +137,17 @@ export const PowerBi = () => {
 
                       return (
                         <>
-                          <Tr key={itens.id}>
-                            <Td borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
-                            <Td borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{etapa}</Td>
-                            <Td borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{statusRepresente}</Td>
-                            <Td borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{itens.attributes.Budget}</Td>
-                            <Td borderBottom={'1px solid #afafaf'}>
+                          <Tr key={itens.id} fontSize={'10px'}>
+                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
+                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{etapa}</Td>
+                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{statusRepresente}</Td>
+                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{itens.attributes.Budget}</Td>
+                            <Td p={2} borderBottom={'1px solid #afafaf'}>
                               <IconButton
+                                mx={5}
                                 aria-label="Negocio"
                                 colorScheme='teal'
-                                me={'5rem'}
+                                onClick={() => router.push(`/negocios/${itens.id}`)}
                                 icon={<BsBoxArrowUpRight />}
                               />
                             </Td>
@@ -120,7 +162,7 @@ export const PowerBi = () => {
 
           </Box>
           <Flex w={{ lg: '50%', sm: '100%' }} p={{ lg: 3, sm: 1 }} gap={{ lg: 3, sm: 1 }} direction={'column'}>
-            <Box w={{ lg: '70%', sm: '100%' }} bg={'orange.500'} p={2} rounded={5}>
+            <Box w={{ lg: '83%', sm: '100%' }} bg={'orange.500'} p={2} rounded={5}>
 
               <Flex direction={'column'} w={'100%'} alignItems={'center'}>
                 <chakra.span fontSize={'16px'} fontWeight={'medium'}>Clientes que não compram há mais de um mês</chakra.span>
@@ -130,8 +172,8 @@ export const PowerBi = () => {
                   <Table>
                     <Thead bg={'green.200'}>
                       <Tr>
-                        <Th border={'2px'} w={{ sm: '60%', lg: '40%' }} textAlign={'center'}>Empresa</Th>
-                        <Th border={'2px'} textAlign={'center'}>última compra</Th>
+                        <Th p={2} border={'2px'} w={{ sm: '60%', lg: '40%' }} textAlign={'center'}>Empresa</Th>
+                        <Th p={2} border={'2px'} textAlign={'center'}>última compra</Th>
                       </Tr>
                     </Thead>
                     <Tbody border={'2px'}>
@@ -142,7 +184,7 @@ export const PowerBi = () => {
               </Box>
 
             </Box>
-            <Box w={{ lg: '70%', sm: '100%' }} bg={'blue.600'} p={2} rounded={5}>
+            <Box w={{ lg: '83%', sm: '100%' }} bg={'blue.600'} p={2} rounded={5}>
 
               <Flex direction={'column'} w={'100%'} alignItems={'center'}>
                 <chakra.span fontSize={'16px'} fontWeight={'medium'}>Clientes novos ou recuperados neste mês</chakra.span>
@@ -152,8 +194,8 @@ export const PowerBi = () => {
                   <Table>
                     <Thead bg={'green.200'}>
                       <Tr>
-                        <Th border={'2px'} textAlign={'center'}>Empresa</Th>
-                        <Th border={'2px'} textAlign={'center'}>valor de compra</Th>
+                        <Th p={2} border={'2px'} textAlign={'center'}>Empresa</Th>
+                        <Th p={2} border={'2px'} textAlign={'center'}>valor de compra</Th>
                       </Tr>
                     </Thead>
                     <Tbody border={'2px'}>

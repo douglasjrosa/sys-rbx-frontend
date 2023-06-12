@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 export const Presente = () => {
   const [data, setData] = useState<any>([]);
-  console.log("🚀 ~ file: index.tsx:12 ~ PowerBi ~ data:", data)
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -13,7 +12,9 @@ export const Presente = () => {
       try {
         const response = await axios.get(`/api/db/empresas/search/powerbi/recuperado`);
         const response2 = await axios.get(`/api/db/empresas/search/powerbi/novo_cliente`);
-        setData([...response.data, ...response2.data]);
+        const resp2 = !response2.data? [] : response2.data
+        const resp = !response.data? [] : response.data
+        setData([ ...resp, ... resp2]);
       } catch (error) {
         console.log(error);
       } finally {
@@ -21,15 +22,17 @@ export const Presente = () => {
       }
     })();
   }, []);
+  // console.log("🚀 ~ file: index.tsx:12 ~ PowerBi ~ data:", data)
 
   return (
     <>
       {data.map((i: any) => {
+        console.log("🚀 ~ file: index.tsx:28 ~ {data.map ~ i:", i)
         return (
           <>
             <Tr>
-              <Td borderEnd={'2px'} textAlign={'center'} borderBottom={'1px solid #afafaf'}>{i.attributes.nome}</Td>
-              <Td borderEnd={'2px'} textAlign={'center'} borderBottom={'1px solid #afafaf'}>{i.attributes.valor_ultima_compra}</Td>
+              <Td p={2} fontSize={'10px'}  borderEnd={'2px'} textAlign={'center'} borderBottom={'1px solid #afafaf'}>{i.attributes.nome}</Td>
+              <Td p={2} fontSize={'10px'}  borderEnd={'2px'} textAlign={'center'} borderBottom={'1px solid #afafaf'}>{i.attributes.valor_ultima_compra}</Td>
             </Tr>
           </>
         )

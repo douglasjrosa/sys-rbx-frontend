@@ -9,8 +9,8 @@ export default async function GetEmpresa(
     var hoje = new Date();
 
     // Adicionar 60 dias à data de hoje
-    hoje.setDate(hoje.getDate() + 60);
-
+    hoje.setDate(hoje.getDate() - 60);
+    
     const token = process.env.ATORIZZATION_TOKEN;
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
@@ -23,8 +23,9 @@ export default async function GetEmpresa(
         "Content-Type": "application/json",
       },
     })
-      .then((resp) => resp.json())
-      .then((json) => {
+    .then((resp) => resp.json())
+    .then((json) => {
+
         const retorno = json.data.map((i: any) => {
           const empresa = i;
           if (

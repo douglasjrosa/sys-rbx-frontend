@@ -36,7 +36,7 @@ export default function Negocios() {
             h="100%"
             w={'100%'}
           >
-            <PowerBi />
+            <PowerBi  reload={load}/>
           </Flex>
         </Box>
       </Flex>

@@ -30,8 +30,8 @@ export const Ausente = () => {
         return (
           <>
             <Tr>
-              <Td borderEnd={'2px'} textAlign={'center'} borderBottom={'1px solid #afafaf'}>{i.attributes.nome}</Td>
-              <Td borderEnd={'2px'} textAlign={'center'} borderBottom={'1px solid #afafaf'}>{DataAtualizada.toLocaleDateString()}</Td>
+              <Td p={2} fontSize={'10px'} borderEnd={'2px'} textAlign={'center'} borderBottom={'1px solid #afafaf'}>{i.attributes.nome}</Td>
+              <Td p={2} fontSize={'10px'} borderEnd={'2px'} textAlign={'center'} borderBottom={'1px solid #afafaf'}>{DataAtualizada.toLocaleDateString()}</Td>
             </Tr>
           </>
         )
