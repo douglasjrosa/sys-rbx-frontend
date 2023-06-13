@@ -6,22 +6,31 @@ import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { parseISO, isSameDay } from 'date-fns';
 import { RenderCalendar } from '@/components/painel/calendario/render';
+import { useSession } from 'next-auth/react';
 
 const Painel: React.FC = () => {
+  const { data: session } = useSession();
   const [date, setDate] = useState<number>();
-  const [User, setUser] = useState<string>();
+  const [User, setUser] = useState<string | any>('');
   const [Fase1, setFase1] = useState<number>(0);
   const [Fase2, setFase2] = useState<number>(0);
   const [Fase3, setFase3] = useState<number>(0);
   const [calendar, setCalendar] = useState<any>([]);
   const [data, setData] = useState<any>([]);
+  console.log("🚀 ~ file: index.tsx:18 ~ data:", data)
   const [isLoading, setIsLoading] = useState(false);
   const [calendarData, setCalendarData] = useState([]);
 
+  useEffect(() => {
+    setUser(session?.user.name)
+  }, [session?.user.name])
+
+  const DateAt = new Date()
+  const MesAt = DateAt.getMonth() + 1;
 
   useEffect(() => {
     (async () => {
-      const daysOfMonth = await getAllDaysOfMonth(date);
+      const daysOfMonth = await getAllDaysOfMonth(MesAt);
       setCalendar(daysOfMonth.Dias);
 
       if (daysOfMonth.DataInicio && daysOfMonth.DataFim) {
@@ -36,11 +45,10 @@ const Painel: React.FC = () => {
         }
       }
     })();
-  }, [date]);
+  }, [MesAt, date]);
 
   useEffect(() => {
     const lowerBusca = User?.toLowerCase();
-    console.log("🚀 ~ file: index.tsx:39 ~ useEffect ~ User:", User)
     const negocioFilter = data?.filter((E: any) => {
       const nome = E.attributes.vendedor.data?.attributes.username;
       return nome?.toLowerCase().includes(lowerBusca);
@@ -157,9 +165,6 @@ const Painel: React.FC = () => {
       <Box>
         <Flex px={5} pt={2} justifyContent={'space-between'} w={'100%'}>
           <Flex gap={16}>
-            <Box>
-              <SelectMonth onValue={handleDateChange} />
-            </Box>
             <Box>
               <SelectUser onValue={handleUserChange} />
             </Box>

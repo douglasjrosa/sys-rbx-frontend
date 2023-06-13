@@ -1,60 +1,90 @@
 import { EtapasNegocio } from "@/components/data/etapa";
 import { SelectUser } from "@/components/painel/calendario/select/SelecUser"
-import { SelectMonth } from "@/components/painel/calendario/select/SelectMonth"
-import { getAllDaysOfMonth } from "@/function/Datearray";
-import { Box, Flex, IconButton, Table, TableCaption, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, chakra } from "@chakra-ui/react"
-import axios from "axios";
+import { Box, Flex, IconButton, Table, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, chakra } from "@chakra-ui/react"
 import { useEffect, useState } from "react";
 import { Ausente } from "./ausente";
 import { Presente } from "./presente";
 import { BsBoxArrowUpRight } from "react-icons/bs";
 import { useRouter } from "next/router";
 import Loading from "@/components/elements/loading";
+import { getAllDaysOfMonth } from "@/function/Datearray";
+import axios from "axios";
 import { useSession } from "next-auth/react";
 
-export const PowerBi = (props: { reload: boolean }) => {
 
-  const [date, setDate] = useState<number>();
-  const [User, setUser] = useState<string | any>();
-  const [data, setData] = useState<any>([]);
-  const [calendar, setCalendar] = useState<any>([]);
-  const [Negocios, setNegocios] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isReload, setIsReload] = useState(false);
+export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdados: number }) => {
   const router = useRouter()
-
-  const DateAt = new Date()
-  const MesAt = DateAt.getMonth() + 1
+  const { data: session } = useSession();
+  const [data, setData] = useState([])
+  console.log("🚀 ~ file: index.tsx:15 ~ PowerBi ~ data:", data)
+  const [User, setUser] = useState('')
+  const [load, setLoad] = useState<boolean>(true);
 
   useEffect(() => {
-    if(props.reload){
-      setIsReload(props.reload)
+    setLoad(props.reload)
+    setData(props.dados)
+  }, [props.dados, props.reload])
+
+  const DateAt = new Date()
+  const MesAt = DateAt.getMonth() + 1;
+
+  useEffect(() => {
+    (async () => {
+      const usuario = session?.user.name
+      const daysOfMonth = await getAllDaysOfMonth(MesAt);
+      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
+        .then((response) => {
+          setData(response.data);
+          setLoad(false);
+        })
+        .catch((error: any) => {
+          console.log(error);
+        })
+    })();
+  }, [MesAt, User, session?.user.name])
+
+  console.log("🚀 ~ file: index.tsx:26 ~ setTimeout ~ props.setdados:", props.setdados)
+  // Função de comparação
+  function compararPorNomeEIdade(a: any, b: any) {
+
+    const etapaA = a.attributes.etapa;
+    const etapaB = b.attributes.etapa;
+
+    if (etapaA < etapaB) {
+      return -1;
+    }
+    if (etapaA > etapaB) {
+      return 1;
     }
 
-  }, [props.reload]);
+    const BudgetA = parseFloat(a.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."));
+    const BudgetB = parseFloat(b.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."));
 
+    return BudgetB - BudgetA;
+  }
 
-  if (isReload === true) {
+  // Reorganizar o array por ordem alfabética pelo nome e pelos valores numéricos em ordem decrescente
+  data.sort(compararPorNomeEIdade);
+
+  function handleUserChange(user: React.SetStateAction<string>) {
+    // setUser(user)
+    // props.user(user)
     (async () => {
-      setIsLoading(true);
-      try {
-        const daysOfMonth = await getAllDaysOfMonth(MesAt);
-        setCalendar(daysOfMonth.Dias);
-        const response = await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${User}`);
-        setData(response.data);
-        setIsReload(false)
-        setIsLoading(false);
-      } catch (error) {
-        console.log(error);
-      }
+      const usuario = user
+      const daysOfMonth = await getAllDaysOfMonth(MesAt);
+      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
+        .then((response) => {
+          setData(response.data);
+          setLoad(false);
+        })
+        .catch((error: any) => {
+          console.log(error);
+        })
     })();
   }
 
-  function handleUserChange(user: React.SetStateAction<string>) {
-    setUser(user)
-  }
 
-  if (isLoading) {
+  if (load) {
     return (
       <>
         <Box w={'100%'}>

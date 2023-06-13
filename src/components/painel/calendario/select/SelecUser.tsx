@@ -30,12 +30,9 @@ export const SelectUser = (props: {
   const handleUserChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
     setUser(value);
-    // props.onValue(value);
+    props.onValue(value);
   };
 
-  if(users.length > 0){
-    props.onValue(user);
-  }
 
   return (
     <Select

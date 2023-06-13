@@ -1,15 +1,15 @@
 export const EtapasNegocio = [
   {
     id: '1',
-    title: 'Enviar proposta',
+    title: 'Contato',
   },
   {
     id: '2',
-    title: 'Acompanhamento',
+    title: 'Negociação',
   },
   {
     id: '3',
-    title: 'Negociação',
+    title: 'Enviar proposta',
   },
   {
     id: '4',

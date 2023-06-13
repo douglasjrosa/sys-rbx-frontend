@@ -30,43 +30,22 @@ export const RenderCalendar = (props: { data: any }) => {
                 }
                 const clientes = item.clientes
 
-                const DeadlineFilter = clientes.filter((cliente: any) => cliente.corresponding === "deadline" && cliente.attributes.date_conclucao === null)
-
-                const CreatedAtFilter = clientes.filter((cliente: any) => cliente.corresponding === "createdAt")
                 const DateConclusaoFilter = clientes.filter((cliente: any) => cliente.corresponding === "dateConclusao")
 
-                const totalCreatedAtF = CreatedAtFilter.reduce((total: number, cliente: any) => {
-                  const budget = cliente.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".");
-                  const valor = total + parseFloat(budget);
-                  return valor
-                }, 0);
+
                 const totalDateConclusao = DateConclusaoFilter.reduce((total: number, cliente: any) => {
                   const budget = cliente.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".");
                   const valor = total + parseFloat(budget);
                   return valor
                 }, 0);
-                const totalDeadline = DeadlineFilter.reduce((total: number, cliente: any) => {
-                  const budget = cliente.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".");
-                  const valor = total + parseFloat(budget);
-                  return valor
-                }, 0);
+
 
                 return (
                   <Box key={item.id} w={'8rem'} minH={'6rem'} bg={'white'} p={1}>
                     <Flex pe={2} mb={2} justifyContent={'end'} fontWeight={'semibold'}>{lastTwoDigits}</Flex>
-                    <Box hidden={!totalCreatedAtF}>
-                      <Flex justifyContent={'center'}>
-                        <chakra.span fontSize={'14px'} fontWeight={'semibold'} color={'orange.400'} >{totalCreatedAtF.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
-                      </Flex>
-                    </Box>
                     <Box hidden={!totalDateConclusao}>
                       <Flex justifyContent={'center'}>
                         <chakra.span fontSize={'14px'} fontWeight={'semibold'} color={'green.500'} >{totalDateConclusao.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
-                      </Flex>
-                    </Box>
-                    <Box hidden={!totalDeadline}>
-                      <Flex justifyContent={'center'}>
-                        <chakra.span fontSize={'14px'} fontWeight={'semibold'} color={'red'} >{totalDeadline.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
                       </Flex>
                     </Box>
                   </Box>
