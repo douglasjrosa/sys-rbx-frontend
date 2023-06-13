@@ -16,13 +16,14 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
   const router = useRouter()
   const { data: session } = useSession();
   const [data, setData] = useState([])
-  console.log("🚀 ~ file: index.tsx:15 ~ PowerBi ~ data:", data)
   const [User, setUser] = useState('')
   const [load, setLoad] = useState<boolean>(true);
 
   useEffect(() => {
     setLoad(props.reload)
-    setData(props.dados)
+    const filtro = props.dados.filter((c: any)=> c.attributes.etapa !== 6)
+    const filtro1 = filtro.filter((c: any)=> c.attributes.andamento !== 5)
+    setData(filtro1);
   }, [props.dados, props.reload])
 
   const DateAt = new Date()
@@ -34,7 +35,10 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
       await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
         .then((response) => {
-          setData(response.data);
+          const filtro = response.data.filter((c: any)=> c.attributes.etapa !== 6)
+          console.log("🚀 ~ file: index.tsx:39 ~ .then ~ response.data:", response.data)
+          const filtro1 = filtro.filter((c: any)=> c.attributes.andamento !== 5)
+          setData(filtro1);
           setLoad(false);
         })
         .catch((error: any) => {
@@ -43,17 +47,27 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
     })();
   }, [MesAt, User, session?.user.name])
 
-  console.log("🚀 ~ file: index.tsx:26 ~ setTimeout ~ props.setdados:", props.setdados)
+
   // Função de comparação
   function compararPorNomeEIdade(a: any, b: any) {
 
     const etapaA = a.attributes.etapa;
     const etapaB = b.attributes.etapa;
 
-    if (etapaA < etapaB) {
+    if (etapaA > etapaB) {
       return -1;
     }
-    if (etapaA > etapaB) {
+    if (etapaA < etapaB) {
+      return 1;
+    }
+
+    const andaA = a.attributes.andamento;
+    const andaB = b.attributes.andamento;
+
+    if (andaA > andaB) {
+      return -1;
+    }
+    if (andaA < andaB) {
       return 1;
     }
 
@@ -74,7 +88,10 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
       await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
         .then((response) => {
-          setData(response.data);
+          const filtro = response.data.filter((c: any)=> c.attributes.etapa !== 6)
+          console.log("🚀 ~ file: index.tsx:92 ~ .then ~ response.data:", response.data)
+          const filtro1 = filtro.filter((c: any)=> c.attributes.andamento !== 5)
+          setData(filtro1);
           setLoad(false);
         })
         .catch((error: any) => {
