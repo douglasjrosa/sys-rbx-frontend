@@ -68,7 +68,7 @@ export default async function GetEmpresa(
         empresa: Number(data.empresa),
         vendedor: data.vendedor,
         andamento: 3,
-        etapa: 3,
+        etapa: 1,
       },
     };
 
@@ -79,7 +79,7 @@ export default async function GetEmpresa(
         const isoDateTime = new Date().toISOString();
         const VisibliDateTime = new Date().toISOString();
         await RegCompra(Number(data.empresa), data.Budget)
-        
+
         const txt = {
           date: isoDateTime,
           vendedor: data.vendedor,
