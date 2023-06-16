@@ -79,6 +79,7 @@ export default function Cadastro() {
   const [frete, setFrete] = useState("");
   const [Empresa, setEmpresa] = useState("");
   const [Responsavel, setResponsavel] = useState("");
+  const [Inatividade, setInatividade] = useState<number>(60);
   const [Data, setData] = useState<any>([]);
   const toast = useToast();
 
@@ -163,10 +164,9 @@ export default function Cadastro() {
       forpg: forpg,
       frete: frete,
       contribuinte: contribuinte,
-      vendedor: session?.user.name,
-      vendedorId: session?.user.id,
       responsavel: Responsavel,
       history: historico,
+      inativOk: Inatividade,
     },
   };
 
@@ -274,8 +274,6 @@ export default function Cadastro() {
       setSimples(cheksimples);
     }
   }, [Data])
-
-
 
   return (
     <>
@@ -481,16 +479,39 @@ export default function Cadastro() {
                         })()}
                       />
                     </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                    <FormControl as={GridItem} colSpan={[6, 4]}>
                       <CompPessoa
                         Resp={Responsavel}
                         onAddResp={getResponsavel}
                       />
                     </FormControl>
+
+                    <FormControl as={GridItem} colSpan={[6, 1]}>
+                      <FormLabel
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                      >
+                        inatividade
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        isDisabled={session?.user.pemission === 'Adm'? false: true }
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        maxLength={3}
+                        rounded="md"
+                        value={Inatividade}
+                        onChange={(e) => setInatividade(parseInt(e.target.value))}
+                      />
+                    </FormControl>
                   </SimpleGrid>
 
                   <SimpleGrid columns={12} spacing={3}>
-                    <FormControl as={GridItem} colSpan={[6, 2]}>
+                    <FormControl as={GridItem} colSpan={[6, 2,1]}>
                       <FormLabel
                         htmlFor="pais"
                         fontSize="xs"
@@ -512,7 +533,7 @@ export default function Cadastro() {
                       />
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 2, 1]}>
+                    <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
                         fontSize="xs"
                         fontWeight="md"

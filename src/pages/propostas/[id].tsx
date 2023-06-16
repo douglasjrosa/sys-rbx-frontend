@@ -9,9 +9,13 @@ export default function ListaProposta() {
   const router = useRouter();
   const ID: any = router.query.id;
   const [Load, setLoad] = useState(false)
+  const [Disble, setDisble] = useState(false)
 
   function getLoading(Loading: boolean | ((prevState: boolean) => boolean)) {
     setLoad(Loading);
+  }
+  function getDisable(disable: boolean | ((prevState: boolean) => boolean)) {
+    setDisble(disable);
   }
 
   return (
@@ -36,6 +40,7 @@ export default function ListaProposta() {
             my={'3'}
             me={16}
             colorScheme="whatsapp"
+            isDisabled={Disble}
             onClick={() => {
               localStorage.setItem("id", ID);
               router.push("/propostas/create");
@@ -55,7 +60,7 @@ export default function ListaProposta() {
             justifyContent="center"
             flexDirection="column"
           >
-              <CardList id={ID} onloading={getLoading} />
+              <CardList id={ID} onloading={getLoading} desbilitar={getDisable} />
           </Flex>
         </Box>
       </Flex>

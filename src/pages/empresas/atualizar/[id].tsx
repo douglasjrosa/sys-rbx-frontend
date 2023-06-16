@@ -84,6 +84,7 @@ export default function EmpresaId() {
   const [ID, setID] = useState('');
   const [Responsavel, setResponsavel] = useState('');
   const [loading, setloading] = useState(false);
+  const [Inatividade, setInatividade] = useState<number>(60);
   const [Data, setData] = useState<any>([]);
   const toast = useToast();
 
@@ -103,8 +104,8 @@ export default function EmpresaId() {
       setNome(empresa.attributes?.nome);
       setFantasia(empresa.attributes?.fantasia);
       setTipoPessoa(empresa.attributes?.tipoPessoa);
-      setFone(empresa.attributes?.fone);
-      setCelular(empresa.attributes?.celular);
+      setFone(empresa.attributes?.fone === null ? '' : empresa.attributes?.fone);
+      setCelular(empresa.attributes?.celular === null ? "" : empresa.attributes?.celular);
       setEmail(empresa.attributes?.email);
       setEmailNfe(empresa.attributes?.emailNfe);
       setIeStatus(empresa.attributes?.ieStatus);
@@ -167,14 +168,14 @@ export default function EmpresaId() {
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     if (Data) {
       setFantasia(Data.razao_social);
       setTipoPessoa('cnpj');
       setIE(Data.estabelecimento?.inscricoes_estaduais[0]?.inscricao_estadual);
       setIeStatus(Data.estabelecimento?.inscricoes_estaduais[0]?.ativo);
       const end = capitalizeWords(Data.estabelecimento?.tipo_logradouro + " " + Data.estabelecimento?.logradouro)
-      setEndereco(end === 'Undefined Undefined' ? "": end);
+      setEndereco(end === 'Undefined Undefined' ? "" : end);
       setNumero(Data.estabelecimento?.numero);
       setComplemento(capitalizeWords(Data.estabelecimento?.complemento));
       setBairro(capitalizeWords(Data.estabelecimento?.bairro));
@@ -262,6 +263,7 @@ export default function EmpresaId() {
         contribuinte: contribuinte,
         responsavel: Responsavel,
         history: historico,
+        inativOk: Inatividade,
       },
     };
 
@@ -538,11 +540,33 @@ export default function EmpresaId() {
                         })()}
                       />
                     </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 6, null, 2]}>
+                    <FormControl as={GridItem} colSpan={[6, 4]}>
                       <CompPessoa
                         Resp={Responsavel}
                         onAddResp={getResponsavel}
                         ID={ID}
+                      />
+                    </FormControl>
+                    <FormControl as={GridItem} colSpan={[6, 1]}>
+                      <FormLabel
+                        fontSize="xs"
+                        fontWeight="md"
+                        color="gray.700"
+                      >
+                        inatividade
+                      </FormLabel>
+                      <Input
+                        type="number"
+                        borderColor="gray.600"
+                        focusBorderColor="brand.400"
+                        isDisabled={session?.user.pemission === 'Adm' ? false : true}
+                        shadow="sm"
+                        size="xs"
+                        w="full"
+                        maxLength={3}
+                        rounded="md"
+                        value={Inatividade}
+                        onChange={(e) => setInatividade(parseInt(e.target.value))}
                       />
                     </FormControl>
                   </SimpleGrid>
@@ -570,7 +594,7 @@ export default function EmpresaId() {
                       />
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 2, 1]}>
+                    <FormControl as={GridItem} colSpan={[6, 2]}>
                       <FormLabel
                         fontSize="xs"
                         fontWeight="md"

@@ -54,6 +54,7 @@ export default function Proposta() {
   const [saveNegocio, setSaveNegocio] = useState("");
   const [obs, setObs] = useState("");
   const [clientePedido, setClientePedido] = useState("");
+  const [DateEntrega, setDateEntrega] = useState("");
   const toast = useToast();
 
   const disbleProd =
@@ -224,6 +225,7 @@ export default function Proposta() {
         itens: ListItens,
         empresa: Loja,
         dataPedido: date,
+        dataEntrega: DateEntrega,
         vencPedido: VencDate,
         vencPrint: VencDatePrint,
         condi: prazo,
@@ -363,7 +365,7 @@ export default function Proposta() {
   return (
     <>
       <Flex h="100vh" px={10} w="100%" flexDir={"column"} mt="5" justifyContent={'space-between'} >
-        <Box>
+        <Box w="100%">
           <Flex gap={3}>
             <BsArrowLeftCircleFill
               color="blue"
@@ -373,7 +375,7 @@ export default function Proposta() {
             />
             <Heading size="md">Proposta comercial</Heading>
           </Flex>
-          <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
+          <Box display="flex" gap={5} flexWrap={'wrap'} alignItems="center" mt={3} mx={5} w={'full'}>
             <Box>
               <ListaEmpresa onChangeValue={getCnpj} />
             </Box>
@@ -401,6 +403,29 @@ export default function Proposta() {
                 rounded="md"
                 onChange={(e) => setDate(e.target.value)}
                 value={date}
+              />
+            </Box>
+            <Box>
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: "gray.50",
+                }}
+              >
+                Data Entrega
+              </FormLabel>
+              <Input
+                shadow="sm"
+                type={"date"}
+                size="sm"
+                w="full"
+                fontSize="xs"
+                rounded="md"
+                onChange={(e) => setDateEntrega(e.target.value)}
+                value={DateEntrega}
               />
             </Box>
             <Box>

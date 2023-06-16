@@ -321,7 +321,7 @@ export const NegocioHeader = (props: {
             colorScheme={"green"}
             onClick={() => router.push("/propostas/" + ID)}
           >
-            Propostas
+            Proposta
           </Button>
           <Button
             colorScheme={"red"}

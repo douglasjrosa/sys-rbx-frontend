@@ -50,6 +50,7 @@ export default function Proposta() {
   const [Produtos, SetProdutos] = useState([]);
   const [ListItens, setItens] = useState<any>([]);
   const [date, setDate] = useState("");
+  const [DateEntrega, setDateEntrega] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [frete, setFrete] = useState("");
   const [freteCif, setFreteCif] = useState('');
@@ -289,6 +290,7 @@ export default function Proposta() {
         itens: ProdutosItems,
         empresa: Loja,
         dataPedido: date,
+        dataEntrega: DateEntrega,
         vencPedido: VencDate,
         vencPrint: VencDatePrint,
         condi: prazo,
@@ -430,7 +432,7 @@ export default function Proposta() {
             />
             <Heading size="md">Proposta comercial</Heading>
           </Flex>
-          <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
+          <Box display="flex" flexWrap={'wrap'} gap={5} alignItems="center" mt={3} mx={5}>
             <Box>
               <ListaEmpresa onChangeValue={getCnpj} />
             </Box>
@@ -458,6 +460,29 @@ export default function Proposta() {
                 rounded="md"
                 onChange={(e) => setDate(e.target.value)}
                 value={date}
+              />
+            </Box>
+            <Box>
+              <FormLabel
+                htmlFor="cidade"
+                fontSize="xs"
+                fontWeight="md"
+                color="gray.700"
+                _dark={{
+                  color: "gray.50",
+                }}
+              >
+                Data Entrega
+              </FormLabel>
+              <Input
+                shadow="sm"
+                type={"date"}
+                size="sm"
+                w="full"
+                fontSize="xs"
+                rounded="md"
+                onChange={(e) => setDateEntrega(e.target.value)}
+                value={DateEntrega}
               />
             </Box>
             <Box>
@@ -575,7 +600,7 @@ export default function Proposta() {
             <Heading size="sm">Itens da proposta comercial</Heading>
           </Box>
           <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
-            <Box w={"320px"} alignItems="center">
+            <Box w={"300px"} alignItems="center">
               <ProdutiList
                 onCnpj={cnpj}
                 onResp={getIten}

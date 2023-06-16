@@ -18,13 +18,9 @@ export const ListaEmpresa = (props: { onChangeValue: any }) => {
   return (
     <>
       <FormLabel
-        htmlFor="cidade"
         fontSize="xs"
         fontWeight="md"
         color="gray.700"
-        _dark={{
-          color: 'gray.50',
-        }}
       >
         Empresas
       </FormLabel>

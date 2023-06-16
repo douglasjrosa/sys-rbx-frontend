@@ -31,7 +31,6 @@ export const ProdutiList = (props: {
     (async () => {
       const email = localStorage.getItem("email");
       const url = "/api/query/get/produto/cnpj/" + props.onCnpj;
-      console.log("🚀 ~ file: produt.tsx:32 ~ url:", url)
       if (props.onCnpj !== "" && Produtos.length === 0) {
         await fetch(url, {
           method: "POST",
@@ -115,7 +114,7 @@ export const ProdutiList = (props: {
             <Select
               shadow="sm"
               size="sm"
-              w="full"
+              w="15rem"
               fontSize="xs"
               rounded="md"
               placeholder="Selecione um Produto"
@@ -138,7 +137,6 @@ export const ProdutiList = (props: {
               rounded={'3xl'}
               mt={6}
               colorScheme="tranparent"
-              me={'5rem'}
               onClick={addItens}
               isDisabled={Load}
             >

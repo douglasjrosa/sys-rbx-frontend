@@ -3,8 +3,6 @@ import {
   Button,
   chakra,
   Flex,
-  Link,
-  SimpleGrid,
   Text,
   useToast,
 } from "@chakra-ui/react";
@@ -16,8 +14,7 @@ import { BeatLoader } from "react-spinners";
 import Loading from "@/components/elements/loading";
 
 
-
-export const CardList = (props: { id: string; onloading: any }) => {
+export const CardList = (props: { id: string; onloading: any; desbilitar: any  }) => {
   const [load, setLoad] = useState<boolean>(false)
   const [LoadGeral, setLoadGeral] = useState<boolean>(false)
   const [IdLoad, setIdLoad] = useState('')
@@ -31,6 +28,7 @@ export const CardList = (props: { id: string; onloading: any }) => {
       setLoadGeral(true)
       const requeste = await axios(url);
       const response = requeste.data;
+      props.desbilitar( response.length >=1 ? true : false)
       setData(response);
       setLoadGeral(false)
     })();
@@ -81,7 +79,7 @@ export const CardList = (props: { id: string; onloading: any }) => {
         setData(resp);
         setLoad(false)
         setIdLoad('')
-        // router.push("/negocios/" + props.id);
+        router.push("/negocios/" + props.id);
       })
       .catch(async(err) => {
         console.log(err.response.data.message);
@@ -107,7 +105,7 @@ export const CardList = (props: { id: string; onloading: any }) => {
           });
           setLoad(false)
           setIdLoad('')
-          // router.push("/negocios/" + props.id);
+          router.push("/negocios/" + props.id);
         } else {
           toast({
             title: "Opss.",
