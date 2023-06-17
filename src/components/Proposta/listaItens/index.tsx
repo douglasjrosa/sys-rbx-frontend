@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { BTMPdf } from "../BTMPdf";
 import { BeatLoader } from "react-spinners";
 import Loading from "@/components/elements/loading";
+import { useSession } from "next-auth/react";
 
 
 export const CardList = (props: { id: string; onloading: any; desbilitar: any  }) => {
@@ -22,6 +23,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any  }
   const toast = useToast();
   const url = "/api/db/proposta/get/business/" + props.id;
   const [Data, setData] = useState([]);
+  const {data: session} = useSession()
 
   useEffect(() => {
     (async () => {
@@ -34,7 +36,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any  }
     })();
   }, [props, url]);
 
-  const pedido = async (numero: string) => {
+  const pedido = async (numero: string, id: any) => {
     setLoad(true)
     toast({
       title: "Só um momento estou processando!",
@@ -61,6 +63,17 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any  }
         await axios({
           url: `/api/db/trello/${numero}`,
           method: "POST",
+        })
+          .then((response) => {
+            console.log(response.data)
+          })
+          .catch((error) => {
+            console.log(error)
+          });
+
+        await axios({
+          url: `/api/db/empresas/setVendedor?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`,
+          method: "GET",
         })
           .then((response) => {
             console.log(response.data)
@@ -286,7 +299,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any  }
                             colorScheme={"messenger"}
                             onClick={() => {
                               setIdLoad(i.id)
-                              pedido(i.attributes.nPedido)
+                              pedido(i.attributes.nPedido, attributes.empresa.data.id)
                             }}
                             isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
                           >

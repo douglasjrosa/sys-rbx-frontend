@@ -1,21 +1,38 @@
 /* eslint-disable no-undef */
-import { NextApiRequest, NextApiResponse } from 'next';
+import axios from "axios";
+import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function GetEmpresa(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
-  if (req.method === 'POST') {
-    const token = process.env.ATORIZZATION_TOKEN;
+  const token = process.env.ATORIZZATION_TOKEN;
+  if (req.method === "GET" && req.query.Vendedor !== "") {
+    const Vendedor = req.query.Vendedor;
+    try {
+      const RequestEnpresa = await axios(
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$eq]=${Vendedor}&filters[status][$eq]=true&sort[0]=id%3Adesc&fields[0]=nome&fields[1]=CNPJ&populate[user][fields][0]=username&populate[businesses][fields][0]=nBusiness`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      res.status(200).json(RequestEnpresa.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  } else if (req.method === "POST") {
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
-      '/empresas?filters[status][$eq]=true&populate=%2A';
+      "/empresas?filters[status][$eq]=true&populate=*";
 
     await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     })
       .then((resp) => resp.json())
@@ -26,6 +43,6 @@ export default async function GetEmpresa(
         res.status(400).json(err);
       });
   } else {
-    return res.status(405).send({ message: 'Only POST requests are allowed' });
+    return res.status(405).send({ message: "Only POST requests are allowed" });
   }
 }

@@ -26,6 +26,7 @@ function Negocios() {
 
   function tragetReload(Loading: boolean) {
     // setLoad(Loading);
+    console.log('aki')
     if (Loading === true) {
       (async () => {
         setLoad(true);
@@ -45,7 +46,7 @@ function Negocios() {
     setUser(user)
   }
 
- 
+
 
   return (
     <>

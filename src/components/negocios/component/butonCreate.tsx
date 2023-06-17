@@ -79,7 +79,8 @@ export const BtCreate = (props: { onLoading: any }) => {
 
   useEffect(() => {
     (async () => {
-      let url = "/api/db/empresas/getEmpresamin";
+      // let url = "/api/db/empresas/getEmpresamin";
+      let url = `/api/db/empresas/get?Vendedor=${session?.user.name}`;
       await axios({
         method: "GET",
         url: url,
@@ -91,7 +92,7 @@ export const BtCreate = (props: { onLoading: any }) => {
           console.log(error);
         });
     })();
-  }, []);
+  }, [session?.user.name]);
 
   const maskPreco = (e: any) => {
     const originalVelue: any = unMask(e.target.value);

@@ -38,6 +38,7 @@ export const SelectUser = (props: {
     <Select
       w={'12rem'}
       onChange={handleUserChange}
+      isDisabled={session?.user.pemission !== 'Adm'}
       value={user}
     >
       {users.map((user) => (

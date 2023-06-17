@@ -10,6 +10,7 @@ import Loading from "@/components/elements/loading";
 import { getAllDaysOfMonth } from "@/function/Datearray";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { NovoCliente } from "./novo";
 
 
 export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdados: number }) => {
@@ -21,8 +22,8 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
 
   useEffect(() => {
     setLoad(props.reload)
-    const filtro = props.dados.filter((c: any)=> c.attributes.etapa !== 6)
-    const filtro1 = filtro.filter((c: any)=> c.attributes.andamento !== 5)
+    const filtro = props.dados.filter((c: any) => c.attributes.etapa !== 6)
+    const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
     setData(filtro1);
   }, [props.dados, props.reload])
 
@@ -35,9 +36,9 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
       await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
         .then((response) => {
-          const filtro = response.data.filter((c: any)=> c.attributes.etapa !== 6)
+          const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
           console.log("🚀 ~ file: index.tsx:39 ~ .then ~ response.data:", response.data)
-          const filtro1 = filtro.filter((c: any)=> c.attributes.andamento !== 5)
+          const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
           setData(filtro1);
           setLoad(false);
         })
@@ -88,9 +89,9 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
       await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
         .then((response) => {
-          const filtro = response.data.filter((c: any)=> c.attributes.etapa !== 6)
+          const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
           console.log("🚀 ~ file: index.tsx:92 ~ .then ~ response.data:", response.data)
-          const filtro1 = filtro.filter((c: any)=> c.attributes.andamento !== 5)
+          const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
           setData(filtro1);
           setLoad(false);
         })
@@ -146,22 +147,21 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                       const statusRepresente = statusAtual === 1 ? '⭐' : statusAtual === 2 ? '⭐⭐' : statusAtual === 3 ? '⭐⭐⭐' : statusAtual === 4 ? '⭐⭐⭐⭐' : '⭐⭐⭐⭐⭐';
                       const etapa = EtapasNegocio.filter((e: any) => e.id == itens.attributes.etapa).map((e: any) => e.title)
 
+                      const colorLine = itens.attributes.deadline >= new Date().toISOString() ? 'red.400' : ''
+
+
+                      const dataDed = new Date(itens.attributes.deadline)
+                      dataDed.setDate(dataDed.getDate() + 1);
+                      const dataFormatada = dataDed.toLocaleDateString('pt-BR');
+
                       return (
                         <>
-                          <Tr key={itens.id} fontSize={'10px'}>
-                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
-                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{etapa}</Td>
-                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{statusRepresente}</Td>
-                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #afafaf'}>{itens.attributes.Budget}</Td>
-                            <Td p={2} borderBottom={'1px solid #afafaf'}>
-                              <IconButton
-                                mx={5}
-                                aria-label="Negocio"
-                                colorScheme='teal'
-                                onClick={() => router.push(`/negocios/${itens.id}`)}
-                                icon={<BsBoxArrowUpRight />}
-                              />
-                            </Td>
+                          <Tr key={itens.id} fontSize={'10px'} bg={colorLine} onClick={() => router.push(`/negocios/${itens.id}`)} cursor={'pointer'}>
+                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #969696'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
+                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #969696'}>{etapa}</Td>
+                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #969696'}>{statusRepresente}</Td>
+                            <Td p={2} fontSize={'10px'} borderEnd={'2px'} borderBottom={'1px solid #969696'}>{itens.attributes.Budget}</Td>
+                            <Td p={2} fontSize={'10px'} borderBottom={'1px solid #969696'}>{dataFormatada}</Td>
                           </Tr>
                         </>
                       )
@@ -176,7 +176,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
             <Box w={{ lg: '83%', sm: '100%' }} bg={'orange.500'} p={2} rounded={5}>
 
               <Flex direction={'column'} w={'100%'} alignItems={'center'}>
-                <chakra.span fontSize={'16px'} fontWeight={'medium'}>Clientes que não compram há mais de um mês</chakra.span>
+                <chakra.span fontSize={'16px'} fontWeight={'medium'}>Clientes em Inatividade</chakra.span>
               </Flex>
               <Box bg={'gray.200'}>
                 <TableContainer>
@@ -195,10 +195,31 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
               </Box>
 
             </Box>
+            
             <Box w={{ lg: '83%', sm: '100%' }} bg={'blue.600'} p={2} rounded={5}>
-
               <Flex direction={'column'} w={'100%'} alignItems={'center'}>
-                <chakra.span fontSize={'16px'} fontWeight={'medium'}>Clientes novos ou recuperados neste mês</chakra.span>
+                <chakra.span fontSize={'16px'} fontWeight={'medium'}>Clientes novos</chakra.span>
+              </Flex>
+              <Box bg={'gray.200'}>
+                <TableContainer>
+                  <Table>
+                    <Thead bg={'green.200'}>
+                      <Tr>
+                        <Th p={2} border={'2px'} w={{ sm: '60%', lg: '40%' }}  textAlign={'center'}>Empresa</Th>
+                        <Th p={2} border={'2px'} textAlign={'center'}>Data de entrada</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody border={'2px'}>
+                      <NovoCliente />
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              </Box>
+
+            </Box>
+            <Box w={{ lg: '83%', sm: '100%' }} bg={'blue.600'} p={2} rounded={5}>
+              <Flex direction={'column'} w={'100%'} alignItems={'center'}>
+                <chakra.span fontSize={'16px'} fontWeight={'medium'}>Clientes recuperados</chakra.span>
               </Flex>
               <Box bg={'gray.200'}>
                 <TableContainer>

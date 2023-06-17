@@ -1,27 +1,24 @@
 import { Td, Tr } from "@chakra-ui/react";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
 export const Presente = () => {
   const [data, setData] = useState<any>([]);
+  const { data: sesseion} = useSession()
 
   useEffect(() => {
     (async () => {
       try {
         const response = await axios.get(
-          `/api/db/empresas/search/powerbi/recuperado`
+          `/api/db/empresas/search/powerbi/recuperado?Vendedor=${sesseion?.user.name}`
         );
-        const response2 = await axios.get(
-          `/api/db/empresas/search/powerbi/novo_cliente`
-        );
-        const resp2 = !response2.data ? [] : response2.data;
-        const resp = !response.data ? [] : response.data;
-        setData([...resp, ...resp2]);
+        setData(response.data);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, []);
+  }, [sesseion?.user.name]);
 
   const renderedData = useMemo(() => {
     return data.map((i: any) => (
