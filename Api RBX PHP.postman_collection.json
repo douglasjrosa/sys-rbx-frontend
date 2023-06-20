@@ -1,0 +1,753 @@
+{
+	"info": {
+		"_postman_id": "e2d93bd4-5518-4851-b49d-77410a742980",
+		"name": "Api RBX PHP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17727280"
+	},
+	"item": [
+		{
+			"name": "api",
+			"item": [
+				{
+					"name": "api",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Email",
+								"value": "kingdever88@gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "Token",
+								"value": "b29cda672c7240256e46b7d68924e320",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://ribermax.com/api",
+							"protocol": "http",
+							"host": [
+								"ribermax",
+								"com"
+							],
+							"path": [
+								"api"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "empresa",
+			"item": [
+				{
+					"name": "empresa get",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Email",
+								"value": "kingdever88@gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "Token",
+								"value": "b29cda672c7240256e46b7d68924e320",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://ribermax.com/api/empresas/",
+							"protocol": "http",
+							"host": [
+								"ribermax",
+								"com"
+							],
+							"path": [
+								"api",
+								"empresas",
+								""
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "empresa get",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Email",
+										"value": "kingdever88@gmail.com",
+										"type": "text"
+									},
+									{
+										"key": "Token",
+										"value": "b29cda672c7240256e46b7d68924e320",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://ribermax.com/api/empresas/",
+									"protocol": "http",
+									"host": [
+										"ribermax",
+										"com"
+									],
+									"path": [
+										"api",
+										"empresas",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Thu, 23 Mar 2023 13:21:54 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "Apache"
+								},
+								{
+									"key": "Expires",
+									"value": "Wed, 11 Jan 1984 05:00:00 GMT"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, must-revalidate, max-age=0"
+								},
+								{
+									"key": "Link",
+									"value": "<http://ribermax.com/wp-json/>; rel=\"https://api.w.org/\", <http://ribermax.com/wp-json/wp/v2/pages/33>; rel=\"alternate\"; type=\"application/json\", <http://ribermax.com/?p=33>; rel=shortlink"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"nome\": \"A4 Promaq\",\n        \"CNPJ\": \"01250566000134\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"ABR Industria\",\n        \"CNPJ\": \"51708881000300\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"AC Equipamentos\",\n        \"CNPJ\": \"30051625000143\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Access Global\",\n        \"CNPJ\": \"21239198000130\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"AD Instrumentos cirurgicos\",\n        \"CNPJ\": \"06276904000120\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"AD Tech\",\n        \"CNPJ\": \"00965010000161\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Adler Mangueiras\",\n        \"CNPJ\": \"22516682000122\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"ADZ Máquinas\",\n        \"CNPJ\": \"01812637000145\",\n        \"ativo\": \"2242\"\n    },\n    {\n        \"nome\": \"Ag Tech\",\n        \"CNPJ\": \"19521734000144\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"AG2\",\n        \"CNPJ\": \"26069384000192\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"AGL Eletrônicos\",\n        \"CNPJ\": \"11335885000104\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Agrosystem\",\n        \"CNPJ\": \"61211470000199\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Agrotorque\",\n        \"CNPJ\": \"29171834000141\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Airtechnik\",\n        \"CNPJ\": \"09655505000169\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Alfa Centri (CDC)\",\n        \"CNPJ\": \"07702492000106\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Alfapower\",\n        \"CNPJ\": \"19435354000197\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Alivet saúde animal\",\n        \"CNPJ\": \"09282292000177\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Allbiom\",\n        \"CNPJ\": \"16829408000100\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Alliage\",\n        \"CNPJ\": \"55979736001460\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Allight\",\n        \"CNPJ\": \"30950391000176\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Alt\",\n        \"CNPJ\": \"08044106000107\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Amazonas indústria\",\n        \"CNPJ\": \"47959697002210\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Amcel\",\n        \"CNPJ\": \"00725262000113\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"André Costa\",\n        \"CNPJ\": \"12021567000123\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Andritz\",\n        \"CNPJ\": \"01714762000112\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Anell\",\n        \"CNPJ\": \"04613028000155\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Aplik\",\n        \"CNPJ\": \"13776888000109\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Aramart\",\n        \"CNPJ\": \"13416922000126\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Artimetal\",\n        \"CNPJ\": \"20484129000120\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Atlantimex\",\n        \"CNPJ\": \"08108990000198\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Azul linhas aéreas\",\n        \"CNPJ\": \"09296295016163\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Balcão\",\n        \"CNPJ\": \"00000000000000\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Balitek\",\n        \"CNPJ\": \"59662312000103\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Bambozzi\",\n        \"CNPJ\": \"03868938000116\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"BCP Construções e imobiliária LTDA\",\n        \"CNPJ\": \"15434835000127\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Betunel\",\n        \"CNPJ\": \"60546801000502\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Biodont\",\n        \"CNPJ\": \"04741630000178\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Biotecs\",\n        \"CNPJ\": \"02675656000130\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"BMA Borrachas\",\n        \"CNPJ\": \"01999033000150\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Bolsa de Ultra-som\",\n        \"CNPJ\": \"04220204000199\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Bozza\",\n        \"CNPJ\": \"03281625000167\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"BR Export\",\n        \"CNPJ\": \"02258508000110\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Brascopper Ribeirão Preto\",\n        \"CNPJ\": \"53606869000140\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Brascopper São Luis\",\n        \"CNPJ\": \"53606869000493\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Brascopper Três Lagoas\",\n        \"CNPJ\": \"53606869000221\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Brasmedical\",\n        \"CNPJ\": \"08342212000169\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Bruker do Brasil\",\n        \"CNPJ\": \"04755378000156\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"BRX\",\n        \"CNPJ\": \"97518917000114\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Buffet Black Tie\",\n        \"CNPJ\": \"02853369000172\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"C4 Científica\",\n        \"CNPJ\": \"13261123000128\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Cacir\",\n        \"CNPJ\": \"10454191000115\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Capacitech\",\n        \"CNPJ\": \"15353977000160\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Casa da Moeda\",\n        \"CNPJ\": \"34164319000506\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Casale\",\n        \"CNPJ\": \"59600643000119\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"CCEST\",\n        \"CNPJ\": \"13304065000172\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Celway\",\n        \"CNPJ\": \"06065893000130\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Cervejaria Walfanger\",\n        \"CNPJ\": \"19239121000119\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Chibrascenter\",\n        \"CNPJ\": \"55293716000116\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Chipi Implementos\",\n        \"CNPJ\": \"05575629000183\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Cienar\",\n        \"CNPJ\": \"01810062000121\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Cincea\",\n        \"CNPJ\": \"05423813000299\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Cipamed\",\n        \"CNPJ\": \"03471879000148\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Citrotec\",\n        \"CNPJ\": \"03727941000110\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"CNA Automação\",\n        \"CNPJ\": \"23239843000140\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Comercial Buri\",\n        \"CNPJ\": \"00737840000131\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Comingersoll\",\n        \"CNPJ\": \"04860830000492\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Condumax\",\n        \"CNPJ\": \"53224127000584\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Consoli\",\n        \"CNPJ\": \"48013411000148\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Copecar\",\n        \"CNPJ\": \"56786908000127\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Cordoba\",\n        \"CNPJ\": \"03056201000107\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Cosma\",\n        \"CNPJ\": \"02591818000151\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"CRM Borrachas\",\n        \"CNPJ\": \"06023566000468\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Dal Mak\",\n        \"CNPJ\": \"59918771000105\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Danna\",\n        \"CNPJ\": \"12586829000105\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Demax\",\n        \"CNPJ\": \"60002045000127\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Denktherm\",\n        \"CNPJ\": \"04179760000169\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Dentemed\",\n        \"CNPJ\": \"07897039000100\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Dentscler\",\n        \"CNPJ\": \"01332005000184\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Dinatec\",\n        \"CNPJ\": \"56124506000167\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Dmac\",\n        \"CNPJ\": \"11352710000105\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Duomaq\",\n        \"CNPJ\": \"24250388000147\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Dykrom\",\n        \"CNPJ\": \"69005387000175\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"EBM Machine\",\n        \"CNPJ\": \"21649658000107\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Ecel\",\n        \"CNPJ\": \"03090848000147\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Eduardo Telles Assad\",\n        \"CNPJ\": \"60911980768\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Engemakro\",\n        \"CNPJ\": \"06185800000100\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Engparts\",\n        \"CNPJ\": \"22654854000124\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Ethik Technology\",\n        \"CNPJ\": \"02063134000187\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Euro-vac\",\n        \"CNPJ\": \"08690903000153\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Express Offshore\",\n        \"CNPJ\": \"20085644000137\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Exsto Tecnologia\",\n        \"CNPJ\": \"04596663000171\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Exteec máquinas\",\n        \"CNPJ\": \"08906221000135\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Ferraz\",\n        \"CNPJ\": \"43490424000194\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Firebrass\",\n        \"CNPJ\": \"26575618000173\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Fischer\",\n        \"CNPJ\": \"27924108000127\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Flex Soluções\",\n        \"CNPJ\": \"03289168000157\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Forte Acessórios\",\n        \"CNPJ\": \"10388538000179\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"FR Impressoras\",\n        \"CNPJ\": \"08167083000110\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Franpar\",\n        \"CNPJ\": \"05697209000170\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Fundação Coppetec\",\n        \"CNPJ\": \"72060999000175\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Garbim\",\n        \"CNPJ\": \"20776452000177\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Gerdau\",\n        \"CNPJ\": \"07358761020194\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Gigante Produtos Médicos\",\n        \"CNPJ\": \"11050321000117\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Gigante Recém nascido\",\n        \"CNPJ\": \"62413869000115\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Gil\",\n        \"CNPJ\": \"46707089000121\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Gms\",\n        \"CNPJ\": \"12654176000146\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Grad Square\",\n        \"CNPJ\": \"11285872000160\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Grampac\",\n        \"CNPJ\": \"03447413000107\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Guimamed Representações\",\n        \"CNPJ\": \"24995176000199\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"HCI Sistemas Contra Incêndio\",\n        \"CNPJ\": \"56264641000108\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Hidraseme\",\n        \"CNPJ\": \"61240800000174\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Hidrautec\",\n        \"CNPJ\": \"02058787000178\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Hitachi-Mycom\",\n        \"CNPJ\": \"17117308000114\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"HL Equipamentos\",\n        \"CNPJ\": \"11622310000164\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Homy Quimica\",\n        \"CNPJ\": \"43085349000186\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Ideoxima\",\n        \"CNPJ\": \"45249968000194\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Inbrás\",\n        \"CNPJ\": \"15140854000140\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Inbrasc\",\n        \"CNPJ\": \"05958357000109\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Incocil\",\n        \"CNPJ\": \"07547879000135\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Incontrol\",\n        \"CNPJ\": \"02100560000143\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Indfol\",\n        \"CNPJ\": \"04348248000107\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Indústria Marília\",\n        \"CNPJ\": \"49035678000107\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Ingeteam\",\n        \"CNPJ\": \"03306629000152\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Insight\",\n        \"CNPJ\": \"03062201000101\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Inter-válvulas\",\n        \"CNPJ\": \"09258355000150\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Interunion\",\n        \"CNPJ\": \"57663932000131\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Invicta\",\n        \"CNPJ\": \"60594538000284\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Irbi\",\n        \"CNPJ\": \"05317917000138\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Italami\",\n        \"CNPJ\": \"04069329000160\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Ivomaq\",\n        \"CNPJ\": \"47965421000110\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Jacaré Ventiladores\",\n        \"CNPJ\": \"01482680000190\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Jefferson Automação\",\n        \"CNPJ\": \"07409167000150\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"JL Acrílicos\",\n        \"CNPJ\": \"09371232000120\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"José Luis Nunes\",\n        \"CNPJ\": \"24753658000132\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"JPX\",\n        \"CNPJ\": \"13404829000100\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"JRD Logística\",\n        \"CNPJ\": \"06177985000101\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Jumas\",\n        \"CNPJ\": \"05247679000131\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"K9\",\n        \"CNPJ\": \"02596607000101\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Kairos Retifica\",\n        \"CNPJ\": \"14218286000190\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Kal-tec\",\n        \"CNPJ\": \"04826049000159\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Kcal\",\n        \"CNPJ\": \"05466975000123\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Kerber\",\n        \"CNPJ\": \"20266644000133\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Kraft Heinz\",\n        \"CNPJ\": \"50955707000120\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Laboratório Vitafort\",\n        \"CNPJ\": \"44236073000152\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Lafix\",\n        \"CNPJ\": \"02920269000111\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Lanza Medical\",\n        \"CNPJ\": \"30197366000163\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Lap Mosaicos\",\n        \"CNPJ\": \"10142489000190\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Lapini\",\n        \"CNPJ\": \"04148507000148\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"LATAM\",\n        \"CNPJ\": \"02012862006109\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Leistung\",\n        \"CNPJ\": \"00306524000105\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Lima Express\",\n        \"CNPJ\": \"20140073000196\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Line Conference\",\n        \"CNPJ\": \"25362163000145\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Logistica Brasileira\",\n        \"CNPJ\": \"11228308000105\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"LSP Energia\",\n        \"CNPJ\": \"21063662000180\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Lucadema\",\n        \"CNPJ\": \"10663308000170\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Lumar\",\n        \"CNPJ\": \"04921503000150\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Luzimar\",\n        \"CNPJ\": \"00962045000147\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Maggicor Tintas\",\n        \"CNPJ\": \"32408492000145\",\n        \"ativo\": \"1\"\n    },\n    {\n        \"nome\": \"Maix Inox Refrigeração\",\n        \"CNPJ\": \"10898632000178\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Maranghetti\",\n        \"CNPJ\": \"67380170000110\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Marfmaquinas\",\n        \"CNPJ\": \"15098388000182\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Martec\",\n        \"CNPJ\": \"00625332000161\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Martins Cruz\",\n        \"CNPJ\": \"09722172000143\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Martins Design\",\n        \"CNPJ\": \"68317858000118\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Marvi\",\n        \"CNPJ\": \"56287725000329\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Max Brasil\",\n        \"CNPJ\": \"17757153000180\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Mb7\",\n        \"CNPJ\": \"00302831000118\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Medpej\",\n        \"CNPJ\": \"03155958000140\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Melo Store\",\n        \"CNPJ\": \"15415241000179\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Memo\",\n        \"CNPJ\": \"03670744000101\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Menta máquinas agricolas\",\n        \"CNPJ\": \"65676249000167\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Metal Nobre\",\n        \"CNPJ\": \"14488466000192\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Metal Pipe\",\n        \"CNPJ\": \"24794373000140\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Metalcom\",\n        \"CNPJ\": \"74674896000120\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Metalcury\",\n        \"CNPJ\": \"02281242000126\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Metalurgica Ernandes\",\n        \"CNPJ\": \"47806633000155\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"MG Sul\",\n        \"CNPJ\": \"08034062000126\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Mgtrac\",\n        \"CNPJ\": \"12335903000102\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Microem\",\n        \"CNPJ\": \"53526372000112\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Monribe\",\n        \"CNPJ\": \"08490074000165\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Monsanto\",\n        \"CNPJ\": \"64858525006771\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Montefeltro\",\n        \"CNPJ\": \"01836398000163\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Monteferro\",\n        \"CNPJ\": \"03965921000187\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Movequip\",\n        \"CNPJ\": \"03259193000198\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Movimentar Engenharia\",\n        \"CNPJ\": \"18373376000107\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"MSP\",\n        \"CNPJ\": \"71766356000189\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"MTC do Brasil\",\n        \"CNPJ\": \"91619676000113\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Multilojas\",\n        \"CNPJ\": \"55647648000146\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"MV Construções\",\n        \"CNPJ\": \"07177809000132\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"MZ\",\n        \"CNPJ\": \"17723828000170\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Nachmed\",\n        \"CNPJ\": \"15376044000198\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Nanô Pilates\",\n        \"CNPJ\": \"19426001000120\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Natura\",\n        \"CNPJ\": \"00190373000172\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Natural Lagos\",\n        \"CNPJ\": \"10177456000185\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"NHS\",\n        \"CNPJ\": \"14086341000136\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Normadin\",\n        \"CNPJ\": \"00359084000154\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Nova Techno\",\n        \"CNPJ\": \"74430489000178\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"NR Publicidade\",\n        \"CNPJ\": \"07867602000190\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Odontics\",\n        \"CNPJ\": \"04839305000142\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Odonto médics\",\n        \"CNPJ\": \"01649186000177\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"OGC Molas\",\n        \"CNPJ\": \"56997471000170\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Olidef\",\n        \"CNPJ\": \"55983274000130\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Orizaba\",\n        \"CNPJ\": \"24242205000141\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Overprint\",\n        \"CNPJ\": \"12076074000190\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Painel Equipamentos\",\n        \"CNPJ\": \"52728383000112\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Pallas\",\n        \"CNPJ\": \"53128682000189\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Panegossi\",\n        \"CNPJ\": \"47055959000198\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Passalacqua\",\n        \"CNPJ\": \"74404278000160\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Pastobras\",\n        \"CNPJ\": \"07169742000194\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Pearson\",\n        \"CNPJ\": \"01404158001757\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Pentair\",\n        \"CNPJ\": \"57716854000358\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Phoenix\",\n        \"CNPJ\": \"44239382000186\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Photon Group\",\n        \"CNPJ\": \"16960794000175\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Planistal\",\n        \"CNPJ\": \"04739101000130\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"PLP Brasil\",\n        \"CNPJ\": \"61831244000100\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"PMan\",\n        \"CNPJ\": \"01047581000180\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Poli-Ribe\",\n        \"CNPJ\": \"05933939000122\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Posto California\",\n        \"CNPJ\": \"21804110000186\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Procion\",\n        \"CNPJ\": \"69092591000170\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Projetta Alumínio\",\n        \"CNPJ\": \"18342795000181\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Quality Global\",\n        \"CNPJ\": \"21970997000182\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"R.A. Equipamentos Médicos\",\n        \"CNPJ\": \"01963553000102\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Reebok\",\n        \"CNPJ\": \"59247486002587\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Replass\",\n        \"CNPJ\": \"57785495000129\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Retifica São João\",\n        \"CNPJ\": \"09227444000139\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"RGO Máquinas\",\n        \"CNPJ\": \"04409720000166\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Rhodes\",\n        \"CNPJ\": \"60657624000531\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Rhosse\",\n        \"CNPJ\": \"04440002000152\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Riberman\",\n        \"CNPJ\": \"38764262000103\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Ribfrio\",\n        \"CNPJ\": \"20974667000100\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"RM Chapas de Ferro\",\n        \"CNPJ\": \"55131544000184\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Rofreios\",\n        \"CNPJ\": \"52381738000140\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Roncar\",\n        \"CNPJ\": \"43470376000172\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Rosmatech\",\n        \"CNPJ\": \"07735171000108\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Rossini Murta\",\n        \"CNPJ\": \"00384369000145\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Royal indústria\",\n        \"CNPJ\": \"08582910000131\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"RP Energy\",\n        \"CNPJ\": \"00984449000131\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"RPM\",\n        \"CNPJ\": \"01180143000195\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Ruralmaq\",\n        \"CNPJ\": \"09549552000128\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"S/A do Brasil\",\n        \"CNPJ\": \"07296603000121\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Saframax\",\n        \"CNPJ\": \"15291513000176\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Scherdel\",\n        \"CNPJ\": \"02375890000141\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Schur\",\n        \"CNPJ\": \"60946159000125\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Scienlabor\",\n        \"CNPJ\": \"10435371000150\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"SDORF\",\n        \"CNPJ\": \"14962672000192\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"SEB Global\",\n        \"CNPJ\": \"21255704000347\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Sec2\",\n        \"CNPJ\": \"04415209000258\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"SecPower\",\n        \"CNPJ\": \"01938502000635\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Selmec\",\n        \"CNPJ\": \"62053921000170\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Semper Crio\",\n        \"CNPJ\": \"71524516000183\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Service Metal\",\n        \"CNPJ\": \"11007902000176\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Servo Controle\",\n        \"CNPJ\": \"03325155000196\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Sidertécnica\",\n        \"CNPJ\": \"46701173000138\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Simex\",\n        \"CNPJ\": \"05461642000101\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Simisa\",\n        \"CNPJ\": \"55820583000199\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Siscomtec\",\n        \"CNPJ\": \"01297416000186\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Sitron\",\n        \"CNPJ\": \"50672013000185\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Só Imagens\",\n        \"CNPJ\": \"09563158000144\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Solazyme\",\n        \"CNPJ\": \"12563217000270\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Soltec\",\n        \"CNPJ\": \"09604013000144\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Special Srpings\",\n        \"CNPJ\": \"27470867000167\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"SRL\",\n        \"CNPJ\": \"05584291000126\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Supermix\",\n        \"CNPJ\": \"11048908000191\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Tegorib\",\n        \"CNPJ\": \"02109323000143\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Telecargo\",\n        \"CNPJ\": \"03469066000113\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Telmac\",\n        \"CNPJ\": \"54832555000129\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Tgx\",\n        \"CNPJ\": \"12056364000172\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Thermo Exergy\",\n        \"CNPJ\": \"23717827000116\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Thermoval\",\n        \"CNPJ\": \"57633414000175\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Torkflex\",\n        \"CNPJ\": \"01495476000103\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Total Health\",\n        \"CNPJ\": \"04569945000180\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Três-S\",\n        \"CNPJ\": \"62439294000290\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Trilha VIP\",\n        \"CNPJ\": \"05086380000142\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Triniton\",\n        \"CNPJ\": \"19295673000144\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Trylub\",\n        \"CNPJ\": \"17711808000180\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Turbtron\",\n        \"CNPJ\": \"53956348000113\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Ultrassônica\",\n        \"CNPJ\": \"10548289000131\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"União Embreagens\",\n        \"CNPJ\": \"73049355000149\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"US & Cia.\",\n        \"CNPJ\": \"07149505000161\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Usicentro\",\n        \"CNPJ\": \"11508941000157\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Valmaq\",\n        \"CNPJ\": \"04613282000153\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Vec\",\n        \"CNPJ\": \"06988096000124\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"Vextro\",\n        \"CNPJ\": \"13857295000169\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Viewmed\",\n        \"CNPJ\": \"15725018000128\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Viewmed (M. Regina)\",\n        \"CNPJ\": \"00000000000000\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Vitec\",\n        \"CNPJ\": \"08144355000166\",\n        \"ativo\": \"Disponível\"\n    },\n    {\n        \"nome\": \"WDTA\",\n        \"CNPJ\": \"13188455000124\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Weghaux\",\n        \"CNPJ\": \"11998923000109\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"WeLog\",\n        \"CNPJ\": \"34486593000160\",\n        \"ativo\": \"Ribermax\"\n    },\n    {\n        \"nome\": \"Wem\",\n        \"CNPJ\": \"54611678000130\",\n        \"ativo\": \"Disponível\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "empresa get cnpj",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Email",
+								"value": "kingdever88@gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "Token",
+								"value": "b29cda672c7240256e46b7d68924e320",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://ribermax.com/api/empresas?CNPJ=30367375000155",
+							"protocol": "http",
+							"host": [
+								"ribermax",
+								"com"
+							],
+							"path": [
+								"api",
+								"empresas"
+							],
+							"query": [
+								{
+									"key": "CNPJ",
+									"value": "30367375000155"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "empresa delet cnpj",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Email",
+								"value": "kingdever88@gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "Token",
+								"value": "b29cda672c7240256e46b7d68924e320",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "CNPJ",
+									"value": "30367375000155",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://ribermax.com/api/empresas",
+							"protocol": "http",
+							"host": [
+								"ribermax",
+								"com"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "empresa post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Email",
+								"value": "kingdever88@gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "Token",
+								"value": "b29cda672c7240256e46b7d68924e320",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nome",
+									"value": "ALEXANDRE HENRIQUE DA ROCHA ARAUJO",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "alexandre_2301@hotmail.com",
+									"type": "text"
+								},
+								{
+									"key": "xNome",
+									"value": "KING DEV",
+									"type": "text"
+								},
+								{
+									"key": "CNPJ",
+									"value": "30367375000155",
+									"type": "text"
+								},
+								{
+									"key": "IE",
+									"value": "797375970112",
+									"type": "text"
+								},
+								{
+									"key": "IM",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "fone",
+									"value": "Ribeirão Preto",
+									"type": "text"
+								},
+								{
+									"key": "indIEDest",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "CNAE",
+									"value": "6201501",
+									"type": "text"
+								},
+								{
+									"key": "xLgr",
+									"value": "RUA PROFESSOR THEOTONIO MONTEIRO DE BARROS FILHO",
+									"type": "text"
+								},
+								{
+									"key": "nro",
+									"value": "832",
+									"type": "text"
+								},
+								{
+									"key": "xCpl",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "cMun",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "cPais",
+									"value": "1058",
+									"type": "text"
+								},
+								{
+									"key": "xPais",
+									"value": "Brasil",
+									"type": "text"
+								},
+								{
+									"key": "xBairro",
+									"value": "PARQUE SAO SEBASTIAO",
+									"type": "text"
+								},
+								{
+									"key": "CEP",
+									"value": "14093390",
+									"type": "text"
+								},
+								{
+									"key": "xMun",
+									"value": "Ribeirão Preto",
+									"type": "text"
+								},
+								{
+									"key": "UF",
+									"value": "SP",
+									"type": "text"
+								},
+								{
+									"key": "ativo",
+									"value": "Renato",
+									"type": "text"
+								},
+								{
+									"key": "tabela",
+									"value": "0.26",
+									"type": "text"
+								},
+								{
+									"key": "ultima_compra",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "LatAdFrSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "CabAdFrSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "LatAdExSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "CabAdExSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "assDuplo",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "LatForaSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "CabChaoSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "autoMail",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "caixa_economica",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_estruturada",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_leve",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_reforcada",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_resistente",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_super_reforcada",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "engradado_economico",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "engradado_leve",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "engradado_reforcado",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "engradado_resistente",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "palete_sob_medida",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "sarrafos_sob_medida",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "formaPagto",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "prefPagto",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "frete",
+									"value": "FOB",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://ribermax.com/api/empresas",
+							"protocol": "http",
+							"host": [
+								"ribermax",
+								"com"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "empresa put",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Email",
+								"value": "kingdever88@gmail.com",
+								"type": "text"
+							},
+							{
+								"key": "Token",
+								"value": "b29cda672c7240256e46b7d68924e320",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "nome",
+									"value": "ALEXANDRE HENRIQUE DA ROCHA ARAUJO",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "alexandre_2301@hotmail.com",
+									"type": "text"
+								},
+								{
+									"key": "xNome",
+									"value": "KING DEV",
+									"type": "text"
+								},
+								{
+									"key": "CNPJ",
+									"value": "30367375000155",
+									"type": "text"
+								},
+								{
+									"key": "IE",
+									"value": "797375970112",
+									"type": "text"
+								},
+								{
+									"key": "IM",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "fone",
+									"value": "Ribeirão Preto",
+									"type": "text"
+								},
+								{
+									"key": "indIEDest",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "CNAE",
+									"value": "6201501",
+									"type": "text"
+								},
+								{
+									"key": "xLgr",
+									"value": "RUA PROFESSOR THEOTONIO MONTEIRO DE BARROS FILHO",
+									"type": "text"
+								},
+								{
+									"key": "nro",
+									"value": "832",
+									"type": "text"
+								},
+								{
+									"key": "xCpl",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "cMun",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "cPais",
+									"value": "1058",
+									"type": "text"
+								},
+								{
+									"key": "xPais",
+									"value": "Brasil",
+									"type": "text"
+								},
+								{
+									"key": "xBairro",
+									"value": "PARQUE SAO SEBASTIAO",
+									"type": "text"
+								},
+								{
+									"key": "CEP",
+									"value": "14093390",
+									"type": "text"
+								},
+								{
+									"key": "xMun",
+									"value": "Ribeirão Preto",
+									"type": "text"
+								},
+								{
+									"key": "UF",
+									"value": "SP",
+									"type": "text"
+								},
+								{
+									"key": "ativo",
+									"value": "Renato",
+									"type": "text"
+								},
+								{
+									"key": "tabela",
+									"value": "0.26",
+									"type": "text"
+								},
+								{
+									"key": "ultima_compra",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "LatAdFrSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "CabAdFrSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "LatAdExSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "CabAdExSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "assDuplo",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "LatForaSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "CabChaoSN",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "autoMail",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "caixa_economica",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_estruturada",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_leve",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_reforcada",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_resistente",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "caixa_super_reforcada",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "engradado_economico",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "engradado_leve",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "engradado_reforcado",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "engradado_resistente",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "palete_sob_medida",
+									"value": "off",
+									"type": "text"
+								},
+								{
+									"key": "sarrafos_sob_medida",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "formaPagto",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "prefPagto",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "frete",
+									"value": "FOB",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://ribermax.com/api/empresas",
+							"protocol": "http",
+							"host": [
+								"ribermax",
+								"com"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
