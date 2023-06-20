@@ -15,7 +15,7 @@ import Loading from "@/components/elements/loading";
 import { useSession } from "next-auth/react";
 
 
-export const CardList = (props: { id: string; onloading: any; desbilitar: any  }) => {
+export const CardList = (props: { id: string; onloading: any; desbilitar: any }) => {
   const [load, setLoad] = useState<boolean>(false)
   const [LoadGeral, setLoadGeral] = useState<boolean>(false)
   const [IdLoad, setIdLoad] = useState('')
@@ -23,14 +23,14 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any  }
   const toast = useToast();
   const url = "/api/db/proposta/get/business/" + props.id;
   const [Data, setData] = useState([]);
-  const {data: session} = useSession()
+  const { data: session } = useSession()
 
   useEffect(() => {
     (async () => {
       setLoadGeral(true)
       const requeste = await axios(url);
       const response = requeste.data;
-      props.desbilitar( response.length >=1 ? true : false)
+      props.desbilitar(response.length >= 1 ? true : false)
       setData(response);
       setLoadGeral(false)
     })();
@@ -49,7 +49,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any  }
       url: `/api/db/nLote/${numero}`,
       method: "POST",
     })
-      .then(() => {})
+      .then(() => { })
       .catch((error) => {
         console.log(error)
       });
@@ -94,7 +94,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any  }
         setIdLoad('')
         router.push("/negocios/" + props.id);
       })
-      .catch(async(err) => {
+      .catch(async (err) => {
         console.log(err.response.data.message);
         console.log(err);
         if (err.response.data.message) {
@@ -299,7 +299,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any  }
                             colorScheme={"messenger"}
                             onClick={() => {
                               setIdLoad(i.id)
-                              pedido(i.attributes.nPedido, attributes.empresa.data.id)
+                              pedido(i.attributes.nPedido, i.attributes.empresa.data.id)
                             }}
                             isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
                           >

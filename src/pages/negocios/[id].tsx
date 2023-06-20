@@ -146,7 +146,44 @@ export default function CreateNegocio() {
     setMsg(menssage);
   }
   function chatRelaod(menssage: React.SetStateAction<any>) {
+    setLoadingGeral(true);
     setMsg2(menssage);
+    (async () => {
+      localStorage.setItem('id', id)
+      const url = "/api/db/business/get/id/" + id;
+      console.log(url);
+      //cunsulta informações gerais do cliente
+      await axios({
+        method: "GET",
+        url: url,
+      })
+        .then((res) => {
+          setnBusiness(res.data.attributes.nBusiness);
+          setApproach(res.data.attributes.Approach);
+          setBudget(res.data.attributes.Budget);
+          setStatus(res.data.attributes.andamento);
+          setDeadline(res.data.attributes.deadline);
+          setDataRetorno(res.data.attributes.DataRetorno);
+          setHistoria(res.data.attributes.history);
+          setChatHistory(res.data.attributes.incidentRecord);
+          setEtapa(res.data.attributes.etapa);
+          setMperca(res.data.attributes.Mperca);
+          // fim do loading
+          setLoadingGeral(false);
+        })
+        .catch((err) => {
+          console.log(err);
+          toast({
+            title: "Ops",
+            description: "erro ao recuperar as informações",
+            status: "error",
+            duration: 9000,
+            isClosable: true,
+          });
+          // fim do loading
+          setLoadingGeral(false);
+        });
+    })();
   }
   function getLoad(lading: React.SetStateAction<any>) {
     setLoadingGeral(lading);

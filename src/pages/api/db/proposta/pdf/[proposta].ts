@@ -499,6 +499,21 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
+                                  text: "Prazo parcial de entrega:",
+                                  bold: "true",
+                                  fontSize: 8,
+                                },
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
+                                  text: infos.dataEntrega,
+                                  style: "clienteFornecedor",
+                                },
+                              ],
+                              [
+                                {
+                                  margin: [0, 5, 0, 0],
+                                  border: [false, false, false, false],
                                   text: "Valor do frete:",
                                   bold: "true",
                                   fontSize: 8,
@@ -619,12 +634,12 @@ export default async function GetEmpresa(
     });
 
     pdfDoc.end();
-    const filename =
+    const filename ="Proposta comercial -" +
       infos.nPedido +
       " - " +
       infos.cliente.nome +
-      "++" +
-      new Date().toISOString();
+      "-" +
+      new Date().toLocaleDateString('pt-BR');
     pdfDoc.on("end", () => {
       const pdf = Buffer.concat(chunks);
       res.setHeader("Content-Disposition", `inline; filename="${filename}"`);

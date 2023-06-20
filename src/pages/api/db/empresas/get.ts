@@ -9,20 +9,22 @@ export default async function GetEmpresa(
   const token = process.env.ATORIZZATION_TOKEN;
   if (req.method === "GET" && req.query.Vendedor !== "") {
     const Vendedor = req.query.Vendedor;
-    try {
-      const RequestEnpresa = await axios(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$eq]=${Vendedor}&filters[status][$eq]=true&sort[0]=id%3Adesc&fields[0]=nome&fields[1]=CNPJ&populate[user][fields][0]=username&populate[businesses][fields][0]=nBusiness`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      res.status(200).json(RequestEnpresa.data.data);
-    } catch (error) {
-      console.log(error);
-    }
+    await axios(
+      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$eq]=${Vendedor}&filters[status][$eq]=true&sort[0]=id%3Adesc&fields[0]=nome&fields[1]=CNPJ&populate[user][fields][0]=username&populate[businesses][fields][0]=nBusiness`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((RequestEnpresa) => {
+        res.status(200).json(RequestEnpresa.data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(400).json(error);
+      });
   } else if (req.method === "POST") {
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +

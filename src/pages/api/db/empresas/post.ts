@@ -10,7 +10,8 @@ export default async function PostEmpresa(
     const data = req.body;
     const token = process.env.ATORIZZATION_TOKEN;
     const bodyData = data.data;
-
+    const { Email } = req.query;
+  
     await axios({
       method: "POST",
       url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas",
@@ -85,7 +86,7 @@ export default async function PostEmpresa(
       method: "post",
       url: process.env.RIBERMAX_API_URL + "/empresas",
       headers: {
-        Email: process.env.ATORIZZATION_EMAIL,
+        Email: Email,
         Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
         "Content-Type": "application/x-www-form-urlencoded",
       },
