@@ -2,13 +2,14 @@ import { StatusAndamento } from "@/components/data/status";
 import { Box, FormLabel, Select } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-export const BtnStatus = (props: { Resp: number; onAddResp: any }) => {
-  const [valor, setValor] = useState<number>();
+export const BtnStatus = (props: { Resp: any; onAddResp: any }) => {
+  const [valor, setValor] = useState('');
 
   useEffect(() => {
     setValor(props.Resp);
   }, [props.Resp]);
 
+  console.log("🚀 ~ file: status.tsx:11 ~ useEffect ~ props.Resp:", valor)
   function atualizarValor(event: any) {
     setValor(event.target.value);
     props.onAddResp(event.target.value);
