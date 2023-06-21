@@ -1,5 +1,4 @@
 import { SelectUser } from '@/components/painel/calendario/select/SelecUser';
-import { SelectMonth } from '@/components/painel/calendario/select/SelectMonth';
 import { getAllDaysOfMonth } from '@/function/Datearray';
 import { Box, Flex, FormLabel, chakra } from '@chakra-ui/react';
 import axios from 'axios';
@@ -17,7 +16,6 @@ const Painel: React.FC = () => {
   const [Fase3, setFase3] = useState<number>(0);
   const [calendar, setCalendar] = useState<any>([]);
   const [data, setData] = useState<any>([]);
-  console.log("🚀 ~ file: index.tsx:18 ~ data:", data)
   const [isLoading, setIsLoading] = useState(false);
   const [calendarData, setCalendarData] = useState([]);
 

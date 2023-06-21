@@ -1,10 +1,9 @@
 import { EtapasNegocio } from "@/components/data/etapa";
 import { SelectUser } from "@/components/painel/calendario/select/SelecUser"
-import { Box, Flex, IconButton, Table, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, chakra } from "@chakra-ui/react"
+import { Box, Flex, Table, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, chakra } from "@chakra-ui/react"
 import { useEffect, useState } from "react";
 import { Ausente } from "./ausente";
 import { Presente } from "./presente";
-import { BsBoxArrowUpRight } from "react-icons/bs";
 import { useRouter } from "next/router";
 import Loading from "@/components/elements/loading";
 import { getAllDaysOfMonth } from "@/function/Datearray";
