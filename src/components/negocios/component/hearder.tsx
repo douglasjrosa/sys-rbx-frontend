@@ -38,9 +38,9 @@ export const NegocioHeader = (props: {
   const toast = useToast();
   const { data: session } = useSession();
   const [Status, setStatus] = useState<any>();
-  const [StatusG, setStatusG] = useState<any | null>();
-  const [Etapa, setEtapa] = useState<any | null>();
-  const [Mperca, setMperca] = useState<any | null>();
+  const [StatusG, setStatusG] = useState<any>();
+  const [Etapa, setEtapa] = useState<any>();
+  const [Mperca, setMperca] = useState<any>();
   const [Busines, setBusines] = useState("");
   const [Approach, setApproach] = useState("");
   const [Budget, setBudget] = useState("");
@@ -83,7 +83,7 @@ export const NegocioHeader = (props: {
         Budget: Budget,
         Approach: Approach,
         history: history,
-        etapa: Status === '5' ? 6 : Etapa,
+        etapa: Status === '5' ? 6 : parseInt(Etapa),
         andamento: Status,
         Mperca: Mperca,
         incidentRecord: [...props.chat, ChatConcluido],
@@ -99,7 +99,7 @@ export const NegocioHeader = (props: {
         Budget: Budget,
         Approach: Approach,
         history: history,
-        etapa: Status === '5' ? 6 : Etapa,
+        etapa: Status === '5' ? 6 : parseInt(Etapa),
         andamento: Status,
         Mperca: Mperca,
         DataRetorno: Status !== 2 ? null : DataRetorno,

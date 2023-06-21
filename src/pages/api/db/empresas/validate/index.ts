@@ -18,7 +18,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
     const empresa = getEmpresa.data.data
 
     try {
-      const EmpresaMap = empresa.map((item: any) => {
+      const EmpresaMap = empresa.map(async (item: any) => {
         const user = item.attributes.user.data;
         const inativStatus = item.attributes.inativStatus;
         const ultima_compra = item.attributes.ultima_compra;
@@ -49,16 +49,95 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
 
           if (dataAtual > dataLimite) {
             if(diferencaEmDias <= 10 ){
-              return `A data atual passou ${diferencaEmDias} dias além do período de ${periodo} dias, id do cliente ${item.id}, =>Cliente em estado de alerta<=.`;
+
+              const update = {
+                data: {
+                  inativStatus: 2,
+                },
+              };
+              await axios({
+                method: "PUT",
+                url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + item.id,
+                data: update,
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              })
+                .then((Response) => {
+                  return Response.data;
+                })
+                .catch((err) => {
+                  return {
+                    error: err.response.data,
+                    mensage: err.response.data.error,
+                    detalhe: err.response.data.error.details,
+                  };
+                });
+
+              // return `A data atual passou ${diferencaEmDias} dias além do período de ${periodo} dias, id do cliente ${item.id}, =>Cliente em estado de alerta<=.`;
             }
             if(diferencaEmDias > 10 ){
-              return `A data atual passou ${diferencaEmDias} dias além do período de ${periodo} dias, id do cliente ${item.id}, =>cliente perdido<=.`;
+              const update = {
+                data: {
+                  vendedor: '',
+                  user: null,
+                  inativStatus: 1,
+                },
+              };
+              await axios({
+                method: "PUT",
+                url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + item.id,
+                data: update,
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              })
+                .then((Response) => {
+                  return Response.data;
+                })
+                .catch((err) => {
+                  return {
+                    error: err.response.data,
+                    mensage: err.response.data.error,
+                    detalhe: err.response.data.error.details,
+                  };
+                });
+              // return `A data atual passou ${diferencaEmDias} dias além do período de ${periodo} dias, id do cliente ${item.id}, =>cliente perdido<=.`;
             }
           } else {
             return`Ainda não passou do período de ${periodo} dias, id do cliente ${item.id}.`;
           }
         }
-       
+        if(!inativOk) {
+          const update = {
+            data: {
+              inativOk: 60,
+              inativStatus: 1,
+            },
+          };
+          await axios({
+            method: "PUT",
+            url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + item.id,
+            data: update,
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          })
+            .then((Response) => {
+              return Response.data;
+            })
+            .catch((err) => {
+              return {
+                error: err.response.data,
+                mensage: err.response.data.error,
+                detalhe: err.response.data.error.details,
+              };
+            });
+        }
+
       });
       res.json(EmpresaMap)
     } catch (err: any) {

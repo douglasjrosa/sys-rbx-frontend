@@ -19,6 +19,7 @@ export const getData = async (proposta: any) => {
     console.log("🚀 ~ file: getinf.ts:19 ~ getData ~ inf:", inf)
     const Vendedor = inf.user.data.attributes.username
     const empresaFornec = inf.fornecedorId.data.attributes;
+    const dataEntrega = !inf.dataEntrega? '' : inf.dataEntrega
 
     const dadosFornecedor = {
       data: {
@@ -76,7 +77,8 @@ export const getData = async (proposta: any) => {
       business,
       Vendedor,
       cliente_pedido,
-      Desconto
+      Desconto,
+      dataEntrega
     };
     return data;
   } catch (error) {

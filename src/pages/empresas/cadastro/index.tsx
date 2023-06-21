@@ -100,11 +100,6 @@ export default function Cadastro() {
     }
   };
 
-  const reload = () => {
-    setTimeout(() => {
-      router.push('/empresas');
-    }, 500);
-  };
   const date = new Date();
   const dateIsso = date.toISOString();
   const historico = [
@@ -171,7 +166,7 @@ export default function Cadastro() {
   };
 
   const strapi = async () => {
-    const url = "/api/db/empresas/post";
+    const url = `/api/db/empresas/post?Email=${session?.user.email}`;
     const validateString = [
       { mudulo: nome, valor: "Nome" },
       { mudulo: CNPJ, valor: "cnpj" },
@@ -216,7 +211,7 @@ export default function Cadastro() {
             duration: 3000,
             isClosable: true,
           });
-          reload();
+          router.push('/empresas');
           return response.data;
         })
         .catch((err) => console.error(err));

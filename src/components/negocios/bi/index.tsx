@@ -1,16 +1,16 @@
 import { EtapasNegocio } from "@/components/data/etapa";
 import { SelectUser } from "@/components/painel/calendario/select/SelecUser"
-import { Box, Flex, IconButton, Table, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, chakra } from "@chakra-ui/react"
+import { Box, Flex, Table, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, chakra } from "@chakra-ui/react"
 import { useEffect, useState } from "react";
 import { Ausente } from "./ausente";
 import { Presente } from "./presente";
-import { BsBoxArrowUpRight } from "react-icons/bs";
 import { useRouter } from "next/router";
 import Loading from "@/components/elements/loading";
 import { getAllDaysOfMonth } from "@/function/Datearray";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { NovoCliente } from "./novo";
+import { SelectEmpresas } from "@/components/painel/calendario/select/selectEmpresas";
 
 
 export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdados: number }) => {
@@ -32,8 +32,9 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
 
   useEffect(() => {
     (async () => {
-      const usuario = session?.user.name
+      const usuario: any = session?.user.name
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
+      setUser(usuario)
       await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
         .then((response) => {
           const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
@@ -46,7 +47,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
           console.log(error);
         })
     })();
-  }, [MesAt, User, session?.user.name])
+  }, [MesAt, session?.user.name])
 
 
   // Função de comparação
@@ -86,6 +87,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
     // props.user(user)
     (async () => {
       const usuario = user
+      setUser(usuario)
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
       await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
         .then((response) => {
@@ -99,6 +101,28 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
           console.log(error);
         })
     })();
+  }
+
+  function handleEnpresa(enpresa: React.SetStateAction<any>) {
+    if(enpresa){
+      setData(enpresa)
+    } else {
+      (async () => {
+        const usuario = User
+        const daysOfMonth = await getAllDaysOfMonth(MesAt);
+        await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
+          .then((response) => {
+            const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
+            console.log("🚀 ~ file: index.tsx:92 ~ .then ~ response.data:", response.data)
+            const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
+            setData(filtro1);
+            setLoad(false);
+          })
+          .catch((error: any) => {
+            console.log(error);
+          })
+      })();
+    }
   }
 
 
@@ -119,6 +143,9 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
           <Flex gap={16}>
             <Box>
               <SelectUser onValue={handleUserChange} />
+            </Box>
+            <Box>
+              <SelectEmpresas onValue={handleEnpresa} />
             </Box>
           </Flex>
 
@@ -195,7 +222,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
               </Box>
 
             </Box>
-            
+
             <Box w={{ lg: '83%', sm: '100%' }} bg={'blue.600'} p={2} rounded={5}>
               <Flex direction={'column'} w={'100%'} alignItems={'center'}>
                 <chakra.span fontSize={'16px'} fontWeight={'medium'}>Clientes novos</chakra.span>

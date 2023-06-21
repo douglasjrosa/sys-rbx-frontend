@@ -34,6 +34,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             valor_ultima_compra: valor,
           },
         };
+        
         await axios({
           method: "PUT",
           url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -65,6 +66,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             valor_ultima_compra: valor,
           },
         };
+        console.log("🚀 ~ file: index.ts:69 ~ getId ~ update !inativStatus:", update)
         await axios({
           method: "PUT",
           url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -98,6 +100,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             penultima_compra: ultima_compra,
           },
         };
+        console.log("🚀 ~ file: index.ts:103 ~ getId ~ update inativStatus === 1:", update)
         await axios({
           method: "PUT",
           url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -130,6 +133,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             penultima_compra: ultima_compra,
           },
         };
+        console.log("🚀 ~ file: index.ts:136 ~ getId ~ update inativStatus === 2:", update)
         await axios({
           method: "PUT",
           url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -163,6 +167,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
               penultima_compra: ultima_compra,
             },
           };
+          console.log("🚀 ~ file: index.ts:170 ~ getId ~ update inativStatus === 3:", update)
           await axios({
             method: "PUT",
             url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -194,6 +199,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
               penultima_compra: ultima_compra,
             },
           };
+          console.log("🚀 ~ file: index.ts:202 ~ getId ~ update penultima_compra:", update)
           await axios({
             method: "PUT",
             url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -227,6 +233,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             penultima_compra: ultima_compra,
           },
         };
+        console.log("🚀 ~ file: index.ts:236 ~ getId ~ update inativStatus === 4:", update)
         await axios({
           method: "PUT",
           url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -258,6 +265,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             penultima_compra: ultima_compra,
           },
         };
+        console.log("🚀 ~ file: index.ts:268 ~ getId ~ update inativStatus === 5:", update)
         await axios({
           method: "PUT",
           url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -278,7 +286,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             });
           });
       }
-     
+
     } catch (err: any) {
       res.status(400).json({
         error: err.response.data,
