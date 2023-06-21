@@ -61,7 +61,7 @@ const ProfilePopover = () => {
                       <Button
                         bg="red.200"
                         rightIcon={<ExternalLinkIcon />}
-                        onClick={() => router.push('/api/auth/signout')}
+                        onClick={() => signOut()}
                       >
                         Sair
                       </Button>

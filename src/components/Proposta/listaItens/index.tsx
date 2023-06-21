@@ -72,7 +72,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
           });
 
         await axios({
-          url: `/api/db/empresas/setVendedor?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`,
+          url: `/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`,
           method: "GET",
         })
           .then((response) => {

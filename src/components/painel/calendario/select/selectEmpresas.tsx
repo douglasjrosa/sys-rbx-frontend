@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
 export const SelectEmpresas = (props: {
-  onValue: any;
+  onValue: any; Usuario: any;
 }) => {
   const [date, setDate] = useState<any>(null);
   const [Data, setData] = useState<any>([]);
@@ -12,14 +12,17 @@ export const SelectEmpresas = (props: {
   const toast = useToast()
 
   useEffect(() => {
-    (async () => {
-      await axios.get(`/api/db/empresas/getEmpresamin?Vendedor=${session?.user.name}`)
-        .then((resp) => {
-          setData(resp.data)
-        })
-        .catch((err) => console.log(err))
-    })()
-  }, [session?.user.name]);
+    if (props.Usuario) {
+      (async () => {
+        localStorage.setItem('Usuario', props.Usuario)
+        await axios.get(`/api/db/empresas/getEmpresamin?Vendedor=${props.Usuario}`)
+          .then((resp) => {
+            setData(resp.data)
+          })
+          .catch((err) => console.log(err))
+      })()
+    }
+  }, [props.Usuario, session?.user.name]);
 
   const HandleValue = (e: any) => {
     const value = parseInt(e.target.value);
@@ -28,7 +31,7 @@ export const SelectEmpresas = (props: {
       const negocio = iten.attributes.businesses.data;
       console.log("🚀 ~ file: selectEmpresas.tsx:29 ~ const[filer]=Data.filter ~ negocio:", negocio)
       if (negocio.length === 0) {
-        setTimeout(()=>{
+        setTimeout(() => {
           setDate(0)
           toast({
             title: "Cliente não tem negocios iniciado",

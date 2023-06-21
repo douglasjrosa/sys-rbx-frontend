@@ -62,7 +62,7 @@ function Negocios() {
           justifyContent={'end'}
         >
 
-          <BtCreate onLoading={tragetReload} />
+          <BtCreate onLoading={tragetReload} user={User} />
         </Flex>
         <Box h={"95%"}>
           <Flex

@@ -33,8 +33,8 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
   useEffect(() => {
     (async () => {
       const usuario: any = session?.user.name
+      setUser(usuario);
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
-      setUser(usuario)
       await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
         .then((response) => {
           const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
@@ -47,8 +47,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
           console.log(error);
         })
     })();
-  }, [MesAt, session?.user.name])
-
+  }, [MesAt, props, session?.user.name])
 
   // Função de comparação
   function compararPorNomeEIdade(a: any, b: any) {
@@ -82,9 +81,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
   // Reorganizar o array por ordem alfabética pelo nome e pelos valores numéricos em ordem decrescente
   data.sort(compararPorNomeEIdade);
 
-  function handleUserChange(user: React.SetStateAction<string>) {
-    // setUser(user)
-    // props.user(user)
+  function handleUserChange(user: React.SetStateAction<any>) {
     (async () => {
       const usuario = user
       setUser(usuario)
@@ -104,7 +101,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
   }
 
   function handleEnpresa(enpresa: React.SetStateAction<any>) {
-    if(enpresa){
+    if (enpresa) {
       setData(enpresa)
     } else {
       (async () => {
@@ -125,7 +122,6 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
     }
   }
 
-
   if (load) {
     return (
       <>
@@ -145,7 +141,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
               <SelectUser onValue={handleUserChange} />
             </Box>
             <Box>
-              <SelectEmpresas onValue={handleEnpresa} />
+              <SelectEmpresas Usuario={User} onValue={handleEnpresa} />
             </Box>
           </Flex>
 
@@ -232,7 +228,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                   <Table>
                     <Thead bg={'green.200'}>
                       <Tr>
-                        <Th p={2} border={'2px'} w={{ sm: '60%', lg: '40%' }}  textAlign={'center'}>Empresa</Th>
+                        <Th p={2} border={'2px'} w={{ sm: '60%', lg: '40%' }} textAlign={'center'}>Empresa</Th>
                         <Th p={2} border={'2px'} textAlign={'center'}>Data de entrada</Th>
                       </Tr>
                     </Thead>

@@ -67,7 +67,7 @@ export const theme = extendTheme({
   },
 });
 
-export const BtCreate = (props: { onLoading: any }) => {
+export const BtCreate = (props: { onLoading: any; user: any }) => {
   const { data: session } = useSession();
   const [work, setWork] = useState([]);
   const [budgets, setBudgets] = useState("");
@@ -75,12 +75,29 @@ export const BtCreate = (props: { onLoading: any }) => {
   const [Approach, setApproach] = useState("");
   const [Empresa, setEmpresa] = useState("");
   const [Deadline, setDeadline] = useState("");
+  const [User, setUser] = useState("");
   const { onOpen, onClose, isOpen } = useDisclosure();
 
   useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    function verificarLocalStorage() {
+      // Verificar o valor do item "Usuario" no LocalStorage
+      var usuario: any = localStorage.getItem("Usuario");
+      setUser(usuario)
+      // Limpar o timeout anterior
+      clearTimeout(timeout);
+
+      // Reiniciar o temporizador após 5 segundos
+      timeout = setTimeout(verificarLocalStorage, 5000);
+    }
+    // Chamar a função inicialmente para começar a verificação
+    verificarLocalStorage();
+  }, []);
+
+  useEffect(() => {
     (async () => {
-      // let url = "/api/db/empresas/getEmpresamin";
-      let url = `/api/db/empresas/get?Vendedor=${session?.user.name}`;
+      // let url = `/api/db/empresas/get?Vendedor=${session?.user.name}`;
+      let url = `/api/db/empresas/get?Vendedor=${User}`;
       await axios({
         method: "GET",
         url: url,
@@ -92,7 +109,7 @@ export const BtCreate = (props: { onLoading: any }) => {
           console.log(error);
         });
     })();
-  }, [session?.user.name]);
+  }, [User]);
 
   const maskPreco = (e: any) => {
     const originalVelue: any = unMask(e.target.value);
