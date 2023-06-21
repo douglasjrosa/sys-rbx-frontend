@@ -23,9 +23,10 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
       const valor_ultima_compra = empresa.attributes.valor_ultima_compra;
       const penultima_compra = empresa.attributes.penultima_compra;
       const inativOk = empresa.attributes.inativOk;
+      let update;
 
-      if (!user) {
-        const update = {
+      if (!inativStatus || inativStatus == 3) {
+        update = {
           data: {
             vendedor: vendedor,
             user: Number(vendedorId),
@@ -34,238 +35,29 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             valor_ultima_compra: valor,
           },
         };
-        
-        await axios({
-          method: "PUT",
-          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
-          data: update,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((Response) => {
-            return res.status(200).json(Response.data);
-          })
-          .catch((err) => {
-            return res.status(400).json({
-              error: err.response.data,
-              mensage: err.response.data.error,
-              detalhe: err.response.data.error.details,
-            });
-          });
-      }
-      if (!inativStatus) {
-        // inativStatus=== 3
-        const update = {
-          data: {
-            vendedor: vendedor,
-            user: Number(vendedorId),
-            inativStatus: 3,
-            ultima_compra: new Date().toISOString(),
-            valor_ultima_compra: valor,
-          },
-        };
-        console.log("🚀 ~ file: index.ts:69 ~ getId ~ update !inativStatus:", update)
-        await axios({
-          method: "PUT",
-          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
-          data: update,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((Response) => {
-            return res.status(200).json(Response.data);
-          })
-          .catch((err) => {
-            return res.status(400).json({
-              error: err.response.data,
-              mensage: err.response.data.error,
-              detalhe: err.response.data.error.details,
-            });
-          });
-      }
-      if (inativStatus === 1) {
-        // inativStatus=== 4
-
-        const update = {
+      } else if (inativStatus == 1 || inativStatus == 4) {
+        update = {
           data: {
             vendedor: vendedor,
             user: Number(vendedorId),
             inativStatus: 4,
             ultima_compra: new Date().toISOString(),
             valor_ultima_compra: valor,
-            penultima_compra: ultima_compra,
           },
         };
-        console.log("🚀 ~ file: index.ts:103 ~ getId ~ update inativStatus === 1:", update)
-        await axios({
-          method: "PUT",
-          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
-          data: update,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((Response) => {
-            return res.status(200).json(Response.data);
-          })
-          .catch((err) => {
-            return res.status(400).json({
-              error: err.response.data,
-              mensage: err.response.data.error,
-              detalhe: err.response.data.error.details,
-            });
-          });
-      }
-      if (inativStatus === 2) {
-        // inativStatus=== 5
-        const update = {
-          data: {
-            vendedor: vendedor,
-            user: Number(vendedorId),
-            inativStatus: 5,
-            ultima_compra: new Date().toISOString(),
-            valor_ultima_compra: valor,
-            penultima_compra: ultima_compra,
-          },
-        };
-        console.log("🚀 ~ file: index.ts:136 ~ getId ~ update inativStatus === 2:", update)
-        await axios({
-          method: "PUT",
-          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
-          data: update,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((Response) => {
-            return res.status(200).json(Response.data);
-          })
-          .catch((err) => {
-            return res.status(400).json({
-              error: err.response.data,
-              mensage: err.response.data.error,
-              detalhe: err.response.data.error.details,
-            });
-          });
-      }
-      if (inativStatus === 3) {
-        // inativStatus=== 5
-        if(!penultima_compra){
-          const update = {
-            data: {
-              vendedor: vendedor,
-              user: Number(vendedorId),
-              inativStatus: 3,
-              ultima_compra: new Date().toISOString(),
-              valor_ultima_compra: valor,
-              penultima_compra: ultima_compra,
-            },
-          };
-          console.log("🚀 ~ file: index.ts:170 ~ getId ~ update inativStatus === 3:", update)
-          await axios({
-            method: "PUT",
-            url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
-            data: update,
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          })
-            .then((Response) => {
-              return res.status(200).json(Response.data);
-            })
-            .catch((err) => {
-              return res.status(400).json({
-                error: err.response.data,
-                mensage: err.response.data.error,
-                detalhe: err.response.data.error.details,
-              });
-            });
-        }
-        if(penultima_compra){
-          const update = {
-            data: {
-              vendedor: vendedor,
-              user: Number(vendedorId),
-              inativStatus: 5,
-              ultima_compra: new Date().toISOString(),
-              valor_ultima_compra: valor,
-              penultima_compra: ultima_compra,
-            },
-          };
-          console.log("🚀 ~ file: index.ts:202 ~ getId ~ update penultima_compra:", update)
-          await axios({
-            method: "PUT",
-            url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
-            data: update,
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          })
-            .then((Response) => {
-              return res.status(200).json(Response.data);
-            })
-            .catch((err) => {
-              return res.status(400).json({
-                error: err.response.data,
-                mensage: err.response.data.error,
-                detalhe: err.response.data.error.details,
-              });
-            });
-        }
-      }
-      if (inativStatus === 4) {
-        // inativStatus=== 5
-        const update = {
-          data: {
-            vendedor: vendedor,
-            user: Number(vendedorId),
-            inativStatus: 5,
-            ultima_compra: new Date().toISOString(),
-            valor_ultima_compra: valor,
-            penultima_compra: ultima_compra,
-          },
-        };
-        console.log("🚀 ~ file: index.ts:236 ~ getId ~ update inativStatus === 4:", update)
-        await axios({
-          method: "PUT",
-          url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
-          data: update,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-          .then((Response) => {
-            return res.status(200).json(Response.data);
-          })
-          .catch((err) => {
-            return res.status(400).json({
-              error: err.response.data,
-              mensage: err.response.data.error,
-              detalhe: err.response.data.error.details,
-            });
-          });
-      }
-      if (inativStatus === 5) {
+      } else if (inativStatus === 2 || inativStatus === 5) {
         // inativStatus === 4
         const update = {
           data: {
-            vendedor: vendedor,
-            user: Number(vendedorId),
             ultima_compra: new Date().toISOString(),
             valor_ultima_compra: valor,
             penultima_compra: ultima_compra,
           },
         };
-        console.log("🚀 ~ file: index.ts:268 ~ getId ~ update inativStatus === 5:", update)
+        console.log(
+          "🚀 ~ file: index.ts:268 ~ getId ~ update inativStatus === 5:",
+          update
+        );
         await axios({
           method: "PUT",
           url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
@@ -286,6 +78,27 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
             });
           });
       }
+
+      await axios({
+        method: "PUT",
+        url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
+        data: update,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((Response) => {
+          return res.status(200).json(Response.data);
+        })
+        .catch((err) => {
+          return res.status(400).json({
+            error: err.response.data,
+            mensage: err.response.data.error,
+            detalhe: err.response.data.error.details,
+          });
+        });
+
 
     } catch (err: any) {
       res.status(400).json({
