@@ -77,7 +77,7 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
               textAlign={'end'}
             >
               <Flex gap={5}>
-                <Box textDecoration='none' color={'blue'} fontWeight={'bold'} hidden={!mensagem.flag}>
+                <Box textDecoration='none' color={'white'} px={'5px'} rounded={'5px'} bg={'messenger.700'} fontWeight={'bold'} hidden={!mensagem.flag}>
                   {mensagem.flag}
                 </Box>
                 <Box textDecoration={'underline'}>
