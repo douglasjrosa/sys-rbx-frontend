@@ -1,8 +1,8 @@
-import { Box } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import Loading from '../../elements/loading';
 
-interface MyTextAreaElement extends HTMLTextAreaElement {}
+interface MyTextAreaElement extends HTMLTextAreaElement { }
 
 export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
   const textareaRef = useRef<MyTextAreaElement>(null);
@@ -44,7 +44,8 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
 
   return (
     <Box display={'flex'} flexDirection={'column'} w={'100%'} p={5}>
-      {!data? null : data.map((mensagem: any, index: number) => {
+      {!data ? null : data.map((mensagem: any, index: number) => {
+        console.log(mensagem)
         const estilo =
           mensagem.user === 'Sistema'
             ? estiloMensagem.mensagemSistema
@@ -72,10 +73,17 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
             <Box
               fontSize="10px"
               mt={2}
-              textDecoration={'underline'}
+
               textAlign={'end'}
             >
-              {dateFormate}
+              <Flex gap={5}>
+                <Box textDecoration='none' color={'blue'} fontWeight={'bold'} hidden={!mensagem.flag}>
+                  {mensagem.flag}
+                </Box>
+                <Box textDecoration={'underline'}>
+                  {dateFormate}
+                </Box>
+              </Flex>
             </Box>
           </Box>
         );
