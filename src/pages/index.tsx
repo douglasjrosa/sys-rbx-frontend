@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { parseISO, isSameDay } from 'date-fns';
 import { RenderCalendar } from '@/components/painel/calendario/render';
 import { useSession } from 'next-auth/react';
+import { SetValue } from '@/function/currenteValor';
 
 const Painel: React.FC = () => {
   const { data: session } = useSession();
@@ -203,7 +204,10 @@ const Painel: React.FC = () => {
               <chakra.span>{Fase2.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
             </Flex>
             <Flex w={'8rem'} h={'2rem'} py={1} bg={'red'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-              <chakra.span>{Fase3.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
+              <chakra.span>{
+              // SetValue(`${Fase3}`)
+              Fase3.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              }</chakra.span>
             </Flex>
           </Flex>
 

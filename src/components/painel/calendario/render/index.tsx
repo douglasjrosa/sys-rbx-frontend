@@ -1,3 +1,4 @@
+import { SetValue } from "@/function/currenteValor";
 import { Box, Flex, chakra } from "@chakra-ui/react"
 import { useEffect, useState } from "react";
 
@@ -35,6 +36,7 @@ export const RenderCalendar = (props: { data: any }) => {
                 const totalDateConclusao = DateConclusaoFilter.reduce((total: number, cliente: any) => {
                   const budget = cliente.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".");
                   const valor = total + parseFloat(budget);
+                  // const valor = SetValue(cliente.attributes.Budget);
                   return valor
                 }, 0);
 
@@ -43,7 +45,7 @@ export const RenderCalendar = (props: { data: any }) => {
                     <Flex pe={2} mb={2} justifyContent={'end'} fontWeight={'semibold'}>{lastTwoDigits}</Flex>
                     <Box hidden={!totalDateConclusao}>
                       <Flex justifyContent={'center'}>
-                        <chakra.span fontSize={'14px'} fontWeight={'semibold'} color={'green.500'} >{totalDateConclusao.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
+                        <chakra.span fontSize={'15px'} fontWeight={'bold'} color={'green.600'} >{totalDateConclusao.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
                       </Flex>
                     </Box>
                   </Box>
