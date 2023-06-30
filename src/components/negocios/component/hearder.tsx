@@ -16,6 +16,7 @@ import { BtnStatus } from "../../elements/lista/status";
 import { StatusPerca } from "@/components/data/perca";
 import { EtapasNegocio } from "@/components/data/etapa";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
+import { SetValue } from "@/function/currenteValor";
 
 export const NegocioHeader = (props: {
   nBusiness: string;
@@ -49,7 +50,7 @@ export const NegocioHeader = (props: {
   useEffect(() => {
     setStatusG(props.Status);
     setStatus(props.Status);
-    setBudget(!props.Budget? 0.0 : parseFloat(props.Budget.replace('R$', '').replace('.', '').replace(',', '.')));
+    setBudget(SetValue(props.Budget));
     setDeadline(props.Deadline);
     setBusines(props.nBusiness);
     setApproach(props.Approach);
@@ -79,14 +80,14 @@ export const NegocioHeader = (props: {
       data: {
         deadline: Deadline,
         nBusiness: Busines,
-        Budget: Budget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+        Budget: SetValue(Budget),
         Approach: Approach,
         history: history,
-        etapa: Status === '5' ? 6 : parseInt(Etapa),
+        etapa: parseInt(Etapa),
         andamento: Status,
         Mperca: Mperca,
         incidentRecord: [...props.chat, ChatConcluido],
-        DataRetorno: Status !== 2 ? null : DataRetorno,
+        DataRetorno: DataRetorno,
         date_conclucao: new Date(Date.now())
       },
     };
@@ -95,10 +96,10 @@ export const NegocioHeader = (props: {
       data: {
         deadline: Deadline,
         nBusiness: Busines,
-        Budget: Budget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+        Budget: SetValue(Budget),
         Approach: Approach,
         history: history,
-        etapa: Status === '5' ? 6 : parseInt(Etapa),
+        etapa: parseInt(Etapa),
         andamento: Status,
         Mperca: Mperca,
         DataRetorno: DataRetorno,
@@ -128,6 +129,17 @@ export const NegocioHeader = (props: {
       });
   };
 
+  const masckValor = (e: any) => {
+    const valor = e.target.value.replace('.', '').replace(',', '')
+    const valorformat = SetValue(valor);
+    console.log(valor.length)
+    if (valor.length > 15) {
+      setBudget(valorformat.slice(-15))
+    } else {
+      setBudget(valorformat)
+    }
+  }
+
   function getStatus(statusinf: SetStateAction<any>) {
     setStatus(statusinf);
   }
@@ -155,6 +167,7 @@ export const NegocioHeader = (props: {
               shadow="sm"
               size="sm"
               rounded="md"
+              maxLength={15}
               onChange={(e) => setBusines(e.target.value)}
               value={props.nBusiness}
             />
@@ -185,14 +198,13 @@ export const NegocioHeader = (props: {
               Orçamento estimado
             </FormLabel>
             <Input
-              type="number"
               shadow="sm"
               size="sm"
               w="full"
-              step={'0.01'}
               fontSize="xs"
               rounded="md"
-              onChange={(e) => setBudget(e.target.value)}
+
+              onChange={masckValor}
               value={Budget}
             />
           </Box>
@@ -220,10 +232,10 @@ export const NegocioHeader = (props: {
               ))}
             </Select>
           </Box>
-          <Box hidden={Etapa === '6' ? false : true}>
+          <Box hidden={Etapa === '6' ? false : Etapa === 6 ? false : true}>
             <BtnStatus Resp={props.Status} onAddResp={getStatus} />
           </Box>
-          <Box hidden={Status !== "1" ? true : false}>
+          <Box hidden={Status == 1? false : true}>
             <FormLabel
               fontSize="xs"
               fontWeight="md"

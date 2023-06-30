@@ -86,22 +86,16 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
           w={'85%'}
           rounded={'5px'}
           borderColor={'gray.300'}
-          rows={2}
+          rows={1}
           onChange={(e: any) => setValor(e.target.value)}
         />
         <Box color={'white'}>
-          <FormLabel
-            fontSize='13px'
-          >
-            Flag
-          </FormLabel>
           <Select
             bg='#2a303b'
             borderColor='white'
-            size='sm'
+            p={'10px'}
             rounded={'5px'}
             fontSize='12px'
-            h='25px'
             w='11rem'
             focusBorderColor='white'
             onChange={(e)=> setFlag(e.target.value)}
@@ -123,7 +117,7 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
         icon={<FaLocationArrow />}
         color="gray.700"
         onClick={addItens}
-        h='3.5rem'
+        h='3rem'
         w='5rem'
       />
     </Flex >

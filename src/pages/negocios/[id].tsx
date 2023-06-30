@@ -158,6 +158,7 @@ export default function CreateNegocio() {
         url: url,
       })
         .then((res) => {
+          console.log("🚀 ~ file: [id].tsx:161 ~ .then ~ res:", res)
           setnBusiness(res.data.attributes.nBusiness);
           setApproach(res.data.attributes.Approach);
           setBudget(res.data.attributes.Budget);

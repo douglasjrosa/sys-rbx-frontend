@@ -12,6 +12,8 @@ import { useSession } from "next-auth/react";
 import { NovoCliente } from "./novo";
 import { SelectEmpresas } from "@/components/painel/calendario/select/selectEmpresas";
 import { BtCreate } from "../component/butonCreate";
+import { SetValue } from "@/function/currenteValor";
+import { StatusAndamento } from "@/components/data/status";
 
 
 export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdados: number }) => {
@@ -190,7 +192,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                   <Tbody>
                     {data.map((itens: any) => {
                       const statusAtual = itens.attributes.andamento
-                      const statusRepresente = statusAtual === 1 ? '⭐' : statusAtual === 2 ? '⭐⭐' : statusAtual === 3 ? '⭐⭐⭐' : statusAtual === 4 ? '⭐⭐⭐⭐' : '⭐⭐⭐⭐⭐';
+                      const [statusRepresente] = StatusAndamento.filter((i: any) => i.id == statusAtual).map((e: any)=> e.title);
                       const etapa = EtapasNegocio.filter((e: any) => e.id == itens.attributes.etapa).map((e: any) => e.title)
 
                       const colorLine = itens.attributes.DataRetorno <= new Date().toISOString() ? 'red.600' : '';
@@ -205,7 +207,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                             <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
                             <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{etapa}</Td>
                             <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{statusRepresente}</Td>
-                            <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{itens.attributes.Budget}</Td>
+                            <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{SetValue(itens.attributes.Budget)}</Td>
                             <Td color={'white'} bg={colorLine} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{dataFormatada}</Td>
                           </Tr>
                         </>

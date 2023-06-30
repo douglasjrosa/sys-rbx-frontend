@@ -7,6 +7,7 @@ import { GrEdit } from "react-icons/gr";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { SetValue } from "@/function/currenteValor";
 
 
 
@@ -23,7 +24,7 @@ export const CarteiraAusente = (props: { data: any }) => {
 
   const BodyTabela = !!Data && Data.map((i: any) => {
 
-    const valor = !i.attributes.valor_ultima_compra ? 'R$ 0,00' : i.attributes.valor_ultima_compra
+    const valor = SetValue(i.attributes.valor_ultima_compra)
 
     const UltimaCompra = i.attributes.ultima_compra
     // Supondo que você tenha a data da última compra armazenada em uma variável chamada 'dataUltimaCompra'
@@ -38,7 +39,7 @@ export const CarteiraAusente = (props: { data: any }) => {
     // Converte a diferença em milissegundos para dias
     const diferencaEmDias: number = Math.floor(diferencaEmMilissegundos / (1000 * 60 * 60 * 24));
 
-    const text = !UltimaCompra ? '' : `, há ${diferencaEmDias} dias`
+    const text = !UltimaCompra ? '' : ` - há ${diferencaEmDias} dias`
 
     return (
       <>
@@ -80,7 +81,7 @@ export const CarteiraAusente = (props: { data: any }) => {
                       vendedor: session?.user.id,
                       DataRetorno: dataAtual.toISOString(),
                       incidentRecord: [MSG],
-                      Budget: 'R$ 0,00'
+                      Budget: '0,00'
                     };
                     const url = "/api/db/business/post";
                     await axios({

@@ -1,3 +1,5 @@
+
+import { SetValue } from "@/function/currenteValor";
 import { Td, Tr } from "@chakra-ui/react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -27,7 +29,7 @@ export const Presente = () => {
           {i.attributes.nome}
         </Td>
         <Td py='2' color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'} textAlign={"center"}>
-          {i.attributes.valor_ultima_compra}
+          {SetValue(i.attributes.valor_ultima_compra)}
         </Td>
       </Tr>
     ));

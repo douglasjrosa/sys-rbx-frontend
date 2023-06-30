@@ -1,4 +1,5 @@
 import Loading from "@/components/elements/loading";
+import { SetValue } from "@/function/currenteValor";
 import { Box, Flex, Heading, IconButton, Table, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr } from "@chakra-ui/react"
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -20,7 +21,7 @@ export const CarteiraVendedor = (props: { data: any }) => {
 
   const BodyTabela = !!Data && Data.map((i: any) => {
 
-    const valor = !i.attributes.valor_ultima_compra ? 'R$ 0,00' : i.attributes.valor_ultima_compra
+    const valor = SetValue(i.attributes.valor_ultima_compra)
 
     const UltimaCompra = i.attributes.ultima_compra
     // Supondo que você tenha a data da última compra armazenada em uma variável chamada 'dataUltimaCompra'
@@ -35,7 +36,7 @@ export const CarteiraVendedor = (props: { data: any }) => {
     // Converte a diferença em milissegundos para dias
     const diferencaEmDias: number = Math.floor(diferencaEmMilissegundos / (1000 * 60 * 60 * 24));
 
-    const text = !UltimaCompra ? '' : `, há ${diferencaEmDias} dias`
+    const text = !UltimaCompra ? '' : ` - há ${diferencaEmDias} dias`
 
     return (
       <>
@@ -77,7 +78,7 @@ export const CarteiraVendedor = (props: { data: any }) => {
                       vendedor: session?.user.id,
                       DataRetorno: dataAtual.toISOString(),
                       incidentRecord: [MSG],
-                      Budget: 'R$ 0,00'
+                      Budget: '0,00'
                     };
                     const url = "/api/db/business/post";
                     await axios({

@@ -45,7 +45,6 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
   return (
     <Box display={'flex'} flexDirection={'column'} w={'100%'} p={5}>
       {!data ? null : data.map((mensagem: any, index: number) => {
-        console.log(mensagem)
         const estilo =
           mensagem.user === 'Sistema'
             ? estiloMensagem.mensagemSistema

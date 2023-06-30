@@ -1,17 +1,15 @@
 /* eslint-disable react/no-children-prop */
 import { EtapasNegocio } from "@/components/data/etapa";
+import { SetValue } from "@/function/currenteValor";
 import {
   Box,
   Button,
   ButtonGroup,
   ChakraProvider,
   extendTheme,
-  FormControl,
-  FormLabel,
   IconButton,
   Input,
   InputGroup,
-  InputLeftElement,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -20,7 +18,6 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Select,
-  Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
@@ -72,74 +69,26 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
   const { data: session } = useSession();
   const [work, setWork] = useState([]);
   const [budgets, setBudgets] = useState<any>();
-  const [budgetsMask, setBudgetsMask] = useState("");
   const [Approach, setApproach] = useState("");
   const [Empresa, setEmpresa] = useState("");
   const [Deadline, setDeadline] = useState("");
-  const [User, setUser] = useState("");
   const [Etapa, setEtapa] = useState("");
   const { onOpen, onClose, isOpen } = useDisclosure();
   const dataAtual: Date = new Date();
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    function verificarLocalStorage() {
-      // Verificar o valor do item "Usuario" no LocalStorage
-      var usuario: any = localStorage.getItem("Usuario");
-      setUser(usuario)
-      // Limpar o timeout anterior
-      clearTimeout(timeout);
-
-      // Reiniciar o temporizador após 5 segundos
-      timeout = setTimeout(verificarLocalStorage, 5000);
-    }
-    // Chamar a função inicialmente para começar a verificação
-    verificarLocalStorage();
-  }, []);
-
-  useEffect(() => {
     (async () => {
-      const url = `/api/db/empresas/get?Vendedor=${User}`;
-      const url1 = `/api/db/empresas/get`;
+      const usuario = session?.user.name
+      const url = `/api/db/empresas/get?Vendedor=${usuario}`;
       try {
         const response = await axios(url);
-        const response1 = await axios(url1);
         const GetVendedor = response.data;
-        const Getgeral = response1.data;
-        const data: any = [...GetVendedor, ...Getgeral]
-        setWork(data);
-
+        setWork(GetVendedor);
       } catch (error) {
         console.log(error);
       }
     })();
-  }, [User]);
-
-  const maskPreco = (e: any) => {
-    const originalVelue: any = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, [
-      ", 9",
-      ",99",
-      "9,99",
-      "99,99",
-      "999,99",
-      "9.999,99",
-      "99.999,99",
-      "999.999,99",
-      "9.999.999,99",
-      "99.999.999,99",
-      "999.999.999,99",
-    ]);
-    const valor =
-      originalVelue > 99
-        ? originalVelue
-          .replace(/[^\d]/g, "")
-          .replace(/^0+/, "")
-          .replace(/(\d{1,})(\d{2})$/, "$1.$2")
-        : originalVelue;
-    setBudgets(valor);
-    setBudgetsMask(maskedValue);
-  };
+  }, [session?.user.name]);
 
   const historico = {
     vendedor: session?.user.name,
@@ -160,12 +109,7 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
     const data = {
       status: true,
       deadline: Deadline,
-      Budget: !budgets
-        ? "R$ 0,00"
-        : parseFloat(budgets.replace(',', '.')).toLocaleString("pt-br", {
-          style: "currency",
-          currency: "BRL",
-        }),
+      Budget: budgets,
       Approach: Approach,
       empresa: Empresa,
       history: historico,
@@ -192,11 +136,9 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
 
   const Reset = () => {
     setBudgets("");
-    setBudgetsMask("");
     setApproach("");
     setEmpresa("");
     setDeadline("");
-    setBudgetsMask("");
     onClose();
   };
 
@@ -268,10 +210,9 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
             <InputGroup mt={2}>
               <Input
                 type="number"
-                step={'0,01'}
                 placeholder="Orçamento estimado"
                 value={budgets}
-                onChange={(e) => setBudgets(e.target.value)}
+                onChange={(e) => setBudgets(SetValue(e.target.value))}
               />
             </InputGroup>
           </PopoverBody>

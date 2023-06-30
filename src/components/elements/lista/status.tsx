@@ -28,14 +28,14 @@ export const BtnStatus = (props: { Resp: any; onAddResp: any }) => {
         w="full"
         fontSize="xs"
         rounded="md"
+        focusBorderColor="white"
         onChange={atualizarValor}
         value={valor}
       >
-        <option style={{ backgroundColor: "#1A202C" }}></option>
         {StatusAndamento.map((i: any) => {
           return (
-            <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
-              {i.title}
+            <option hidden={i.id === '3' ? true : false} style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
+              {i.id === '3' ? '' : i.title}
             </option>
           );
         })}
