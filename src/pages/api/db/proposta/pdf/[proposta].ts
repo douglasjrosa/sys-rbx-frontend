@@ -193,7 +193,7 @@ export default async function GetEmpresa(
                           border: [false, false, false, false],
                           style: "clienteFornecedor",
                           table: {
-                            widths: ["32%", "*"],
+                            widths: ["24%", "*"],
                             body: [
                               [
                                 {
@@ -281,7 +281,7 @@ export default async function GetEmpresa(
                           border: [false, false, false, false],
                           style: "clienteFornecedor",
                           table: {
-                            widths: ["21%", "*"],
+                            widths: ["23%", "*"],
                             body: [
                               [
                                 {
@@ -304,7 +304,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.cliente.nome,
+                                  text: infos.cliente.razao,
                                   border: [false, false, false, false],
                                 },
                               ],
