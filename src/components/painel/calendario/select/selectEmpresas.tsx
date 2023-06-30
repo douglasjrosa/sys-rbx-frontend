@@ -1,4 +1,4 @@
-import { Select, useToast } from '@chakra-ui/react';
+import { FormLabel, Select, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -29,7 +29,6 @@ export const SelectEmpresas = (props: {
     setDate(value)
     const [filer] = Data.filter((i: any) => i.id === value).map((iten: any) => {
       const negocio = iten.attributes.businesses.data;
-      console.log("🚀 ~ file: selectEmpresas.tsx:29 ~ const[filer]=Data.filter ~ negocio:", negocio)
       if (negocio.length === 0) {
         setTimeout(() => {
           setDate(0)
@@ -83,15 +82,26 @@ export const SelectEmpresas = (props: {
 
   return (
     <>
+      <FormLabel
+        htmlFor="cnpj"
+        fontSize="xs"
+        fontWeight="md"
+        color="white"
+      >
+        Empresa
+      </FormLabel>
       <Select
         w={'20rem'}
         onChange={HandleValue}
         value={date}
+        isDisabled={session?.user.pemission !== 'Adm'}
+        color="white"
+        bg='gray.800'
       >
-        <option value={0}>EMPRESAS RELACIONADAS</option>
+        <option style={{ backgroundColor: "#1A202C" }} value={0}>EMPRESAS RELACIONADAS</option>
         {Data.map((i: any) => {
           return (
-            <option key={i.id} value={i.id}>
+            <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
               {i.attributes.nome}
             </option>
           )

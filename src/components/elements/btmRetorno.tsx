@@ -7,12 +7,7 @@ export const BtmRetorno = (props: { Url: string }) => {
   const router = useRouter();
   return (
     <>
-      <BsArrowLeftCircleFill
-        color="blue"
-        cursor={'pointer'}
-        size={30}
-        onClick={() => router.push(props.Url)}
-      />
+      <IconButton aria-label='voltar' rounded={'3xl'} onClick={() => router.push(props.Url)} icon={<BsArrowLeftCircleFill size={30} color="#136dcc" />} />
     </>
   );
 };

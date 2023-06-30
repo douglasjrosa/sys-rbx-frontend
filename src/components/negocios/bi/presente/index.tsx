@@ -23,10 +23,10 @@ export const Presente = () => {
   const renderedData = useMemo(() => {
     return data.map((i: any) => (
       <Tr key={i.id}>
-        <Td p={2} fontSize={"10px"} borderEnd={"2px"} textAlign={"center"} borderBottom={"1px solid #afafaf"}>
+        <Td py='2' color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'} textAlign={"center"}>
           {i.attributes.nome}
         </Td>
-        <Td p={2} fontSize={"10px"} borderEnd={"2px"} textAlign={"center"} borderBottom={"1px solid #afafaf"}>
+        <Td py='2' color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'} textAlign={"center"}>
           {i.attributes.valor_ultima_compra}
         </Td>
       </Tr>

@@ -112,7 +112,7 @@ export const TableConteudo = (props: {
         <>
           <Tr key={i.id}>
             <Td isNumeric w={'1.3rem'} px='0' py='1' textAlign={'center'}>{x + 1}</Td>
-            <Td px='1rem' fontSize={'0.7rem'}>{i.nomeProd}</Td>
+            <Td px='1rem'  bg={'gray.800'} color={'white'} fontSize={'0.7rem'}>{i.nomeProd}</Td>
             <Td px='0' py='1' fontSize={'0.8rem'} textAlign={"center"}>{codig()}</Td>
             <Td px='0' py='1' fontSize={'0.8rem'}>
               <Input
@@ -159,8 +159,8 @@ export const TableConteudo = (props: {
                 currency: "BRL",
               })}
             </Td>
-            <Td px='5' py='1' fontSize={'0.8rem'}>
-              <Button onClick={remove} boxShadow={'lg'} border={'1px solid'} borderColor={'whatsapp.500'} p={'3'}>
+            <Td px='3%' py='1' fontSize={'0.8rem'} w={"5rem"}>
+              <Button onClick={remove} boxShadow={'lg'} colorScheme="green" p={'3'}>
                 <BsTrash />
               </Button>
             </Td>

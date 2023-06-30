@@ -1,4 +1,5 @@
 /* eslint-disable react/no-children-prop */
+import { EtapasNegocio } from "@/components/data/etapa";
 import {
   Box,
   Button,
@@ -70,13 +71,15 @@ export const theme = extendTheme({
 export const BtCreate = (props: { onLoading: any; user: any }) => {
   const { data: session } = useSession();
   const [work, setWork] = useState([]);
-  const [budgets, setBudgets] = useState("");
+  const [budgets, setBudgets] = useState<any>();
   const [budgetsMask, setBudgetsMask] = useState("");
   const [Approach, setApproach] = useState("");
   const [Empresa, setEmpresa] = useState("");
   const [Deadline, setDeadline] = useState("");
   const [User, setUser] = useState("");
+  const [Etapa, setEtapa] = useState("");
   const { onOpen, onClose, isOpen } = useDisclosure();
+  const dataAtual: Date = new Date();
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -96,18 +99,19 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
 
   useEffect(() => {
     (async () => {
-      // let url = `/api/db/empresas/get?Vendedor=${session?.user.name}`;
-      let url = `/api/db/empresas/get?Vendedor=${User}`;
-      await axios({
-        method: "GET",
-        url: url,
-      })
-        .then(function (response) {
-          setWork(response.data);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+      const url = `/api/db/empresas/get?Vendedor=${User}`;
+      const url1 = `/api/db/empresas/get`;
+      try {
+        const response = await axios(url);
+        const response1 = await axios(url1);
+        const GetVendedor = response.data;
+        const Getgeral = response1.data;
+        const data: any = [...GetVendedor, ...Getgeral]
+        setWork(data);
+
+      } catch (error) {
+        console.log(error);
+      }
     })();
   }, [User]);
 
@@ -152,12 +156,13 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
 
   const salve = async () => {
     props.onLoading(true);
+
     const data = {
       status: true,
       deadline: Deadline,
       Budget: !budgets
         ? "R$ 0,00"
-        : parseFloat(budgets).toLocaleString("pt-br", {
+        : parseFloat(budgets.replace(',', '.')).toLocaleString("pt-br", {
           style: "currency",
           currency: "BRL",
         }),
@@ -165,7 +170,9 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
       empresa: Empresa,
       history: historico,
       vendedor: session?.user.id,
+      DataRetorno: dataAtual.toISOString(),
       incidentRecord: [MSG],
+      etapa: Etapa,
     };
 
     const url = "/api/db/business/post";
@@ -221,10 +228,10 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
             Preencha com as informações abaixo
             <Select
               mt={2}
-              placeholder="Selecione uma empresa"
               onChange={(e) => setEmpresa(e.target.value)}
               value={Empresa}
             >
+              <option style={{ backgroundColor: "#2A4365" }} value="">Selecione uma empresa</option>
               {work.map((item: any) => {
                 return (
                   <option
@@ -237,45 +244,36 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
                 );
               })}
             </Select>
-            <Tooltip label="Tipo de atendimento">
-              <Select
-                mt={2}
-                placeholder="Selecione o tipo de Atendimento"
-                onChange={(e) => setApproach(e.target.value)}
-                value={Approach}
-              >
+            <Select
+              mt={2}
+              onChange={(e) => setEtapa(e.target.value)}
+              value={Etapa}
+            >
+              <option style={{ backgroundColor: "#2A4365" }} value="">Selecione a etapa do negócio</option>
+              {EtapasNegocio.map((item: any) => {
+                if (item.id === '6'){
+                  return ''
+                }
                 return (
-                <option style={{ backgroundColor: "#2A4365" }} value="">
-                  {" "}
-                </option>
-                <option style={{ backgroundColor: "#2A4365" }} value="interno">
-                  Cliente entrou em contato
-                </option>
-                <option style={{ backgroundColor: "#2A4365" }} value="externo">
-                  Vendedor entrou em contato
-                </option>
+                  <option
+                    style={{ backgroundColor: "#2A4365" }}
+                    key={item.id}
+                    value={item.id}
+                  >
+                    {item.title}
+                  </option>
                 );
-              </Select>
-            </Tooltip>
+              })}
+            </Select>
             <InputGroup mt={2}>
-              <InputLeftElement pointerEvents="none" children={"R$"} />
               <Input
-                type="text"
+                type="number"
+                step={'0,01'}
                 placeholder="Orçamento estimado"
-                value={budgetsMask}
-                onChange={maskPreco}
+                value={budgets}
+                onChange={(e) => setBudgets(e.target.value)}
               />
             </InputGroup>
-            <Tooltip label="Prazo de entrega">
-              <FormControl variant="floating" mt={5} id="first-name">
-                <Input
-                  type={"date"}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  value={Deadline}
-                />
-                <FormLabel>Prazo de entrega</FormLabel>
-              </FormControl>
-            </Tooltip>
           </PopoverBody>
           <PopoverFooter
             display="flex"
@@ -289,7 +287,7 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
                 Cancelar
               </Button>
               <Button
-                isLoading={Empresa && Deadline ? false : true}
+                isLoading={Empresa && budgets ? false : true}
                 spinner={<BeatLoader size={8} color="white" />}
                 colorScheme="whatsapp"
                 onClick={salve}

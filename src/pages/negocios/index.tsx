@@ -8,6 +8,7 @@ import { PowerBi } from "@/components/negocios/bi";
 import { getAllDaysOfMonth } from "@/function/Datearray";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import Loading from "@/components/elements/loading";
 
 
 function Negocios() {
@@ -26,7 +27,6 @@ function Negocios() {
 
   function tragetReload(Loading: boolean) {
     // setLoad(Loading);
-    console.log('aki')
     if (Loading === true) {
       (async () => {
         setLoad(true);
@@ -34,7 +34,7 @@ function Negocios() {
           const daysOfMonth = await getAllDaysOfMonth(MesAt);
           const response = await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${User}`);
           setData(response.data);
-          setLoad(false);
+          setTimeout(() => setLoad(false), 1500)
         } catch (error) {
           console.log(error);
         }
@@ -46,29 +46,23 @@ function Negocios() {
     setUser(user)
   }
 
+  if (load) {
+    return (
+      <Box w={'100%'} h={'100%'}>
+        <Loading size="200px">Carregando...</Loading>
+      </Box>
+    );
+  }
 
 
   return (
     <>
-      <Flex h="100%" w="100%" flexDir={"column"} justifyContent="center">
-        <Flex
-          h={12}
-          w='100%'
-          borderBottom={"2px"}
-          borderColor={"gray.200"}
-          m="auto"
-          my='0.5rem'
-          alignItems={"center"}
-          justifyContent={'end'}
-        >
-
-          <BtCreate onLoading={tragetReload} user={User} />
-        </Flex>
-        <Box h={"95%"}>
+      <Flex bg="gray.800" h="100vh" w="100%" flexDir={"column"} justifyContent="center">
+        <Box h={"100%"}>
           <Flex
-            bg="yellow.50"
-            h="100%"
+            bg="gray.800"
             w={'100%'}
+            p={1}
           >
             <PowerBi reload={load} dados={data} user={handleUserChange} setdados={data.length} />
           </Flex>

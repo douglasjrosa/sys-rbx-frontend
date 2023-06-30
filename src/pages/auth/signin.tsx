@@ -45,36 +45,40 @@ const SignIn: NextPage = (): JSX.Element => {
       minH={'100vh'}
       minW={'100vw'}
       direction={{ base: 'column', md: 'row' }}
+      bg={'white'}
     >
-      <Flex p={8} flex={1} align={'center'} justify={'center'}>
-        <Stack spacing={4} w={'full'} maxW={'md'}>
+      <Flex p={8} bg={'white'} flex={1} align={'center'} justify={'center'}>
+        <Stack spacing={4} w={'full'} maxW={'md'} bg={'white'}>
           <Image
             alt={'Logo'}
             objectFit={'cover'}
+            bg={'white'}
             w={'18rem'}
             m={'auto'}
             src={'https://ribermax.com.br/images/logomarca-efect.webp?w=1080&q=75'}
           />
           <form onSubmit={handleSubmit}>
-            <FormControl>
-              <FormLabel htmlFor="email">Usuário</FormLabel>
+            <FormControl bg={'white'}>
+              <FormLabel bg={'white'} color={'black'} htmlFor="email">Usuário</FormLabel>
               <Input
-                borderColor="gray.400"
+                borderColor="gray.500"
+                color={'black'}
                 name="email"
                 type="text"
                 onChange={(e) => setUser(e.target.value)}
               />
             </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Senha</FormLabel>
+            <FormControl bg={'white'}>
+              <FormLabel bg={'white'} color={'black'} htmlFor="password">Senha</FormLabel>
               <Input
-                borderColor="gray.400"
+                borderColor="gray.500"
+                color={'black'}
                 name="password"
                 type="password"
                 onChange={(e) => setPass(e.target.value)}
               />
             </FormControl>
-            <Stack spacing={6}>
+            <Stack bg={'white'} spacing={6}>
               <Stack
                 direction={{ base: 'column', sm: 'row' }}
                 align={'start'}
@@ -83,7 +87,7 @@ const SignIn: NextPage = (): JSX.Element => {
                 {/* <Link color={'blue.500'} onClick={() => router.push('/auth/verify-request')}>Esqueceu sua senha?</Link> */}
               </Stack>
               <Button colorScheme={'blue'} variant={'solid'} type="submit">
-                Sign in
+                Entrar
               </Button>
             </Stack>
           </form>

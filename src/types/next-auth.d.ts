@@ -10,6 +10,7 @@ declare module 'next-auth' {
     confirmed?: boolean;
     blocked?: boolean;
     pemission?: string;
+    primeiro_acesso?: boolean;
   }
 
   interface DefaultUser {
@@ -18,6 +19,7 @@ declare module 'next-auth' {
     email?: string | null;
     image?: string | null;
     pemission?: string | null;
+    primeiro_acesso?: boolean
   }
 
   /**
@@ -33,6 +35,7 @@ declare module 'next-auth' {
     blocked?: boolean;
     expiration?: number;
     pemission?: string;
+    primeiro_acesso?: boolean;
   }
 
   /**
@@ -49,5 +52,6 @@ declare module 'next-auth' {
     confirmed?: boolean;
     blocked?: boolean;
     permission?: string;
+    primeiro_acesso?: boolean;
   }
 }

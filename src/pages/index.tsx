@@ -106,6 +106,7 @@ const Painel: React.FC = () => {
         const [mapClinet] = i.clientes.map((c: any) => c.corresponding)
         return mapClinet === 'createdAt'
       })
+
       const filterDeadline = diasMesclados.filter((i: any) => {
         const [mapClinet] = i.clientes.map((c: any) => c.corresponding)
         const [mapClinet1] = i.clientes.map((c: any) => c.attributes.date_conclucao)
@@ -116,21 +117,48 @@ const Painel: React.FC = () => {
         return mapClinet === 'dateConclusao'
       })
 
-      setFase1(filterCreatedAt.reduce((total: number, item: any) => {
-        const [budget] = item.clientes.map((c: any) => c.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."))
-        const valor = total + parseFloat(budget);
-        return valor
-      }, 0))
-      setFase2(filterDateConclusao.reduce((total: number, item: any) => {
-        const [budget] = item.clientes.map((c: any) => c.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."))
-        const valor = total + parseFloat(budget);
-        return valor
-      }, 0))
-      setFase3(filterDeadline.reduce((total: number, item: any) => {
-        const [budget] = item.clientes.map((c: any) => c.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."))
-        const valor = total + parseFloat(budget);
-        return valor
-      }, 0))
+      const listaCreatedAt = filterCreatedAt.map((i: any) => {
+        const cliente = i.clientes.map((clinete: any) =>!clinete.attributes.Budget? 0.00 : parseFloat(clinete.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".")))
+        const soma = cliente.reduce((total: number, item: any) => {
+          return total + item
+        }, 0)
+        return soma
+      })
+
+      const listaDeadline = filterDeadline.map((i: any) => {
+        const cliente = i.clientes.map((clinete: any) => parseFloat(clinete.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".")))
+        const soma = cliente.reduce((total: number, item: any) => {
+          return total + item
+        }, 0)
+        return soma
+      })
+
+      const listaDateConclusao = filterDateConclusao.map((i: any) => {
+        const cliente = i.clientes.map((clinete: any) => parseFloat(clinete.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".")))
+        const soma = cliente.reduce((total: number, item: any) => {
+          return total + item
+        }, 0)
+        return soma
+      })
+
+
+      const somaCreatedAt = listaCreatedAt.reduce((total: number, item: any) => {
+        return total + item
+      }, 0)
+
+      const somaDeadline = listaDeadline.reduce((total: number, item: any) => {
+        return total + item
+      }, 0)
+
+      const somaDateConclusao = listaDateConclusao.reduce((total: number, item: any) => {
+        return total + item
+      }, 0)
+
+
+
+      setFase1(somaCreatedAt)
+      setFase2(somaDateConclusao)
+      setFase3(somaDeadline)
 
       const parts: any = diasMesclados.reduce((accumulator: any, item: any) => {
         const day = parseInt(item.date.slice(-2));
@@ -160,7 +188,7 @@ const Painel: React.FC = () => {
 
   return (
     <>
-      <Box>
+      <Box h={'100%'} bg={'gray.800'}>
         <Flex px={5} pt={2} justifyContent={'space-between'} w={'100%'}>
           <Flex gap={16}>
             <Box>
@@ -180,7 +208,7 @@ const Painel: React.FC = () => {
           </Flex>
 
         </Flex>
-        <Box w='100%' bg="yellow.50">
+        <Box w='100%' bg="gray.800">
           <Flex direction="column" gap={5} p={5}>
             <RenderCalendar data={calendarData} />
           </Flex>

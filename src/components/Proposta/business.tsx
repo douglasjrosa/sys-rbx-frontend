@@ -6,15 +6,12 @@ export const CompBusiness = (props: { Resp: string }) => {
       <FormLabel
         fontSize="xs"
         fontWeight="md"
-        color="gray.700"
-        _dark={{
-          color: 'gray.50',
-        }}
+        color="white"
       >
         N° Negócio
       </FormLabel>
       <Input
-        focusBorderColor="brand.400"
+        color="white"
         shadow="sm"
         size="xs"
         w="full"

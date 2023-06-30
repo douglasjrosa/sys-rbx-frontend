@@ -10,6 +10,7 @@ import {
   FormLabel,
   Heading,
   Icon,
+  IconButton,
   Input,
   Select,
   Spinner,
@@ -340,6 +341,7 @@ export default function Proposta() {
           const data = {
             data: {
               incidentRecord: record,
+              Budget: totalGeral
             },
           };
 
@@ -421,15 +423,10 @@ export default function Proposta() {
 
   return (
     <>
-      <Flex h="100vh" px={10} w="100%" flexDir={"column"} mt="5" justifyContent={'space-between'} >
-        <Box>
+      <Flex h="100vh" w="100%" flexDir={"column"}  px={'10'} bg={'gray.800'} color={'white'} justifyContent={'space-between'} >
+        <Box w="100%" mt={5}>
           <Flex gap={3}>
-            <BsArrowLeftCircleFill
-              color="blue"
-              cursor={'pointer'}
-              size={30}
-              onClick={() => router.back()}
-            />
+          <IconButton aria-label='voltar' rounded={'3xl'} onClick={() => router.back()} icon={<BsArrowLeftCircleFill size={30} color="#136dcc" />} />
             <Heading size="md">Proposta comercial</Heading>
           </Flex>
           <Box display="flex" flexWrap={'wrap'} gap={5} alignItems="center" mt={3} mx={5}>
@@ -441,13 +438,8 @@ export default function Proposta() {
             </Box>
             <Box>
               <FormLabel
-                htmlFor="cidade"
                 fontSize="xs"
                 fontWeight="md"
-                color="gray.700"
-                _dark={{
-                  color: "gray.50",
-                }}
               >
                 Data
               </FormLabel>
@@ -464,19 +456,15 @@ export default function Proposta() {
             </Box>
             <Box>
               <FormLabel
-                htmlFor="cidade"
                 fontSize="xs"
                 fontWeight="md"
-                color="gray.700"
-                _dark={{
-                  color: "gray.50",
-                }}
               >
                 Data Entrega
               </FormLabel>
               <Input
                 shadow="sm"
                 type={"date"}
+                color={'white'}
                 size="sm"
                 w="full"
                 fontSize="xs"
@@ -487,13 +475,8 @@ export default function Proposta() {
             </Box>
             <Box>
               <FormLabel
-                htmlFor="cidade"
                 fontSize="xs"
                 fontWeight="md"
-                color="gray.700"
-                _dark={{
-                  color: "gray.50",
-                }}
               >
                 Fornecedor
               </FormLabel>
@@ -503,13 +486,15 @@ export default function Proposta() {
                 w="full"
                 fontSize="xs"
                 rounded="md"
-                placeholder="Selecione um Fornecedor"
                 onChange={(e) => setLoja(e.target.value)}
                 value={Loja}
               >
+                 <option style={{ backgroundColor: "#1A202C" }} value=''>
+                  Selecione um Fornecedor
+                </option>
                 {ListFornecedor.map((item) => {
                   return (
-                    <option key={item.id} value={item.id}>
+                    <option key={item.id} style={{ backgroundColor: "#1A202C" }} value={item.id}>
                       {item.title}
                     </option>
                   );
@@ -518,13 +503,8 @@ export default function Proposta() {
             </Box>
             <Box>
               <FormLabel
-                htmlFor="cidade"
                 fontSize="xs"
                 fontWeight="md"
-                color="gray.700"
-                _dark={{
-                  color: "gray.50",
-                }}
               >
                 Condição de pagamento
               </FormLabel>
@@ -538,9 +518,10 @@ export default function Proposta() {
                 onChange={(e) => setPrazo(e.target.value)}
                 value={prazo}
               >
-                <option value="Antecipado">Antecipado</option>
-                <option value="À vista">À vista</option>
-                <option value="A Prazo">A prazo</option>
+                <option style={{ backgroundColor: "#1A202C" }} >Tipos de pagamentos</option>
+                <option style={{ backgroundColor: "#1A202C" }} value="Antecipado">Antecipado</option>
+                <option style={{ backgroundColor: "#1A202C" }} value="À vista">À vista</option>
+                <option style={{ backgroundColor: "#1A202C" }} value="A Prazo">A prazo</option>
               </Select>
             </Box>
             <Box hidden={prazo === "A Prazo" ? false : true}>
@@ -548,13 +529,8 @@ export default function Proposta() {
             </Box>
             <Box>
               <FormLabel
-                htmlFor="cidade"
                 fontSize="xs"
                 fontWeight="md"
-                color="gray.700"
-                _dark={{
-                  color: "gray.50",
-                }}
               >
                 Frete
               </FormLabel>
@@ -564,23 +540,18 @@ export default function Proposta() {
                 w="full"
                 fontSize="xs"
                 rounded="md"
-                placeholder="Selecione um tipo de Frete"
                 onChange={(e) => setFrete(e.target.value)}
                 value={frete}
               >
-                <option value="CIF">CIF</option>
-                <option value="FOB">FOB</option>
+                <option style={{ backgroundColor: "#1A202C" }}>Selecione um tipo de Frete</option>
+                <option style={{ backgroundColor: "#1A202C" }} value="CIF">CIF</option>
+                <option style={{ backgroundColor: "#1A202C" }} value="FOB">FOB</option>
               </Select>
             </Box>
             <Box hidden={frete === "CIF" ? false : true}>
               <FormLabel
-                htmlFor="cidade"
                 fontSize="xs"
                 fontWeight="md"
-                color="gray.700"
-                _dark={{
-                  color: "gray.50",
-                }}
               >
                 Valor de Frete
               </FormLabel>
@@ -589,6 +560,7 @@ export default function Proposta() {
                 textAlign={"end"}
                 size="xs"
                 w={"7rem"}
+                step={'0.01'}
                 fontSize="xs"
                 rounded="md"
                 onChange={(e) => setFreteCif(e.target.value.replace(".", ""))}
@@ -611,13 +583,8 @@ export default function Proposta() {
             </Box>
             <Box alignItems="center">
               <FormLabel
-                htmlFor="cidade"
                 fontSize="xs"
                 fontWeight="md"
-                color="gray.700"
-                _dark={{
-                  color: "gray.50",
-                }}
               >
                 Pedido do Cliente N°:
               </FormLabel>
@@ -636,13 +603,8 @@ export default function Proposta() {
               <Box display="flex" gap={5} alignItems="center">
                 <Box w="full">
                   <FormLabel
-                    htmlFor="cidade"
                     fontSize="xs"
                     fontWeight="md"
-                    color="gray.700"
-                    _dark={{
-                      color: "gray.50",
-                    }}
                   >
                     Observação
                   </FormLabel>
@@ -657,39 +619,39 @@ export default function Proposta() {
               </Box>
             </Box>
           </Box>
-          <Box mt={8} w={"100%"} mb={5}>
+          <Box mt={8} w={"100%"} mb={5} bg={'gray.800'}>
             <Box>
               <TableContainer>
-                <Table variant="striped" colorScheme="green">
+                <Table variant='simple'>
                   <Thead>
-                    <Tr>
+                    <Tr bg={'#ffffff12'}>
                       <Th px='0' w={"1.3rem"}></Th>
-                      <Th px='0' w={"8rem"} textAlign={"center"} fontSize={'0.7rem'}>Item</Th>
-                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"8rem"} color='white' fontSize={'0.7rem'}>Item</Th>
+                      <Th px='0' w={"5rem"} color='white' fontSize={'0.7rem'}>
                         Código
                       </Th>
-                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"3rem"} color='white' fontSize={'0.7rem'}>
                         Qtd
                       </Th>
-                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"5rem"} color='white' fontSize={'0.7rem'}>
                         altura
                       </Th>
-                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"5rem"} color='white' fontSize={'0.7rem'}>
                         largura
                       </Th>
-                      <Th px='0' w={"5rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"5rem"} color='white' fontSize={'0.7rem'}>
                         comprimento
                       </Th>
-                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"3rem"} color='white' fontSize={'0.7rem'}>
                         Mont.
                       </Th>
-                      <Th px='0' w={"3rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"3rem"} color='white' fontSize={'0.7rem'}>
                         Expo.
                       </Th>
-                      <Th px='0' w={"6rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"6rem"} color='white' fontSize={'0.7rem'}>
                         Preço un
                       </Th>
-                      <Th px='0' w={"6rem"} textAlign={"center"} fontSize={'0.7rem'}>
+                      <Th px='0' w={"6rem"} color='white' fontSize={'0.7rem'}>
                         Preço total
                       </Th>
                       <Th px='0' textAlign={"center"} w={"5rem"}>

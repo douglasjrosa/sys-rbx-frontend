@@ -148,6 +148,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
         borderColor={"gray.400"}
         rounded={"1rem"}
         boxShadow={'2xl'}
+        bg={'#2a303b'}
       >
         <Flex w={"full"} overflowX={"hidden"} flexWrap={'wrap'} gap={4}>
 
@@ -177,7 +178,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
                   <Box
                     rounded="xl"
                     shadow="md"
-                    bg="white"
+                    bg="gray.300"
                     w="25rem"
                     px={4}
                     py={4}

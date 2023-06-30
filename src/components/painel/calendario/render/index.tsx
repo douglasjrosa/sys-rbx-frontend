@@ -32,13 +32,11 @@ export const RenderCalendar = (props: { data: any }) => {
 
                 const DateConclusaoFilter = clientes.filter((cliente: any) => cliente.corresponding === "dateConclusao")
 
-
                 const totalDateConclusao = DateConclusaoFilter.reduce((total: number, cliente: any) => {
                   const budget = cliente.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".");
                   const valor = total + parseFloat(budget);
                   return valor
                 }, 0);
-
 
                 return (
                   <Box key={item.id} w={'8rem'} minH={'6rem'} bg={'white'} p={1}>

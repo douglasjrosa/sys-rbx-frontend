@@ -3,5 +3,12 @@
   margin: 0;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 0.9rem;
- }
 
+ }
+html{
+  background-color: #1A202C;
+  color: white;
+}
+option {
+  background-color: #4A5568;
+}

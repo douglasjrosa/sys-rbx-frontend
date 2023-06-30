@@ -20,7 +20,7 @@ export const ListaEmpresa = (props: { onChangeValue: any }) => {
       <FormLabel
         fontSize="xs"
         fontWeight="md"
-        color="gray.700"
+        color="white"
       >
         Empresas
       </FormLabel>
@@ -28,6 +28,7 @@ export const ListaEmpresa = (props: { onChangeValue: any }) => {
         shadow="sm"
         size="xs"
         w="full"
+        color="white"
         fontSize="xs"
         rounded="md"
         value={dados}

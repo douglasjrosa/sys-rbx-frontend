@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Center,
   Flex,
   FormLabel,
   Input,
@@ -17,7 +16,6 @@ import { BtnStatus } from "../../elements/lista/status";
 import { StatusPerca } from "@/components/data/perca";
 import { EtapasNegocio } from "@/components/data/etapa";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
-import Loading from "@/components/elements/loading";
 
 export const NegocioHeader = (props: {
   nBusiness: string;
@@ -43,19 +41,19 @@ export const NegocioHeader = (props: {
   const [Mperca, setMperca] = useState<any>();
   const [Busines, setBusines] = useState("");
   const [Approach, setApproach] = useState("");
-  const [Budget, setBudget] = useState("");
+  const [Budget, setBudget] = useState<any>();
   const [Deadline, setDeadline] = useState("");
-  const [DataRetorno, setDataRetorno] = useState<any>("");
+  const [DataRetorno, setDataRetorno] = useState<string>();
 
 
   useEffect(() => {
     setStatusG(props.Status);
     setStatus(props.Status);
-    setBudget(props.Budget);
+    setBudget(!props.Budget? 0.0 : parseFloat(props.Budget.replace('R$', '').replace('.', '').replace(',', '.')));
     setDeadline(props.Deadline);
     setBusines(props.nBusiness);
     setApproach(props.Approach);
-    setDataRetorno(props.DataRetorno);
+    setDataRetorno(!props.DataRetorno ? new Date().toISOString() : props.DataRetorno);
     setMperca(props.Mperca)
     setEtapa(props.etapa)
     props.onLoad(false)
@@ -76,11 +74,12 @@ export const NegocioHeader = (props: {
   const history = [...props.historia, historicomsg];
 
   const Salve = async () => {
+
     const data1 = {
       data: {
         deadline: Deadline,
         nBusiness: Busines,
-        Budget: Budget,
+        Budget: Budget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
         Approach: Approach,
         history: history,
         etapa: Status === '5' ? 6 : parseInt(Etapa),
@@ -96,13 +95,13 @@ export const NegocioHeader = (props: {
       data: {
         deadline: Deadline,
         nBusiness: Busines,
-        Budget: Budget,
+        Budget: Budget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
         Approach: Approach,
         history: history,
         etapa: Status === '5' ? 6 : parseInt(Etapa),
         andamento: Status,
         Mperca: Mperca,
-        DataRetorno: Status !== 2 ? null : DataRetorno,
+        DataRetorno: DataRetorno,
       },
     };
 
@@ -145,65 +144,27 @@ export const NegocioHeader = (props: {
           </Flex>
           <Box>
             <FormLabel
-              htmlFor="cidade"
               fontSize="xs"
               fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
             >
               N° Negócio
             </FormLabel>
             <Input
+              type="text"
+              readOnly
               shadow="sm"
-              fontSize="xs"
+              size="sm"
               rounded="md"
-              border={'1px solid #6666'}
               onChange={(e) => setBusines(e.target.value)}
               value={props.nBusiness}
             />
           </Box>
           <Box>
-            <SelecAtendimento
-              Resp={props.Approach}
-              onAddResp={getAtendimento}
-            />
-          </Box>
-          <Box>
             <FormLabel
-              htmlFor="cidade"
               fontSize="xs"
               fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
             >
-              Orçamento estimado
-            </FormLabel>
-            <Input
-              shadow="sm"
-              size="sm"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              border={'1px solid #6666'}
-              onChange={(e) => setBudget(e.target.value)}
-              value={Budget.toLocaleString()}
-            />
-          </Box>
-          <Box>
-            <FormLabel
-              htmlFor="cidade"
-              fontSize="xs"
-              fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
-            >
-              Prazo de Entrega
+              Data de retorno
             </FormLabel>
             <Input
               shadow="sm"
@@ -212,20 +173,33 @@ export const NegocioHeader = (props: {
               type={"date"}
               fontSize="xs"
               rounded="md"
-              border={'1px solid #6666'}
-              onChange={(e) => setDeadline(e.target.value)}
-              value={Deadline}
+              onChange={(e) => setDataRetorno(e.target.value)}
+              value={DataRetorno}
             />
           </Box>
           <Box>
             <FormLabel
-              htmlFor="cidade"
               fontSize="xs"
               fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
+            >
+              Orçamento estimado
+            </FormLabel>
+            <Input
+              type="number"
+              shadow="sm"
+              size="sm"
+              w="full"
+              step={'0.01'}
+              fontSize="xs"
+              rounded="md"
+              onChange={(e) => setBudget(e.target.value)}
+              value={Budget}
+            />
+          </Box>
+          <Box>
+            <FormLabel
+              fontSize="xs"
+              fontWeight="md"
             >
               Etapa do Negócio
             </FormLabel>
@@ -235,85 +209,46 @@ export const NegocioHeader = (props: {
               w="full"
               fontSize="xs"
               rounded="md"
-              placeholder=" "
-              border={'1px solid #6666'}
               onChange={(e) => setEtapa(e.target.value)}
               value={Etapa}
             >
+              <option style={{ backgroundColor: "#1A202C" }}></option>
               {EtapasNegocio.map((i: any) => (
-                <option key={i.id} value={i.id}>
+                <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
                   {i.title}
                 </option>
               ))}
             </Select>
           </Box>
-          <Box>
+          <Box hidden={Etapa === '6' ? false : true}>
             <BtnStatus Resp={props.Status} onAddResp={getStatus} />
           </Box>
-          {Status !== "1" ? null : (
-            <>
-              <Box>
-                <FormLabel
-                  htmlFor="cidade"
-                  fontSize="xs"
-                  fontWeight="md"
-                  color="gray.700"
-                  _dark={{
-                    color: "gray.50",
-                  }}
-                >
-                  Motivo de Perda
-                </FormLabel>
-                <Select
-                  shadow="sm"
-                  size="sm"
-                  w="full"
-                  fontSize="xs"
-                  rounded="md"
-                  placeholder=" "
-                  border={'1px solid #6666'}
-                  onChange={(e) => setMperca(e.target.value)}
-                  value={Mperca}
-                >
-                  {StatusPerca.map((i: any) => (
-                    <option key={i.id} value={i.id}>
-                      {i.title}
-                    </option>
-                  ))}
-                </Select>
-              </Box>
-            </>
-          )}
-          {Status !== "2" ? null : (
-            <>
-              <Box>
-                <FormLabel
-                  htmlFor="cidade"
-                  fontSize="xs"
-                  fontWeight="md"
-                  color="gray.700"
-                  _dark={{
-                    color: "gray.50",
-                  }}
-                >
-                  Data de retorno
-                </FormLabel>
-                <Input
-                  shadow="sm"
-                  size="sm"
-                  w="full"
-                  type={"date"}
-                  fontSize="xs"
-                  rounded="md"
-                  border={'1px solid #6666'}
-                  onChange={(e) => setDataRetorno(e.target.value)}
-                  value={DataRetorno}
-                />
-              </Box>
-            </>
-          )}
+          <Box hidden={Status !== "1" ? true : false}>
+            <FormLabel
+              fontSize="xs"
+              fontWeight="md"
+            >
+              Motivo de Perda
+            </FormLabel>
+            <Select
+              shadow="sm"
+              size="sm"
+              w="full"
+              fontSize="xs"
+              rounded="md"
+              onChange={(e) => setMperca(e.target.value)}
+              value={Mperca}
+            >
+              <option style={{ backgroundColor: "#1A202C" }}></option>
+              {StatusPerca.map((i: any) => (
+                <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
+                  {i.title}
+                </option>
+              ))}
+            </Select>
+          </Box>
         </Flex>
-        <Flex alignItems={"center"} flexWrap={'wrap'} gap={3} w={"20%"}>
+        <Flex alignItems={"center"} flexWrap={'wrap'} gap={3} w={"25%"}>
           <Button colorScheme={"whatsapp"} onClick={Salve}>
             Salvar
           </Button>

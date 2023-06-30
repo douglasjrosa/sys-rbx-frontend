@@ -1,5 +1,4 @@
-/* eslint-disable react/jsx-key */
-/* eslint-disable react-hooks/exhaustive-deps */
+import { capitalizeWords } from "@/function/captalize";
 import {
   Box,
   Button,
@@ -15,54 +14,43 @@ import {
   Textarea,
   Toast,
   useToast,
-} from '@chakra-ui/react';
-import axios from 'axios';
-import { cpf } from 'cpf-cnpj-validator';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import { mask, unMask } from 'remask';
-import { RelaciomentoEmpr } from '../../../../components/elements/lista/relacionamentoEmpresa';
-import ListaEmpresa from '../../../../components/pessoas/listaEmpresa';
+} from "@chakra-ui/react";
+import axios from "axios";
+import { cpf } from "cpf-cnpj-validator";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { mask, unMask } from "remask";
 
-export default function PessoaId() {
+export const FormPessoa = (props: { Data?: any, retornaData: any}) => {
   const router = useRouter();
   const { data: session } = useSession();
   const toast = useToast();
-  const id = router.query.id;
   const [nome, setNome] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [obs, setObs] = useState('');
-  const [Empresa, setEmpresa] = useState<any>([]);
   const [CPF, setCPF] = useState('');
   const [cep, setCep] = useState('');
   const [endereco, setEndereco] = useState('');
+  const [complemento, setComplemento] = useState('');
   const [numero, setNumero] = useState('');
   const [bairro, setBairro] = useState('');
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
-  const [work, setWork] = useState([]);
   const [whatsappMask, setWhatsappMask] = useState('');
   const [telefoneMask, setTelefoneMask] = useState('');
   const [CepMask, setCepMask] = useState('');
   const [CpfMask, setCpfMask] = useState('');
   const [Departamento, setDepartamento] = useState('');
   const [Cargo, setCargo] = useState('');
-  const [Dados, setDados] = useState([]);
   const [historico, sethistorico] = useState([]);
 
-  if (session?.user.pemission !== 'Adm') {
-    router.push('/');
-  }
-
   useEffect(() => {
-    (async () => {
-      const url = `/api/db/pessoas/consulta/${id}`;
-      const response = await axios(url);
-      const pessoa = await response.data.data;
-      setNome(pessoa.attributes.nome);
+    if (props.Data) {
+      const pessoa = props.Data;
+      setNome(capitalizeWords(pessoa.attributes.nome));
       setWhatsapp(pessoa.attributes.whatsapp);
       const maskedValuezap = !pessoa.attributes.whatsapp
         ? ''
@@ -75,28 +63,55 @@ export default function PessoaId() {
       setTelefoneMask(MaskedValueTel);
       setEmail(pessoa.attributes.email);
       setObs(pessoa.attributes.obs);
-      setEmpresa(pessoa.attributes.empresas.data);
-      setDados(pessoa.attributes.empresas.data);
       setCPF(pessoa.attributes.CPF);
       const maskedValue = mask(pessoa.attributes.CPF, ['999.999.999-99']);
       setCpfMask(maskedValue);
       setCep(pessoa.attributes.CEP);
       const maskedValuecep = mask(pessoa.attributes.CEP, ['99.999-999']);
       setCepMask(maskedValuecep);
-      setEndereco(pessoa.attributes.endereco);
+      setEndereco(capitalizeWords(pessoa.attributes.endereco));
       setNumero(pessoa.attributes.numero);
-      setBairro(pessoa.attributes.bairro);
-      setCidade(pessoa.attributes.cidade);
+      setBairro(capitalizeWords(pessoa.attributes.bairro));
+      setCidade(capitalizeWords(pessoa.attributes.cidade));
       setUf(pessoa.attributes.uf);
-      setDepartamento(pessoa.attributes.departamento);
-      setCargo(pessoa.attributes.cargo);
+      setDepartamento(capitalizeWords(pessoa.attributes.departamento));
+      setCargo(capitalizeWords(pessoa.attributes.cargo));
       sethistorico(pessoa.attributes.history);
-    })();
-  }, []);
+    }
+  }, [props.Data]);
 
-  useEffect(() => {
-    setWork(Empresa.map((i: { id: any }) => i.id));
-  }, [Empresa]);
+  const MaskWhatsapp = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ["(99) 9 9999-9999"]);
+    setWhatsapp(originalVelue);
+    setWhatsappMask(maskedValue);
+  };
+
+  const MaskTel = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ["(99) 9999-9999"]);
+    setTelefone(originalVelue);
+    setTelefoneMask(maskedValue);
+  };
+
+  const MaskCpf = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ["999.999.999-99"]);
+    setCPF(originalVelue);
+    setCpfMask(maskedValue);
+  };
+
+  const CEP = (e: any) => {
+    const originalVelue = unMask(e.target.value);
+    const maskedValue = mask(originalVelue, ["99.999-999"]);
+    setCepMask(maskedValue);
+    setCep(originalVelue);
+  };
+
+  const NUMERO = (e: any) => {
+    const data = e.target.value.replace(/[a-zA-Z]+/g, "");
+    setNumero(data);
+  };
 
   const checkCep = async () => {
     const url = `https://viacep.com.br/ws/${cep}/json/`;
@@ -110,160 +125,51 @@ export default function PessoaId() {
       .catch((err) => console.log(err));
   };
 
-  const MaskWhatsapp = (e: any) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['(99) 9 9999-9999']);
-    setWhatsapp(originalVelue);
-    setWhatsappMask(maskedValue);
-  };
-
-  const MaskTel = (e: any) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['(99) 9999-9999']);
-    setTelefone(originalVelue);
-    setTelefoneMask(maskedValue);
-  };
-
-  const MaskCpf = (e: any) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['999.999.999-99']);
-    setCPF(originalVelue);
-    setCpfMask(maskedValue);
-  };
-
-  const CEP = (e: any) => {
-    const originalVelue = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, ['99.999-999']);
-    setCepMask(maskedValue);
-    setCep(originalVelue);
-  };
-
-  const NUMERO = (e: any) => {
-    const data = e.target.value.replace(/[a-zA-Z]+/g, '');
-    setNumero(data);
-  };
-
   const save = async () => {
     const date = new Date();
     const dateIsso = date.toISOString();
-
-    const url = `/api/db/pessoas/consulta/${id}`;
-    const response = await axios(url);
-    const pessoa = await response.data.data;
-    const Alteração =
-      nome !== pessoa.attributes.nome
-        ? 'O nome do cliente foi alterado'
-        : whatsapp !== pessoa.attributes.whatsapp
-        ? 'O WhatsApp do cliente foi alterado'
-        : telefone !== pessoa.attributes.telefone
-        ? 'O telefone do cliente foi alterado'
-        : email !== pessoa.attributes.email
-        ? 'O email do cliente'
-        : CPF !== pessoa.attributes.CPF
-        ? 'O CPF do cliente foi alterado'
-        : cep !== pessoa.attributes.CEP
-        ? 'O cep do cliente foi alterado'
-        : uf !== pessoa.attributes.uf
-        ? 'O Esado do cliente foi alterado'
-        : endereco !== pessoa.attributes.endereco
-        ? 'O endereco do cliente foi alterado'
-        : numero !== pessoa.attributes.numero
-        ? 'O numero do cliente foi alterado'
-        : work !== pessoa.attributes.empresas.data.id
-        ? 'O empresas do cliente foi alterado'
-        : Departamento !== pessoa.attributes.departamento
-        ? 'O departamento do cliente foi alteradp'
-        : Cargo !== pessoa.attributes.cargo
-        ? 'O Cargo do cliente foi alter'
-        : '';
     const historicoAt = {
       date: dateIsso,
       vendedor: session?.user.name,
-      msg: `cinete ${nome} foi atualizado`,
-      alteração: Alteração,
+      msg: `cinete ${nome} foi cadastrado`,
     };
+
     const data = {
-      data: {
-        nome: nome,
-        whatsapp: whatsapp,
-        telefone: telefone,
-        email: email,
-        CPF: CPF,
-        CEP: cep,
-        uf: uf,
-        endereco: endereco,
-        numero: numero,
-        bairro: bairro,
-        cidade: cidade,
-        obs: obs,
-        status: true,
-        empresas: work,
-        history: [...historico, historicoAt],
-        departamento: Departamento,
-        cargo: Cargo,
-      },
+      nome: nome,
+      whatsapp: whatsapp,
+      telefone: telefone,
+      email: email,
+      CPF: CPF,
+      CEP: cep,
+      uf: uf,
+      endereco: endereco,
+      numero: numero,
+      bairro: bairro,
+      cidade: cidade,
+      obs: obs,
+      status: true,
+      history: [...historico, historicoAt],
+      departamento: Departamento,
+      cargo: Cargo,
+      complemento: complemento,
     };
 
-    if (!nome) {
-      toast({
-        title: 'Como devemos chamar esse cliente',
-        description: 'Obrigatorio ter o nome do cliente!',
-        status: 'warning',
-        duration: 6000,
-        isClosable: true,
-      });
-    } else if (!telefone && !whatsapp) {
-      toast({
-        title: 'Sem numero de contato',
-        description: 'É nessesario o numero de WhatsApp!',
-        status: 'warning',
-        duration: 6000,
-        isClosable: true,
-      });
-    } else {
-      const url = '/api/db/pessoas/atualizacao/' + id;
-      await axios({
-        method: 'PUT',
-        url: url,
-        data: data,
-      })
-        .then((response) => {
-          toast({
-            title: 'salvo',
-            description: 'cliente atualizado',
-            status: 'success',
-            duration: 6000,
-            isClosable: true,
-          });
-          setTimeout(() => {
-            router.push('/pessoas');
-          }, 1000);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-  };
+    props.retornaData(data)
 
-  function getEmpresa(empresa: any) {
-    setEmpresa([empresa]);
-  }
+  };
 
   return (
     <>
-      <Flex justifyContent={'center'} alignItems={'center'} h={'100vh'}>
+      <Flex justifyContent={"center"} alignItems={"center"} h={"100%"} w={'100%'} bg={'gray.800'} color={'white'}>
         <Box
-          _dark={{
-            bg: '#111',
-          }}
           px={5}
           pt={3}
         >
           <Box mt={[5, 0]}>
             <SimpleGrid
               display={{
-                base: 'initial',
-                md: 'grid',
+                base: "initial",
+                md: "grid",
               }}
               columns={{
                 md: 1,
@@ -277,29 +183,23 @@ export default function PessoaId() {
                 colSpan={{
                   md: 2,
                 }}
-                border={'1px solid'}
-                borderColor={'blackAlpha.400'}
-                rounded={20}
-                bg="#edf3f8"
+                rounded={8}
+                bg="#ffffff12"
               >
                 <chakra.form
                   shadow="base"
-                  rounded={[null, 20]}
                   overflow={{
-                    sm: 'hidden',
+                    sm: "hidden",
                   }}
                 >
                   <Stack
                     px={4}
                     py={3}
-                    _dark={{
-                      bg: '#141517',
-                    }}
                     spacing={6}
                   >
                     <SimpleGrid columns={12} spacing={3}>
                       <Heading as={GridItem} colSpan={12} size="lg">
-                        Atualizar Cadastro de cliente
+                        Cadastro de cliente
                       </Heading>
                     </SimpleGrid>
                     <Heading as={GridItem} colSpan={12} size="sd">
@@ -310,25 +210,18 @@ export default function PessoaId() {
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
-                          nome
+                          Nome
                         </FormLabel>
                         <Input
                           type="text"
-                          placeholder="nome completo"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={'uppercase'}
-                          onChange={(e: any) => setNome(e.target.value)}
+                          onChange={(e: any) => setNome(capitalizeWords(e.target.value))}
                           value={nome}
                         />
                       </FormControl>
@@ -337,24 +230,17 @@ export default function PessoaId() {
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
                           CPF
                         </FormLabel>
                         <Input
                           type="text"
-                          placeholder="CPF"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={'uppercase'}
                           onChange={MaskCpf}
                           onBlur={(e: any) => {
                             const cpfv = unMask(e.target.value);
@@ -362,32 +248,32 @@ export default function PessoaId() {
 
                             if (cpfv.length < 11) {
                               Toast({
-                                title: 'erro no CPF',
-                                description: 'CPF menor que esperado',
-                                status: 'error',
+                                title: "erro no CPF",
+                                description: "CPF menor que esperado",
+                                status: "error",
                                 duration: 7000,
-                                position: 'top-right',
+                                position: "top-right",
                                 isClosable: true,
                               });
                             }
                             if (cpfv.length > 11) {
                               Toast({
-                                title: 'erro no CPF',
-                                description: 'CPF imcompativel',
-                                status: 'error',
+                                title: "erro no CPF",
+                                description: "CPF imcompativel",
+                                status: "error",
                                 duration: 7000,
-                                position: 'top-right',
+                                position: "top-right",
                                 isClosable: true,
                               });
                             }
 
                             if (validcpf === false) {
                               Toast({
-                                title: 'erro no CPF',
-                                description: 'CPF incorreto',
-                                status: 'error',
+                                title: "erro no CPF",
+                                description: "CPF incorreto",
+                                status: "error",
                                 duration: 7000,
-                                position: 'top-right',
+                                position: "top-right",
                                 isClosable: true,
                               });
                             }
@@ -400,24 +286,17 @@ export default function PessoaId() {
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
-                          cep
+                          Cep
                         </FormLabel>
                         <Input
                           type="text"
-                          placeholder="cep"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={'uppercase'}
                           onChange={CEP}
                           onBlur={checkCep}
                           value={CepMask}
@@ -428,24 +307,39 @@ export default function PessoaId() {
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
                           Endereço
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
-                          textTransform={'uppercase'}
+                          onChange={(e: any) => setEndereco(capitalizeWords(e.target.value))}
                           value={endereco}
+                        />
+                      </FormControl>
+
+                      <FormControl as={GridItem} colSpan={[12, 5, 3]}>
+                        <FormLabel
+                          fontSize="xs"
+                          fontWeight="md"
+                        >
+                          Complemento
+                        </FormLabel>
+                        <Input
+                          type="text"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
+                          shadow="sm"
+                          size="xs"
+                          w="full"
+                          rounded="md"
+                          onChange={(e: any) => setComplemento(capitalizeWords(e.target.value))}
+                          value={complemento}
                         />
                       </FormControl>
 
@@ -453,18 +347,13 @@ export default function PessoaId() {
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
                           Nº
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
@@ -478,22 +367,18 @@ export default function PessoaId() {
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
                           Cidade
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
+                          onChange={(e: any) => setCidade(capitalizeWords(e.target.value))}
                           value={cidade}
                         />
                       </FormControl>
@@ -502,46 +387,38 @@ export default function PessoaId() {
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
                           Bairro
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
+                          onChange={(e: any) => setBairro(capitalizeWords(e.target.value))}
                           value={bairro}
                         />
                       </FormControl>
 
-                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                      <FormControl as={GridItem} colSpan={[12, 2, null, 1]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
-                          uf
+                          UF.
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
+                          onChange={(e: any) => setUf(e.target.value)}
                           value={uf}
                         />
                       </FormControl>
@@ -550,19 +427,13 @@ export default function PessoaId() {
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
-                          Email
+                          E-mail
                         </FormLabel>
                         <Input
                           type="text"
-                          placeholder="email.email@email.com.br"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
@@ -571,24 +442,19 @@ export default function PessoaId() {
                           value={email}
                         />
                       </FormControl>
-                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                      <FormControl as={GridItem} colSpan={[12, 2, null, 1]}>
                         <FormLabel
                           htmlFor="cep"
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
-                          Telelfone
+                          Telefone
                         </FormLabel>
                         <Input
                           type="text"
                           placeholder="(00) 0000-0000"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
@@ -598,23 +464,18 @@ export default function PessoaId() {
                         />
                       </FormControl>
 
-                      <FormControl as={GridItem} colSpan={[12, 6, null, 1]}>
+                      <FormControl as={GridItem} colSpan={[12, 2, null, 1]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
-                          whatsapp
+                          Whatsapp
                         </FormLabel>
                         <Input
                           type="text"
                           placeholder="(00) 0 0000-0000"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
@@ -623,51 +484,41 @@ export default function PessoaId() {
                           value={whatsappMask}
                         />
                       </FormControl>
-                      <FormControl as={GridItem} colSpan={[12, 6, null, 2]}>
+                      <FormControl as={GridItem} colSpan={[12, 4, null, 2]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
                           Departamento
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => setDepartamento(e.target.value)}
+                          onChange={(e) => setDepartamento(capitalizeWords(e.target.value))}
                           value={Departamento}
                         />
                       </FormControl>
-                      <FormControl as={GridItem} colSpan={[12, 6, null, 2]}>
+                      <FormControl as={GridItem} colSpan={[12, 4, null, 2]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
-                          color="gray.700"
-                          _dark={{
-                            color: 'gray.50',
-                          }}
                         >
                           Cargo
                         </FormLabel>
                         <Input
                           type="text"
-                          _placeholder={{ color: 'inherit' }}
-                          borderColor="gray.600"
-                          focusBorderColor="brand.400"
+                          focusBorderColor="white"
+                          bg={'#ffffff12'}
                           shadow="sm"
                           size="xs"
                           w="full"
                           rounded="md"
-                          onChange={(e) => setCargo(e.target.value)}
+                          onChange={(e) => setCargo(capitalizeWords(e.target.value))}
                           value={Cargo}
                         />
                       </FormControl>
@@ -676,9 +527,6 @@ export default function PessoaId() {
                   <Stack
                     px={4}
                     py={3}
-                    _dark={{
-                      bg: '#141517',
-                    }}
                     spacing={3}
                   >
                     <SimpleGrid columns={12} spacing={3}>
@@ -687,61 +535,16 @@ export default function PessoaId() {
                       </Heading>
                       <Box as={GridItem} colSpan={12} m="auto">
                         <Textarea
-                          w={['80vw', '70vw']}
-                          borderColor="gray.500"
+                          w={["80vw", "70vw"]}
+                          borderColor="white"
+                          bg={'#ffffff12'}
                           placeholder="Especifique aqui, todos os detalhes do cliente"
-                          _placeholder={{ color: 'inherit' }}
                           size="sm"
-                          resize={'none'}
-                          onChange={(e: any) => setObs(e.target.value)}
+                          resize={"none"}
+                          onChange={(e: any) => setObs(capitalizeWords(e.target.value))}
                           value={obs}
                         />
                       </Box>
-                    </SimpleGrid>
-
-                    <SimpleGrid columns={12} spacing={5}>
-                      <Heading as={GridItem} colSpan={12} mb={3} size="sd">
-                        Empresas
-                      </Heading>
-                      <FormControl as={GridItem} colSpan={[12, 8]}>
-                        <SimpleGrid
-                          p="1rem"
-                          columns={{ base: 1, md: 3 }}
-                          row={{ base: 1, md: 3 }}
-                          spacing={{ base: 3, md: 5 }}
-                        >
-                          {Empresa.map((i: any, x: number) => {
-                            return (
-                              <ListaEmpresa
-                                key={x}
-                                index={x}
-                                id={i.id}
-                                nome={i.attributes.nome}
-                                fantasia={i.attributes.fantasia}
-                                endereco={i.attributes.endereco}
-                                numero={i.attributes.numero}
-                                complemento={i.attributes.complemento}
-                                bairro={i.attributes.bairro}
-                                cep={i.attributes.cep}
-                                cidade={i.attributes.cidade}
-                                uf={i.attributes.uf}
-                                fone={i.attributes.fone}
-                                celular={i.attributes.celular}
-                                site={i.attributes.site}
-                                email={i.attributes.email}
-                                emailNfe={i.attributes.emailNfe}
-                                CNPJ={i.attributes.CNPJ}
-                              />
-                            );
-                          })}
-                        </SimpleGrid>
-                      </FormControl>
-                      <FormControl ms={10} as={GridItem} colSpan={[12, 3]}>
-                        <RelaciomentoEmpr
-                          onGetValue={getEmpresa}
-                          dados={Dados}
-                        />
-                      </FormControl>
                     </SimpleGrid>
                   </Stack>
                   <Box
@@ -751,32 +554,23 @@ export default function PessoaId() {
                     }}
                     py={5}
                     pb={[12, null, 5]}
-                    _dark={{
-                      bg: '#121212',
-                    }}
                     textAlign="right"
                   >
                     <Button
                       type="submit"
                       colorScheme="red"
                       me={5}
-                      _focus={{
-                        shadow: '',
-                      }}
                       fontWeight="md"
-                      onClick={() => router.push('/pessoas/')}
+                      onClick={() => router.back()}
                     >
                       Cancelar
                     </Button>
                     <Button
                       colorScheme="whatsapp"
-                      _focus={{
-                        shadow: '',
-                      }}
                       fontWeight="md"
                       onClick={save}
                     >
-                      Save
+                      Salvar
                     </Button>
                   </Box>
                 </chakra.form>

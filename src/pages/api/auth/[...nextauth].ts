@@ -44,7 +44,7 @@ export default NextAuth({
 
           const { jwt, user } = await res.data;
 
-          const { confirmed, blocked, username, id, email, pemission } =
+          const { confirmed, blocked, username, id, email, pemission, primeiro_acesso } =
             await user;
           const response = {
             jwt: jwt,
@@ -54,6 +54,7 @@ export default NextAuth({
             confirmed: confirmed,
             blocked: blocked,
             pemission: pemission,
+            primeiro_acesso,
           };
 
           if (!jwt || !id || !username || !email) {

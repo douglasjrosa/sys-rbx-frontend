@@ -25,10 +25,10 @@ export const NovoCliente = () => {
 
       return (
       <Tr key={i.id}>
-        <Td p={2} fontSize={"12px"} borderEnd={"2px"} textAlign={"center"} borderBottom={"1px solid #afafaf"}>
+        <Td py='2' color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'} textAlign={"center"}>
           {i.attributes.nome}
         </Td>
-        <Td p={2} fontSize={"12px"} borderEnd={"2px"} textAlign={"center"} borderBottom={"1px solid #979797"}>
+        <Td py='2' color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'} textAlign={"center"}>
           {new Date(i.attributes.ultima_compra).toLocaleDateString('pt-BR')}
         </Td>
       </Tr>

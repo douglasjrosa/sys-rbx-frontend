@@ -20,7 +20,6 @@ export const ProdutiList = (props: {
   retunLoading: any;
   idProd: number;
 }) => {
-  const [Loading, setLoading] = useState(true);
   const [Load, setLoad] = useState<boolean>(false);
   const [Produtos, setProdutos] = useState<any>([]);
   const [itenId, setItenId] = useState("");
@@ -101,13 +100,8 @@ export const ProdutiList = (props: {
         >
           <Box>
             <FormLabel
-              htmlFor="cidade"
               fontSize="xs"
               fontWeight="md"
-              color="gray.700"
-              _dark={{
-                color: "gray.50",
-              }}
             >
               Produtos
             </FormLabel>
@@ -117,15 +111,14 @@ export const ProdutiList = (props: {
               w="15rem"
               fontSize="xs"
               rounded="md"
-              placeholder="Selecione um Produto"
               onChange={(e) => setItenId(e.target.value)}
               value={itenId}
             >
+               <option style={{ backgroundColor: "#1A202C" }}>Selecione um Produto</option>
               {Produtos.map((item: any) => {
-
                 return (
                   <>
-                    <option value={item.prodId}>{item.nomeProd}</option>
+                    <option style={{ backgroundColor: "#1A202C" }} key={item.prodId} value={item.prodId}>{item.nomeProd}</option>
                   </>
                 );
               })}

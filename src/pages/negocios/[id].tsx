@@ -190,16 +190,17 @@ export default function CreateNegocio() {
   }
 
   if (loadingGeral) {
-    return <Loading size="200px">Carregando...</Loading>;
+    return (
+      <Box w={'100%'} h={'100%'}>
+        <Loading size="200px">Carregando...</Loading>
+      </Box>
+    );
   }
 
   return (
     <>
-      <Flex w="100%" h="100vh" flexDirection={'column'} justifyContent={'space-between'}>
-        <Box>
-
-        </Box>
-        <Box bg={"gray.200"} w="full" p={5}>
+      <Flex w="100%" h="100vh" flexDirection={'column'} justifyContent={'space-between'} >
+        <Box bg={'gray.800'} w="full" p={5} color={'white'}>
           <NegocioHeader
             nBusiness={nBusiness}
             Approach={Approach}
@@ -215,10 +216,10 @@ export default function CreateNegocio() {
             onchat={chatRelaod}
           />
         </Box>
-        <Box bg="#edeae6" w="full" h={'full'} ref={divRef} overflowY={"auto"}>
+        <Box bg={'#292f3a'} w="full" h={'full'} ref={divRef} overflowY={"auto"}>
           <BodyChat conteudo={ChatHistory} loading={loading} />
         </Box>
-        <Box w="full">
+        <Box bg={'gray.800'} w="full">
           <NegocioFooter data={ChatHistory} onGetValue={getMsg} />
         </Box>
       </Flex>

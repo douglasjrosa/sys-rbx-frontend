@@ -3,7 +3,7 @@ import { Box, Button, Flex, FormLabel, GridItem, Select } from '@chakra-ui/react
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
-export const CompPessoa = (props: { Resp: string; onAddResp: any; ID?: string }) => {
+export const CompPessoa = (props: { Resp: string; onAddResp: any; ID?: string | null }) => {
   const [dados, setDados] = useState<any>([]);
   const [valor, setValor] = useState('');
   const { push } = useRouter()
@@ -38,31 +38,26 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; ID?: string })
           <FormLabel
             fontSize="xs"
             fontWeight="md"
-            color="gray.700"
-            _dark={{
-              color: 'gray.50',
-            }}
           >
             Responsável
           </FormLabel>
           <Select
-            borderColor="gray.600"
-            focusBorderColor="brand.400"
+            focusBorderColor="#ffff"
             shadow="sm"
             size="xs"
             w="full"
             fontSize="xs"
             rounded="md"
-            placeholder=" "
             onChange={atualizarValor}
             value={valor}
           >
-            <option value="">não tem</option>
+            <option style={{background: '#1A202C'}}>não tem</option>
             {!dados
               ? null
               : dados.map((i: any) => {
+
                 return (
-                  <option key={i.id} value={i.id}>
+                  <option style={{background: '#1A202C'}} key={i.id} value={i.id}>
                     {i.attributes.nome}
                   </option>
                 );

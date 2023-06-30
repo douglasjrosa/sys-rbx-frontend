@@ -65,11 +65,12 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
     <>
 
       <Flex
-        px={'4rem'}
-        // h={'100%'}
+        px={{base:'2rem', md: '4rem'}}
+        py={4}
+        h={'100%'}
         justifyContent={'space-between'}
         alignItems={'center'}
-        bg={'#f0f2f5'}
+        gap={5}
       >
         <Textarea
           resize={'none'}
@@ -82,15 +83,15 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
           rounded={'5px'}
           borderColor={'gray.300'}
           rows={1}
-          boxShadow={'dark-lg'}
           onChange={(e: any) => setValor(e.target.value)}
           value={Valor}
         />
         <IconButton
           aria-label="Send"
+          style={{backgroundColor: '#38A169'}}
           fontSize={'xl'}
           icon={<FaLocationArrow />}
-          color="gray.600"
+          color="gray.700"
           onClick={addItens}
         />
       </Flex>

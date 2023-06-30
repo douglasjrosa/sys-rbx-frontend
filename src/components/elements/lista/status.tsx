@@ -9,7 +9,6 @@ export const BtnStatus = (props: { Resp: any; onAddResp: any }) => {
     setValor(props.Resp);
   }, [props.Resp]);
 
-  console.log("🚀 ~ file: status.tsx:11 ~ useEffect ~ props.Resp:", valor)
   function atualizarValor(event: any) {
     setValor(event.target.value);
     props.onAddResp(event.target.value);
@@ -20,10 +19,6 @@ export const BtnStatus = (props: { Resp: any; onAddResp: any }) => {
       <FormLabel
         fontSize="xs"
         fontWeight="md"
-        color="gray.700"
-        _dark={{
-          color: "gray.50",
-        }}
       >
         Status
       </FormLabel>
@@ -33,14 +28,13 @@ export const BtnStatus = (props: { Resp: any; onAddResp: any }) => {
         w="full"
         fontSize="xs"
         rounded="md"
-        placeholder=" "
-        border={'1px solid #6666'}
         onChange={atualizarValor}
         value={valor}
       >
+        <option style={{ backgroundColor: "#1A202C" }}></option>
         {StatusAndamento.map((i: any) => {
           return (
-            <option key={i.id} value={i.id}>
+            <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
               {i.title}
             </option>
           );

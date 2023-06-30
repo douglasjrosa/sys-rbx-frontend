@@ -1,4 +1,4 @@
-import { Box, Button, Flex } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { CardList } from "../../components/Proposta/listaItens";
 import { BsArrowLeftCircleFill } from "react-icons/bs";
@@ -20,25 +20,19 @@ export default function ListaProposta() {
 
   return (
     <>
-      <Flex h="100%" w="100%" flexDir={"column"} justifyContent="center">
+      <Flex h="100%" w="100%" flexDir={"column"} justifyContent="center" bg={'gray.800'}>
         <Flex
           w="100%"
-          borderBottom={"2px"}
-          borderColor={"gray.200"}
           justifyContent={"space-between"}
           alignItems={"center"}
+          px='10'
+          h={"8%"}
         >
-          <Box ms={16}>
-            <BsArrowLeftCircleFill
-              color="blue"
-              cursor={'pointer'}
-              size={30}
-              onClick={() => router.push('/negocios/' + ID)}
-            />
+          <Box>
+             <IconButton aria-label='voltar' rounded={'3xl'} onClick={() => router.push('/negocios/' + ID)} icon={<BsArrowLeftCircleFill size={30} color="#136dcc" />} />
           </Box>
           <Button
-            my={'3'}
-            me={16}
+            mb={'3'}
             colorScheme="whatsapp"
             isDisabled={Disble}
             onClick={() => {
@@ -49,10 +43,9 @@ export default function ListaProposta() {
             Nova Proposta
           </Button>
         </Flex>
-        <Box h={"90%"}>
+        <Box h={"92%"} py='3'>
           <Flex
-            bg="#ced3d8"
-            pt={"1rem"}
+            bg="gray.800"
             pb={"0.5rem"}
             px={"1rem"}
             h="full"

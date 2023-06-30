@@ -17,9 +17,8 @@ export const CompPrazo = (props: { Resp: string; onAddResp: any; oncnpj: string 
       const [filter] = dados.filter((objeto: any) =>
         objeto.titulo
           .toLowerCase()
-          == props.Resp.toLowerCase(),
+        == props.Resp.toLowerCase(),
       );
-      console.log("🚀 ~ file: prazo.tsx:24 ~ useEffect ~ filter:", filter)
       setValor(!filter ? props.Resp : filter.titulo);
     }
   }, [props.Resp, valor, dados]);
@@ -33,17 +32,14 @@ export const CompPrazo = (props: { Resp: string; onAddResp: any; oncnpj: string 
   ]
   const [selectLista] = listEmpr.filter((i: any) => i.cnpj == props.oncnpj).map((i: any) => i.nome)
   const PropPrazo = selectLista === undefined ? 'Padão' : selectLista
-  const data = dados.filter((i: any)=> i.propriedade == PropPrazo)
+  const data = dados.filter((i: any) => i.propriedade == PropPrazo)
 
   return (
     <Box>
       <FormLabel
         fontSize="xs"
         fontWeight="md"
-        color="gray.700"
-        _dark={{
-          color: 'gray.50',
-        }}
+        color="white"
       >
         Tipos de prazo
       </FormLabel>
@@ -53,13 +49,14 @@ export const CompPrazo = (props: { Resp: string; onAddResp: any; oncnpj: string 
         w="full"
         fontSize="xs"
         rounded="md"
-        placeholder=" "
+        color="white"
         onChange={atualizarValor}
         value={valor}
       >
+        <option style={{ backgroundColor: "#1A202C" }}></option>
         {data.map((i: any) => {
           return (
-            <option key={i.id} value={i.titulo}>
+            <option key={i.id} style={{ backgroundColor: "#1A202C" }} value={i.titulo}>
               {i.titulo}
             </option>
           );
