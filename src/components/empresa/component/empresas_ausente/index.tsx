@@ -43,62 +43,9 @@ export const CarteiraAusente = (props: { data: any }) => {
 
     return (
       <>
-        <tr key={i.id} style={{ borderBottom: '1px solid #ffff' }}>
+        <tr key={i.id} style={{ borderBottom: '1px solid #ffff', cursor: 'pointer' }} onClick={() => router.push(`/empresas/atualizar/${i.id}`)}>
           <td style={{ padding: '0.9rem 1.2rem' }}>{i.attributes.nome}</td>
           <td style={{ padding: '0.9rem 1.2rem' }}>{valor + text}</td>
-          <td style={{ padding: '0.9rem 1.2rem' }}>
-            <Flex gap={3}>
-              <IconButton
-                colorScheme='facebook'
-                aria-label='editar empresa'
-                icon={<GrEdit size={'1.5rem'} />}
-                onClick={() => router.push(`/empresas/atualizar/${i.id}`)}
-              />
-              <IconButton
-                fontSize={5}
-                colorScheme='green'
-                aria-label='novo negocio'
-                icon={<FaMoneyBillWaveAlt size={'2rem'} />}
-                onClick={() => {
-                  (async () => {
-                    const historico = {
-                      vendedor: session?.user.name,
-                      date:
-                        new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
-                      msg: `Vendedor ${session?.user.name}, criou esse Negócio`,
-                    };
-
-                    const MSG = {
-                      msg: `Vendedor ${session?.user.name}, criou esse Negócio`,
-                      date: new Date().toISOString(),
-                      user: "Sistema",
-                    };
-
-                    const data = {
-                      status: true,
-                      empresa: i.id,
-                      history: historico,
-                      vendedor: session?.user.id,
-                      DataRetorno: dataAtual.toISOString(),
-                      incidentRecord: [MSG],
-                      Budget: '0,00'
-                    };
-                    const url = "/api/db/business/post";
-                    await axios({
-                      method: "POST",
-                      url: url,
-                      data: data,
-                    })
-                      .then((res) => {
-                        console.log(res.data.nBusiness);
-                        router.push(`/negocios/${res.data.nBusiness}`)
-                      })
-                      .catch((err) => console.error(err));
-                  })()
-                }}
-              />
-            </Flex>
-          </td>
         </tr>
       </>
     )
@@ -126,8 +73,6 @@ export const CarteiraAusente = (props: { data: any }) => {
               <tr style={{ background: '#ffffff12', borderBottom: '1px solid #ffff' }}>
                 <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' }}>nome</th>
                 <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '36%' }}>Última compra</th>
-                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start' }}></th>
-                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start' }}></th>
               </tr>
             </thead>
             <tbody>

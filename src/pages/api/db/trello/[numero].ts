@@ -59,8 +59,8 @@ export default async function PostTrello(
     const estrega = pedido.attributes.business.data.attributes.deadline;
     const VendedorName = pedido.attributes.user.data.attributes.username;
     const fornecedorName = pedido.attributes.fornecedorId.data.attributes.nome;
-    const userKey = pedido.attributes.user.data.attributes.trello_key;
-    const userToken = pedido.attributes.user.data.attributes.trello_token;
+    const userKey = '7f3afdbb72cb272f2ef99089cd9066c8';
+    const userToken = "ad565886cde4f9d1466040864b94a879d2281ec2f83c43d9cf0d74dbd752509d";
     const pedidoCliente = pedido.attributes.cliente_pedido;
 
     const Prefuncionario = await GetTrelloId();

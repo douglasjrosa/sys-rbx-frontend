@@ -65,16 +65,13 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
           method: "POST",
         })
           .then((response) => {
-            console.log(response.data)
+            // console.log(response.data)
           })
           .catch((error) => {
-            console.log(error)
+            // console.log(error)
           });
 
-        await axios({
-          url: `/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`,
-          method: "GET",
-        })
+        await axios(`/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`)
           .then((response) => {
             console.log(response.data)
           })
@@ -92,7 +89,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
         setData(resp);
         setLoad(false)
         setIdLoad('')
-        router.push("/negocios/" + props.id);
+        // router.push("/negocios/" + props.id);
       })
       .catch(async (err) => {
         console.log(err.response.data.message);
@@ -102,6 +99,14 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
             url: `/api/db/trello/${numero}`,
             method: "POST",
           })
+            .then((response) => {
+              console.log(response.data)
+            })
+            .catch((error) => {
+              console.log(error)
+            });
+
+          await axios(`/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`)
             .then((response) => {
               console.log(response.data)
             })
@@ -302,7 +307,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
                               setIdLoad(i.id)
                               pedido(i.attributes.nPedido, i.attributes.empresa.data.id)
                             }}
-                            isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
+                          // isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
                           >
                             Gerar Pedido
                           </Button>

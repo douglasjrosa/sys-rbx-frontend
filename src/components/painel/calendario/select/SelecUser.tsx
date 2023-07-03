@@ -16,6 +16,8 @@ export const SelectUser = (props: {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
+    const usuario = session?.user.name
+    localStorage.setItem('user', `${usuario}`)
     const fetchData = async () => {
       try {
         const response = await axios.get('/api/db/user');
@@ -31,6 +33,7 @@ export const SelectUser = (props: {
     const value = event.target.value;
     setUser(value);
     props.onValue(value);
+    localStorage.setItem('user', `${value}`)
   };
 
 

@@ -19,7 +19,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
 
       const inativStatus = empresa.attributes.inativStatus;
       const ultima_compra = empresa.attributes.ultima_compra;
-      
+
       let update;
 
       if (!inativStatus || inativStatus == 3) {
@@ -62,7 +62,8 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
           },
         })
           .then((Response) => {
-            return res.status(200).json(Response.data);
+            console.log("🚀 ~ file: index.ts:66 ~ .then ~ Response.data:", Response.data)
+            res.status(200).json(Response.data);
           })
           .catch((err) => {
             return res.status(400).json({

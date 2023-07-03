@@ -14,8 +14,6 @@ export const PostPedido = async (dados: any) => {
   const empresaUlt = DaDos.empresa.data.attributes.ultima_compra;
   const Produto = await DaDos.itens;
 
-  console.log("🚀 ~ file: index.ts:11 ~ PostPedido ~ DaDos:", DaDos.fornecedorId.data.attributes.nome )
-
   const apiKey = DaDos.fornecedorId.data.attributes.nome === 'MAX BRASIL DERIVADOS DE MADEIRA LTDA'? apiKeyMax : DaDos.fornecedorId.data.attributes.nome === 'BRAGHETO PALETES E EMBALAGENS LTDA'? apiKeyBragheto : apiKeyRenato
 
 
@@ -183,7 +181,7 @@ export const PostPedido = async (dados: any) => {
     const response = await requet.json();
 
     const { pedidos, erros } = response.retorno;
-
+  
     const txt =
       "Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)";
 

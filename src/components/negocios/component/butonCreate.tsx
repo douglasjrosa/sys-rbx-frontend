@@ -67,28 +67,36 @@ export const theme = extendTheme({
 
 export const BtCreate = (props: { onLoading: any; user: any }) => {
   const { data: session } = useSession();
-  const [work, setWork] = useState([]);
+  const [work, setWork] = useState<any | null>([]);
   const [budgets, setBudgets] = useState<any>();
   const [Approach, setApproach] = useState("");
   const [Empresa, setEmpresa] = useState("");
   const [Deadline, setDeadline] = useState("");
   const [Etapa, setEtapa] = useState("");
+  const [USER, setUSER] = useState<string | null>(null);
   const { onOpen, onClose, isOpen } = useDisclosure();
   const dataAtual: Date = new Date();
 
+
   useEffect(() => {
-    (async () => {
-      const usuario = session?.user.name
-      const url = `/api/db/empresas/get?Vendedor=${usuario}`;
-      try {
-        const response = await axios(url);
-        const GetVendedor = response.data;
-        setWork(GetVendedor);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  }, [session?.user.name]);
+    const usuario = props.user
+    if (usuario) {
+      (async () => {
+        const url = `/api/db/empresas/get?Vendedor=${usuario}`;
+        const url1 = `/api/db/empresas/get`;
+        try {
+          const response = await axios(url);
+          const response1 = await axios(url1);
+          const GetVendedor = response.data;
+          const GetEnpresas = response1.data;
+          const resultado = [...GetVendedor, ...GetEnpresas]
+          setWork(resultado);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+    }
+  }, [props.user]);
 
   const historico = {
     vendedor: session?.user.name,
@@ -128,20 +136,17 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
       .then((res) => {
         console.log(res);
         props.onLoading(false);
-        Reset();
-
       })
       .catch((err) => console.error(err));
   };
 
-  const Reset = () => {
-    setBudgets("");
-    setApproach("");
-    setEmpresa("");
-    setDeadline("");
-    onClose();
-  };
 
+
+  const getValue = (e: any) => {
+    const valor = e.target.value
+    const valor_limpo = SetValue(valor);
+    setBudgets(valor_limpo)
+  }
   return (
     <ChakraProvider theme={theme}>
       <Popover
@@ -193,7 +198,7 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
             >
               <option style={{ backgroundColor: "#2A4365" }} value="">Selecione a etapa do negócio</option>
               {EtapasNegocio.map((item: any) => {
-                if (item.id === '6'){
+                if (item.id === '6') {
                   return ''
                 }
                 return (
@@ -209,10 +214,10 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
             </Select>
             <InputGroup mt={2}>
               <Input
-                type="number"
+                type="text"
                 placeholder="Orçamento estimado"
                 value={budgets}
-                onChange={(e) => setBudgets(SetValue(e.target.value))}
+                onChange={getValue}
               />
             </InputGroup>
           </PopoverBody>
@@ -224,7 +229,7 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
           >
             <Box fontSize="sm"></Box>
             <ButtonGroup size="sm">
-              <Button colorScheme="blue" onClick={Reset}>
+              <Button colorScheme="blue" onClick={onClose}>
                 Cancelar
               </Button>
               <Button
