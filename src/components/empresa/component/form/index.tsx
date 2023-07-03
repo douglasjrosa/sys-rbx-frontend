@@ -27,11 +27,10 @@ import { modCaix } from "@/components/data/modCaix";
 export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const [CNPJ, setCNPJ] = useState("");
+  const [CNPJ, setCNPJ] = useState('');
   const [MaskCNPJ, setMaskCNPJ] = useState("");
   const [nome, setNome] = useState("");
   const [fantasia, setFantasia] = useState("");
-  console.log("🚀 ~ file: index.tsx:34 ~ FormEmpresa ~ fantasia:", fantasia)
   const [tipoPessoa, setTipoPessoa] = useState("");
   const [fone, setFone] = useState("");
   const [celular, setCelular] = useState("");
@@ -90,7 +89,9 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
       setResponsavel(empresa.attributes?.responsavel.data?.id);
       setID(empresa.id);
       setCNPJ(empresa.attributes?.CNPJ);
-      setMaskCNPJ(mask(CNPJ, ["99.999.999/9999-99"]))
+      const cnpj = empresa.attributes?.CNPJ
+      console.log("🚀 ~ file: index.tsx:93 ~ useEffect ~ cnpj:", cnpj)
+      setMaskCNPJ(mask(cnpj, ["99.999.999/9999-99"]))
       setNome(empresa.attributes?.nome);
       setFantasia(empresa.attributes?.fantasia);
       setTipoPessoa(empresa.attributes?.tipoPessoa);
@@ -137,7 +138,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
       setFrete(empresa.attributes?.frete);
       setStatus(empresa.attributes?.status);
     }
-  }, [CNPJ, props.data])
+  }, [props.data])
 
   const consulta = async () => {
     let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;

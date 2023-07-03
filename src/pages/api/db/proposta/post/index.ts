@@ -72,6 +72,7 @@ export default async function PostEmpresa(
       `/empresas?filters[CNPJ][$containsi]=${fornecedorString}&fields[0]=id&fields[1]=titulo`
     );
     const [retorno] = getfornecdor.data.data;
+
     const idFornecedor: number = retorno.id;
 
     const date = new Date().toLocaleString;

@@ -11,7 +11,7 @@ export default function EmpresaId() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setloading] = useState(false);
-  const [DataEmp, setDataEmp] = useState<any>([]);
+  const [DataEmp, setDataEmp] = useState<any | null>(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -124,6 +124,7 @@ export default function EmpresaId() {
     return <Loading size="200px">Carregando...</Loading>;
   }
 
+  console.log("🚀 ~ file: [id].tsx:130 ~ EmpresaId ~ DataEmp:", DataEmp)
   return (
     <>
       <FormEmpresa data={DataEmp} retornoData={getData} />
