@@ -72,10 +72,10 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const [engRef, setEngRef] = useState(false);
   const [engResi, setEngResi] = useState(false);
   const [status, setStatus] = useState(true);
-  const [tablecalc, setTablecalc] = useState("");
-  const [maxPg, setMaxpg] = useState("");
-  const [forpg, setForpg] = useState("");
-  const [frete, setFrete] = useState("");
+  const [tablecalc, setTablecalc] = useState("0.30");
+  const [maxPg, setMaxpg] = useState("0");
+  const [forpg, setForpg] = useState("desconto");
+  const [frete, setFrete] = useState("FOB");
   const [Razao, setRazao] = useState("");
   const [Responsavel, setResponsavel] = useState("");
   const [Inatividade, setInatividade] = useState<number>(60);
@@ -84,6 +84,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const toast = useToast();
 
   useEffect(() => {
+    localStorage.removeItem('idRetorno')
     if (props.data) {
       const empresa = props.data
       setResponsavel(empresa.attributes?.responsavel.data?.id);
@@ -266,15 +267,16 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   return (
     <>
       <Box
-      h='100%'
+        h='100%'
         bg="gray.800"
-        px={5}
-        pt={3}
+        p={5}
+        pt={{ base: '25rem', sm: '25rem', md: '15rem', '2xl': '7rem' }}
         display={"flex"}
         justifyContent={"center"}
         alignItems={"center"}
+        overflowY={'auto'}
       >
-        <Box mt={[5, 0]}>
+        <Box>
           <SimpleGrid
             display={{
               base: "initial",
@@ -286,17 +288,23 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
             spacing={{
               md: 6,
             }}
+            bg="gray.800"
+            h='100%'
           >
             <GridItem
-              mt={[5, null, 0]}
+              // mt={[5, null, 0]}
               colSpan={{
                 md: 2,
               }}
+              h='100%'
             >
               <chakra.form
+                h={'100%'}
                 method="POST"
                 color='white'
                 bg='#ffffff12'
+                p={5}
+                mt={{ md: '10rem', lg: 0, xl: '1rem', '2xl': '0' }}
                 rounded={5}
                 overflow={{
                   sm: "hidden",
@@ -477,7 +485,10 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         mt={5}
                         h={8}
                         colorScheme="teal"
-                        onClick={()=> router.push(`/pessoas/cadastro`)}
+                        onClick={() => {
+                          localStorage.setItem('idRetorno', `${ID}`)
+                          router.push(`/pessoas/cadastro`)
+                        }}
                       >
                         + Nova Pessoa
                       </Button>
@@ -767,9 +778,9 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         onChange={(e) => setContribuinte(e.target.value)}
                         value={contribuinte}
                       >
-                        <option value="1">Contribuinte ICMS</option>
-                        <option value="2">Contribuinte isento do ICMS</option>
-                        <option value="9">Não contribuinte</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="1">Contribuinte ICMS</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="2">Contribuinte isento do ICMS</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="9">Não contribuinte</option>
                       </Select>
                     </FormControl>
                   </SimpleGrid>
@@ -800,19 +811,18 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="Selecione uma opção"
                         onChange={(e) => setTablecalc(e.target.value)}
                         value={tablecalc}
                       >
-                        <option value=""></option>
-                        <option value="0.30">Balcão</option>
-                        <option value="0.26" selected>
+                        <option style={{ backgroundColor: "#1A202C" }} value="">Selecione uma opção</option>
+                        <option style={{ backgroundColor: "#1A202C" }} selected value="0.30">Balcão</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="0.26" selected>
                           Vip
                         </option>
-                        <option value="0.23">Bronze</option>
-                        <option value="0.20">Prata</option>
-                        <option value="0.17">Ouro</option>
-                        <option value="0.14">Platinum</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="0.23">Bronze</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="0.20">Prata</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="0.17">Ouro</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="0.14">Platinum</option>
                       </Select>
                     </FormControl>
 
@@ -832,17 +842,17 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="Selecione uma tabela"
                         onChange={(e) => setMaxpg(e.target.value)}
                         value={maxPg}
                       >
-                        <option value="0">À vista (antecipado)</option>
-                        <option value="5">5 dias</option>
-                        <option value="15">15 dias</option>
-                        <option value="28">28 Dias</option>
-                        <option value="35">28 e 35 dias</option>
-                        <option value="42">28, 35 e 42 dias</option>
-                        <option value="90">
+                        <option style={{ backgroundColor: "#1A202C" }}>Selecione uma tabela</option>
+                        <option style={{ backgroundColor: "#1A202C" }} selected value="0">À vista (antecipado)</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="5">5 dias</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="15">15 dias</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="28">28 Dias</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="35">28 e 35 dias</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="42">28, 35 e 42 dias</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="90">
                           90 dias (Casos muito excepcionais)
                         </option>
                       </Select>
@@ -865,12 +875,12 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="Escolha uma opção"
                         onChange={(e) => setForpg(e.target.value)}
                         value={forpg}
                       >
-                        <option value="desconto">Desconto À VISTA</option>
-                        <option value="prazo">
+                        <option style={{ backgroundColor: "#1A202C" }} >Escolha uma opção</option>
+                        <option style={{ backgroundColor: "#1A202C" }} selected value="desconto">Desconto À VISTA</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="prazo">
                           Maior prazo para pagamento
                         </option>
                       </Select>
@@ -894,12 +904,12 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         w="full"
                         fontSize="xs"
                         rounded="md"
-                        placeholder="Escolha uma opção"
                         onChange={(e) => setFrete(e.target.value)}
                         value={frete}
                       >
-                        <option value="FOB">FOB - Por conta do cliente</option>
-                        <option value="CIF">CIF - Por conta da Ribermax</option>
+                        <option style={{ backgroundColor: "#1A202C" }}>Escolha uma opção</option>
+                        <option style={{ backgroundColor: "#1A202C" }} selected value="FOB">FOB - Por conta do cliente</option>
+                        <option style={{ backgroundColor: "#1A202C" }} value="CIF">CIF - Por conta da Ribermax</option>
                       </Select>
                     </FormControl>
                   </SimpleGrid>
@@ -1052,10 +1062,6 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                             <Box ml={3} fontSize="xs">
                               <chakra.label
                                 fontWeight="md"
-
-                                _dark={{
-                                  color: "gray.50",
-                                }}
                               >
                                 {item.title}
                               </chakra.label>
@@ -1071,16 +1077,11 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                     base: 4,
                     sm: 6,
                   }}
-                  py={2}
-                  pb={[12, null, 5]}
                   textAlign="right"
                 >
                   <Button
                     colorScheme="red"
                     me={5}
-                    _focus={{
-                      shadow: "",
-                    }}
                     fontWeight="md"
                     onClick={() => router.push("/empresas/")}
                   >
@@ -1088,9 +1089,6 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                   </Button>
                   <Button
                     colorScheme="whatsapp"
-                    _focus={{
-                      shadow: "",
-                    }}
                     fontWeight="md"
                     onClick={save}
                   >

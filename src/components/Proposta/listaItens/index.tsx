@@ -13,6 +13,7 @@ import { BTMPdf } from "../BTMPdf";
 import { BeatLoader } from "react-spinners";
 import Loading from "@/components/elements/loading";
 import { useSession } from "next-auth/react";
+import { SetValue } from "@/function/currenteValor";
 
 
 export const CardList = (props: { id: string; onloading: any; desbilitar: any }) => {
@@ -36,7 +37,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
     })();
   }, [props, url]);
 
-  const pedido = async (numero: string, id: any) => {
+  const pedido = async (numero: string, id: any, ValorVenda: string) => {
     setLoad(true)
     toast({
       title: "Só um momento estou processando!",
@@ -65,13 +66,13 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
           method: "POST",
         })
           .then((response) => {
-            // console.log(response.data)
+            console.log(response.data)
           })
           .catch((error) => {
-            // console.log(error)
+            console.log(error)
           });
 
-        await axios(`/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`)
+        await axios(`/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${ValorVenda}`)
           .then((response) => {
             console.log(response.data)
           })
@@ -106,7 +107,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
               console.log(error)
             });
 
-          await axios(`/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`)
+          await axios(`/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${ValorVenda}`)
             .then((response) => {
               console.log(response.data)
             })
@@ -304,10 +305,11 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
                             p={3}
                             colorScheme={"messenger"}
                             onClick={() => {
+                              const totalValor = SetValue(i.attributes.totalGeral)
                               setIdLoad(i.id)
-                              pedido(i.attributes.nPedido, i.attributes.empresa.data.id)
+                              pedido(i.attributes.nPedido, i.attributes.empresa.data.id, totalValor)
                             }}
-                          // isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
+                          isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
                           >
                             Gerar Pedido
                           </Button>

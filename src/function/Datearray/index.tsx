@@ -34,7 +34,7 @@ export const getAllDaysOfMonth = async (month: number | undefined) => {
   // Filtrando os dias da semana, excluindo feriados, domingos e sábados
   const diasDaSemana = days.filter((day) => {
     const isFeriado = feriados.includes(day.date);
-    const diaDaSemana = new Date(day.date).getDay(); // 0 (domingo) a 6 (sábado)
+    const diaDaSemana = new Date(day.date).getUTCDay(); // 0 (domingo) a 6 (sábado)
     return !isFeriado && diaDaSemana !== 0 && diaDaSemana !== 6;
   });
 

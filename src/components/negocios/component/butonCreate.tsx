@@ -22,6 +22,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { MdOutlineAddCircleOutline } from "react-icons/md";
 import { BeatLoader } from "react-spinners";
@@ -76,6 +77,7 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
   const [USER, setUSER] = useState<string | null>(null);
   const { onOpen, onClose, isOpen } = useDisclosure();
   const dataAtual: Date = new Date();
+  const router= useRouter()
 
 
   useEffect(() => {
@@ -134,8 +136,8 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
       data: data,
     })
       .then((res) => {
-        console.log(res);
-        props.onLoading(false);
+        console.log(res.data.nBusiness);
+        router.push(`/negocios/${res.data.nBusiness}`)
       })
       .catch((err) => console.error(err));
   };

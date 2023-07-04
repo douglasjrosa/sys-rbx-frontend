@@ -59,7 +59,7 @@ export const CarteiraVendedor = (props: { data: any }) => {
   return (
     <>
       <Box color={'white'} w={{ base: '100%', lg: '50%' }}>
-        <Heading>Empresas sem carteira definida</Heading>
+        <Heading>Empresas na minha carteira</Heading>
         <Box
           mt={5}
           maxH={{ base: '23rem', lg: '90%' }}
@@ -68,7 +68,7 @@ export const CarteiraVendedor = (props: { data: any }) => {
           <table style={{ width: '100%' }}>
             <thead>
               <tr style={{ background: '#ffffff12', borderBottom: '1px solid #ffff' }}>
-                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' }}>nome</th>
+                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' }}>Nome</th>
                 <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '36%' }}>Última compra</th>
               </tr>
             </thead>

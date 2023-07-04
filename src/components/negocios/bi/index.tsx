@@ -35,7 +35,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
 
   useEffect(() => {
     (async () => {
-      setLoad(true)
+      // setLoad(true)
       const usuario: any = session?.user.name
       setUser(usuario);
       const daysOfMonth = await getAllDaysOfMonth(MesAt);

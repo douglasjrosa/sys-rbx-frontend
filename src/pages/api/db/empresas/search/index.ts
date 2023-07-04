@@ -11,11 +11,13 @@ export default async function GetEmpresa(
     const Vendedor = req.query.Vendedor;
     const CNPJ = req.query.CNPJ;
     const EMPRESA = req.query.EMPRESA;
+    const BUSCA = !req.query.BUSCA? '*&filters[user][username][$null]=true' : '*'
+
     const url =
       !Vendedor && CNPJ
-        ? `${BasseUrl}/empresas?filters[user][username][$null]=true&filters[status][$eq]=true&filters[CNPJ][$containsi]=${CNPJ}&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*`
+        ? `${BasseUrl}/empresas?filters[status][$eq]=true&filters[CNPJ][$containsi]=${CNPJ}&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=${BUSCA}`
         : !Vendedor && EMPRESA
-        ? `${BasseUrl}/empresas?filters[user][username][$null]=true&filters[status][$eq]=true&filters[nome][$containsi]=${EMPRESA}&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*`
+        ? `${BasseUrl}/empresas?filters[status][$eq]=true&filters[nome][$containsi]=${EMPRESA}&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=${BUSCA}`
         : Vendedor && CNPJ
         ? `${BasseUrl}/empresas?filters[user][username][$eq]=${Vendedor}&filters[status][$eq]=true&filters[CNPJ][$containsi]=${CNPJ}&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*`
         : `${BasseUrl}/empresas?filters[user][username][$eq]=${Vendedor}&filters[status][$eq]=true&filters[nome][$containsi]=${EMPRESA}&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*`;

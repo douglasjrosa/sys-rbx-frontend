@@ -26,6 +26,7 @@ export default function EmpresaId() {
     })()
   }, []);
 
+
   function getData(DadosEnpresa: React.SetStateAction<any>) {
     const save = async (data: any) => {
       const EmpresasData = data
@@ -119,12 +120,30 @@ export default function EmpresaId() {
     save(DadosEnpresa)
   }
 
+  useEffect(() => {
+    var index = 0
+    if(index == 0){
+      if(DataEmp){
+        if (DataEmp?.attributes.user.data?.attributes.username !== session?.user.name) {
+          toast({
+            title: `O clienete ${DataEmp?.attributes.nome}`,
+            description: `pertence ao vendedor(a) ${DataEmp?.attributes.user.data?.attributes.username}`,
+            status: 'warning',
+            duration: 9000,
+            isClosable: true,
+            position: 'top-right',
+          })
+          index = index + 1
+        }
+      }
+    }
+  }, [DataEmp])
 
   if (loading) {
     return <Loading size="200px">Carregando...</Loading>;
   }
 
-  console.log("🚀 ~ file: [id].tsx:130 ~ EmpresaId ~ DataEmp:", DataEmp)
+
   return (
     <>
       <FormEmpresa data={DataEmp} retornoData={getData} />

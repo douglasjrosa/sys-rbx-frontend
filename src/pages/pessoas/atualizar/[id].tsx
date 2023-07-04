@@ -96,7 +96,10 @@ export default function PessoaId() {
             });
             setTimeout(() => {
               setloading(false)
-              router.back()
+              const idempresa = localStorage.getItem('idRetorno')
+              const url = idempresa? `/empresas/atualizar/${idempresa}` : '/empresas/cadastro'
+              router.push( url)
+              localStorage.removeItem('idRetorno')
             }, 100);
           })
           .catch((err) => {

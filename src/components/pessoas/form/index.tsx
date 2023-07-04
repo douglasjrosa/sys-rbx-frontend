@@ -22,7 +22,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { mask, unMask } from "remask";
 
-export const FormPessoa = (props: { Data?: any, retornaData: any}) => {
+export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
   const router = useRouter();
   const { data: session } = useSession();
   const toast = useToast();
@@ -45,9 +45,13 @@ export const FormPessoa = (props: { Data?: any, retornaData: any}) => {
   const [CpfMask, setCpfMask] = useState('');
   const [Departamento, setDepartamento] = useState('');
   const [Cargo, setCargo] = useState('');
+  const [Url, setUrl] = useState('');
   const [historico, sethistorico] = useState([]);
 
   useEffect(() => {
+    const idempresa = localStorage.getItem('idRetorno')
+    const url = !idempresa || idempresa === null || idempresa === 'null' || idempresa === '' || idempresa === undefined ? '/empresas/cadastro' : `/empresas/atualizar/${idempresa}`
+    setUrl(url)
     if (props.Data) {
       const pessoa = props.Data;
       setNome(capitalizeWords(pessoa.attributes.nome));
@@ -79,6 +83,8 @@ export const FormPessoa = (props: { Data?: any, retornaData: any}) => {
       sethistorico(pessoa.attributes.history);
     }
   }, [props.Data]);
+
+
 
   const MaskWhatsapp = (e: any) => {
     const originalVelue = unMask(e.target.value);
@@ -557,11 +563,12 @@ export const FormPessoa = (props: { Data?: any, retornaData: any}) => {
                     textAlign="right"
                   >
                     <Button
-                      type="submit"
                       colorScheme="red"
                       me={5}
                       fontWeight="md"
-                      onClick={() => router.back()}
+                      onClick={() => {
+                        router.push(Url)
+                      }}
                     >
                       Cancelar
                     </Button>

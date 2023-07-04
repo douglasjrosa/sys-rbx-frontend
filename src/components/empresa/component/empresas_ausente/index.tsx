@@ -71,7 +71,7 @@ export const CarteiraAusente = (props: { data: any }) => {
           <table style={{ width: '100%' }}>
             <thead>
               <tr style={{ background: '#ffffff12', borderBottom: '1px solid #ffff' }}>
-                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' }}>nome</th>
+                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' }}>Nome</th>
                 <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '36%' }}>Última compra</th>
               </tr>
             </thead>

@@ -61,7 +61,10 @@ const ProfilePopover = () => {
                       <Button
                         bg="red.200"
                         rightIcon={<ExternalLinkIcon />}
-                        onClick={() => signOut()}
+                        onClick={() => signOut({
+                          redirect: false,
+                          callbackUrl: '/auth/signin'
+                        })}
                       >
                         Sair
                       </Button>

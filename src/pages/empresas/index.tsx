@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { Box, Button, Flex, FormLabel, Input, Select } from "@chakra-ui/react";
+import { Box, Button, Flex, FormLabel, Input, Select, useToast } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
@@ -13,6 +13,7 @@ function Empresas() {
   const { data: session } = useSession();
   const [Data, setData] = useState<any | null>(null);
   const [DataUser, setDataUser] = useState<any | null>(null);
+  const toast = useToast()
 
 
 
@@ -44,15 +45,45 @@ function Empresas() {
           .then((resposta: any) => setDataUser(resposta))
           .catch((err) => console.log)
       } else {
-        await fetch(`/api/db/empresas/search?CNPJ=${SearchCNPJ}`)
+        await fetch(`/api/db/empresas/search?CNPJ=${SearchCNPJ}&BUSCA=1`)
           .then((Response) => Response.json())
           .then((resposta: any) => {
             setData(resposta)
+            const filtro = resposta.filter((i: any) => i.attributes.user.data.attributes.username !== session?.user.name)
+            if(filtro.length > 0){
+              const mapa = filtro.map((i: any) => {
+                return toast({
+                    title: `O clienete ${i.attributes.nome}`,
+                    description: `pertence ao vendedor(a) ${i.attributes.user.data.attributes.username}`,
+                    status: 'warning',
+                    duration: 9000,
+                    isClosable: true,
+                    position: 'top-right',
+                  })
+              })
+              return mapa
+            }
           })
           .catch((err) => console.log)
-        await fetch(`/api/db/empresas/search?Vendedor=${session?.user.name}&CNPJ=${SearchCNPJ}`)
+        await fetch(`/api/db/empresas/search?Vendedor=${session?.user.name}&CNPJ=${SearchCNPJ}&BUSCA=1`)
           .then((Response) => Response.json())
-          .then((resposta: any) => setDataUser(resposta))
+          .then((resposta: any) => {
+            setDataUser(resposta)
+            const filtro = resposta.filter((i: any) => i.attributes.user.data.attributes.username !== session?.user.name)
+            if(filtro.length > 0){
+              const mapa = filtro.map((i: any) => {
+                return toast({
+                    title: `O clienete ${i.attributes.nome}`,
+                    description: `pertence ao vendedor(a) ${i.attributes.user.data.attributes.username}`,
+                    status: 'warning',
+                    duration: 9000,
+                    isClosable: true,
+                    position: 'top-right',
+                  })
+              })
+              return mapa
+            }
+          })
           .catch((err) => console.log)
       }
 
@@ -73,13 +104,45 @@ function Empresas() {
           .then((resposta: any) => setDataUser(resposta))
           .catch((err) => console.log)
       } else {
-        await fetch(`/api/db/empresas/search?EMPRESA=${SearchEmpr}`)
+        await fetch(`/api/db/empresas/search?EMPRESA=${SearchEmpr}&BUSCA=1`)
           .then((Response) => Response.json())
-          .then((resposta: any) => setData(resposta))
+        .then((resposta: any) => {
+          setData(resposta)
+          const filtro = resposta.filter((i: any) => i.attributes.user.data.attributes.username !== session?.user.name)
+          if(filtro.length > 0){
+            const mapa = filtro.map((i: any) => {
+              return toast({
+                	title: `O clienete ${i.attributes.nome}`,
+                	description: `pertence ao vendedor(a) ${i.attributes.user.data.attributes.username}`,
+                	status: 'warning',
+                	duration: 9000,
+                	isClosable: true,
+                  position: 'top-right',
+              	})
+            })
+            return mapa
+          }
+        })
           .catch((err) => console.log)
-        await fetch(`/api/db/empresas/search?Vendedor=${session?.user.name}&EMPRESA=${SearchEmpr}`)
+        await fetch(`/api/db/empresas/search?Vendedor=${session?.user.name}&EMPRESA=${SearchEmpr}&BUSCA=1`)
           .then((Response) => Response.json())
-          .then((resposta: any) => setDataUser(resposta))
+          .then((resposta: any) => {
+            setDataUser(resposta)
+            const filtro = resposta.filter((i: any) => i.attributes.user.data.attributes.username !== session?.user.name)
+            if(filtro.length > 0){
+              const mapa = filtro.map((i: any) => {
+                return toast({
+                    title: `O clienete ${i.attributes.nome}`,
+                    description: `pertence ao vendedor(a) ${i.attributes.user.data.attributes.username}`,
+                    status: 'warning',
+                    duration: 9000,
+                    isClosable: true,
+                    position: 'top-right',
+                  })
+              })
+              return mapa
+            }
+          })
           .catch((err) => console.log)
       }
     })()

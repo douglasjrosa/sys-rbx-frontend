@@ -94,7 +94,7 @@ export const SelectEmpresas = (props: {
         w={'20rem'}
         onChange={HandleValue}
         value={date}
-        isDisabled={session?.user.pemission !== 'Adm'}
+        // isDisabled={session?.user.pemission !== 'Adm'}
         color="white"
         bg='gray.800'
       >

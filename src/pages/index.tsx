@@ -77,11 +77,11 @@ const Painel: React.FC = () => {
           let corresponding;
           let correspondingDate;
 
-          if (isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date))) {
+          if (isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date)) && cliente.attributes.andamento !== 5 && cliente.attributes.etapa !== 6) {
             corresponding = 'createdAt';
             correspondingDate = cliente.attributes.createdAt;
 
-          } else if (isSameDay(parseISO(cliente.attributes.deadline), parseISO(dia.date))) {
+          } else if (cliente.attributes.andamento === 5 && cliente.attributes.etapa === 1) {
             corresponding = 'deadline';
             correspondingDate = cliente.attributes.deadline;
           } else if (isSameDay(parseISO(cliente.attributes.date_conclucao), parseISO(dia.date))) {
@@ -119,7 +119,7 @@ const Painel: React.FC = () => {
       })
 
       const listaCreatedAt = filterCreatedAt.map((i: any) => {
-        const cliente = i.clientes.map((clinete: any) =>!clinete.attributes.Budget? 0.00 : parseFloat(clinete.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".")))
+        const cliente = i.clientes.map((clinete: any) => !clinete.attributes.Budget ? 0.00 : parseFloat(clinete.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".")))
         const soma = cliente.reduce((total: number, item: any) => {
           return total + item
         }, 0)
@@ -161,6 +161,7 @@ const Painel: React.FC = () => {
       setFase2(somaDateConclusao)
       setFase3(somaDeadline)
 
+
       const parts: any = diasMesclados.reduce((accumulator: any, item: any) => {
         const day = parseInt(item.date.slice(-2));
 
@@ -197,17 +198,25 @@ const Painel: React.FC = () => {
             </Box>
           </Flex>
           <Flex alignItems={'center'} gap={5}>
-            <Flex w={'8rem'} h={'2rem'} py={1} bg={'orange.400'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-              <chakra.span>{Fase1.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
+            <Flex flexDirection={'column'} justifyContent={'center'}>
+              <FormLabel textAlign={'center'} color={'white'}>Em Andamento</FormLabel>
+              <Flex w={'8rem'} h={'2rem'} py={1} bg={'orange.400'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
+                <chakra.span>{Fase1.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
+              </Flex>
             </Flex>
-            <Flex w={'8rem'} h={'2rem'} py={1} bg={'green.500'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-              <chakra.span>{Fase2.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
+            <Flex flexDirection={'column'} justifyContent={'center'}>
+              <FormLabel textAlign={'center'} color={'white'}>Ganhos</FormLabel>
+              <Flex w={'8rem'} h={'2rem'} py={1} bg={'green.500'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
+                <chakra.span>{Fase2.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
+              </Flex>
             </Flex>
-            <Flex w={'8rem'} h={'2rem'} py={1} bg={'red'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-              <chakra.span>{
-              // SetValue(`${Fase3}`)
-              Fase3.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-              }</chakra.span>
+            <Flex flexDirection={'column'} justifyContent={'center'}>
+              <FormLabel textAlign={'center'} color={'white'}>Perdidos</FormLabel>
+              <Flex w={'8rem'} h={'2rem'} py={1} bg={'red'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
+                <chakra.span>{
+                  Fase3.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                }</chakra.span>
+              </Flex>
             </Flex>
           </Flex>
 

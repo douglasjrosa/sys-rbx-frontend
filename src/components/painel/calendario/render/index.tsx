@@ -12,6 +12,7 @@ export const RenderCalendar = (props: { data: any }) => {
   return (
     <>
       {calendarData.map((part: any, index: number) => {
+
         return (
         <Flex key={index} bg={'gray.700'} direction="column" w={part.length === 8? '66rem': part.length === 7? '58rem': part.length === 5? '42rem':part.length === 9? '74rem':'50rem'} alignItems={'center'} pt='3' pb='3'>
           <Box>
