@@ -5,6 +5,23 @@ import { TDocumentDefinitions } from "pdfmake/interfaces";
 import path from "path";
 import fs from "fs";
 import { TestDb } from "@/components/data/teste";
+import { Calculadora } from "./lib/calc";
+
+function formatarTelefone(telefone: any) {
+  // Remove letras e caracteres especiais
+  const numeros = telefone.replace(/\D/g, '');
+
+  if (numeros.length === 11) {
+    // Formato (99) 9 9999-9999
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 3)} ${numeros.slice(3, 7)}-${numeros.slice(7)}`;
+  } else if (numeros.length === 10) {
+    // Formato (99) 9999-9999
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`;
+  } else {
+    // Retorna vazio se não houver nada
+    return '';
+  }
+}
 
 export default async function GetEmpresa(
   req: NextApiRequest,
@@ -13,8 +30,29 @@ export default async function GetEmpresa(
   if (req.method === "GET") {
     const { proposta } = req.query;
 
-    const infos = await getData(proposta);
-    // console.log("🚀 ~ file: [proposta].ts:17 ~ infos:", infos)
+    const infos1 = await getData(proposta);
+    // console.log("🚀 ~ file: [proposta].ts:17 ~ infos:", infos1)
+
+    const infos = Calculadora(infos1);
+
+    const somarValores = (valor1: any, valor2: any) => {
+      const numero1 = parseFloat(valor1.replace('R$', '').replace('.', '').replace(',', '.'));
+      const numero2 = parseFloat(valor2.replace('R$', '').replace('.', '').replace(',', '.'));
+      const soma = numero1 + numero2;
+
+      if(!numero2){
+        return numero1.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        })
+      }
+
+      return soma.toLocaleString("pt-br", {
+        style: "currency",
+        currency: "BRL",
+      })
+    }
+
 
     const imagePath2 = path.join(
       process.cwd(),
@@ -33,6 +71,20 @@ export default async function GetEmpresa(
     );
     const imageContent = fs.readFileSync(imagePath).toString("base64");
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
+
+    const converterData =(data: any) => {
+      const dataObjeto = new Date(data);
+
+      // Ajuste do fuso horário para o horário de Brasília (GMT-3)
+      const fusoHorario = -3; // Horário de Brasília (GMT-3)
+      const dataBrasilia = new Date(dataObjeto.getTime() + fusoHorario * 3600000);
+      dataBrasilia.setDate(dataBrasilia.getDate() + 1); // Adiciona um dia
+      const hoje = new Date();
+      const diferenca = Math.ceil((dataBrasilia.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+      if(data) return '';
+
+      return diferenca + ' Dias';
+    }
 
     const date = new Date().toLocaleDateString("pt-BR");
 
@@ -314,7 +366,10 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.cliente.CNPJ,
+                                  text: infos.cliente.CNPJ.replace(
+                                    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+                                    "$1.$2.$3/$4-$5"
+                                  ),
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -347,7 +402,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.cliente.fone,
+                                  text: formatarTelefone(infos.cliente.fone),
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -499,14 +554,14 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: "Prazo parcial de entrega:",
+                                  text: "Prazo de produção:",
                                   bold: "true",
                                   fontSize: 8,
                                 },
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: infos.dataEntrega,
+                                  text: converterData(infos.dataEntrega),
                                   style: "clienteFornecedor",
                                 },
                               ],
@@ -536,7 +591,7 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: infos.totoalGeral,
+                                  text: somarValores(infos.totoalGeral, infos.Valfrete),
                                 },
                               ],
                             ],
@@ -576,8 +631,8 @@ export default async function GetEmpresa(
               "7%",
               "8%",
               "8%",
-              "6%",
-              "6%",
+              "8%",
+              "8%",
               "12%",
               "18%",
             ],
@@ -592,8 +647,8 @@ export default async function GetEmpresa(
                 { text: "Alt.", style: "tableTitle" },
                 { text: "Larg.", style: "tableTitle" },
                 { text: "Comp.", style: "tableTitle" },
-                { text: "MONT.", style: "tableTitle" },
-                { text: "EXP.", style: "tableTitle" },
+                { text: "MONT.(+ 10%)", style: "tableTitle" },
+                { text: "EXP.    (+ 10%)", style: "tableTitle" },
                 { text: "Valor Un.", style: "tableTitle" },
                 { text: "Total", style: "tableTitle" },
               ],

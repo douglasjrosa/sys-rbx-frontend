@@ -37,12 +37,12 @@ import { ProdutiList } from "@/components/Proposta/produt";
 import { TableConteudo } from "@/components/Proposta/tabela";
 import Loading from "@/components/elements/loading";
 import { mask, unMask } from "remask";
+import { SetValue } from "@/function/currenteValor";
 
 export default function Proposta() {
   const { data: session } = useSession();
   const router = useRouter();
   const Email = session?.user.email;
-  const [reqPrazo, setReqPrazo] = useState([]);
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
   const [loadingGeral, setLoadingGeral] = useState<boolean>(false);
   const [NomeEnpresa, setNomeEmpresa] = useState("");
@@ -79,7 +79,6 @@ export default function Proposta() {
       const PEDIDO = router.query.pedido;
       const request = await axios("/api/db/proposta/get/pedido/" + PEDIDO);
       const [resp]: any = request.data;
-      console.log("🚀 ~ file: [pedido].tsx:79 ~ resp:", resp)
       if (resp.attributes.Bpedido !== null) {
         router.back()
       }
@@ -92,9 +91,6 @@ export default function Proposta() {
         }
       );
       const respProd = await retornoProd.json();
-      const requestPrazo = await fetch("/api/db/prazo/get");
-      const RespPrazoB: any = await requestPrazo.json();
-      setReqPrazo(RespPrazoB.data);
       setDados(resp);
       SetProdutos(respProd);
       setId(resp.id);
@@ -105,7 +101,7 @@ export default function Proposta() {
       setPrazo(resp.attributes?.condi);
       setRelatEmpresa(resp.attributes?.empresa.data);
       setRelatEmpresaId(resp.attributes?.empresa.data.id);
-      setFreteCif(resp.attributes?.valorFrete.replace("R$", "").replace(".", "").replace(",", "."));
+      setFreteCif(resp.attributes?.valorFrete);
       setLoja(resp.attributes?.fornecedor);
       setObs(resp.attributes?.obs);
       setSaveNegocio(resp.attributes?.business.data.attributes?.nBusiness);
@@ -117,6 +113,7 @@ export default function Proposta() {
       setLoadingGeral(false)
       setClientePedido(resp.attributes?.cliente_pedido)
       setTipoPrazo(resp.attributes?.prazo)
+      setDateEntrega(resp.attributes.dataEntrega)
     })();
   }, []);
 
@@ -170,7 +167,7 @@ export default function Proposta() {
   }, [DescontoGeral, ListItens, TotalGreal]);
 
   useEffect(() => {
-    console.log(prazo);
+
     if (prazo === "Antecipado") {
       setItens(
         ListItens.map((f: any) => {
@@ -303,10 +300,7 @@ export default function Proposta() {
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
-        valorFrete: freteCif === ""? "R$ 0,00" :parseFloat(freteCif).toLocaleString("pt-br", {
-          style: "currency",
-          currency: "BRL",
-        }),
+        valorFrete: freteCif,
         business: id,
         obs: obs,
         cliente_pedido: clientePedido
@@ -420,13 +414,19 @@ export default function Proposta() {
     return <Loading size="200px">Carregando...</Loading>;
   }
 
+  const setFreteSave = (e: any) => {
+    const Valor = e.target.value
+    const valorLinpo = SetValue(Valor)
+    setFreteCif(valorLinpo)
+  }
+
 
   return (
     <>
-      <Flex h="100vh" w="100%" flexDir={"column"}  px={'10'} bg={'gray.800'} color={'white'} justifyContent={'space-between'} >
-        <Box w="100%" mt={5}>
+      <Flex h="100vh" w="100%" flexDir={"column"} px={'10'} py={1} bg={'gray.800'} color={'white'} justifyContent={'space-between'} >
+        <Box w="100%" bg={'gray.800'} mt={5}>
           <Flex gap={3}>
-          <IconButton aria-label='voltar' rounded={'3xl'} onClick={() => router.back()} icon={<BsArrowLeftCircleFill size={30} color="#136dcc" />} />
+            <IconButton aria-label='voltar' rounded={'3xl'} onClick={() => router.back()} icon={<BsArrowLeftCircleFill size={30} color="#136dcc" />} />
             <Heading size="md">Proposta comercial</Heading>
           </Flex>
           <Box display="flex" flexWrap={'wrap'} gap={5} alignItems="center" mt={3} mx={5}>
@@ -489,7 +489,7 @@ export default function Proposta() {
                 onChange={(e) => setLoja(e.target.value)}
                 value={Loja}
               >
-                 <option style={{ backgroundColor: "#1A202C" }} value=''>
+                <option style={{ backgroundColor: "#1A202C" }} value=''>
                   Selecione um Fornecedor
                 </option>
                 {ListFornecedor.map((item) => {
@@ -556,14 +556,14 @@ export default function Proposta() {
                 Valor de Frete
               </FormLabel>
               <Input
-              type="number"
+                type="text"
                 textAlign={"end"}
                 size="xs"
                 w={"7rem"}
                 step={'0.01'}
                 fontSize="xs"
                 rounded="md"
-                onChange={(e) => setFreteCif(e.target.value.replace(".", ""))}
+                onChange={setFreteSave}
                 value={freteCif}
               />
             </Box>
@@ -670,14 +670,14 @@ export default function Proposta() {
             </Box>
           </Box>
         </Box>
-        <Box display={"flex"} justifyContent={"space-between"} me={10} mb={5}>
+        <Box display={"flex"} justifyContent={"space-between"} me={10} mb={5} bg={'gray.800'}>
           <Flex gap={20}>
             <chakra.p>
               Total de itens: {ListItens.length === 0 ? "" : ListItens.length}
             </chakra.p>
             <chakra.p>
               Frete:{" "}
-              {freteCif === "" ? "R$ 0,00" : parseFloat(freteCif).toLocaleString("pt-br", {
+              {freteCif === "" ? "R$ 0,00" : parseFloat(freteCif.replace(".", "").replace(',', '.')).toLocaleString("pt-br", {
                 style: "currency",
                 currency: "BRL",
               })}

@@ -35,6 +35,7 @@ const ProfilePopover = () => {
                   h="56px"
                   bg="transparent"
                   _hover={{ bg: 'gray.400' }}
+
                 >
                   <Avatar
                     name={session.user.name}
@@ -45,9 +46,9 @@ const ProfilePopover = () => {
               </PopoverTrigger>
 
               <Portal>
-                <PopoverContent>
+                <PopoverContent color={'gray.800'}>
                   <PopoverArrow />
-                  <PopoverHeader>{session.user.name}</PopoverHeader>
+                  <PopoverHeader border='1' borderColor={'gray.400'}>{session.user.name}</PopoverHeader>
                   <PopoverCloseButton />
                   <PopoverBody>
                     <NextLink href="/perfil">
@@ -56,7 +57,7 @@ const ProfilePopover = () => {
                       </Button>
                     </NextLink>
                   </PopoverBody>
-                  <PopoverFooter>
+                  <PopoverFooter border='1' borderColor={'gray.300'}>
                     <Flex justifyContent="flex-end">
                       <Button
                         bg="red.200"

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useToast } from '@chakra-ui/react';
+import { Box, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
@@ -122,18 +122,20 @@ export default function EmpresaId() {
 
   useEffect(() => {
     var index = 0
-    if(index == 0){
-      if(DataEmp){
-        if (DataEmp?.attributes.user.data?.attributes.username !== session?.user.name) {
-          toast({
-            title: `O clienete ${DataEmp?.attributes.nome}`,
-            description: `pertence ao vendedor(a) ${DataEmp?.attributes.user.data?.attributes.username}`,
-            status: 'warning',
-            duration: 9000,
-            isClosable: true,
-            position: 'top-right',
-          })
-          index = index + 1
+    if (index == 0) {
+      if (DataEmp) {
+        if (DataEmp?.attributes.user.data?.attributes.username) {
+          if (DataEmp?.attributes.user.data?.attributes.username !== session?.user.name) {
+            toast({
+              title: `O clienete ${DataEmp?.attributes.nome}`,
+              description: `pertence ao vendedor(a) ${DataEmp?.attributes.user.data?.attributes.username}`,
+              status: 'warning',
+              duration: 9000,
+              isClosable: true,
+              position: 'top-right',
+            })
+            index = index + 1
+          }
         }
       }
     }
@@ -146,7 +148,9 @@ export default function EmpresaId() {
 
   return (
     <>
-      <FormEmpresa data={DataEmp} retornoData={getData} />
+      <Box w={'100%'} h={'100vh'} bg="gray.800">
+        <FormEmpresa data={DataEmp} retornoData={getData} />
+      </Box>
     </>
   );
 }

@@ -32,6 +32,7 @@ import { CompPrazo } from "@/components/Proposta/prazo";
 import { ProdutiList } from "@/components/Proposta/produt";
 import { TableConteudo } from "@/components/Proposta/tabela";
 import Loading from "@/components/elements/loading";
+import { SetValue } from "@/function/currenteValor";
 
 const tempo = DateIso;
 
@@ -244,10 +245,7 @@ export default function Proposta() {
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
-        valorFrete: freteCif === "" ? "R$ 0,00" : parseFloat(freteCif).toLocaleString("pt-br", {
-          style: "currency",
-          currency: "BRL",
-        }),
+        valorFrete: freteCif,
         business: id,
         obs: obs,
         cliente_pedido: clientePedido
@@ -364,6 +362,12 @@ export default function Proposta() {
 
   if (loadingGeral) {
     return <Loading size="200px">Carregando...</Loading>;
+  }
+
+  const setFreteSave = (e: any) => {
+    const Valor = e.target.value
+    const valorLinpo = SetValue(Valor)
+    setFreteCif(valorLinpo)
   }
 
   return (
@@ -517,7 +521,7 @@ export default function Proposta() {
                 w={"7rem"}
                 fontSize="xs"
                 rounded="md"
-                onChange={(e) => setFreteCif(e.target.value)}
+                onChange={setFreteSave}
                 value={freteCif}
               />
             </Box>
@@ -631,7 +635,7 @@ export default function Proposta() {
             </chakra.p>
             <chakra.p>
               Frete:{" "}
-              {freteCif === "" ? "R$ 0,00" : parseFloat(freteCif).toLocaleString("pt-br", {
+              {freteCif === "" ? "R$ 0,00" : parseFloat(freteCif.replace(".", "").replace(',', '.')).toLocaleString("pt-br", {
                 style: "currency",
                 currency: "BRL",
               })}

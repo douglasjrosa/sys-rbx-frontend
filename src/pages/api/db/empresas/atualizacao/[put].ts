@@ -98,7 +98,7 @@ export default async function GetEmpresa(
           console.log(response.data);
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
         });
     } else {
       await axios({
@@ -115,7 +115,7 @@ export default async function GetEmpresa(
           console.log(response.data);
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
         });
     }
   } else {

@@ -16,7 +16,6 @@ export const getData = async (proposta: any) => {
     const response = await axios(config);
     const result = response.data?.data?.[0];
     const inf = result.attributes;
-    console.log("🚀 ~ file: getinf.ts:19 ~ getData ~ inf:", inf)
     const Vendedor = inf.user.data.attributes.username
     const empresaFornec = inf.fornecedorId.data.attributes;
     const dataEntrega = !inf.dataEntrega? '' : inf.dataEntrega
@@ -82,7 +81,7 @@ export const getData = async (proposta: any) => {
     };
     return data;
   } catch (error) {
-    console.error("🚀 ~ file: getinf.ts:23 ~ getData ~ error:", error);
+    console.error("🚀 ~ file: /api/db/proposta/pdf/lib/getinf.ts:23 ~ getData ~ error:", error);
     throw error;
   }
 };

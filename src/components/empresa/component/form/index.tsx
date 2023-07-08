@@ -91,7 +91,6 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
       setID(empresa.id);
       setCNPJ(empresa.attributes?.CNPJ);
       const cnpj = empresa.attributes?.CNPJ
-      console.log("🚀 ~ file: index.tsx:93 ~ useEffect ~ cnpj:", cnpj)
       setMaskCNPJ(mask(cnpj, ["99.999.999/9999-99"]))
       setNome(empresa.attributes?.nome);
       setFantasia(empresa.attributes?.fantasia);
@@ -267,10 +266,10 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   return (
     <>
       <Box
-        h='100%'
+        // h='100%'
         bg="gray.800"
         p={5}
-        pt={{ base: '25rem', sm: '25rem', md: '15rem', '2xl': '7rem' }}
+        pt={{ base: '5rem', sm: '5rem', md: '2rem', '2xl': '2rem' }}
         display={"flex"}
         justifyContent={"center"}
         alignItems={"center"}
@@ -473,14 +472,14 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         })()}
                       />
                     </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 2]}>
+                    <FormControl as={GridItem} colSpan={[6, 3]}>
                       <CompPessoa
                         Resp={Responsavel}
                         onAddResp={getResponsavel}
                         ID={ID}
                       />
                     </FormControl>
-                    <FormControl as={GridItem} colSpan={[2, 1]}>
+                    <FormControl as={GridItem} colSpan={[2,2]}>
                       <Button
                         mt={5}
                         h={8}

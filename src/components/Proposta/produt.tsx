@@ -21,7 +21,7 @@ export const ProdutiList = (props: {
   idProd: number;
 }) => {
   const [Load, setLoad] = useState<boolean>(false);
-  const [Produtos, setProdutos] = useState<any>([]);
+  const [Produtos, setProdutos] = useState<any | null>(null);
   const [itenId, setItenId] = useState("");
   const toast = useToast();
   const router = useRouter();
@@ -30,20 +30,22 @@ export const ProdutiList = (props: {
     (async () => {
       const email = localStorage.getItem("email");
       const url = "/api/query/get/produto/cnpj/" + props.onCnpj;
-      if (props.onCnpj !== "" && Produtos.length === 0) {
+      if (props.onCnpj !== "" ) {
         await fetch(url, {
           method: "POST",
           body: JSON.stringify(email),
         })
           .then((resp) => resp.json())
           .then((resposta) => {
-
             const retonoIdeal =
               resposta.length === 0
                 ? false
                 : resposta.status === false
                   ? false
                   : true;
+             if(resposta.error){
+              setProdutos([]);
+             }
             if (retonoIdeal) {
               setProdutos(resposta);
             } else {
@@ -58,11 +60,20 @@ export const ProdutiList = (props: {
               setTimeout(() => router.push("/produtos"), 5 * 1000);
             }
           })
-          .catch((err) => console.log(err));
+          .catch((err) => {
+            console.log(err.response.dara.message)
+            toast({
+              title: "ops.",
+              description: err.response.dara.message,
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+            });
+          });
       }
     })();
 
-  }, [Produtos.length, props.onCnpj, props.ontime, router, toast]);
+  }, [Produtos?.length, props.onCnpj, props.ontime, router, toast]);
 
   useEffect(() => {
     props.retunLoading(Load);
@@ -115,7 +126,7 @@ export const ProdutiList = (props: {
               value={itenId}
             >
                <option style={{ backgroundColor: "#1A202C" }}>Selecione um Produto</option>
-              {Produtos.map((item: any) => {
+              {!Produtos? null : Produtos.map((item: any) => {
                 return (
                   <>
                     <option style={{ backgroundColor: "#1A202C" }} key={item.prodId} value={item.prodId}>{item.nomeProd}</option>

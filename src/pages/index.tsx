@@ -12,9 +12,6 @@ const Painel: React.FC = () => {
   const { data: session } = useSession();
   const [date, setDate] = useState<number>();
   const [User, setUser] = useState<string | any>('');
-  const [Fase1, setFase1] = useState<number>(0);
-  const [Fase2, setFase2] = useState<number>(0);
-  const [Fase3, setFase3] = useState<number>(0);
   const [calendar, setCalendar] = useState<any>([]);
   const [data, setData] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,31 +57,31 @@ const Painel: React.FC = () => {
           const deadline = parseISO(c.attributes.deadline);
           const dateConclusao = parseISO(c.attributes.date_conclucao);
 
-          if (isSameDay(createdAt, parseISO(dia.date))) {
-            return true;
-          }
-
-          if (isSameDay(deadline, parseISO(dia.date))) {
-            return true;
-          }
-
-          if (isSameDay(dateConclusao, parseISO(dia.date))) {
-            return true;
-          }
-
-          return false;
+          return (
+            isSameDay(createdAt, parseISO(dia.date)) ||
+            isSameDay(deadline, parseISO(dia.date)) ||
+            isSameDay(dateConclusao, parseISO(dia.date))
+          );
         }).map((cliente: any) => {
           let corresponding;
           let correspondingDate;
 
-          if (isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date)) && cliente.attributes.andamento !== 5 && cliente.attributes.etapa !== 6) {
+          if (
+            isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date)) &&
+            cliente.attributes.andamento !== 5 &&
+            cliente.attributes.etapa !== 6
+          ) {
             corresponding = 'createdAt';
             correspondingDate = cliente.attributes.createdAt;
-
-          } else if (cliente.attributes.andamento === 5 && cliente.attributes.etapa === 1) {
-            corresponding = 'deadline';
-            correspondingDate = cliente.attributes.deadline;
-          } else if (isSameDay(parseISO(cliente.attributes.date_conclucao), parseISO(dia.date))) {
+          } else if (
+            cliente.attributes.andamento === 5 &&
+            cliente.attributes.etapa === 1
+          ) {
+            corresponding = 'concluido';
+            correspondingDate = cliente.attributes.date_conclucao;
+          } else if (
+            isSameDay(parseISO(cliente.attributes.date_conclucao), parseISO(dia.date))
+          ) {
             corresponding = 'dateConclusao';
             correspondingDate = cliente.attributes.date_conclucao;
           }
@@ -103,82 +100,111 @@ const Painel: React.FC = () => {
         };
       });
 
-      const filterCreatedAt = diasMesclados.filter((i: any) => {
-        const [mapClinet] = i.clientes.map((c: any) => c.corresponding)
-        return mapClinet === 'createdAt'
-      })
+      const parts: any = diasMesclados.reduce(
+        (accumulator: any, item: any) => {
+          const day = parseInt(item.date.slice(-2));
 
-      const filterDeadline = diasMesclados.filter((i: any) => {
-        const [mapClinet] = i.clientes.map((c: any) => c.corresponding)
-        const [mapClinet1] = i.clientes.map((c: any) => c.attributes.date_conclucao)
-        return mapClinet === 'deadline' && mapClinet1 === null
-      })
-      const filterDateConclusao = diasMesclados.filter((i: any) => {
-        const [mapClinet] = i.clientes.map((c: any) => c.corresponding)
-        return mapClinet === 'dateConclusao'
-      })
+          if (day >= 1 && day <= 10) {
+            accumulator[0].push(item);
+          } else if (day >= 11 && day <= 20) {
+            accumulator[1].push(item);
+          } else {
+            accumulator[2].push(item);
+          }
 
-      const listaCreatedAt = filterCreatedAt.map((i: any) => {
-        const cliente = i.clientes.map((clinete: any) => !clinete.attributes.Budget ? 0.00 : parseFloat(clinete.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".")))
-        const soma = cliente.reduce((total: number, item: any) => {
-          return total + item
-        }, 0)
-        return soma
-      })
-
-      const listaDeadline = filterDeadline.map((i: any) => {
-        const cliente = i.clientes.map((clinete: any) => parseFloat(clinete.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".")))
-        const soma = cliente.reduce((total: number, item: any) => {
-          return total + item
-        }, 0)
-        return soma
-      })
-
-      const listaDateConclusao = filterDateConclusao.map((i: any) => {
-        const cliente = i.clientes.map((clinete: any) => parseFloat(clinete.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".")))
-        const soma = cliente.reduce((total: number, item: any) => {
-          return total + item
-        }, 0)
-        return soma
-      })
-
-
-      const somaCreatedAt = listaCreatedAt.reduce((total: number, item: any) => {
-        return total + item
-      }, 0)
-
-      const somaDeadline = listaDeadline.reduce((total: number, item: any) => {
-        return total + item
-      }, 0)
-
-      const somaDateConclusao = listaDateConclusao.reduce((total: number, item: any) => {
-        return total + item
-      }, 0)
-
-
-
-      setFase1(somaCreatedAt)
-      setFase2(somaDateConclusao)
-      setFase3(somaDeadline)
-
-
-      const parts: any = diasMesclados.reduce((accumulator: any, item: any) => {
-        const day = parseInt(item.date.slice(-2));
-
-        if (day >= 1 && day <= 10) {
-          accumulator[0].push(item);
-        } else if (day >= 11 && day <= 20) {
-          accumulator[1].push(item);
-        } else {
-          accumulator[2].push(item);
-        }
-
-        return accumulator;
-      }, [[], [], []]);
+          return accumulator;
+        },
+        [[], [], []]
+      );
 
       setCalendarData(parts);
     }
   }, [calendar, data, User]);
+
+  const arrayclienteConcluido = calendarData
+    .flatMap((i: any) => {
+      const listaCliente = i.map((l: any) => {
+        const listCliente = l.clientes;
+        const resultado: any = [];
+        listCliente.forEach((item: any) => {
+          const cerrenponde = item.corresponding;
+          if (cerrenponde === 'dateConclusao') {
+            resultado.push(item);
+          }
+        });
+        return resultado;
+      });
+      return listaCliente;
+    })
+    .filter((arr: any) => arr.length > 0)
+    .flat();
+
+
+  const somaConcluido = arrayclienteConcluido.reduce((total: number, item: any) => {
+    if (item && item.attributes && item.attributes.Budget) {
+      const budget = parseFloat(item.attributes.Budget.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.'));
+      return total + (isNaN(budget) ? 0 : budget);
+    } else {
+      return total;
+    }
+  }, 0);
+
+  const arrayclienteCreat = calendarData
+    .flatMap((i: any) => {
+      const listaCliente = i.map((l: any) => {
+        const listCliente = l.clientes;
+        const resultado: any = [];
+        listCliente.forEach((item: any) => {
+          const cerrenponde = item.corresponding;
+          if (cerrenponde === 'createdAt') {
+            resultado.push(item);
+          }
+        });
+        return resultado;
+      });
+      return listaCliente;
+    })
+    .filter((arr: any) => arr.length > 0)
+    .flat();
+
+  const somaCreate = arrayclienteCreat.reduce((total: number, item: any) => {
+    if (item && item.attributes && item.attributes.Budget) {
+      const budget = parseFloat(item.attributes.Budget.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.'));
+      return total + (isNaN(budget) ? 0 : budget);
+    } else {
+      return total;
+    }
+  }, 0);
+
+  const arrayclienteDedline = calendarData
+    .flatMap((i: any) => {
+      const listaCliente = i.map((l: any) => {
+        const listCliente = l.clientes;
+        const resultado: any = [];
+        listCliente.forEach((item: any) => {
+          const cerrenponde = item.corresponding;
+          if (cerrenponde === 'deadline'&& item.correspondingDate) {
+            resultado.push(item);
+          }
+        });
+        return resultado;
+      });
+      return listaCliente;
+    })
+    .filter((arr: any) => arr.length > 0)
+    .flat();
+
+  const somaPerca = arrayclienteDedline.reduce((total: number, item: any) => {
+    if (item && item.attributes && item.attributes.Budget) {
+      const budget = parseFloat(item.attributes.Budget.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.'));
+      return total + (isNaN(budget) ? 0 : budget);
+    } else {
+      return total;
+    }
+  }, 0);
+
+
+
 
 
   function handleDateChange(month: number) {
@@ -201,27 +227,27 @@ const Painel: React.FC = () => {
             <Flex flexDirection={'column'} justifyContent={'center'}>
               <FormLabel textAlign={'center'} color={'white'}>Em Andamento</FormLabel>
               <Flex w={'8rem'} h={'2rem'} py={1} bg={'orange.400'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-                <chakra.span>{Fase1.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
+                <chakra.span>{somaCreate.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
               </Flex>
             </Flex>
             <Flex flexDirection={'column'} justifyContent={'center'}>
               <FormLabel textAlign={'center'} color={'white'}>Ganhos</FormLabel>
               <Flex w={'8rem'} h={'2rem'} py={1} bg={'green.500'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
-                <chakra.span>{Fase2.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
+                <chakra.span>{somaConcluido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span>
               </Flex>
             </Flex>
             <Flex flexDirection={'column'} justifyContent={'center'}>
               <FormLabel textAlign={'center'} color={'white'}>Perdidos</FormLabel>
               <Flex w={'8rem'} h={'2rem'} py={1} bg={'red'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
                 <chakra.span>{
-                  Fase3.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                  somaPerca.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
                 }</chakra.span>
               </Flex>
             </Flex>
           </Flex>
 
         </Flex>
-        <Box w='100%' bg="gray.800">
+        <Box w='100%' bg="gray.800" color={'gray.800'}>
           <Flex direction="column" gap={5} p={5}>
             <RenderCalendar data={calendarData} />
           </Flex>

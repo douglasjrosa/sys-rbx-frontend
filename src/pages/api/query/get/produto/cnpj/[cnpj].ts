@@ -23,7 +23,6 @@ export default async function GetEmpresa(
 
     try {
       const response = await axios.get(url, config);
-      console.log("🚀 ~ file: [cnpj].ts:27 ~ response.data:", response.data)
       res.status(200).json(response.data);
     } catch (error) {
       console.error("Ocorreu um erro durante a solicitação:", error);

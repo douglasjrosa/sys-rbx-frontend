@@ -9,10 +9,14 @@ export default async function GetEmpresa(
   if (req.method === "GET") {
     const token = process.env.ATORIZZATION_TOKEN;
     const Vendedor = req.query.Vendedor;
-    const url = !Vendedor
-      ? `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$null]=true&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*`
-      : `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$eq]=${Vendedor}&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*`;
-      
+    const EMPRESAS = req.query.EMPRESAS
+
+    const url =  EMPRESAS == "true"
+    ? `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*&pagination[limit]=8000`
+    : !Vendedor
+    ? `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$null]=true&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*`
+    :`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$eq]=${Vendedor}&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate[user][fields][0]=username&populate[businesses]=*`;
+
     await axios(url, {
       headers: {
         Authorization: `Bearer ${token}`,
