@@ -1,12 +1,12 @@
+import { RenderCalendar } from '@/components/painel/calendario/render';
 import { SelectUser } from '@/components/painel/calendario/select/SelecUser';
+import { SelectMonth } from '@/components/painel/calendario/select/selectMont';
 import { getAllDaysOfMonth } from '@/function/Datearray';
 import { Box, Flex, FormLabel, Heading, chakra } from '@chakra-ui/react';
 import axios from 'axios';
-import { useEffect, useMemo, useState } from 'react';
-import { parseISO, isSameDay } from 'date-fns';
-import { RenderCalendar } from '@/components/painel/calendario/render';
+import { isSameDay, parseISO } from 'date-fns';
 import { useSession } from 'next-auth/react';
-import { SetValue } from '@/function/currenteValor';
+import { useEffect, useState } from 'react';
 
 const Painel: React.FC = () => {
   const { data: session } = useSession();
@@ -204,20 +204,27 @@ const Painel: React.FC = () => {
     }
   }, 0);
 
-
-
-
-
-  function handleDateChange(month: number) {
-    setDate(month);
+  function handleDateChange(month: any) {
+    (async () => {
+      const data = month
+      console.log("🚀 ~ file: index.tsx:214 ~ data:", data)
+      const daysOfMonth = await getAllDaysOfMonth(data.month, data.year);
+      setCalendar(daysOfMonth.Dias);
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${data.start}&DataFim=${data.end}`);
+        setData(response.data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    })()
   }
   function handleUserChange(user: string) {
     setUser(user);
   }
-  const handleDateChangeData = (data: any) => {
-    console.log("Data de início:", data.start);
-    console.log("Data de fim:", data.end);
-  };
+ 
   return (
     <>
       <Box h={'100%'} bg={'gray.800'}>
@@ -237,9 +244,6 @@ const Painel: React.FC = () => {
                 </Box>
               </>
             )}
-            <Box>
-              <SelectEmpresas OnStarat={handleDateChangeData} />
-            </Box>
             <Box>
               <SelectMonth onValue={handleDateChange} />
             </Box>
