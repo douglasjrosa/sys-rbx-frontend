@@ -1,12 +1,13 @@
 import { SelectUser } from '@/components/painel/calendario/select/SelecUser';
 import { getAllDaysOfMonth } from '@/function/Datearray';
-import { Box, Flex, FormLabel, chakra } from '@chakra-ui/react';
+import { Box, Flex, FormLabel, Heading, chakra } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { parseISO, isSameDay } from 'date-fns';
 import { RenderCalendar } from '@/components/painel/calendario/render';
 import { useSession } from 'next-auth/react';
 import { SetValue } from '@/function/currenteValor';
+import { SelectEmpresas } from '@/components/painel/calendario/select/selectEmpresas';
 
 const Painel: React.FC = () => {
   const { data: session } = useSession();
@@ -32,6 +33,7 @@ const Painel: React.FC = () => {
       if (daysOfMonth.DataInicio && daysOfMonth.DataFim) {
         setIsLoading(true);
         try {
+          console.log(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`)
           const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`);
           setData(response.data);
         } catch (error) {
@@ -183,7 +185,7 @@ const Painel: React.FC = () => {
         const resultado: any = [];
         listCliente.forEach((item: any) => {
           const cerrenponde = item.corresponding;
-          if (cerrenponde === 'deadline'&& item.correspondingDate) {
+          if (cerrenponde === 'deadline' && item.correspondingDate) {
             resultado.push(item);
           }
         });
@@ -203,24 +205,37 @@ const Painel: React.FC = () => {
     }
   }, 0);
 
-
-
-
-
   function handleDateChange(month: number) {
     setDate(month);
   }
   function handleUserChange(user: string) {
     setUser(user);
   }
-
+  const handleDateChangeData = (data: any) => {
+    console.log("Data de início:", data.start);
+    console.log("Data de fim:", data.end);
+  };
   return (
     <>
       <Box h={'100%'} bg={'gray.800'}>
         <Flex px={5} pt={2} justifyContent={'space-between'} w={'100%'}>
           <Flex gap={16}>
+            {session?.user.pemission === 'Adm' && (
+              <>
+                <Box>
+                  <SelectUser onValue={handleUserChange} />
+                </Box>
+              </>
+            )}
+            {session?.user.pemission !== 'Adm' && (
+              <>
+                <Box>
+                  <Heading pt={5} size={'lg'}>{session?.user.name}</Heading>
+                </Box>
+              </>
+            )}
             <Box>
-              <SelectUser onValue={handleUserChange} />
+              <SelectEmpresas OnStarat={handleDateChangeData} />
             </Box>
           </Flex>
           <Flex alignItems={'center'} gap={5}>
