@@ -29,7 +29,6 @@ function Empresas() {
         .then((Response) => Response.json())
         .then((resposta: any) => {
           setData(resposta)
-          console.log("🚀 ~ file: index.tsx:28 ~ .then ~ resposta:", resposta)
           const resultadouser: any = [];
           const resultado: any = [];
           resposta.forEach((item: any) => {

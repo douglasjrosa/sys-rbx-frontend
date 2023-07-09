@@ -7,6 +7,7 @@ import { parseISO, isSameDay } from 'date-fns';
 import { RenderCalendar } from '@/components/painel/calendario/render';
 import { useSession } from 'next-auth/react';
 import { SetValue } from '@/function/currenteValor';
+import { SelectMonth } from '@/components/painel/calendario/select/selectMont';
 
 const Painel: React.FC = () => {
   const { data: session } = useSession();
@@ -207,9 +208,26 @@ const Painel: React.FC = () => {
 
 
 
-  function handleDateChange(month: number) {
-    setDate(month);
-  }
+  function handleDateChange(month: any) {
+    (async () => {
+     const data = month
+      console.log("🚀 ~ file: index.tsx:214 ~ data:", data)
+      const daysOfMonth = await getAllDaysOfMonth(data.month, data.year);
+      setCalendar(daysOfMonth.Dias);
+
+      if (daysOfMonth.DataInicio && daysOfMonth.DataFim) {
+        setIsLoading(true);
+        try {
+          // const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${data.start}&DataFim=${data.end}`);
+          // setData(response.data);
+        } catch (error) {
+          console.log(error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    })()
+    }
   function handleUserChange(user: string) {
     setUser(user);
   }
@@ -221,6 +239,9 @@ const Painel: React.FC = () => {
           <Flex gap={16}>
             <Box>
               <SelectUser onValue={handleUserChange} />
+            </Box>
+            <Box>
+              <SelectMonth onValue={handleDateChange} />
             </Box>
           </Flex>
           <Flex alignItems={'center'} gap={5}>

@@ -26,7 +26,6 @@ function Negocios() {
   }, [session?.user.name])
 
   function tragetReload(Loading: boolean) {
-    // setLoad(Loading);
     if (Loading === true) {
       (async () => {
         setLoad(true);
