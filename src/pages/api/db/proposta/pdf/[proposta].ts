@@ -4,7 +4,6 @@ import PDFPrinter from "pdfmake";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
 import path from "path";
 import fs from "fs";
-import { TestDb } from "@/components/data/teste";
 import { Calculadora } from "./lib/calc";
 
 function formatarTelefone(telefone: any) {

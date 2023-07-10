@@ -330,6 +330,7 @@ export default function Proposta() {
     resposta.total = Math.round(parseFloat(ValorGeral) * 100) / 100;
     resposta.expo = false;
     resposta.mont = false;
+    resposta.esp = false;
     resposta.codg = resposta.prodId;
     resposta.Qtd = 1;
     const desconto = prazo === "Antecipado" ? valor * 0.05 : 0;
@@ -605,6 +606,9 @@ export default function Proposta() {
                       </Th>
                       <Th px='0' w={"3rem"} color={'white'} fontSize={'0.7rem'}>
                         Expo.
+                      </Th>
+                      <Th px='0' w={"3rem"} color={'white'} fontSize={'0.7rem'}>
+                        Modelo especial.
                       </Th>
                       <Th px='0' w={"6rem"} color={'white'} fontSize={'0.7rem'}>
                         Preço un

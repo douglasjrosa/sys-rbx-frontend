@@ -825,7 +825,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                       </Select>
                     </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 3]}>
+                    <FormControl hidden={session?.user.pemission === 'Adm' ? false: true} as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
                         htmlFor="prazo pagamento"
                         fontSize="xs"

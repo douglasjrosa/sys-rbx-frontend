@@ -104,6 +104,12 @@ export const TableConteudo = (props: {
         const dt = { expo: valor };
         handleAdd(dt, i.id);
       };
+      
+      const GetEspc = (e: any) => {
+        const valor = e.target.checked;
+        const dt = { esp: valor };
+        handleAdd(dt, i.id);
+      };
       const ValorFinal = parseFloat(i.vFinal.replace('.', '').replace(',', '.')).toLocaleString("pt-br", {
         style: "currency",
         currency: "BRL",
@@ -148,6 +154,15 @@ export const TableConteudo = (props: {
                 px="3"
                 onChange={GetExpo}
                 isChecked={i.expo}
+              />
+            </Td>
+            <Td px='0' py='1' fontSize={'0.8rem'}>
+              <Checkbox
+                borderColor="whatsapp.600"
+                rounded="md"
+                px="3"
+                onChange={GetEspc}
+                isChecked={i.esp}
               />
             </Td>
             <Td px='0' py='1' fontSize={'0.8rem'} textAlign={"center"}>
