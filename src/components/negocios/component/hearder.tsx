@@ -17,6 +17,7 @@ import { StatusPerca } from "@/components/data/perca";
 import { EtapasNegocio } from "@/components/data/etapa";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
 import { SetValue } from "@/function/currenteValor";
+import { pedido } from "@/function/setpedido";
 
 export const NegocioHeader = (props: {
   nBusiness: string;
@@ -31,6 +32,7 @@ export const NegocioHeader = (props: {
   onLoad: any;
   chat: any;
   onchat: any;
+  onData: any;
 }) => {
   const router = useRouter();
   const ID = router.query.id;
@@ -45,19 +47,22 @@ export const NegocioHeader = (props: {
   const [Budget, setBudget] = useState<any>();
   const [Deadline, setDeadline] = useState("");
   const [DataRetorno, setDataRetorno] = useState<string>();
-
+  const [Data, setData] = useState<any | null>();
 
   useEffect(() => {
-    setStatusG(props.Status);
-    setStatus(props.Status);
-    setBudget(SetValue(props.Budget));
-    setDeadline(props.Deadline);
-    setBusines(props.nBusiness);
-    setApproach(props.Approach);
-    setDataRetorno(!props.DataRetorno ? new Date().toISOString() : props.DataRetorno);
-    setMperca(props.Mperca)
-    setEtapa(props.etapa)
-    props.onLoad(false)
+    if (props.onData) {
+      setData(props.onData)
+      setStatusG(props.Status);
+      setStatus(props.Status);
+      setBudget(SetValue(props.Budget));
+      setDeadline(props.Deadline);
+      setBusines(props.nBusiness);
+      setApproach(props.Approach);
+      setDataRetorno(!props.DataRetorno ? new Date().toISOString() : props.DataRetorno);
+      setMperca(props.Mperca)
+      setEtapa(props.etapa)
+      props.onLoad(false)
+    }
   }, [props]);
 
   const historicomsg = {
@@ -75,58 +80,81 @@ export const NegocioHeader = (props: {
   const history = [...props.historia, historicomsg];
 
   const Salve = async () => {
-
-    const data1 = {
-      data: {
-        deadline: Deadline,
-        nBusiness: Busines,
-        Budget: SetValue(Budget),
-        Approach: Approach,
-        history: history,
-        etapa: parseInt(Etapa),
-        andamento: Status,
-        Mperca: Mperca,
-        incidentRecord: [...props.chat, ChatConcluido],
-        DataRetorno: DataRetorno,
-        date_conclucao: new Date(Date.now())
-      },
-    };
-
-    const data2 = {
-      data: {
-        deadline: Deadline,
-        nBusiness: Busines,
-        Budget: SetValue(Budget),
-        Approach: Approach,
-        history: history,
-        etapa: parseInt(Etapa),
-        andamento: Status,
-        Mperca: Mperca,
-        DataRetorno: DataRetorno,
-      },
-    };
-
-    const data = StatusG !== 5 && Status === '5' ? data1 : data2;
-
-    await axios({
-      url: "/api/db/business/put/id/" + ID,
-      method: "PUT",
-      data: data,
-    })
-      .then((res) => {
-        props.onchat(true);
-        toast({
-          title: "Atualização feita",
-          description: "Atualização das informações foi efetuada com sucesso",
-          status: "success",
-          duration: 9000,
-          isClosable: true,
-        });
-      })
-      .catch((err) => {
-        props.onchat(true);
-        console.error(err);
+    if (Etapa === 6 && Status == 3) {
+      toast({
+        title: "Esse Negócio não pode ser finalizado",
+        description: "Ao concluir um Negócio, é obrigatorio definir um status",
+        status: "warning",
+        duration: 9000,
+        isClosable: true,
+        position: 'top-right'
       });
+    } else {
+      const data1 = {
+        data: {
+          deadline: Deadline,
+          nBusiness: Busines,
+          Budget: SetValue(Budget),
+          Approach: Approach,
+          history: history,
+          etapa: Etapa,
+          andamento: Status,
+          Mperca: Mperca,
+          incidentRecord: [...props.chat, ChatConcluido],
+          DataRetorno: DataRetorno,
+          date_conclucao: new Date(Date.now())
+        },
+      };
+
+      const data2 = {
+        data: {
+          deadline: Deadline,
+          nBusiness: Busines,
+          Budget: SetValue(Budget),
+          Approach: Approach,
+          history: history,
+          etapa: Etapa,
+          andamento: Status,
+          Mperca: Mperca,
+          DataRetorno: DataRetorno,
+        },
+      };
+
+      const data = StatusG !== 5 && Status === '5' ? data1 : data2;
+
+      const SetGanho = Status === '5' ? true : false;
+
+      await axios({
+        url: "/api/db/business/put/id/" + ID,
+        method: "PUT",
+        data: data,
+      })
+        .then((res) => {
+          props.onchat(true);
+          toast({
+            title: "Atualização feita",
+            description: "Atualização das informações foi efetuada com sucesso",
+            status: "success",
+            duration: 9000,
+            isClosable: true,
+          });
+        })
+        .catch((err) => {
+          props.onchat(true);
+          console.error(err);
+        });
+      if (SetGanho) {
+        const [pedidos] = Data.attributes.pedidos.data
+        const nPedido = pedidos?.attributes.nPedido
+        const EmpresaId = Data.attributes.empresa.data.id
+        const valor = pedidos?.attributes.totalGeral
+        const vendedor = session?.user.name
+        const vendedorId = session?.user.id
+        const IdNegocio = Data.id
+
+        return pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
+      }
+    }
   };
 
   const masckValor = (e: any) => {
@@ -221,7 +249,7 @@ export const NegocioHeader = (props: {
               w="full"
               fontSize="xs"
               rounded="md"
-              onChange={(e) => setEtapa(e.target.value)}
+              onChange={(e) => setEtapa(parseInt(e.target.value))}
               value={Etapa}
             >
               <option style={{ backgroundColor: "#1A202C" }}></option>
@@ -232,10 +260,14 @@ export const NegocioHeader = (props: {
               ))}
             </Select>
           </Box>
-          <Box hidden={Etapa === '6' ? false : Etapa === 6 ? false : true}>
-            <BtnStatus Resp={props.Status} onAddResp={getStatus} />
-          </Box>
-          <Box hidden={Status == 1? false : true}>
+          {Etapa === 6 && (
+            <>
+              <Box>
+                <BtnStatus Resp={props.Status} onAddResp={getStatus} omPedidos={Data.attributes.pedidos.data} />
+              </Box>
+            </>
+          )}
+          <Box hidden={Status == 1 ? false : true}>
             <FormLabel
               fontSize="xs"
               fontWeight="md"

@@ -2,7 +2,7 @@ import { StatusAndamento } from "@/components/data/status";
 import { Box, FormLabel, Select } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-export const BtnStatus = (props: { Resp: any; onAddResp: any }) => {
+export const BtnStatus = (props: { Resp: any; onAddResp: any; omPedidos: any | null}) => {
   const [valor, setValor] = useState('');
 
   useEffect(() => {
@@ -13,7 +13,6 @@ export const BtnStatus = (props: { Resp: any; onAddResp: any }) => {
     setValor(event.target.value);
     props.onAddResp(event.target.value);
   }
-
   return (
     <Box>
       <FormLabel
@@ -33,11 +32,22 @@ export const BtnStatus = (props: { Resp: any; onAddResp: any }) => {
         value={valor}
       >
         {StatusAndamento.map((i: any) => {
-          return (
-            <option hidden={i.id === '3' ? true : false} style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
-              {i.id === '3' ? '' : i.title}
-            </option>
-          );
+          if(props.omPedidos.length === 0){
+            if(i.id !== '5'){
+              return (
+                <option hidden={i.id === '3' ? true : false} style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
+                  {i.id === '3' ? '' : i.title}
+                </option>
+              );
+            }
+          } else {
+            return (
+              <option hidden={i.id === '3' ? true : false} style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
+                {i.id === '3' ? '' : i.title}
+              </option>
+            );
+          }
+
         })}
       </Select>
     </Box>

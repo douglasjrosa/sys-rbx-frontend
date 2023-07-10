@@ -27,6 +27,7 @@ export default function CreateNegocio() {
   const [ChatHistory, setChatHistory] = useState([]);
   const [Etapa, setEtapa] = useState<any | null>();
   const [Mperca, setMperca] = useState<any | null>();
+  const [Data, setData] = useState<any | null>();
 
   useEffect(() => {
     const div = divRef.current;
@@ -49,6 +50,8 @@ export default function CreateNegocio() {
         url: url,
       })
         .then((res) => {
+          console.log(res.data)
+          setData(res.data)
           setnBusiness(res.data.attributes.nBusiness);
           setApproach(res.data.attributes.Approach);
           setBudget(res.data.attributes.Budget);
@@ -158,7 +161,7 @@ export default function CreateNegocio() {
         url: url,
       })
         .then((res) => {
-          console.log("🚀 ~ file: [id].tsx:161 ~ .then ~ res:", res)
+          setData(res.data)
           setnBusiness(res.data.attributes.nBusiness);
           setApproach(res.data.attributes.Approach);
           setBudget(res.data.attributes.Budget);
@@ -215,6 +218,7 @@ export default function CreateNegocio() {
             onLoad={getLoad}
             chat={ChatHistory}
             onchat={chatRelaod}
+            onData={Data}
           />
         </Box>
         <Box bg={'#292f3a'} w="full" h={'full'} ref={divRef} overflowY={"auto"}>
