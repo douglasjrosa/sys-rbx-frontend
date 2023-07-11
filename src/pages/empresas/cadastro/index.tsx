@@ -13,6 +13,7 @@ export default function Cadastro() {
   function getData(DadosEnpresa: React.SetStateAction<any>) {
    (async()=>{
     const EmpresasData = DadosEnpresa
+    console.log("🚀 ~ file: index.tsx:16 ~ EmpresasData:", EmpresasData)
 
     const date = new Date();
     const dateIsso = date.toISOString();

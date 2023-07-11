@@ -75,7 +75,7 @@ export default async function PostEmpresa(
 
     const idFornecedor: number = retorno.id;
 
-    const date = new Date().toLocaleString;
+    const date = new Date().toLocaleString();
 
 
     const DataPost = {
@@ -98,7 +98,7 @@ export default async function PostEmpresa(
         CNPJClinet: data.cliente,
         status: true,
         andamento: "Proposta criada " + date,
-        valorFrete: data.valorFrete.toString(),
+        valorFrete: data.valorFrete,
         vencPrint: data.vencPrint,
         business: data.business,
         businessId: data.business,
@@ -107,7 +107,7 @@ export default async function PostEmpresa(
         dataEntrega: data.dataEntrega
       },
     };
-    // console.log(DataPost);
+    console.log(DataPost);
     await axiosRequet
       .post(`/pedidos`, DataPost)
       .then(async (response) => {
@@ -134,8 +134,8 @@ export default async function PostEmpresa(
         });
       })
       .catch(async (error) => {
-        console.log(error.response.data);
-        console.log(error.response.data.error.details.errors);
+        console.log(error.response.data.error);
+        // console.log(error.response.data.error.details.errors);
 
         const now = new Date();
         const isoDateTime = now.toISOString();

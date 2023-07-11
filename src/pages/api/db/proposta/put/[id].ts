@@ -109,8 +109,9 @@ export default async function PUTEmpresa(
       })
       .catch(async (error) => {
         console.log(error);
-        console.log(error.response.data.error.details.errors);
+        console.log(error.response.data.error);
 
+        res.json(error.response.data.error);
         const now = new Date();
         const isoDateTime = now.toISOString();
         const txt = {
@@ -121,15 +122,10 @@ export default async function PUTEmpresa(
           user: 'Sistema'
         };
         const url = `empresas/${clienteId}`;
-        const Register = await Historico(txt, url);
+        await Historico(txt, url);
         const url2 = `businesses/${data.business}`;
         await Historico(txt, url2);
 
-        res.status(500).json({
-          historico: Register,
-          error: error.response,
-          message: error.response,
-        });
       });
   } else {
     return res.status(405).send({ message: "Only PUT requests are allowed" });

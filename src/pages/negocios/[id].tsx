@@ -50,7 +50,7 @@ export default function CreateNegocio() {
         url: url,
       })
         .then((res) => {
-          console.log(res.data)
+          // console.log(res.data)
           setData(res.data)
           setnBusiness(res.data.attributes.nBusiness);
           setApproach(res.data.attributes.Approach);

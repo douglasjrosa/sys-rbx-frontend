@@ -1,19 +1,14 @@
 import { FormLabel, Input } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
-export const ListaEmpresa = (props: { onChangeValue: any }) => {
-  const [dados, setDados] = useState<any>([]);
+export const ListaEmpresa = (props: { onChangeValue: string }) => {
+  const [dados, setDados] = useState<string>('');
 
   useEffect(() => {
-    (async () => {
-      const id = localStorage.getItem('id');
-      const resposta = await fetch('/api/db/business/get/id/' + id);
-      const resp = await resposta.json();
-      const retorno = resp.attributes.empresa.data;
-      setDados(retorno.attributes.nome);
-      props.onChangeValue(retorno.attributes.CNPJ);
-    })();
-  }, [props, props.onChangeValue]);
+    if (props.onChangeValue){
+    setDados(props.onChangeValue);
+  }
+  }, [props.onChangeValue]);
 
   return (
     <>
@@ -26,10 +21,10 @@ export const ListaEmpresa = (props: { onChangeValue: any }) => {
       </FormLabel>
       <Input
         shadow="sm"
-        size="xs"
+        size="sm"
         w="full"
         color="white"
-        fontSize="xs"
+        fontSize="sm"
         rounded="md"
         value={dados}
       />

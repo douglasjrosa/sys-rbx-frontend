@@ -13,7 +13,7 @@ export const CompBusiness = (props: { Resp: string }) => {
       <Input
         color="white"
         shadow="sm"
-        size="xs"
+        size="sm"
         w="full"
         fontSize="xs"
         rounded="md"

@@ -1,6 +1,9 @@
 import axios from "axios";
 
 export const pedido = async (nPedido: string, empresaId: any, ValorVenda: string, Vendedor: string | undefined, vendedorId: number | undefined, negocioId: string) => {
+  console.log({
+    nPedido: nPedido, empresaId: empresaId, ValorVenda: ValorVenda, Vendedor: Vendedor, vendedorId: vendedorId, negocioId: negocioId
+  })
   try {
     await axios({
       url: `/api/db/nLote/${nPedido}`,

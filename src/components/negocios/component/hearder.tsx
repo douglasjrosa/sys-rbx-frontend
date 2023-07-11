@@ -11,13 +11,13 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { SetStateAction, useEffect, useState } from "react";
-import { SelecAtendimento } from "../../elements/lista/atendimento";
 import { BtnStatus } from "../../elements/lista/status";
 import { StatusPerca } from "@/components/data/perca";
 import { EtapasNegocio } from "@/components/data/etapa";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
 import { SetValue } from "@/function/currenteValor";
 import { pedido } from "@/function/setpedido";
+import { BeatLoader } from "react-spinners";
 
 export const NegocioHeader = (props: {
   nBusiness: string;
@@ -46,22 +46,29 @@ export const NegocioHeader = (props: {
   const [Approach, setApproach] = useState("");
   const [Budget, setBudget] = useState<any>();
   const [Deadline, setDeadline] = useState("");
+  const [NPedido, setNPedido] = useState("");
+  const [Bpedido, setBpedido] = useState("");
   const [DataRetorno, setDataRetorno] = useState<string>();
   const [Data, setData] = useState<any | null>();
+  const [load, setload] = useState<boolean>(false);
 
   useEffect(() => {
     if (props.onData) {
       setData(props.onData)
       setStatusG(props.Status);
-      setStatus(props.Status);
+      setStatus(parseInt(props.Status));
       setBudget(SetValue(props.Budget));
       setDeadline(props.Deadline);
       setBusines(props.nBusiness);
       setApproach(props.Approach);
       setDataRetorno(!props.DataRetorno ? new Date().toISOString() : props.DataRetorno);
       setMperca(props.Mperca)
-      setEtapa(props.etapa)
+      setEtapa(parseInt(props.etapa))
       props.onLoad(false)
+      const [pedidos] = props.onData.attributes.pedidos.data
+      const nPedido = pedidos?.attributes.nPedido
+      setNPedido(nPedido)
+      setBpedido(props.onData.attributes.Bpedido)
     }
   }, [props]);
 
@@ -75,6 +82,7 @@ export const NegocioHeader = (props: {
     msg: `Vendedor(a) ${session?.user.name}, concluiu esse Negocio`,
     date: new Date().toISOString(),
     user: "Sistema",
+    susseso: Status === 5 ? 'green' : Status === 1 ? 'red' : ''
   };
 
   const history = [...props.historia, historicomsg];
@@ -120,9 +128,9 @@ export const NegocioHeader = (props: {
         },
       };
 
-      const data = StatusG !== 5 && Status === '5' ? data1 : data2;
+      const data = StatusG !== 5 && Status === 5 ? data1 : data2;
 
-      const SetGanho = Status === '5' ? true : false;
+      const SetGanho = Status === 5 ? true : false;
 
       await axios({
         url: "/api/db/business/put/id/" + ID,
@@ -131,18 +139,37 @@ export const NegocioHeader = (props: {
       })
         .then((res) => {
           props.onchat(true);
-          toast({
-            title: "Atualização feita",
-            description: "Atualização das informações foi efetuada com sucesso",
-            status: "success",
-            duration: 9000,
-            isClosable: true,
-          });
+          if (Etapa === 6 && Status === 5) {
+            toast({
+              title: "Atualização feita",
+              description: "Prarabens Négocio concluido",
+              status: "success",
+              duration: 9000,
+              isClosable: true,
+            });
+          } else if (Etapa === 6 && Status === 1) {
+            toast({
+              title: "Atualização feita",
+              description: "Infelizmente esse negocio foi perdido",
+              status: "error",
+              duration: 9000,
+              isClosable: true,
+            });
+          } else {
+            toast({
+              title: "Atualização feita",
+              description: "Atualização das informações foi efetuada com sucesso",
+              status: "info",
+              duration: 9000,
+              isClosable: true,
+            });
+          }
         })
         .catch((err) => {
           props.onchat(true);
           console.error(err);
         });
+
       if (SetGanho) {
         const [pedidos] = Data.attributes.pedidos.data
         const nPedido = pedidos?.attributes.nPedido
@@ -152,7 +179,8 @@ export const NegocioHeader = (props: {
         const vendedorId = session?.user.id
         const IdNegocio = Data.id
 
-        return pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
+        const request = pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
+        return request
       }
     }
   };
@@ -169,11 +197,14 @@ export const NegocioHeader = (props: {
   }
 
   function getStatus(statusinf: SetStateAction<any>) {
-    setStatus(statusinf);
+    setStatus(parseInt(statusinf));
   }
   function getAtendimento(atendimento: SetStateAction<string>) {
     setApproach(atendimento);
   }
+  console.log(Etapa !== 6 && Status === 5)
+
+
 
   return (
     <>
@@ -182,24 +213,28 @@ export const NegocioHeader = (props: {
           <Flex alignItems={"center"}>
             <BtmRetorno Url="/negocios" />
           </Flex>
-          <Box>
-            <FormLabel
-              fontSize="xs"
-              fontWeight="md"
-            >
-              N° Negócio
-            </FormLabel>
-            <Input
-              type="text"
-              readOnly
-              shadow="sm"
-              size="sm"
-              rounded="md"
-              maxLength={15}
-              onChange={(e) => setBusines(e.target.value)}
-              value={props.nBusiness}
-            />
-          </Box>
+          {Status !== 3 && Etapa === 6 ? null : (
+            <>
+              <Box>
+                <FormLabel
+                  fontSize="xs"
+                  fontWeight="md"
+                >
+                  N° Negócio
+                </FormLabel>
+                <Input
+                  type="text"
+                  readOnly
+                  shadow="sm"
+                  size="sm"
+                  rounded="md"
+                  maxLength={15}
+                  onChange={(e) => setBusines(e.target.value)}
+                  value={props.nBusiness}
+                />
+              </Box>
+            </>
+          )}
           <Box>
             <FormLabel
               fontSize="xs"
@@ -296,35 +331,216 @@ export const NegocioHeader = (props: {
           <Button colorScheme={"whatsapp"} onClick={Salve}>
             Salvar
           </Button>
-          <Button
-            colorScheme={"green"}
-            onClick={() => router.push("/propostas/" + ID)}
-          >
-            Proposta
-          </Button>
-          <Button
-            colorScheme={"red"}
-            onClick={async () => {
-              props.onLoad(true)
-              await axios('/api/db/business/delete/' + ID)
-                .then(() => {
+          {Bpedido ? null : (
+            <>
+              <Button
+                colorScheme={"green"}
+                onClick={() => {
+                  if (NPedido) {
+                    router.push("/propostas/update/" + NPedido)
+                  } else {
+                    router.push(`/propostas/create?negocio=${ID}`);
+                  }
+                }}
+              >
+                Proposta
+              </Button>
+            </>
+          )}
+          {NPedido && Status === 5 && Etapa === 6 ? (
+            <>
+              <Button
+                colorScheme={"whatsapp"}
+                variant={'solid'}
+                onClick={() => {
+
+                  window.open(
+                    `/api/db/proposta/pdf/${NPedido}`,
+                    "_blank"
+                  )
+                }}
+              >
+                PDF
+              </Button>
+
+            </>
+          ) : null}
+          {!Bpedido && NPedido && Status === 5 && Etapa === 6 ? (
+            <>
+              <Button
+                isLoading={load}
+                spinner={<BeatLoader size={8} color="white" />}
+                fontSize={'0.8rem'}
+                p={3}
+                colorScheme={"messenger"}
+                onClick={async () => {
+                  setload(true)
                   toast({
-                    title: 'Negocio foi Deletado',
-                    status: 'info',
-                    duration: 3000,
+                    title: "Só um momento estou processando!",
+                    status: "warning",
                     isClosable: true,
+                    position: 'top-right',
                   });
-                  router.push("/negocios")
-                })
-                .catch((err: any) => {
-                  console.error(err);
-                });
-            }}
-          >
-            Excluir
-          </Button>
+                  if (Data) {
+                    const [pedidos] = Data.attributes.pedidos.data
+                    const nPedido = pedidos?.attributes.nPedido
+                    const EmpresaId = Data.attributes.empresa.data.id
+                    const valor = pedidos?.attributes.totalGeral
+                    const vendedor = session?.user.name
+                    const vendedorId = session?.user.id
+                    const IdNegocio = Data.id
+
+                    await axios({
+                      url: `/api/db/nLote/${nPedido}`,
+                      method: "POST",
+                    })
+                      .then(() => { })
+                      .catch((error) => {
+                        console.log(error)
+                      });
+
+                    await axios({
+                      url: "/api/query/pedido/" + nPedido,
+                      method: "POST",
+                    })
+                      .then(async (response: any) => {
+                        console.log(response.data)
+                        await axios({
+                          url: `/api/db/trello/${nPedido}`,
+                          method: "POST",
+                        })
+                          .then((response) => {
+                            console.log(response.data)
+                          })
+                          .catch((error) => {
+                            console.log(error)
+                          });
+
+                        await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
+                          .then((response) => {
+                            console.log(response.data)
+                          })
+                          .catch((error) => {
+                            console.log(error)
+                          });
+                        toast({
+                          title: "Pedido realizado com sucesso!",
+                          status: "success",
+                          duration: 5000,
+                          position: 'top-right',
+                        });
+                        const requeste = await axios(`api/db/proposta/get/business/${IdNegocio}`);
+                        const resp = requeste.data;
+
+                      })
+                      .catch(async (err) => {
+                        console.log(err.response.data.message);
+                        console.log(err);
+                        if (err.response.data.message) {
+                          await axios({
+                            url: `/api/db/trello/${nPedido}`,
+                            method: "POST",
+                          })
+                            .then((response) => {
+                              console.log(response.data)
+                            })
+                            .catch((error) => {
+                              console.log(error)
+                            });
+
+                          await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
+                            .then((response) => {
+                              console.log(response.data)
+                            })
+                            .catch((error) => {
+                              console.log(error)
+                            });
+                          toast({
+                            title: "Opss.",
+                            description: err.response.data.message,
+                            status: "info",
+                            duration: 5000,
+                            position: 'top-right',
+                            isClosable: true,
+                          });
+                        } else {
+                          toast({
+                            title: "Opss.",
+                            description: "Entre en contata com o suporte",
+                            status: "error",
+                            duration: 3000,
+                            position: 'top-right',
+                            isClosable: true,
+                          });
+                        }
+                      });
+
+                    setload(false)
+                  }
+
+                }}
+                isDisabled={!!Data && Data.attributes.Bpedido !== null ? true : Data.attributes.itens.length < 1 ? true : false}
+              >
+                Gerar Pedido
+              </Button>
+            </>
+          ) : null}
+          {NPedido && Status === 3 && Etapa !== 6 ? (
+            <>
+              <Button
+                colorScheme={"teal"}
+                variant={'solid'}
+                onClick={() => window.open(
+                  `/api/db/proposta/pdf/${NPedido}`,
+                  "_blank"
+                )}
+              >
+                PDF
+              </Button>
+            </>
+          ) : null}
+          {NPedido && Status === 1 && Etapa === 6 ? (
+            <>
+              <Button
+                colorScheme={"red"}
+                variant={'outline'}
+                onClick={() => window.open(
+                  `/api/db/proposta/pdf/${NPedido}`,
+                  "_blank"
+                )}
+              >
+                PDF
+              </Button>
+
+            </>
+          ) : null}
+          {session?.user.pemission === 'Adm' && (
+            <>
+              <Button
+                colorScheme={"red"}
+                onClick={async () => {
+                  props.onLoad(true)
+                  await axios('/api/db/business/delete/' + ID)
+                    .then(() => {
+                      toast({
+                        title: 'Negocio foi Deletado',
+                        status: 'info',
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                      router.push("/negocios")
+                    })
+                    .catch((err: any) => {
+                      console.error(err);
+                    });
+                }}
+              >
+                Excluir
+              </Button>
+            </>
+          )}
         </Flex>
-      </Flex>
+      </Flex >
     </>
   );
 };

@@ -23,6 +23,7 @@ import { capitalizeWords } from "@/function/captalize";
 import { confgEnb } from "@/components/data/confgEnb";
 import { CompPessoa } from "@/components/elements/lista/pessoas";
 import { modCaix } from "@/components/data/modCaix";
+import { GetCnpj } from "@/function/getcnpj";
 
 export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const { data: session } = useSession();
@@ -79,7 +80,6 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const [Razao, setRazao] = useState("");
   const [Responsavel, setResponsavel] = useState("");
   const [Inatividade, setInatividade] = useState<number>(60);
-  const [Data, setData] = useState<any | null>(null);
   const [ID, setID] = useState<string | null>(null);
   const toast = useToast();
 
@@ -141,19 +141,31 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   }, [props.data])
 
   const consulta = async () => {
-    let url = 'https://publica.cnpj.ws/cnpj/' + CNPJ;
-    try {
-      const request = await axios(url);
-      const response = request.data;
-      setData(response)
-    } catch (error: any) {
-      toast({
-        title: 'Opss',
-        description: error.response?.data.detalhes,
-        status: 'error',
-        duration: 2000,
-        isClosable: true,
-      });
+    if (CNPJ) {
+      const Data = await GetCnpj(CNPJ)
+      setRazao(Data.razao_social)
+      setFantasia(Data.estabelecimento.nome_fantasia);
+      setTipoPessoa('cnpj');
+      setIE(Data.estabelecimento?.inscricoes_estaduais[0]?.inscricao_estadual);
+      setIeStatus(Data.estabelecimento?.inscricoes_estaduais[0]?.ativo);
+      const end = capitalizeWords(Data.estabelecimento?.tipo_logradouro + " " + Data.estabelecimento?.logradouro)
+      setEndereco(end === 'Undefined Undefined' ? "" : end);
+      setNumero(Data.estabelecimento?.numero);
+      setComplemento(capitalizeWords(Data.estabelecimento?.complemento));
+      setBairro(capitalizeWords(Data.estabelecimento?.bairro));
+      setCep(Data.estabelecimento?.cep);
+      setCidade(capitalizeWords(Data.estabelecimento?.cidade.nome));
+      setUf(Data.estabelecimento?.estado.sigla);
+      let ddd = !Data.estabelecimento?.ddd1 ? '' : Data.estabelecimento?.ddd1;
+      let tel1 = !Data.estabelecimento.telefone1 ? "" : Data.estabelecimento.telefone1;
+      setFone(ddd + tel1);
+      setEmail(Data.estabelecimento?.email);
+      setPais(Data.estabelecimento?.pais.nome);
+      setCodpais(Data.estabelecimento?.pais.id);
+      setCNAE(Data.estabelecimento?.atividade_principal.id);
+      setPorte(Data.porte?.descricao);
+      const cheksimples = Data.simples?.simples === 'Sim' ? true : false;
+      setSimples(cheksimples);
     }
   };
 
@@ -234,34 +246,6 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
     setCelular(valorLinpo);
     setWhatsMask(masked);
   };
-
-  useEffect(() => {
-    if (Data) {
-      setRazao(Data.razao_social)
-      setFantasia(Data.estabelecimento.nome_fantasia);
-      setTipoPessoa('cnpj');
-      setIE(Data.estabelecimento?.inscricoes_estaduais[0]?.inscricao_estadual);
-      setIeStatus(Data.estabelecimento?.inscricoes_estaduais[0]?.ativo);
-      const end = capitalizeWords(Data.estabelecimento?.tipo_logradouro + " " + Data.estabelecimento?.logradouro)
-      setEndereco(end === 'Undefined Undefined' ? "" : end);
-      setNumero(Data.estabelecimento?.numero);
-      setComplemento(capitalizeWords(Data.estabelecimento?.complemento));
-      setBairro(capitalizeWords(Data.estabelecimento?.bairro));
-      setCep(Data.estabelecimento?.cep);
-      setCidade(capitalizeWords(Data.estabelecimento?.cidade.nome));
-      setUf(Data.estabelecimento?.estado.sigla);
-      let ddd = Data.estabelecimento?.ddd1;
-      let tel1 = Data.estabelecimento?.telefone1;
-      setFone(ddd + tel1);
-      setEmail(Data.estabelecimento?.email);
-      setPais(Data.estabelecimento?.pais.nome);
-      setCodpais(Data.estabelecimento?.pais.id);
-      setCNAE(Data.estabelecimento?.atividade_principal.id);
-      setPorte(Data.porte?.descricao);
-      const cheksimples = Data.simples?.simples === 'Sim' ? true : false;
-      setSimples(cheksimples);
-    }
-  }, [Data])
 
   return (
     <>
@@ -479,7 +463,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         ID={ID}
                       />
                     </FormControl>
-                    <FormControl as={GridItem} colSpan={[2,2]}>
+                    <FormControl as={GridItem} colSpan={[2, 2]}>
                       <Button
                         mt={5}
                         h={8}
@@ -825,7 +809,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                       </Select>
                     </FormControl>
 
-                    <FormControl hidden={session?.user.pemission === 'Adm' ? false: true} as={GridItem} colSpan={[6, 3]}>
+                    <FormControl hidden={session?.user.pemission === 'Adm' ? false : true} as={GridItem} colSpan={[6, 3]}>
                       <FormLabel
                         htmlFor="prazo pagamento"
                         fontSize="xs"
