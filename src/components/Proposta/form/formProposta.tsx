@@ -36,9 +36,8 @@ import { SetValue } from "@/function/currenteValor";
 
 const tempo = DateIso;
 
-export const FormProposta = (props: { ondata: any | null; onResponse: any; produtos: any}) => {
+export const FormProposta = (props: { ondata: any | null; onResponse: any; produtos: any; ITENS: any }) => {
   const router = useRouter();
-
   const { data: session } = useSession();
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
   const [loadingGeral, setLoadingGeral] = useState<boolean>(false);
@@ -63,39 +62,38 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
   const [Id, setId] = useState("");
   const [clientePedido, setClientePedido] = useState("");
   const [incidentRecord, setIncidentRecord] = useState([]);
-
-
-
   const toast = useToast();
 
   useEffect(() => {
     if (props.ondata) {
       const resp = props.ondata
-      setId(resp.attributes?.pedidos.data.id);
-      setFrete(resp.attributes?.pedidos.data.attributes?.frete);
-      setDate(resp.attributes?.pedidos.data.attributes?.dataPedido);
-      setItens(resp.attributes?.pedidos.data.attributes?.itens);
-      setPrazo(resp.attributes?.pedidos.data.attributes?.condi);
+      const [PROPOSTA] = resp.attributes?.pedidos.data
+      setId(PROPOSTA?.id);
+      setFrete(PROPOSTA?.attributes?.frete);
+      setDate(PROPOSTA?.attributes?.dataPedido);
+      setPrazo(PROPOSTA?.attributes?.condi);
       setRelatEmpresa(resp.attributes?.empresa.data);
       SetNome(resp.attributes.empresa.data.attributes.nome)
       setRelatEmpresaId(resp.attributes?.empresa.data.id);
-      setFreteCif(resp.attributes?.pedidos.data.attributes?.valorFrete);
-      setLoja(resp.attributes?.pedidos.data.attributes?.fornecedor);
-      setObs(resp.attributes?.pedidos.data.attributes?.obs);
+      setFreteCif(PROPOSTA?.attributes?.valorFrete);
+      setLoja(PROPOSTA?.attributes?.fornecedor);
+      setObs(PROPOSTA?.attributes?.obs);
       setSaveNegocio(resp.attributes.nBusiness);
       setHistory(resp.attributes.history);
       setMSG(resp.attributes.incidentRecord)
-      setClientePedido(resp.attributes?.pedidos.data.attributes?.cliente_pedido)
-      setTipoPrazo(resp.attributes?.pedidos.data.attributes?.prazo)
-      setDateEntrega(resp.attributes?.pedidos.data.attributes?.dataEntrega)
+      setClientePedido(PROPOSTA?.attributes?.cliente_pedido)
+      setTipoPrazo(PROPOSTA?.attributes?.prazo)
+      setDateEntrega(PROPOSTA?.attributes?.dataEntrega)
       setHistory(resp.attributes.history);
       setCnpj(resp.attributes.empresa.data.attributes.CNPJ)
       setIncidentRecord(resp.attributes.incidentRecord)
     }
-  }, []);
+    if (props.ITENS) {
+      setItens(props.ITENS);
+    }
+  }, [props.ondata]);
 
   const disbleProd = !prazo || !DateEntrega || !Loja || !frete ? false : true;
-
 
   const TotalGreal = () => {
     if (ListItens.length === 0) return "R$ 0,00";
@@ -140,7 +138,6 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
   }, [DescontoGeral, ListItens, TotalGreal]);
 
   useEffect(() => {
-
     if (prazo === "Antecipado") {
       setItens(
         ListItens.map((f: any) => {
@@ -271,7 +268,7 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
         itens: ProdutosItems,
         empresa: Loja,
         dataPedido: tempo,
-        dataEntrega: DateEntrega,
+        dataEntrega: new Date(DateEntrega).toISOString(),
         vencPedido: VencDate,
         vencPrint: VencDatePrint,
         condi: prazo,
@@ -289,7 +286,8 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
         cliente_pedido: clientePedido,
         id: Id,
         hirtori: hirtori,
-        incidentRecord: [...incidentRecord, MSG]
+        incidentRecord: MSG,
+        fornecedorId: session?.user.id
       };
       props.onResponse(data);
     }
@@ -509,7 +507,7 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
             {!disbleProd && (<Box w={"300px"} />)}
             {!!disbleProd && (
               <Box w={"300px"} alignItems="center" >
-                 <ProdutiList Lista={props.produtos} Retorno={getIten} Reload={getLoading}
+                <ProdutiList Lista={props.produtos} Retorno={getIten} Reload={getLoading}
                 />
               </Box>
             )}
@@ -605,7 +603,7 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
         <Box display={"flex"} justifyContent={"space-between"} me={10} mb={5} bg={'gray.800'}>
           <Flex gap={20}>
             <chakra.p>
-              Total de itens: {ListItens.length === 0 ? "" : ListItens.length}
+              Total de itens: {!ListItens ? "" : ListItens.length}
             </chakra.p>
             <chakra.p>
               Frete:{" "}

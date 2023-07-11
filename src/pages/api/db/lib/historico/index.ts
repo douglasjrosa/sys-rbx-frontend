@@ -29,7 +29,7 @@ export const Historico = async (txt: any, url: string) => {
       return resp;
     })
     .catch((error) => {
-      console.log(error)
-      return error;
+      console.log(error.response.data.error)
+      return error.response.data.error;
     });
 };

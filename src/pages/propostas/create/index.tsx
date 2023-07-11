@@ -14,6 +14,7 @@ export default function Proposta() {
   const [Data, setData] = useState<any | null>(null);
   const [Bling, setBling] = useState<string | null>(null);
   const [Produtos, setProdutos] = useState<any | null>(null);
+  const [Itens, setItens] = useState<any | null>(null);
 
   const toast = useToast();
 
@@ -27,6 +28,9 @@ export default function Proposta() {
         const CNPJ = response.attributes.empresa.data.attributes.CNPJ
         const getProdutos = await axios(`/api/query/get/produto/cnpj/${CNPJ}`, { method: "POST", data: email });
         const RespProduto = getProdutos.data
+        const [pedido] = response.attributes.pedidos.data
+        const ItensList = pedido.attributes.itens
+        setItens(ItensList)
         setData(response)
         setBling(response.attributes.Bpedido)
         if (RespProduto.length > 0) {
@@ -42,9 +46,16 @@ export default function Proposta() {
           setTimeout(() => router.push(`/negocios/${NNegocio}`), 5 * 1000);
         }
         setLoadingGeral(false)
-      } catch (error) {
-        console.log(error)
-        router.back()
+      } catch (error: any) {
+        console.log(error.response.data)
+        toast({
+          title: "Erro.",
+          description: error.response.data,
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+        });
+        setTimeout(() => router.push(`/negocios/${NNegocio}`), 5 * 1000);
       }
     })();
   }, [NNegocio, router, toast]);
@@ -120,7 +131,7 @@ export default function Proposta() {
   return (
     <>
       <Flex h="100vh" w="100%">
-        <FormProposta ondata={Data} onResponse={Save} produtos={Produtos} />
+        <FormProposta ondata={Data} onResponse={Save} produtos={Produtos} ITENS={Itens} />
       </Flex>
     </>
   );

@@ -13,6 +13,7 @@ export default async function PUTEmpresa(
     const data = req.body;
 
     const ID = req.query.id;
+    console.log("🚀 ~ file: [id].ts:16 ~ ID:", ID)
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
       baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
@@ -57,6 +58,7 @@ export default async function PUTEmpresa(
         dataEntrega: data.dataEntrega
       },
     };
+    console.log("🚀 ~ file: [id].ts:60 ~ DataPost:", DataPost)
 
     const now = new Date();
     const VisibliDateTime =  new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString();
@@ -108,10 +110,9 @@ export default async function PUTEmpresa(
         });
       })
       .catch(async (error) => {
-        console.log(error);
         console.log(error.response.data.error);
 
-        res.json(error.response.data.error);
+        res.status(500).json(error.response.data.error);
         const now = new Date();
         const isoDateTime = now.toISOString();
         const txt = {

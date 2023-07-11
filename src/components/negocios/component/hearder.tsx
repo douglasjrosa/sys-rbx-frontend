@@ -202,9 +202,6 @@ export const NegocioHeader = (props: {
   function getAtendimento(atendimento: SetStateAction<string>) {
     setApproach(atendimento);
   }
-  console.log(Etapa !== 6 && Status === 5)
-
-
 
   return (
     <>
@@ -337,7 +334,7 @@ export const NegocioHeader = (props: {
                 colorScheme={"green"}
                 onClick={() => {
                   if (NPedido) {
-                    router.push("/propostas/update/" + NPedido)
+                    router.push("/propostas/update/" + ID)
                   } else {
                     router.push(`/propostas/create?negocio=${ID}`);
                   }

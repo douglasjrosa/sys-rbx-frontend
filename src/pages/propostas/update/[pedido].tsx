@@ -18,6 +18,7 @@ export default function Proposta() {
   const [Data, setData] = useState<any | null>(null);
   const [Bling, setBling] = useState<string | null>(null);
   const [Produtos, setProdutos] = useState<any | null>(null);
+  const [Itens, setItens] = useState<any | null>(null);
 
 
   const toast = useToast();
@@ -33,6 +34,9 @@ export default function Proposta() {
         const getProdutos = await axios(`/api/query/get/produto/cnpj/${CNPJ}`, { method: "POST", data: Email });
         const RespProduto = getProdutos.data
         setData(response)
+        const [pedido] = response.attributes.pedidos.data
+        const ItensList = pedido.attributes.itens
+        setItens(ItensList)
         setBling(response.attributes.Bpedido)
         if (RespProduto.length > 0) {
           setProdutos(RespProduto);
@@ -47,12 +51,23 @@ export default function Proposta() {
           setTimeout(() => router.push(`/negocios/${PEDIDO}`), 5 * 1000);
         }
         setLoadingGeral(false)
-      } catch (error) {
-        console.log(error)
-        router.back()
+      } catch (error: any) {
+        console.log(error.response.data)
+        toast({
+          title: "Erro.",
+          description: error.response.data,
+          status: "error",
+          duration: 9000,
+          isClosable: true,
+        });
+        setTimeout(() => router.push(`/negocios/${PEDIDO}`), 5 * 1000);
       }
     })();
   }, [Email, PEDIDO, router, toast]);
+
+  if (Bling) {
+    router.push(`/negocios/${PEDIDO}`);
+  }
 
   if (loadingGeral) {
     return <Loading size="200px">Carregando...</Loading>;
@@ -61,24 +76,24 @@ export default function Proposta() {
   function Save(retorno: SetStateAction<any>) {
     (async () => {
       const dadosPost = retorno;
-      const url = `/api/db/proposta/put/${dadosPost.Id}`;
+      const url = `/api/db/proposta/put/${dadosPost.id}`;
       await axios({
         method: "PUT",
         url: url,
         data: dadosPost,
       })
         .then(async (res: any) => {
-
+          console.log("🚀 ~ file: [pedido].tsx:80 ~ .then ~ res:", res)
           const date = new Date();
           const DateAtua = date.toISOString();
 
-          const msg2 = {
+          const msg = {
             vendedor: session?.user.name,
             date: new Date().toISOString(),
             msg: `Vendedor ${session?.user.name} atualizou essa proposta `,
           };
 
-          const msg = {
+          const msg2 = {
             date: DateAtua,
             msg: `Proposta atualizada, valor total agora é ${dadosPost.totalGeral}, pasando a ter ${parseInt(dadosPost.itens.length) + 1
               } items`,
@@ -98,9 +113,11 @@ export default function Proposta() {
 
           await axios({
             method: "PUT",
-            url: "/api/db/business/put/id/" + dadosPost.id,
+            url: "/api/db/business/put/id/" + PEDIDO,
             data: data,
-          });
+          })
+          .then((resp) => console.log(resp.data))
+          .catch((err) => console.log(err))
 
           setTimeout(() => router.push(`/negocios/${PEDIDO}`), 500)
 
@@ -122,7 +139,7 @@ export default function Proposta() {
   return (
     <>
       <Flex h="100vh" w="100%">
-        <FormProposta ondata={Data} onResponse={Save} produtos={Produtos} />
+        <FormProposta ondata={Data} onResponse={Save} produtos={Produtos} ITENS={Itens}/>
       </Flex>
     </>
   );
