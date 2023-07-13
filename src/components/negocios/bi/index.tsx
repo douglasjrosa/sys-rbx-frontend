@@ -186,7 +186,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                       <Th color={'white'} borderBottom={'none'} w={'13rem'}>Etapa</Th>
                       <Th color={'white'} borderBottom={'none'} w={'9rem'}>Status</Th>
                       <Th color={'white'} borderBottom={'none'} w={'9rem'}>Valor</Th>
-                      <Th color={'white'} borderBottom={'none'} w={'9rem'}>Negocio</Th>
+                      <Th color={'white'} borderBottom={'none'} w={'9rem'}>Retornar em</Th>
                     </Tr>
                   </Thead>
                   <Tbody>
@@ -234,7 +234,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                       </Tr>
                     </Thead>
                     <Tbody>
-                      <Ausente />
+                      <Ausente user={User} />
                     </Tbody>
                   </Table>
                 </TableContainer>
@@ -255,7 +255,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                       </Tr>
                     </Thead>
                     <Tbody>
-                      <NovoCliente />
+                      <NovoCliente user={User} />
                     </Tbody>
                   </Table>
                 </TableContainer>
@@ -276,7 +276,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                       </Tr>
                     </Thead>
                     <Tbody>
-                      <Presente />
+                      <Presente user={User} />
                     </Tbody>
                   </Table>
                 </TableContainer>

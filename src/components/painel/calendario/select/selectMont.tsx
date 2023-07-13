@@ -42,7 +42,6 @@ export const SelectMonth = (props: {
             value={date}
           >
             {!!Object && Object.map((i: any) => {
-              console.log(i)
 
               return (
                 <option style={{ backgroundColor: "#1A202C", color: '#fffff' }} key={i.id} value={i.id}>

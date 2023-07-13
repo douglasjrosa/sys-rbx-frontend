@@ -8,9 +8,7 @@ export default async function GetEmpresa(
   if (req.method === "POST") {
     const Email = "kingdever88@gmail.com";
     const token: any = process.env.ATORIZZATION_TOKEN_RIBERMAX;
-    // const cnpj = req.query.cnpj;
-    const cnpj =  6060886600010;
-    console.log("🚀 ~ file: [cnpj].ts:12 ~ cnpj:", cnpj)
+    const cnpj = req.query.cnpj;
     const url =
       process.env.RIBERMAX_API_URL + "/produtos?CNPJ=" + cnpj + "&limit=30";
 

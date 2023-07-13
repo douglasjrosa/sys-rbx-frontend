@@ -3,22 +3,23 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
-export const Ausente = () => {
+export const Ausente = (props: { user: string }) => {
   const [data, setData] = useState<any>([]);
-  const { data: session } = useSession()
 
   useEffect(() => {
     (async () => {
-      try {
-        const response = await axios.get(
-          `/api/db/empresas/search/powerbi/ausente?Vendedor=${session?.user.name}`
-        );
-        setData(response.data);
-      } catch (error) {
-        console.log(error);
+      if (props.user) {
+        try {
+          const response = await axios.get(
+            `/api/db/empresas/search/powerbi/ausente?Vendedor=${props.user}`
+          );
+          setData(response.data);
+        } catch (error) {
+          console.log(error);
+        }
       }
     })();
-  }, [session?.user.name]);
+  }, [props.user]);
 
   const renderedData = useMemo(() => {
     return data.map((i: any) => {

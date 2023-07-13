@@ -5,22 +5,24 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
-export const Presente = () => {
+export const Presente = (props: { user: string }) => {
   const [data, setData] = useState<any>([]);
-  const { data: sesseion} = useSession()
+  const [User, setUser] = useState<string>()
+
 
   useEffect(() => {
     (async () => {
-      try {
-        const response = await axios.get(
-          `/api/db/empresas/search/powerbi/recuperado?Vendedor=${sesseion?.user.name}`
-        );
-        setData(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  }, [sesseion?.user.name]);
+        try {
+          const response = await axios.get(
+            `/api/db/empresas/search/powerbi/recuperado?Vendedor=${props.user}`
+          );
+          setData(response.data);
+          console.log("🚀 ~ file: index.tsx:19 ~ response.data:", props.user)
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+  }, [props.user]);
 
   const renderedData = useMemo(() => {
     return data.map((i: any) => (

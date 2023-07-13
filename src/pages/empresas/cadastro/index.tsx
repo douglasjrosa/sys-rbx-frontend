@@ -69,6 +69,7 @@ export default function Cadastro() {
         engLev: EmpresasData.engLev,
         engRef: EmpresasData.engRef,
         engResi: EmpresasData.engResi,
+        modEsp: EmpresasData.modEsp,
         tablecalc: EmpresasData.tablecalc,
         maxPg: EmpresasData.maxPg,
         forpg: EmpresasData.forpg,

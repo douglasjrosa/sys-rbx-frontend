@@ -72,6 +72,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const [engLev, setEngLev] = useState(false);
   const [engRef, setEngRef] = useState(false);
   const [engResi, setEngResi] = useState(false);
+  const [modEsp, setModEsp] = useState(false);
   const [status, setStatus] = useState(true);
   const [tablecalc, setTablecalc] = useState("0.30");
   const [maxPg, setMaxpg] = useState("0");
@@ -81,6 +82,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const [Responsavel, setResponsavel] = useState("");
   const [Inatividade, setInatividade] = useState<number>(60);
   const [ID, setID] = useState<string | null>(null);
+  const [Autorize, setAutorize] = useState(false)
   const toast = useToast();
 
   useEffect(() => {
@@ -90,10 +92,12 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
       setResponsavel(empresa.attributes?.responsavel.data?.id);
       setID(empresa.id);
       setCNPJ(empresa.attributes?.CNPJ);
+      setAutorize(props.data ? true : false)
       const cnpj = empresa.attributes?.CNPJ
       setMaskCNPJ(mask(cnpj, ["99.999.999/9999-99"]))
       setNome(empresa.attributes?.nome);
       setFantasia(empresa.attributes?.fantasia);
+      setRazao(empresa.attributes?.razao);
       setTipoPessoa(empresa.attributes?.tipoPessoa);
       setFone(empresa.attributes?.fone === null ? '' : empresa.attributes?.fone);
       setCelular(empresa.attributes?.celular === null ? "" : empresa.attributes?.celular);
@@ -143,6 +147,29 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const consulta = async () => {
     if (CNPJ) {
       const Data = await GetCnpj(CNPJ)
+      const teset = await axios(`/api/db/empresas/getCnpj/${CNPJ}`)
+      const [response] = teset.data
+      const userProps = response?.attributes?.user.data
+      const vendedor = userProps?.attributes?.username
+      if (vendedor){
+        toast({
+          render: () => (
+            <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+              <chakra.p>{response.attributes.nome}</chakra.p>
+              <chakra.p>CNPJ: {response.attributes.CNPJ}</chakra.p>
+              <chakra.p> Carteira: {vendedor}</chakra.p>
+            </Box>
+          ),
+          status: 'warning',
+          duration: 9000,
+          isClosable: true,
+          position: 'top',
+        })
+        setTimeout(()=>router.push("/empresas/"), 5000)
+      } else {
+        setAutorize(true)
+      }
+
       setRazao(Data.razao_social)
       setFantasia(Data.estabelecimento.nome_fantasia);
       setTipoPessoa('cnpj');
@@ -212,6 +239,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
     engLev: engLev,
     engRef: engRef,
     engResi: engResi,
+    modEsp: modEsp,
     tablecalc: tablecalc,
     maxPg: maxPg,
     forpg: forpg,
@@ -347,737 +375,791 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                       />
                     </Box>
                   </SimpleGrid>
+                </Stack>
 
-                  <SimpleGrid columns={9} spacing={3}>
-                    <FormControl as={GridItem} colSpan={[5, 2]}>
-                      <FormLabel
-                        htmlFor="rozao"
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Nome de exibição
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setNome(capitalizeWords(e.target.value))}
-                        value={nome}
-                      />
-                    </FormControl>
+                {!!Autorize && (
+                  <>
+                    <Stack>
+                      <SimpleGrid columns={9} spacing={3}>
+                        <FormControl as={GridItem} colSpan={[5, 2]}>
+                          <FormLabel
+                            htmlFor="rozao"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Nome de exibição
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setNome(capitalizeWords(e.target.value))}
+                            value={nome}
+                          />
+                        </FormControl>
+                        <FormControl as={GridItem} colSpan={[5, 2]}>
+                          <FormLabel
+                            htmlFor="rozao"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Razão Social
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setRazao(capitalizeWords(e.target.value))}
+                            value={Razao}
+                          />
+                        </FormControl>
+                        <FormControl as={GridItem} colSpan={[5, 2]}>
+                          <FormLabel
+                            htmlFor="rozao"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Nome Fantasia
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setFantasia(capitalizeWords(e.target.value))}
+                            value={fantasia}
+                          />
+                        </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 2]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        E-mail
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setEmail(e.target.value)}
-                        value={email}
-                      />
-                    </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 2]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        CNAE
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setCNAE(e.target.value)}
-                        value={CNAE}
-                      />
-                    </FormControl>
+                        <FormControl as={GridItem} colSpan={[6, 2]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            E-mail
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setEmail(e.target.value)}
+                            value={email}
+                          />
+                        </FormControl>
+                        <FormControl as={GridItem} colSpan={[6, 2]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            CNAE
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setCNAE(e.target.value)}
+                            value={CNAE}
+                          />
+                        </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 1]}>
-                      <FormLabel
-                        htmlFor="ie"
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        IE
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setIE(e.target.value)}
-                        value={Ie}
-                      />
-                    </FormControl>
+                        <FormControl as={GridItem} colSpan={[6, 1]}>
+                          <FormLabel
+                            htmlFor="ie"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            IE
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setIE(e.target.value)}
+                            value={Ie}
+                          />
+                        </FormControl>
 
-                    <FormControl as={GridItem} colSpan={[6, 1]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        IE Status
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        value={(() => {
+                        <FormControl as={GridItem} colSpan={[6, 1]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            IE Status
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            value={(() => {
+                              const val =
+                                ieStatus === true && nome.length !== 0
+                                  ? 'sim'
+                                  : ieStatus === false && nome.length !== 0
+                                    ? 'não'
+                                    : ' ';
+                              return val;
+                            })()}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 1]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            inatividade
+                          </FormLabel>
+                          <Input
+                            type="number"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            isDisabled={session?.user.pemission === 'Adm' ? false : true}
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            maxLength={3}
+                            rounded="md"
+                            value={Inatividade}
+                            onChange={(e) => setInatividade(parseInt(e.target.value))}
+                          />
+                        </FormControl>
+                      </SimpleGrid>
+
+                      <SimpleGrid columns={12} spacing={3}>
+                        <FormControl as={GridItem} colSpan={[6, 2, 1]}>
+                          <FormLabel
+                            htmlFor="pais"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            País
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setPais(capitalizeWords(e.target.value))}
+                            value={pais}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 2]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Cod.País
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setCodpais(e.target.value)}
+                            value={codpais}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Endereço
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setEndereco(capitalizeWords(e.target.value))}
+                            value={endereco}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 1]}>
+                          <FormLabel
+                            htmlFor="numero"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            N°
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setNumero(e.target.value)}
+                            value={numero}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 2]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Complemento
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setComplemento(e.target.value)}
+                            value={complemento}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 3, null, 3]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Bairro
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setBairro(capitalizeWords(e.target.value))}
+                            value={bairro}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 3, null, 1]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Cep
+                          </FormLabel>
+                          <Input
+                            type="text"
+
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setCep(e.target.value)}
+                            value={cep}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Cidade
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setCidade(capitalizeWords(e.target.value))}
+                            value={cidade}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[3, null, 1]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            UF.
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setUf(e.target.value)}
+                            value={uf}
+                          />
+                        </FormControl>
+                        <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Site
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setSite(e.target.value)}
+                            value={site}
+                          />
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            E-mail NF-e
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={(e) => setEmailNfe(e.target.value)}
+                            value={emailNfe}
+                          />
+                        </FormControl>
+                        <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
+                          <FormLabel
+                            htmlFor="cidade"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Whatsapp
+                          </FormLabel>
+                          <Input
+                            type="text"
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            rounded="md"
+                            onChange={WhatsAppMask}
+                            value={WhatsMask}
+                          />
+                        </FormControl>
+                        <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Contribuinte
+                          </FormLabel>
+                          <Select
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            fontSize="xs"
+                            rounded="md"
+                            placeholder="Selecione uma opção"
+                            onChange={(e) => setContribuinte(e.target.value)}
+                            value={contribuinte}
+                          >
+                            <option style={{ backgroundColor: "#1A202C" }} value="1">Contribuinte ICMS</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="2">Contribuinte isento do ICMS</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="9">Não contribuinte</option>
+                          </Select>
+                        </FormControl>
+                      </SimpleGrid>
+                    </Stack>
+                    <Stack
+                      px={4}
+                      py={3}
+                      spacing={3}
+                    >
+                      <SimpleGrid columns={12} spacing={3}>
+                        <Heading as={GridItem} colSpan={12} size="sd">
+                          Configurações da Empresa
+                        </Heading>
+
+                        <FormControl as={GridItem} colSpan={[6, 3]}>
+                          <FormLabel
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Tabela de cálculo
+                          </FormLabel>
+                          <Select
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            fontSize="xs"
+                            rounded="md"
+                            onChange={(e) => setTablecalc(e.target.value)}
+                            value={tablecalc}
+                          >
+                            <option style={{ backgroundColor: "#1A202C" }} value="">Selecione uma opção</option>
+                            <option style={{ backgroundColor: "#1A202C" }} selected value="0.30">Balcão</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="0.26" selected>
+                              Vip
+                            </option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="0.23">Bronze</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="0.20">Prata</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="0.17">Ouro</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="0.14">Platinum</option>
+                          </Select>
+                        </FormControl>
+
+                        <FormControl hidden={session?.user.pemission === 'Adm' ? false : true} as={GridItem} colSpan={[6, 3]}>
+                          <FormLabel
+                            htmlFor="prazo pagamento"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Máximo prazo p/ pagamento:
+                          </FormLabel>
+                          <Select
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            fontSize="xs"
+                            rounded="md"
+                            onChange={(e) => setMaxpg(e.target.value)}
+                            value={maxPg}
+                          >
+                            <option style={{ backgroundColor: "#1A202C" }}>Selecione uma tabela</option>
+                            <option style={{ backgroundColor: "#1A202C" }} selected value="0">À vista (antecipado)</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="5">5 dias</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="15">15 dias</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="28">28 Dias</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="35">28 e 35 dias</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="42">28, 35 e 42 dias</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="90">
+                              90 dias (Casos muito excepcionais)
+                            </option>
+                          </Select>
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 3]}>
+                          <FormLabel
+                            htmlFor="pagamento"
+                            fontSize="xs"
+                            fontWeight="md"
+                          >
+                            Preferência de pagamento:
+                          </FormLabel>
+                          <Select
+
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            fontSize="xs"
+                            rounded="md"
+                            onChange={(e) => setForpg(e.target.value)}
+                            value={forpg}
+                          >
+                            <option style={{ backgroundColor: "#1A202C" }} >Escolha uma opção</option>
+                            <option style={{ backgroundColor: "#1A202C" }} selected value="desconto">Desconto À VISTA</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="prazo">
+                              Maior prazo para pagamento
+                            </option>
+                          </Select>
+                        </FormControl>
+
+                        <FormControl as={GridItem} colSpan={[6, 3]}>
+                          <FormLabel
+                            htmlFor="frete"
+                            fontSize="xs"
+                            fontWeight="md"
+
+                          >
+                            Frete
+                          </FormLabel>
+                          <Select
+
+                            focusBorderColor="#ffff"
+                            bg='#ffffff12'
+                            shadow="sm"
+                            size="xs"
+                            w="full"
+                            fontSize="xs"
+                            rounded="md"
+                            onChange={(e) => setFrete(e.target.value)}
+                            value={frete}
+                          >
+                            <option style={{ backgroundColor: "#1A202C" }}>Escolha uma opção</option>
+                            <option style={{ backgroundColor: "#1A202C" }} selected value="FOB">FOB - Por conta do cliente</option>
+                            <option style={{ backgroundColor: "#1A202C" }} value="CIF">CIF - Por conta da Ribermax</option>
+                          </Select>
+                        </FormControl>
+                      </SimpleGrid>
+
+                      <SimpleGrid columns={12} spacing={5}>
+                      <Heading as={GridItem} colSpan={12} mb={3} size="sd">
+                      Dados de contato
+                        </Heading>
+                        <FormControl as={GridItem} colSpan={[6, 2, 3, 1]}>
+                          <CompPessoa
+                            Resp={Responsavel}
+                            onAddResp={getResponsavel}
+                            ID={ID}
+                          />
+                        </FormControl>
+                        <FormControl as={GridItem} colSpan={[6, 2, 2, 1]}>
+                          <Button
+                            mt={5}
+                            h={8}
+                            colorScheme="teal"
+                            onClick={() => {
+                              localStorage.setItem('idRetorno', `${ID}`)
+                              router.push(`/pessoas/cadastro`)
+                            }}
+                          >
+                            + Nova Pessoa
+                          </Button>
+                        </FormControl>
+
+                      </SimpleGrid>
+                      <SimpleGrid columns={12} spacing={5}>
+                        <Heading as={GridItem} colSpan={12} mb={3} size="sd">
+                          Configurações de Embalagens
+                        </Heading>
+                        {confgEnb.map((item) => {
                           const val =
-                            ieStatus === true && nome.length !== 0
-                              ? 'sim'
-                              : ieStatus === false && nome.length !== 0
-                                ? 'não'
-                                : ' ';
-                          return val;
-                        })()}
-                      />
-                    </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 3]}>
-                      <CompPessoa
-                        Resp={Responsavel}
-                        onAddResp={getResponsavel}
-                        ID={ID}
-                      />
-                    </FormControl>
-                    <FormControl as={GridItem} colSpan={[2, 2]}>
+                            item.id === "12"
+                              ? adFrailLat
+                              : item.id === "13"
+                                ? adFrailCab
+                                : item.id === "14"
+                                  ? adEspecialLat
+                                  : item.id === "15"
+                                    ? adEspecialCab
+                                    : item.id === "16"
+                                      ? latFCab
+                                      : item.id === "17"
+                                        ? cabChao
+                                        : cabTop;
+
+                          return (
+                            <Box
+                              key={item.id}
+                              as={GridItem}
+                              colSpan={[6, 3, null, 2]}
+                            >
+                              <Flex>
+                                <Flex alignItems="center" h={5}>
+                                  <Switch
+                                    colorScheme="green"
+                                    borderColor="white"
+                                    bg='#ffffff12'
+                                    rounded="md"
+                                    isChecked={val}
+                                    onChange={(e) => {
+                                      const set =
+                                        item.id === "12"
+                                          ? setAdFragilLat(e.target.checked)
+                                          : item.id === "13"
+                                            ? setAdFragilCab(e.target.checked)
+                                            : item.id === "14"
+                                              ? setAdEspecialLat(e.target.checked)
+                                              : item.id === "15"
+                                                ? setAdEspecialCab(e.target.checked)
+                                                : item.id === "16"
+                                                  ? setLatFCab(e.target.checked)
+                                                  : item.id === "17"
+                                                    ? setCabChao(e.target.checked)
+                                                    : setCabTop(e.target.checked);
+                                      return set;
+                                    }}
+                                  />
+                                </Flex>
+                                <Box ml={3} fontSize="xs">
+                                  <chakra.label
+                                    fontWeight="md"
+
+                                    _dark={{
+                                      color: "gray.50",
+                                    }}
+                                  >
+                                    {item.title}
+                                  </chakra.label>
+                                </Box>
+                              </Flex>
+                            </Box>
+                          );
+                        })}
+                      </SimpleGrid>
+
+                      <SimpleGrid columns={12} spacing={5}>
+                        <Heading as={GridItem} colSpan={12} mb={5} size="sd">
+                          Modelos de Caixas
+                        </Heading>
+                        {modCaix.map((item) => {
+
+                          const val =
+                            item.id === "1"
+                              ? cxEco
+                              : item.id === "2"
+                                ? cxEst
+                                : item.id === "3"
+                                  ? cxLev
+                                  : item.id === "4"
+                                    ? cxRef
+                                    : item.id === "5"
+                                      ? cxSupRef
+                                      : item.id === "6"
+                                        ? platSMed
+                                        : item.id === "7"
+                                          ? cxResi
+                                          : item.id === "8"
+                                            ? engEco
+                                            : item.id === "9"
+                                              ? engLev
+                                              : item.id === "10"
+                                                ? engRef
+                                                : item.id === "11"
+                                                ? engResi
+                                                : engResi;
+                          return (
+                            <Box
+                              key={item.id}
+                              as={GridItem}
+                              colSpan={[6, 3, null, 2]}
+                            >
+                              <Flex>
+                                <Flex alignItems="center" h={5}>
+                                  <Switch
+                                    colorScheme="green"
+                                    borderColor="white"
+                                    bg='#ffffff12'
+                                    _invalid={{
+                                      bg: '#ffffff12'
+                                    }}
+                                    rounded="md"
+                                    isChecked={val || false}
+                                    onChange={(e) => {
+                                      const set: any =
+                                        item.id === "1"
+                                          ? setCxEco
+                                          : item.id === "2"
+                                            ? setCxEst
+                                            : item.id === "3"
+                                              ? setCxLev
+                                              : item.id === "4"
+                                                ? setCxRef
+                                                : item.id === "5"
+                                                  ? setCxSupRef
+                                                  : item.id === "6"
+                                                    ? setPlatSMed
+                                                    : item.id === "7"
+                                                      ? setCxResi
+                                                      : item.id === "8"
+                                                        ? setEngEco
+                                                        : item.id === "9"
+                                                          ? setEngLev
+                                                          : item.id === "10"
+                                                            ? setEngRef
+                                                            : setModEsp;
+                                      if (set) {
+                                        set(e.target.checked);
+                                      }
+                                    }}
+                                  />
+                                </Flex>
+
+                                <Box ml={3} fontSize="xs">
+                                  <chakra.label
+                                    fontWeight="md"
+                                  >
+                                    {item.title}
+                                  </chakra.label>
+                                </Box>
+                              </Flex>
+                            </Box>
+                          );
+                        })}
+                      </SimpleGrid>
+                    </Stack>
+                    <Box
+                      px={{
+                        base: 4,
+                        sm: 6,
+                      }}
+                      textAlign="right"
+                    >
                       <Button
-                        mt={5}
-                        h={8}
-                        colorScheme="teal"
-                        onClick={() => {
-                          localStorage.setItem('idRetorno', `${ID}`)
-                          router.push(`/pessoas/cadastro`)
-                        }}
+                        colorScheme="red"
+                        me={5}
+                        fontWeight="md"
+                        onClick={() => router.push("/empresas/")}
                       >
-                        + Nova Pessoa
+                        Cancelar
                       </Button>
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 1]}>
-                      <FormLabel
-                        fontSize="xs"
+                      <Button
+                        colorScheme="whatsapp"
                         fontWeight="md"
+                        onClick={save}
                       >
-                        inatividade
-                      </FormLabel>
-                      <Input
-                        type="number"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        isDisabled={session?.user.pemission === 'Adm' ? false : true}
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        maxLength={3}
-                        rounded="md"
-                        value={Inatividade}
-                        onChange={(e) => setInatividade(parseInt(e.target.value))}
-                      />
-                    </FormControl>
-                  </SimpleGrid>
+                        Save
+                      </Button>
+                    </Box>
+                  </>
+                )}
 
-                  <SimpleGrid columns={12} spacing={3}>
-                    <FormControl as={GridItem} colSpan={[6, 2, 1]}>
-                      <FormLabel
-                        htmlFor="pais"
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        País
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setPais(capitalizeWords(e.target.value))}
-                        value={pais}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 2]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Cod.País
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setCodpais(e.target.value)}
-                        value={codpais}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Endereço
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setEndereco(capitalizeWords(e.target.value))}
-                        value={endereco}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 1]}>
-                      <FormLabel
-                        htmlFor="numero"
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        N°
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setNumero(e.target.value)}
-                        value={numero}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 2]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Complemento
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setComplemento(e.target.value)}
-                        value={complemento}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 3]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Bairro
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setBairro(capitalizeWords(e.target.value))}
-                        value={bairro}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 1]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Cep
-                      </FormLabel>
-                      <Input
-                        type="text"
-
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setCep(e.target.value)}
-                        value={cep}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 3, null, 2]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Cidade
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setCidade(capitalizeWords(e.target.value))}
-                        value={cidade}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[3, null, 1]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        UF.
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setUf(e.target.value)}
-                        value={uf}
-                      />
-                    </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Site
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setSite(e.target.value)}
-                        value={site}
-                      />
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        E-mail NF-e
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={(e) => setEmailNfe(e.target.value)}
-                        value={emailNfe}
-                      />
-                    </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
-                      <FormLabel
-                        htmlFor="cidade"
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Whatsapp
-                      </FormLabel>
-                      <Input
-                        type="text"
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        rounded="md"
-                        onChange={WhatsAppMask}
-                        value={WhatsMask}
-                      />
-                    </FormControl>
-                    <FormControl as={GridItem} colSpan={[6, 4, null, 3]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Contribuinte
-                      </FormLabel>
-                      <Select
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        fontSize="xs"
-                        rounded="md"
-                        placeholder="Selecione uma opção"
-                        onChange={(e) => setContribuinte(e.target.value)}
-                        value={contribuinte}
-                      >
-                        <option style={{ backgroundColor: "#1A202C" }} value="1">Contribuinte ICMS</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="2">Contribuinte isento do ICMS</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="9">Não contribuinte</option>
-                      </Select>
-                    </FormControl>
-                  </SimpleGrid>
-
-                </Stack>
-                <Stack
-                  px={4}
-                  py={3}
-                  spacing={3}
-                >
-                  <SimpleGrid columns={12} spacing={3}>
-                    <Heading as={GridItem} colSpan={12} size="sd">
-                      Configurações da Empresa
-                    </Heading>
-
-                    <FormControl as={GridItem} colSpan={[6, 3]}>
-                      <FormLabel
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Tabela de cálculo
-                      </FormLabel>
-                      <Select
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        fontSize="xs"
-                        rounded="md"
-                        onChange={(e) => setTablecalc(e.target.value)}
-                        value={tablecalc}
-                      >
-                        <option style={{ backgroundColor: "#1A202C" }} value="">Selecione uma opção</option>
-                        <option style={{ backgroundColor: "#1A202C" }} selected value="0.30">Balcão</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="0.26" selected>
-                          Vip
-                        </option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="0.23">Bronze</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="0.20">Prata</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="0.17">Ouro</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="0.14">Platinum</option>
-                      </Select>
-                    </FormControl>
-
-                    <FormControl hidden={session?.user.pemission === 'Adm' ? false : true} as={GridItem} colSpan={[6, 3]}>
-                      <FormLabel
-                        htmlFor="prazo pagamento"
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Máximo prazo p/ pagamento:
-                      </FormLabel>
-                      <Select
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        fontSize="xs"
-                        rounded="md"
-                        onChange={(e) => setMaxpg(e.target.value)}
-                        value={maxPg}
-                      >
-                        <option style={{ backgroundColor: "#1A202C" }}>Selecione uma tabela</option>
-                        <option style={{ backgroundColor: "#1A202C" }} selected value="0">À vista (antecipado)</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="5">5 dias</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="15">15 dias</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="28">28 Dias</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="35">28 e 35 dias</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="42">28, 35 e 42 dias</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="90">
-                          90 dias (Casos muito excepcionais)
-                        </option>
-                      </Select>
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 3]}>
-                      <FormLabel
-                        htmlFor="pagamento"
-                        fontSize="xs"
-                        fontWeight="md"
-                      >
-                        Preferência de pagamento:
-                      </FormLabel>
-                      <Select
-
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        fontSize="xs"
-                        rounded="md"
-                        onChange={(e) => setForpg(e.target.value)}
-                        value={forpg}
-                      >
-                        <option style={{ backgroundColor: "#1A202C" }} >Escolha uma opção</option>
-                        <option style={{ backgroundColor: "#1A202C" }} selected value="desconto">Desconto À VISTA</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="prazo">
-                          Maior prazo para pagamento
-                        </option>
-                      </Select>
-                    </FormControl>
-
-                    <FormControl as={GridItem} colSpan={[6, 3]}>
-                      <FormLabel
-                        htmlFor="frete"
-                        fontSize="xs"
-                        fontWeight="md"
-
-                      >
-                        Frete
-                      </FormLabel>
-                      <Select
-
-                        focusBorderColor="#ffff"
-                        bg='#ffffff12'
-                        shadow="sm"
-                        size="xs"
-                        w="full"
-                        fontSize="xs"
-                        rounded="md"
-                        onChange={(e) => setFrete(e.target.value)}
-                        value={frete}
-                      >
-                        <option style={{ backgroundColor: "#1A202C" }}>Escolha uma opção</option>
-                        <option style={{ backgroundColor: "#1A202C" }} selected value="FOB">FOB - Por conta do cliente</option>
-                        <option style={{ backgroundColor: "#1A202C" }} value="CIF">CIF - Por conta da Ribermax</option>
-                      </Select>
-                    </FormControl>
-                  </SimpleGrid>
-
-                  <SimpleGrid columns={12} spacing={5}>
-                    <Heading as={GridItem} colSpan={12} mb={3} size="sd">
-                      Configurações de Embalagens
-                    </Heading>
-                    {confgEnb.map((item) => {
-                      const val =
-                        item.id === "12"
-                          ? adFrailLat
-                          : item.id === "13"
-                            ? adFrailCab
-                            : item.id === "14"
-                              ? adEspecialLat
-                              : item.id === "15"
-                                ? adEspecialCab
-                                : item.id === "16"
-                                  ? latFCab
-                                  : item.id === "17"
-                                    ? cabChao
-                                    : cabTop;
-
-                      return (
-                        <Box
-                          key={item.id}
-                          as={GridItem}
-                          colSpan={[6, 3, null, 2]}
-                        >
-                          <Flex>
-                            <Flex alignItems="center" h={5}>
-                              <Switch
-                                colorScheme="green"
-                                borderColor="white"
-                                bg='#ffffff12'
-                                rounded="md"
-                                isChecked={val}
-                                onChange={(e) => {
-                                  const set =
-                                    item.id === "12"
-                                      ? setAdFragilLat(e.target.checked)
-                                      : item.id === "13"
-                                        ? setAdFragilCab(e.target.checked)
-                                        : item.id === "14"
-                                          ? setAdEspecialLat(e.target.checked)
-                                          : item.id === "15"
-                                            ? setAdEspecialCab(e.target.checked)
-                                            : item.id === "16"
-                                              ? setLatFCab(e.target.checked)
-                                              : item.id === "17"
-                                                ? setCabChao(e.target.checked)
-                                                : setCabTop(e.target.checked);
-                                  return set;
-                                }}
-                              />
-                            </Flex>
-                            <Box ml={3} fontSize="xs">
-                              <chakra.label
-                                fontWeight="md"
-
-                                _dark={{
-                                  color: "gray.50",
-                                }}
-                              >
-                                {item.title}
-                              </chakra.label>
-                            </Box>
-                          </Flex>
-                        </Box>
-                      );
-                    })}
-                  </SimpleGrid>
-
-                  <SimpleGrid columns={12} spacing={5}>
-                    <Heading as={GridItem} colSpan={12} mb={5} size="sd">
-                      Modelos de Caixas
-                    </Heading>
-                    {modCaix.map((item) => {
-
-                      const val =
-                        item.id === "1"
-                          ? cxEco
-                          : item.id === "2"
-                            ? cxEst
-                            : item.id === "3"
-                              ? cxLev
-                              : item.id === "4"
-                                ? cxRef
-                                : item.id === "5"
-                                  ? cxSupRef
-                                  : item.id === "6"
-                                    ? platSMed
-                                    : item.id === "7"
-                                      ? cxResi
-                                      : item.id === "8"
-                                        ? engEco
-                                        : item.id === "9"
-                                          ? engLev
-                                          : item.id === "10"
-                                            ? engRef
-                                            : engResi;
-                      return (
-                        <Box
-                          key={item.id}
-                          as={GridItem}
-                          colSpan={[6, 3, null, 2]}
-                        >
-                          <Flex>
-                            <Flex alignItems="center" h={5}>
-                              <Switch
-                                colorScheme="green"
-                                borderColor="white"
-                                bg='#ffffff12'
-                                _invalid={{
-                                  bg: '#ffffff12'
-                                }}
-                                rounded="md"
-                                isChecked={val || false}
-                                onChange={(e) => {
-                                  const set: any =
-                                    item.id === "1"
-                                      ? setCxEco
-                                      : item.id === "2"
-                                        ? setCxEst
-                                        : item.id === "3"
-                                          ? setCxLev
-                                          : item.id === "4"
-                                            ? setCxRef
-                                            : item.id === "5"
-                                              ? setCxSupRef
-                                              : item.id === "6"
-                                                ? setPlatSMed
-                                                : item.id === "7"
-                                                  ? setCxResi
-                                                  : item.id === "8"
-                                                    ? setEngEco
-                                                    : item.id === "9"
-                                                      ? setEngLev
-                                                      : item.id === "10"
-                                                        ? setEngRef
-                                                        : setEngResi;
-                                  if (set) {
-                                    set(e.target.checked);
-                                  }
-                                }}
-                              />
-                            </Flex>
-
-                            <Box ml={3} fontSize="xs">
-                              <chakra.label
-                                fontWeight="md"
-                              >
-                                {item.title}
-                              </chakra.label>
-                            </Box>
-                          </Flex>
-                        </Box>
-                      );
-                    })}
-                  </SimpleGrid>
-                </Stack>
-                <Box
-                  px={{
-                    base: 4,
-                    sm: 6,
-                  }}
-                  textAlign="right"
-                >
-                  <Button
-                    colorScheme="red"
-                    me={5}
-                    fontWeight="md"
-                    onClick={() => router.push("/empresas/")}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    colorScheme="whatsapp"
-                    fontWeight="md"
-                    onClick={save}
-                  >
-                    Save
-                  </Button>
-                </Box>
               </chakra.form>
             </GridItem>
           </SimpleGrid>

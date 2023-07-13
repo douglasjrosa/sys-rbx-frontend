@@ -9,6 +9,7 @@ export const PostPedido = async (dados: any) => {
   const apiKeyRenato: any = process.env.ATORIZZATION_TOKEN_BLING_RENATO;
 
   const DaDos = await dados.attributes;
+
   const empresa = DaDos.empresa.data.attributes;
   const empresaId = DaDos.empresa.data.id;
   const empresaUlt = DaDos.empresa.data.attributes.ultima_compra;
@@ -59,10 +60,10 @@ export const PostPedido = async (dados: any) => {
   });
 
   const xmlprodutos = Array.isArray(Produtos)
-    ? Produtos.reduce((acc: any, cur: any) => acc + cur)
-    : Produtos;
+  ? Produtos.reduce((acc: any, cur: any) => acc + cur)
+  : Produtos;
 
-  const prazo1 = DaDos.prazo === "" ? "5 Dias" : DaDos.prazo;
+  const prazo1 = !DaDos.prazo || DaDos.prazo === "" ? "5 Dias" : DaDos.prazo;
   const Valor = DaDos.totalGeral
     .replace("R$", "")
     .replace(".", "")
@@ -96,6 +97,7 @@ export const PostPedido = async (dados: any) => {
 
     return templateParcela;
   });
+  console.log("🚀 ~ file: index.ts:100 ~ datasParcelas ~ datasParcelas:", datasParcelas)
 
   const parcela = () => {
     const prazo1 = "5 Dias";
@@ -171,17 +173,19 @@ export const PostPedido = async (dados: any) => {
     const formData = new FormData();
     formData.append("apikey", apiKey);
     formData.append("xml", xml);
+    console.log("🚀 ~ file: index.ts:175 ~ PostPedido ~ xml:", xml)
 
     var requestOptions = {
       method: "POST",
       body: formData,
     };
+      console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
 
     const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
 
     const { pedidos, erros } = response.retorno;
-  
+
     const txt =
       "Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)";
 
@@ -218,6 +222,7 @@ export const PostPedido = async (dados: any) => {
 
     return resposta;
   } catch (error: any) {
+    console.log("🚀 ~ file: index.ts:221 ~ PostPedido ~ error:", error)
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
       status: error.response?.status ?? 400,

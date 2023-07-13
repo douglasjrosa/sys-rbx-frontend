@@ -1,4 +1,4 @@
-import { Box, FormLabel, Input } from '@chakra-ui/react';
+import { Box, FormLabel, Input, Text } from '@chakra-ui/react';
 
 export const CompBusiness = (props: { Resp: string }) => {
   return (
@@ -10,15 +10,7 @@ export const CompBusiness = (props: { Resp: string }) => {
       >
         N° Negócio
       </FormLabel>
-      <Input
-        color="white"
-        shadow="sm"
-        size="sm"
-        w="full"
-        fontSize="xs"
-        rounded="md"
-        value={props.Resp}
-      />
+      <Text w="full">{props.Resp}</Text>
     </Box>
   );
 };

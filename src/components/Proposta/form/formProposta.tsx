@@ -13,6 +13,7 @@ import {
   Table,
   TableContainer,
   Tbody,
+  Text,
   Textarea,
   Th,
   Thead,
@@ -36,8 +37,10 @@ import { SetValue } from "@/function/currenteValor";
 
 const tempo = DateIso;
 
-export const FormProposta = (props: { ondata: any | null; onResponse: any; produtos: any; ITENS: any }) => {
+export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: any; envio: string }) => {
   const router = useRouter();
+  const PEDIDO = router.query.pedido
+  const NNegocio = router.query.negocio
   const { data: session } = useSession();
   const [loadingTable, setLoadingTable] = useState<boolean>(false);
   const [loadingGeral, setLoadingGeral] = useState<boolean>(false);
@@ -61,8 +64,16 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
   const [obs, setObs] = useState("");
   const [Id, setId] = useState("");
   const [clientePedido, setClientePedido] = useState("");
+  const [ENVIO, setEMVIO] = useState("");
   const [incidentRecord, setIncidentRecord] = useState([]);
   const toast = useToast();
+
+  if (props.ITENS && ListItens.length === 0) {
+    setItens(props.ITENS);
+  }
+  if (props.envio && !ENVIO) {
+    setEMVIO(props.envio);
+  }
 
   useEffect(() => {
     if (props.ondata) {
@@ -88,10 +99,8 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
       setCnpj(resp.attributes.empresa.data.attributes.CNPJ)
       setIncidentRecord(resp.attributes.incidentRecord)
     }
-    if (props.ITENS) {
-      setItens(props.ITENS);
-    }
-  }, [props.ondata]);
+  }, []);
+
 
   const disbleProd = !prazo || !DateEntrega || !Loja || !frete ? false : true;
 
@@ -169,7 +178,7 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
       );
     }
   }, [prazo]);
-
+ console.log(props.envio)
 
   const SalvarProdutos = async () => {
     setLoadingGeral(true)
@@ -289,7 +298,126 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
         incidentRecord: MSG,
         fornecedorId: session?.user.id
       };
-      props.onResponse(data);
+      if (ENVIO === 'POST') {
+        console.log('aki')
+
+          const dadosPost = data;
+          const url = "/api/db/proposta/post";
+          await axios({
+            method: "POST",
+            url: url,
+            data: dadosPost,
+          })
+            .then(async (res: any) => {
+              console.log("🚀 ~ file: formProposta.tsx:312 ~ .then ~ res:", res.data)
+              const date = new Date();
+              const DateAtua = date.toISOString();
+
+              const msg = {
+                vendedor: session?.user.name,
+                date: new Date().toISOString(),
+                msg: `Vendedor ${session?.user.name} criou essa proposta `,
+              };
+              const msg2 = {
+                date: DateAtua,
+                msg: `Proposta criada com o valor total ${dadosPost.totalGeral} contendo ${parseInt(dadosPost.itens.length) + 1
+                  } items`,
+                user: "Sistema",
+              };
+
+              const record = [...dadosPost.hirtori, msg];
+              const record2 = [...dadosPost.incidentRecord, msg2];
+
+              const data = {
+                data: {
+                  history: record,
+                  incidentRecord: record2,
+                  Budget: dadosPost.totalGeral
+                },
+              };
+
+              await axios({
+                method: "PUT",
+                url: "/api/db/business/put/id/" + NNegocio,
+                data: data,
+              });
+
+              toast({
+                title: "Proposta Criada",
+                description: res.data.message,
+                status: "success",
+                duration: 1000,
+                isClosable: true,
+              });
+              console.log(NNegocio)
+              setTimeout(() => router.push(`/negocios/${NNegocio}`), 500)
+            })
+            .catch((err) => {
+              console.error(err.data);
+            });
+
+      } else {
+
+          const dadosPost = data;
+          const url = `/api/db/proposta/put/${dadosPost.id}`;
+          await axios({
+            method: "PUT",
+            url: url,
+            data: dadosPost,
+          })
+            .then(async (res: any) => {
+              console.log("🚀 ~ file: [pedido].tsx:80 ~ .then ~ res:", res)
+              const date = new Date();
+              const DateAtua = date.toISOString();
+
+              const msg = {
+                vendedor: session?.user.name,
+                date: new Date().toISOString(),
+                msg: `Vendedor ${session?.user.name} atualizou essa proposta `,
+              };
+
+              const msg2 = {
+                date: DateAtua,
+                msg: `Proposta atualizada, valor total agora é ${dadosPost.totalGeral}, pasando a ter ${parseInt(dadosPost.itens.length) + 1
+                  } items`,
+                user: "Sistema",
+              };
+
+              const record = [...dadosPost.hirtori, msg];
+              const record2 = [...dadosPost.incidentRecord, msg2];
+
+              const data = {
+                data: {
+                  history: record,
+                  incidentRecord: record2,
+                  Budget: dadosPost.totalGeral
+                },
+              };
+
+              await axios({
+                method: "PUT",
+                url: "/api/db/business/put/id/" + PEDIDO,
+                data: data,
+              })
+                .then((resp) => console.log(resp.data))
+                .catch((err) => console.log(err))
+
+              setTimeout(() => router.push(`/negocios/${PEDIDO}`), 500)
+
+              toast({
+                title: "Proposta Atualizada",
+                description: res.data.message,
+                status: "success",
+                duration: 1000,
+                isClosable: true,
+              });
+            })
+            .catch((err: any) => {
+              setLoadingGeral(false)
+              console.log(err.response);
+            });
+      }
+
     }
   };
 
@@ -363,10 +491,10 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
             <Heading size="md">Proposta comercial</Heading>
           </Flex>
           <Box display="flex" flexWrap={'wrap'} gap={5} alignItems="center" mt={3} mx={5}>
-            <Box>
+            <Box me={2}>
               <ListaEmpresa onChangeValue={Nome} />
             </Box>
-            <Box>
+            <Box me={2}>
               <CompBusiness Resp={saveNegocio} />
             </Box>
             <Box>
@@ -376,6 +504,7 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
               >
                 Data
               </FormLabel>
+              {/* <Text>{new Date(date).toLocaleDateString()}</Text> */}
               <Input
                 shadow="sm"
                 type={"date"}
@@ -383,6 +512,7 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
                 w="full"
                 fontSize="xs"
                 rounded="md"
+                isDisabled
                 onChange={(e) => setDate(e.target.value)}
                 value={date}
               />
@@ -451,6 +581,7 @@ export const FormProposta = (props: { ondata: any | null; onResponse: any; produ
                 value={prazo}
               >
                 <option style={{ backgroundColor: "#1A202C" }} >Tipos de pagamentos</option>
+                <option style={{ backgroundColor: "#1A202C" }} value="Máximo prazo de pagamento">Máximo prazo de pagamento</option>
                 <option style={{ backgroundColor: "#1A202C" }} value="Antecipado">Antecipado</option>
                 <option style={{ backgroundColor: "#1A202C" }} value="À vista">À vista</option>
                 <option style={{ backgroundColor: "#1A202C" }} value="A Prazo">A prazo</option>

@@ -24,12 +24,14 @@ export default function Proposta() {
       try {
         const request = await axios(`/api/db/business/get/id/${NNegocio}`)
         const response = request.data
+        console.log("🚀 ~ file: index.tsx:27 ~ response:", response)
         const email = localStorage.getItem("email");
         const CNPJ = response.attributes.empresa.data.attributes.CNPJ
         const getProdutos = await axios(`/api/query/get/produto/cnpj/${CNPJ}`, { method: "POST", data: email });
         const RespProduto = getProdutos.data
+        console.log("🚀 ~ file: index.tsx:32 ~ RespProduto:", RespProduto)
         const [pedido] = response.attributes.pedidos.data
-        const ItensList = pedido.attributes.itens
+        const ItensList = pedido?.attributes?.itens
         setItens(ItensList)
         setData(response)
         setBling(response.attributes.Bpedido)
@@ -47,10 +49,10 @@ export default function Proposta() {
         }
         setLoadingGeral(false)
       } catch (error: any) {
-        console.log(error.response.data)
+        console.log(error)
         toast({
           title: "Erro.",
-          description: error.response.data,
+          description: error.response?.data,
           status: "error",
           duration: 9000,
           isClosable: true,
@@ -70,68 +72,10 @@ export default function Proposta() {
     return <Loading size="200px">Carregando...</Loading>;
   }
 
-  function Save(retorno: SetStateAction<any>) {
-    (async () => {
-      const dadosPost = retorno;
-      const url = "/api/db/proposta/post";
-      await axios({
-        method: "POST",
-        url: url,
-        data: dadosPost,
-      })
-        .then(async (res: any) => {
-          const date = new Date();
-          const DateAtua = date.toISOString();
-
-          const msg = {
-            vendedor: session?.user.name,
-            date: new Date().toISOString(),
-            msg: `Vendedor ${session?.user.name} criou essa proposta `,
-          };
-          const msg2 = {
-            date: DateAtua,
-            msg: `Proposta criada com o valor total ${dadosPost.totalGeral} contendo ${parseInt(dadosPost.itens.length) + 1
-              } items`,
-            user: "Sistema",
-          };
-
-          const record = [...dadosPost.hirtori, msg];
-          const record2 = [...dadosPost.incidentRecord, msg2];
-
-          const data = {
-            data: {
-              history: record,
-              incidentRecord: record2,
-              Budget: dadosPost.totalGeral
-            },
-          };
-
-          await axios({
-            method: "PUT",
-            url: "/api/db/business/put/id/" + dadosPost.id,
-            data: data,
-          });
-
-          toast({
-            title: "Proposta Criada",
-            description: res.data.message,
-            status: "success",
-            duration: 1000,
-            isClosable: true,
-          });
-
-          setTimeout(() => router.push(`/negocios/${NNegocio}`), 500)
-        })
-        .catch((err) => {
-          console.error(err.data);
-        });
-    })()
-  }
-
   return (
     <>
       <Flex h="100vh" w="100%">
-        <FormProposta ondata={Data} onResponse={Save} produtos={Produtos} ITENS={Itens} />
+        <FormProposta ondata={Data} produtos={Produtos} ITENS={Itens} envio={"POST"} />
       </Flex>
     </>
   );

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { Box, Button, Flex, FormLabel, Input, Select, Tooltip, useToast } from "@chakra-ui/react";
+import { Box, Button, Flex, chakra, Tooltip, useToast, Heading } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
@@ -93,12 +93,17 @@ function Empresas() {
               resultado.push(item);
               if (filtro) {
                 return toast({
-                  title: `O clienete ${item.attributes.nome}`,
-                  description: `pertence ao vendedor(a) ${item.attributes.user.data?.attributes.username}`,
+                  render: () => (
+                    <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                      <chakra.p>{item.attributes.nome}</chakra.p>
+                      <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
+                      <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
+                    </Box>
+                  ),
                   status: 'warning',
                   duration: 9000,
                   isClosable: true,
-                  position: 'top-right',
+                  position: 'top',
                 })
               }
             }
@@ -112,12 +117,17 @@ function Empresas() {
             if (username !== session?.user.name) {
               if (filtro) {
                 return toast({
-                  title: `O clienete ${item.attributes.nome}`,
-                  description: `pertence ao vendedor(a) ${item.attributes.user.data?.attributes.username}`,
+                  render: () => (
+                    <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                      <chakra.p>{item.attributes.nome}</chakra.p>
+                      <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
+                      <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
+                    </Box>
+                  ),
                   status: 'warning',
                   duration: 9000,
                   isClosable: true,
-                  position: 'top-right',
+                  position: 'top',
                 })
               }
             }
@@ -164,12 +174,17 @@ function Empresas() {
               resultado.push(item);
               if (filtro) {
                 return toast({
-                  title: `O clienete ${item.attributes.nome}`,
-                  description: `pertence ao vendedor(a) ${item.attributes.user.data?.attributes.username}`,
+                  render: () => (
+                    <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                      <chakra.p>{item.attributes.nome}</chakra.p>
+                      <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
+                      <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
+                    </Box>
+                  ),
                   status: 'warning',
                   duration: 9000,
                   isClosable: true,
-                  position: 'top-right',
+                  position: 'top',
                 })
               }
             }
@@ -184,12 +199,17 @@ function Empresas() {
             if (username !== session?.user.name) {
               if (filtro) {
                 return toast({
-                  title: `O clienete ${item.attributes.nome}`,
-                  description: `pertence ao vendedor(a) ${item.attributes.user.data?.attributes.username}`,
+                  render: () => (
+                    <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                      <chakra.p>{item.attributes.nome}</chakra.p>
+                      <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
+                      <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
+                    </Box>
+                  ),
                   status: 'warning',
                   duration: 9000,
                   isClosable: true,
-                  position: 'top-right',
+                  position: 'top',
                 })
               }
             }
@@ -204,25 +224,20 @@ function Empresas() {
   return (
     <>
       <Box w={'100%'} h={'100%'} bg={'gray.800'} color={'white'} px={5} py={2} >
-        <Flex w={'100%'} py={5} pb={5} justifyContent={'space-between'} alignItems={'center'} px={6} gap={6}>
-          <Flex justifyContent={'space-between'} gap={6}>
+        <Heading>Empresas</Heading>
+        <Flex w={'100%'} py={'2rem'} justifyContent={'space-between'} flexDir={'row'} alignItems={'self-end'} px={6} gap={6} borderBottom={'1px'} borderColor={'white'} mb={'1rem'}>
           <Box>
             <FiltroEmpresa empresa={filterEmpresa} />
           </Box>
           <Box>
-            <FiltroCnpj empresa={filterCnpj} rrastreio={(resp: any)=> {
+            <FiltroCnpj empresa={filterCnpj} rrastreio={(resp: any) => {
               setOPen(resp)
               setText(resp)
             }} />
           </Box>
-          </Flex>
-          <Flex justifyContent={'center'} mt={'5'} me={{ md: 2,lg:10}}>
-            <Tooltip hasArrow label={Text ? 'Antes de cadastar, verifique se o CNPJ da empresa se enconta em nosso registros': ''} bg='red.600' isOpen={OPen}>
-              <Button isDisabled={OPen} onClick={() => router.push('/empresas/cadastro')} colorScheme="green">+ Nova Empresa</Button>
-            </Tooltip>
-          </Flex>
+          <Button onClick={() => router.push('/empresas/cadastro')} colorScheme="green">+ Nova Empresa</Button>
         </Flex>
-        <Box display={'flex'} flexDirection={{ base: 'column', lg: 'row' }} w={'100%'} h={'85%'} pt={5} gap={10} >
+        <Box display={'flex'} flexDirection={{ base: 'column', lg: 'row' }} w={'100%'} h={'80%'} pt={5} gap={10} >
           <CarteiraVendedor data={DataSearchUser} />
           <CarteiraAusente data={DataSearch} />
         </Box>

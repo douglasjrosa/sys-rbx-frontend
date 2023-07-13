@@ -12,13 +12,33 @@ export const getData = async (proposta: any) => {
     },
   };
 
+  const converterData = (data: string) => {
+    if (!data) return ""; // Verifica se a variável data não está vazia
+
+    const dataObjeto = new Date(data);
+    // Ajuste do fuso horário para o horário de Brasília (GMT-3)
+    const fusoHorario = -3; // Horário de Brasília (GMT-3)
+    const dataBrasilia = new Date(
+      dataObjeto.getTime() + fusoHorario * 3600000
+    );
+    dataBrasilia.setDate(dataBrasilia.getDate() + 1); // Adiciona um dia
+    const hoje = new Date();
+    const diferenca = Math.ceil(
+      (dataBrasilia.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const resultado = diferenca + " Dias";
+
+    return resultado;
+  };
+
   try {
     const response = await axios(config);
     const result = response.data?.data?.[0];
     const inf = result.attributes;
     const Vendedor = inf.user.data.attributes.username
     const empresaFornec = inf.fornecedorId.data.attributes;
-    const dataEntrega = !inf.dataEntrega? '' : inf.dataEntrega
+    const dataEntrega1 = !inf.dataEntrega? '' : inf.dataEntrega
+    const dataEntrega = converterData(dataEntrega1)
 
     const dadosFornecedor = {
       data: {

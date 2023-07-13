@@ -25,11 +25,8 @@ export const TableConteudo = (props: {
 
   useEffect(() => {
     setLoadingTable(props.loading);
-  }, [props.loading]);
-
-  useEffect(() => {
     setItens(props.Itens);
-  }, [props.Itens]);
+  }, [props.Itens, props.loading]);
 
   const handleAdd = (Obj: any, id: number) => {
     const [ListaObj] = ListItens.filter((i: any) => i.id === id);

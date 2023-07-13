@@ -1,4 +1,4 @@
-import { FormLabel, Input } from '@chakra-ui/react';
+import { Box, FormLabel, Input, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
 export const ListaEmpresa = (props: { onChangeValue: string }) => {
@@ -19,15 +19,9 @@ export const ListaEmpresa = (props: { onChangeValue: string }) => {
       >
         Empresas
       </FormLabel>
-      <Input
-        shadow="sm"
-        size="sm"
-        w="full"
-        color="white"
-        fontSize="sm"
-        rounded="md"
-        value={dados}
-      />
+      <Box  w="full">
+      <Text>{dados}</Text>
+      </Box>
     </>
   );
 };

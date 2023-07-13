@@ -235,8 +235,7 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
                 Cancelar
               </Button>
               <Button
-                isLoading={Empresa && budgets ? false : true}
-                spinner={<BeatLoader size={8} color="white" />}
+                isDisabled={Empresa && budgets ? false : true}
                 colorScheme="whatsapp"
                 onClick={salve}
               >

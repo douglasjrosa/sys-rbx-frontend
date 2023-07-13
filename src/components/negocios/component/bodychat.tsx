@@ -1,4 +1,4 @@
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Flex, Link } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import Loading from '../../elements/loading';
 
@@ -51,6 +51,11 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
             : estiloMensagem.mensagemUsuario;
 
         const dateFormate = new Date(mensagem.date).toLocaleString();
+       const linkRegex = /(http[s]?:\/\/[^\s]+)/g;
+       const match = mensagem.msg.match(linkRegex);
+       const TextoLinpo = mensagem.msg.replace(match, '')
+       const link = match ? match[0] : null;
+       const Textofinal = !link? (<>{mensagem.msg}</>) : (<>{TextoLinpo} <Link color={'blue'} href={link}>{link}</Link></>)
         return (
           <Box
             key={index}
@@ -64,18 +69,19 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
               {mensagem.user}
             </Box>
             <Box
+            px={3}
               whiteSpace="pre-wrap"
               w={'100%'}
               fontSize="12px"
-              dangerouslySetInnerHTML={{ __html: mensagem.msg }}
-            ></Box>
+
+            >{Textofinal}</Box>
             <Box
               fontSize="10px"
               mt={2}
 
               textAlign={'end'}
             >
-              <Flex gap={5}>
+              <Flex gap={5} justifyContent={'space-between'}>
                 <Box textDecoration='none' color={'white'} px={'5px'} rounded={'5px'} bg={'messenger.700'} fontWeight={'bold'} hidden={!mensagem.flag}>
                   {mensagem.flag}
                 </Box>

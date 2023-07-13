@@ -32,7 +32,6 @@ const Painel: React.FC = () => {
       if (daysOfMonth.DataInicio && daysOfMonth.DataFim) {
         setIsLoading(true);
         try {
-          console.log(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`)
           const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`);
           setData(response.data);
         } catch (error) {
@@ -224,7 +223,7 @@ const Painel: React.FC = () => {
   function handleUserChange(user: string) {
     setUser(user);
   }
- 
+
   return (
     <>
       <Box h={'100%'} bg={'gray.800'}>

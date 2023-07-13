@@ -8,19 +8,26 @@ import { Calculadora } from "./lib/calc";
 
 function formatarTelefone(telefone: any) {
   // Remove letras e caracteres especiais
-  const numeros = telefone.replace(/\D/g, '');
+  const numeros = telefone.replace(/\D/g, "");
 
   if (numeros.length === 11) {
     // Formato (99) 9 9999-9999
-    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 3)} ${numeros.slice(3, 7)}-${numeros.slice(7)}`;
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 3)} ${numeros.slice(
+      3,
+      7
+    )}-${numeros.slice(7)}`;
   } else if (numeros.length === 10) {
     // Formato (99) 9999-9999
-    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`;
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(
+      6
+    )}`;
   } else {
     // Retorna vazio se não houver nada
-    return '';
+    return "";
   }
 }
+
+
 
 export default async function GetEmpresa(
   req: NextApiRequest,
@@ -29,29 +36,36 @@ export default async function GetEmpresa(
   if (req.method === "GET") {
     const { proposta } = req.query;
 
-    const infos1 = await getData(proposta);
-    // console.log("🚀 ~ file: [proposta].ts:17 ~ infos:", infos1)
+    const infos = await getData(proposta);
+    console.log("🚀 ~ file: [proposta].ts:17 ~ infos:", infos);
+    const resto = infos.dataEntrega
+    console.log(resto);
 
-    const infos = Calculadora(infos1);
+    // const infos = Calculadora(infos1);
 
     const somarValores = (valor1: any, valor2: any) => {
-      const numero1 = parseFloat(valor1.replace('R$', '').replace('.', '').replace(',', '.'));
-      const numero2 = parseFloat(valor2.replace('R$', '').replace('.', '').replace(',', '.'));
+      if(infos.frete === 'FOB') return valor1
+      
+      const numero1 =valor1? parseFloat(
+        valor1.replace("R$", "").replace(".", "").replace(",", ".")
+      ) : 0;
+      const numero2 = valor2? parseFloat(
+        valor2.replace("R$", "").replace(".", "").replace(",", ".")
+      ) : 0;
       const soma = numero1 + numero2;
 
-      if(!numero2){
+      if (!numero2) {
         return numero1.toLocaleString("pt-br", {
           style: "currency",
           currency: "BRL",
-        })
+        });
       }
 
       return soma.toLocaleString("pt-br", {
         style: "currency",
         currency: "BRL",
-      })
-    }
-
+      });
+    };
 
     const imagePath2 = path.join(
       process.cwd(),
@@ -71,22 +85,9 @@ export default async function GetEmpresa(
     const imageContent = fs.readFileSync(imagePath).toString("base64");
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
 
-    const converterData =(data: any) => {
-      const dataObjeto = new Date(data);
 
-      // Ajuste do fuso horário para o horário de Brasília (GMT-3)
-      const fusoHorario = -3; // Horário de Brasília (GMT-3)
-      const dataBrasilia = new Date(dataObjeto.getTime() + fusoHorario * 3600000);
-      dataBrasilia.setDate(dataBrasilia.getDate() + 1); // Adiciona um dia
-      const hoje = new Date();
-      const diferenca = Math.ceil((dataBrasilia.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-      if(data) return '';
-
-      return diferenca + ' Dias';
-    }
 
     const date = new Date().toLocaleDateString("pt-BR");
-
     const fonts = {
       Helvetica: {
         normal: "Helvetica",
@@ -176,11 +177,13 @@ export default async function GetEmpresa(
     ];
 
     const desconto = infos.condi !== "Antecipado" ? semDesc : comDesc;
-
+    console.log(infos.fornecedor.data.razao)
     const logo =
-      infos.fornecedor.data.razao === "BRAGHETO PALETES E EMBALAGENS LTDA"
+      infos.fornecedor.data.cnpj === "04.586.593/0001-70"
         ? dataUrl
         : dataUrl2;
+
+
     const docDefinitions: TDocumentDefinitions = {
       defaultStyle: { font: "Helvetica" },
       content: [
@@ -560,7 +563,7 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: converterData(infos.dataEntrega),
+                                  text: infos.dataEntrega,
                                   style: "clienteFornecedor",
                                 },
                               ],
@@ -590,7 +593,10 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: somarValores(infos.totoalGeral, infos.Valfrete),
+                                  text: somarValores(
+                                    infos.totoalGeral,
+                                    infos.Valfrete
+                                  ),
                                 },
                               ],
                             ],
@@ -624,16 +630,16 @@ export default async function GetEmpresa(
           table: {
             widths: [
               "2%",
-              "25%",
+              "24%",
+              "6%",
+              "4%",
+              "6%",
               "7%",
-              "5%",
               "7%",
-              "8%",
-              "8%",
               "8%",
               "8%",
               "12%",
-              "18%",
+              "15%",
             ],
             headerRows: 1,
             heights: 4,
@@ -688,12 +694,13 @@ export default async function GetEmpresa(
     });
 
     pdfDoc.end();
-    const filename ="Proposta comercial -" +
+    const filename =
+      "Proposta comercial -" +
       infos.nPedido +
       " - " +
-      infos.cliente.nome +
+      infos.cliente.nome.replace(/[.,]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '') +
       "-" +
-      new Date().toLocaleDateString('pt-BR');
+      new Date().toLocaleDateString("pt-BR");
     pdfDoc.on("end", () => {
       const pdf = Buffer.concat(chunks);
       res.setHeader("Content-Disposition", `inline; filename="${filename}"`);

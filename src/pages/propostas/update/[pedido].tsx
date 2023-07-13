@@ -30,6 +30,10 @@ export default function Proposta() {
       try {
         const request = await axios(`/api/db/business/get/id/${PEDIDO}`)
         const response = request.data
+        const pedidoId = response.attributes.pedidos.data[0].id
+        // const requestPdido = await axios(`/api/db/proposta/get/id/${pedidoId}`)
+        // const responsePedido = requestPdido.data
+        // console.log("🚀 ~ file: [pedido].tsx:37 ~ responsePedido:", responsePedido)
         const CNPJ = response.attributes.empresa.data.attributes.CNPJ
         const getProdutos = await axios(`/api/query/get/produto/cnpj/${CNPJ}`, { method: "POST", data: Email });
         const RespProduto = getProdutos.data
@@ -73,73 +77,10 @@ export default function Proposta() {
     return <Loading size="200px">Carregando...</Loading>;
   }
 
-  function Save(retorno: SetStateAction<any>) {
-    (async () => {
-      const dadosPost = retorno;
-      const url = `/api/db/proposta/put/${dadosPost.id}`;
-      await axios({
-        method: "PUT",
-        url: url,
-        data: dadosPost,
-      })
-        .then(async (res: any) => {
-          console.log("🚀 ~ file: [pedido].tsx:80 ~ .then ~ res:", res)
-          const date = new Date();
-          const DateAtua = date.toISOString();
-
-          const msg = {
-            vendedor: session?.user.name,
-            date: new Date().toISOString(),
-            msg: `Vendedor ${session?.user.name} atualizou essa proposta `,
-          };
-
-          const msg2 = {
-            date: DateAtua,
-            msg: `Proposta atualizada, valor total agora é ${dadosPost.totalGeral}, pasando a ter ${parseInt(dadosPost.itens.length) + 1
-              } items`,
-            user: "Sistema",
-          };
-
-          const record = [...dadosPost.hirtori, msg];
-          const record2 = [...dadosPost.incidentRecord, msg2];
-
-          const data = {
-            data: {
-              history: record,
-              incidentRecord: record2,
-              Budget: dadosPost.totalGeral
-            },
-          };
-
-          await axios({
-            method: "PUT",
-            url: "/api/db/business/put/id/" + PEDIDO,
-            data: data,
-          })
-          .then((resp) => console.log(resp.data))
-          .catch((err) => console.log(err))
-
-          setTimeout(() => router.push(`/negocios/${PEDIDO}`), 500)
-
-          toast({
-            title: "Proposta Atualizada",
-            description: res.data.message,
-            status: "success",
-            duration: 1000,
-            isClosable: true,
-          });
-        })
-        .catch((err: any) => {
-          setLoadingGeral(false)
-          console.log(err.response);
-        });
-    })()
-  };
-
   return (
     <>
       <Flex h="100vh" w="100%">
-        <FormProposta ondata={Data} onResponse={Save} produtos={Produtos} ITENS={Itens}/>
+        <FormProposta ondata={Data} produtos={Produtos} ITENS={Itens} envio={"UPDATE"}/>
       </Flex>
     </>
   );

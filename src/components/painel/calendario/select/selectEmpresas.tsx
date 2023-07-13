@@ -1,4 +1,4 @@
-import { FormLabel, Select, useToast } from '@chakra-ui/react';
+import { Box, Button, Flex, FormLabel, Select, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 export const SelectEmpresas = (props: {
   onValue: any; Usuario: any;
 }) => {
-  const [date, setDate] = useState<any>(null);
+  const [IdEmp, setIdEmp] = useState('');
   const [Data, setData] = useState<any>([]);
   const { data: session } = useSession();
   const toast = useToast()
@@ -24,89 +24,71 @@ export const SelectEmpresas = (props: {
     }
   }, [props.Usuario, session?.user.name]);
 
-  const HandleValue = (e: any) => {
-    const value = parseInt(e.target.value);
-    setDate(value)
-    const [filer] = Data.filter((i: any) => i.id === value).map((iten: any) => {
-      const negocio = iten.attributes.businesses.data;
-      if (negocio.length === 0) {
-        setTimeout(() => {
-          setDate(0)
-          toast({
-            title: "Cliente não tem negocios iniciado",
-            status: "warning",
-            duration: 3000,
-            isClosable: true,
-          });
-        }, 500)
-      }
-      const id = iten.id;
-      const nome = iten.attributes.nome
-      const [array] = negocio.map((N: any) => [
-        {
-          "id": N.id,
-          "attributes": {
-            "deadline": N.attributes?.deadline,
-            "nBusiness": N.attributes?.nBusiness,
-            "Budget": N.attributes?.Budget,
-            "Approach": N.attributes?.Approach,
-            "empresa": {
-              "data": {
-                "id": id,
-                "attributes": {
-                  "nome": nome
-                }
-              }
-            },
-            "history": N.attributes?.history,
-            "incidentRecord": N.attributes?.incidentRecord,
-            "status": N.attributes?.status,
-            "createdAt": N.attributes?.createdAt,
-            "updatedAt": N.attributes?.updatedAt,
-            "publishedAt": N.attributes?.publishedAt,
-            "DataRetorno": N.attributes?.DataRetorno,
-            "stausPedido": N.attributes?.stausPedido,
-            "Bpedido": N.attributes?.Bpedido,
-            "etapa": N.attributes?.etapa,
-            "andamento": N.attributes?.andamento,
-            "Mperca": N.attributes?.Mperca,
-            "date_conclucao": N.attributes?.date_conclucao
-          }
-        }
-      ])
+  const EspecifcFilter: any = [
+    { id: 1, nome: 'EM ANDAMENTO' },
+    { id: 2, nome: 'CONCLUÍDOS' },
+    { id: 3, nome: 'TODOS OS NEGÓCIOS' }
+  ]
 
-      return !!negocio && array;
-    });
-    props.onValue(filer)
+  const HandleValue = () => {
+    (async () => {
+      if(IdEmp === '0') props.onValue(null)
+      const filter = EspecifcFilter.filter((f: any) => f.nome === IdEmp)
+      if(filter.length > 0){
+        console.log('filtro')
+        await axios.get(`/api/db/business/get/filter?Pesqisa=${IdEmp}&Vendedor=${props.Usuario}`)
+          .then((resp) => {
+            props.onValue(resp.data)
+          })
+          .catch((err) => console.log(err))
+      } else {
+        console.log('empressa')
+        await axios.get(`/api/db/business/get/filter?Empresa=${IdEmp}`)
+          .then((resp) => {
+            props.onValue(resp.data)
+          })
+          .catch((err) => console.log(err))
+      }
+    })()
   }
 
   return (
     <>
-      <FormLabel
-        htmlFor="cnpj"
-        fontSize="xs"
-        fontWeight="md"
-        color="white"
-      >
-        Empresa
-      </FormLabel>
-      <Select
-        w={'20rem'}
-        onChange={HandleValue}
-        value={date}
-        // isDisabled={session?.user.pemission !== 'Adm'}
-        color="white"
-        bg='gray.800'
-      >
-        <option style={{ backgroundColor: "#1A202C" }} value={0}>EMPRESAS RELACIONADAS</option>
-        {Data.map((i: any) => {
-          return (
-            <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
-              {i.attributes.nome}
-            </option>
-          )
-        })}
-      </Select>
+      <Flex flexDirection={'row'} gap={6} w={'100%'} alignItems={'self-end'}>
+        <Box>
+          <FormLabel
+            htmlFor="cnpj"
+            fontSize="xs"
+            fontWeight="md"
+            color="white"
+          >
+            Filtro
+          </FormLabel>
+          <Select
+            w={'20rem'}
+            onChange={(e) => setIdEmp(e.target.value)}
+            value={IdEmp}
+            // isDisabled={session?.user.pemission !== 'Adm'}
+            color="white"
+            bg='gray.800'
+          >
+            <option style={{ backgroundColor: "#1A202C" }} value={'0'}>selecione uma opção</option>
+            {EspecifcFilter.map((f: any) => {
+              return (
+                <option style={{ backgroundColor: "#1A202C" }} key={f.id} value={f.nome}>{f.nome}</option>
+              )
+            })}
+            {Data.map((i: any) => {
+              return (
+                <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
+                  {i.attributes.nome}
+                </option>
+              )
+            })}
+          </Select>
+        </Box>
+        <Button variant={'solid'} px={8} colorScheme='green' onClick={HandleValue}>Filtrar</Button>
+      </Flex>
     </>
   );
 };

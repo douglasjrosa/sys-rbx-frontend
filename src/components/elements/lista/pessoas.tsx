@@ -64,7 +64,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; ID?: string | 
               })}
           </Select>
         </Box>
-        <Box>
+        {/* <Box>
           <Button
             as={GridItem}
             colSpan={[8, 4, null, 2]}
@@ -83,7 +83,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; ID?: string | 
           >
             Atualizar pessoa
           </Button>
-        </Box>
+        </Box> */}
       </Flex>
 
     </Box>

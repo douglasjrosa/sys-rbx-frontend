@@ -232,7 +232,7 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                         />
                       </FormControl>
 
-                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                      {/* <FormControl as={GridItem} colSpan={[12, 5, 2]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
@@ -286,9 +286,9 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                           }}
                           value={CpfMask}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
-                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                      {/* <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
@@ -307,9 +307,9 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                           onBlur={checkCep}
                           value={CepMask}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
-                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                      {/* <FormControl as={GridItem} colSpan={[12, 5, 2]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
@@ -327,9 +327,9 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                           onChange={(e: any) => setEndereco(capitalizeWords(e.target.value))}
                           value={endereco}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
-                      <FormControl as={GridItem} colSpan={[12, 5, 3]}>
+                      {/* <FormControl as={GridItem} colSpan={[12, 5, 3]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
@@ -347,9 +347,9 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                           onChange={(e: any) => setComplemento(capitalizeWords(e.target.value))}
                           value={complemento}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
-                      <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
+                      {/* <FormControl as={GridItem} colSpan={[12, 3, null, 1]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
@@ -367,9 +367,9 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                           onChange={NUMERO}
                           value={numero}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
-                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                      {/* <FormControl as={GridItem} colSpan={[12, 5, 2]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
@@ -387,9 +387,9 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                           onChange={(e: any) => setCidade(capitalizeWords(e.target.value))}
                           value={cidade}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
-                      <FormControl as={GridItem} colSpan={[12, 5, 2]}>
+                      {/* <FormControl as={GridItem} colSpan={[12, 5, 2]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
@@ -407,9 +407,9 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                           onChange={(e: any) => setBairro(capitalizeWords(e.target.value))}
                           value={bairro}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
-                      <FormControl as={GridItem} colSpan={[12, 2, null, 1]}>
+                      {/* <FormControl as={GridItem} colSpan={[12, 2, null, 1]}>
                         <FormLabel
                           fontSize="xs"
                           fontWeight="md"
@@ -427,7 +427,7 @@ export const FormPessoa = (props: { Data?: any, retornaData: any }) => {
                           onChange={(e: any) => setUf(e.target.value)}
                           value={uf}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
                       <FormControl as={GridItem} colSpan={[12, 6, 2]}>
                         <FormLabel

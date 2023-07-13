@@ -4,7 +4,16 @@ import {
   Flex,
   FormLabel,
   Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Select,
+  Text,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
@@ -50,7 +59,10 @@ export const NegocioHeader = (props: {
   const [Bpedido, setBpedido] = useState("");
   const [DataRetorno, setDataRetorno] = useState<string>();
   const [Data, setData] = useState<any | null>();
+  const [DataItens, setDataItens] = useState<any | null>();
   const [load, setload] = useState<boolean>(false);
+  const [Blocksave, setBlocksave] = useState<boolean>(false);
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
     if (props.onData) {
@@ -69,6 +81,9 @@ export const NegocioHeader = (props: {
       const nPedido = pedidos?.attributes.nPedido
       setNPedido(nPedido)
       setBpedido(props.onData.attributes.Bpedido)
+      const ITENS = pedidos?.attributes
+      setDataItens(ITENS?.itens)
+      setBlocksave(props.nBusiness && parseInt(props.etapa) === 6 || parseInt(props.Status) === 1 && parseInt(props.etapa) === 6 ? true: false)
     }
   }, [props]);
 
@@ -92,6 +107,15 @@ export const NegocioHeader = (props: {
       toast({
         title: "Esse Negócio não pode ser finalizado",
         description: "Ao concluir um Negócio, é obrigatorio definir um status",
+        status: "warning",
+        duration: 9000,
+        isClosable: true,
+        position: 'top-right'
+      });
+    } else  if (!NPedido && Etapa === 6 && Status === 5 && DataItens.length < 0) {
+      toast({
+        title: "Esse Negócio não pode ser finalizado",
+        description: "para finalizar um negócio, a proposta deve ser gerada e autorizada",
         status: "warning",
         duration: 9000,
         isClosable: true,
@@ -130,23 +154,23 @@ export const NegocioHeader = (props: {
 
       const data = StatusG !== 5 && Status === 5 ? data1 : data2;
 
-      const SetGanho = Status === 5 ? true : false;
-
       await axios({
         url: "/api/db/business/put/id/" + ID,
         method: "PUT",
         data: data,
       })
         .then((res) => {
-          props.onchat(true);
-          if (Etapa === 6 && Status === 5) {
-            toast({
-              title: "Atualização feita",
-              description: "Prarabens Négocio concluido",
-              status: "success",
-              duration: 9000,
-              isClosable: true,
-            });
+        // console.log("🚀 ~ file: hearder.tsx:161 ~ .then ~ res:", res)
+          if (NPedido && Etapa === 6 && Status === 5) {
+            // toast({
+            //   title: "Atualização feita",
+            //   description: "Prarabens Négocio concluido",
+            //   status: "success",
+            //   duration: 9000,
+            //   isClosable: true,
+            // });
+            onOpen()
+            setBlocksave(true)
           } else if (Etapa === 6 && Status === 1) {
             toast({
               title: "Atualização feita",
@@ -155,6 +179,8 @@ export const NegocioHeader = (props: {
               duration: 9000,
               isClosable: true,
             });
+            props.onchat(true);
+            setBlocksave(true)
           } else {
             toast({
               title: "Atualização feita",
@@ -163,25 +189,13 @@ export const NegocioHeader = (props: {
               duration: 9000,
               isClosable: true,
             });
+            props.onchat(true);
           }
         })
         .catch((err) => {
           props.onchat(true);
           console.error(err);
         });
-
-      if (SetGanho) {
-        const [pedidos] = Data.attributes.pedidos.data
-        const nPedido = pedidos?.attributes.nPedido
-        const EmpresaId = Data.attributes.empresa.data.id
-        const valor = pedidos?.attributes.totalGeral
-        const vendedor = session?.user.name
-        const vendedorId = session?.user.id
-        const IdNegocio = Data.id
-
-        const request = pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
-        return request
-      }
     }
   };
 
@@ -196,12 +210,124 @@ export const NegocioHeader = (props: {
     }
   }
 
+  const Pedido = async () => {
+    setload(true)
+    toast({
+      title: "Só um momento estou processando!",
+      status: "warning",
+      isClosable: true,
+      position: 'top-right',
+    });
+    if (Data) {
+      const [pedidos] = Data.attributes.pedidos.data
+      const nPedido = pedidos?.attributes.nPedido
+      const EmpresaId = Data.attributes.empresa.data.id
+      const valor = pedidos?.attributes.totalGeral
+      const vendedor = session?.user.name
+      const vendedorId = session?.user.id
+      const IdNegocio = Data.id
+
+      await axios({
+        url: `/api/db/nLote/${nPedido}`,
+        method: "POST",
+      })
+        .then(() => { })
+        .catch((error) => {
+          console.log(error)
+        });
+
+      await axios({
+        url: "/api/query/pedido/" + nPedido,
+        method: "POST",
+      })
+        .then(async (response: any) => {
+          console.log(response.data)
+
+          await axios({
+            url: `/api/db/trello/${nPedido}`,
+            method: "POST",
+          })
+            .then((response) => {
+              console.log(response.data)
+            })
+            .catch((error) => {
+              console.log(error)
+            });
+
+          await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
+            .then((response) => {
+              console.log(response.data)
+            })
+            .catch((error) => {
+              console.log(error)
+            });
+          toast({
+            title: "Pedido realizado com sucesso!",
+            status: "success",
+            duration: 5000,
+            position: 'top-right',
+          });
+          onClose()
+          const requeste = await axios(`api/db/proposta/get/business/${IdNegocio}`);
+          const resp = requeste.data;
+
+          props.onchat(true);
+        })
+        .catch(async (err) => {
+          props.onchat(true);
+          console.log(err.response.data.message);
+          console.log(err);
+          if (err.response.data.message) {
+            await axios({
+              url: `/api/db/trello/${nPedido}`,
+              method: "POST",
+            })
+              .then((response) => {
+                console.log(response.data)
+              })
+              .catch((error) => {
+                console.log(error)
+              });
+
+            await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
+              .then((response) => {
+                console.log(response.data)
+                onClose()
+              })
+              .catch((error) => {
+                console.log(error)
+              });
+            toast({
+              title: "Opss.",
+              description: err.response.data.message,
+              status: "info",
+              duration: 5000,
+              position: 'top-right',
+              isClosable: true,
+            });
+          } else {
+            props.onchat(true);
+            toast({
+              title: "Opss.",
+              description: "Entre en contata com o suporte",
+              status: "error",
+              duration: 3000,
+              position: 'top-right',
+              isClosable: true,
+            });
+          }
+        });
+      setload(false)
+    }
+  }
+
   function getStatus(statusinf: SetStateAction<any>) {
     setStatus(parseInt(statusinf));
   }
   function getAtendimento(atendimento: SetStateAction<string>) {
     setApproach(atendimento);
   }
+  console.log(Blocksave)
 
   return (
     <>
@@ -210,125 +336,130 @@ export const NegocioHeader = (props: {
           <Flex alignItems={"center"}>
             <BtmRetorno Url="/negocios" />
           </Flex>
-          {Status !== 3 && Etapa === 6 ? null : (
+          <Box>
+            <FormLabel
+              fontSize="xs"
+              fontWeight="md"
+            >
+              N° Negócio
+            </FormLabel>
+            <Input
+              type="text"
+              readOnly
+              shadow="sm"
+              size="sm"
+              rounded="md"
+              maxLength={15}
+              onChange={(e) => setBusines(e.target.value)}
+              value={props.nBusiness}
+            />
+          </Box>
+          {Bpedido && Etapa === 6 ? null : (
             <>
               <Box>
                 <FormLabel
                   fontSize="xs"
                   fontWeight="md"
                 >
-                  N° Negócio
+                  Data de retorno
                 </FormLabel>
                 <Input
-                  type="text"
-                  readOnly
                   shadow="sm"
                   size="sm"
+                  w="full"
+                  type={"date"}
+                  fontSize="xs"
                   rounded="md"
-                  maxLength={15}
-                  onChange={(e) => setBusines(e.target.value)}
-                  value={props.nBusiness}
+                  onChange={(e) => setDataRetorno(e.target.value)}
+                  value={DataRetorno}
                 />
               </Box>
-            </>
-          )}
-          <Box>
-            <FormLabel
-              fontSize="xs"
-              fontWeight="md"
-            >
-              Data de retorno
-            </FormLabel>
-            <Input
-              shadow="sm"
-              size="sm"
-              w="full"
-              type={"date"}
-              fontSize="xs"
-              rounded="md"
-              onChange={(e) => setDataRetorno(e.target.value)}
-              value={DataRetorno}
-            />
-          </Box>
-          <Box>
-            <FormLabel
-              fontSize="xs"
-              fontWeight="md"
-            >
-              Orçamento estimado
-            </FormLabel>
-            <Input
-              shadow="sm"
-              size="sm"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-
-              onChange={masckValor}
-              value={Budget}
-            />
-          </Box>
-          <Box>
-            <FormLabel
-              fontSize="xs"
-              fontWeight="md"
-            >
-              Etapa do Negócio
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="sm"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              onChange={(e) => setEtapa(parseInt(e.target.value))}
-              value={Etapa}
-            >
-              <option style={{ backgroundColor: "#1A202C" }}></option>
-              {EtapasNegocio.map((i: any) => (
-                <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
-                  {i.title}
-                </option>
-              ))}
-            </Select>
-          </Box>
-          {Etapa === 6 && (
-            <>
               <Box>
-                <BtnStatus Resp={props.Status} onAddResp={getStatus} omPedidos={Data.attributes.pedidos.data} />
+                <FormLabel
+                  fontSize="xs"
+                  fontWeight="md"
+                >
+                  Orçamento estimado
+                </FormLabel>
+                <Input
+                  shadow="sm"
+                  size="sm"
+                  w="full"
+                  fontSize="xs"
+                  rounded="md"
+
+                  onChange={masckValor}
+                  value={Budget}
+                />
+              </Box>
+              <Box>
+                <FormLabel
+                  fontSize="xs"
+                  fontWeight="md"
+                >
+                  Etapa do Negócio
+                </FormLabel>
+                <Select
+                  shadow="sm"
+                  size="sm"
+                  w="full"
+                  fontSize="xs"
+                  rounded="md"
+                  onChange={(e) => setEtapa(parseInt(e.target.value))}
+                  value={Etapa}
+                >
+                  <option style={{ backgroundColor: "#1A202C" }}></option>
+                  {EtapasNegocio.map((i: any) => (
+                    <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
+                      {i.title}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+              {Etapa === 6 && (
+                <>
+                  <Box>
+                    <BtnStatus Resp={props.Status} onAddResp={getStatus} omPedidos={Data.attributes.pedidos.data} />
+                  </Box>
+                </>
+              )}
+              <Box hidden={Status == 1 ? false : true}>
+                <FormLabel
+                  fontSize="xs"
+                  fontWeight="md"
+                >
+                  Motivo de Perda
+                </FormLabel>
+                <Select
+                  shadow="sm"
+                  size="sm"
+                  w="full"
+                  fontSize="xs"
+                  rounded="md"
+                  onChange={(e) => setMperca(e.target.value)}
+                  value={Mperca}
+                >
+                  <option style={{ backgroundColor: "#1A202C" }}></option>
+                  {StatusPerca.map((i: any) => (
+                    <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
+                      {i.title}
+                    </option>
+                  ))}
+                </Select>
               </Box>
             </>
           )}
-          <Box hidden={Status == 1 ? false : true}>
-            <FormLabel
-              fontSize="xs"
-              fontWeight="md"
-            >
-              Motivo de Perda
-            </FormLabel>
-            <Select
-              shadow="sm"
-              size="sm"
-              w="full"
-              fontSize="xs"
-              rounded="md"
-              onChange={(e) => setMperca(e.target.value)}
-              value={Mperca}
-            >
-              <option style={{ backgroundColor: "#1A202C" }}></option>
-              {StatusPerca.map((i: any) => (
-                <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.id}>
-                  {i.title}
-                </option>
-              ))}
-            </Select>
-          </Box>
         </Flex>
+
         <Flex alignItems={"center"} flexWrap={'wrap'} gap={3} w={"25%"}>
-          <Button colorScheme={"whatsapp"} onClick={Salve}>
-            Salvar
-          </Button>
-          {Bpedido ? null : (
+          {Blocksave? null : (
+            <>
+              <Button colorScheme={"whatsapp"} onClick={Salve}>
+                Salvar
+              </Button>
+            </>
+          )}
+          {Bpedido && Etapa === 6 || Blocksave ? null : (
             <>
               <Button
                 colorScheme={"green"}
@@ -342,9 +473,10 @@ export const NegocioHeader = (props: {
               >
                 Proposta
               </Button>
+
             </>
           )}
-          {NPedido && Status === 5 && Etapa === 6 ? (
+          {NPedido && !Bpedido && Status === 5 && Etapa === 6 ? (
             <>
               <Button
                 colorScheme={"whatsapp"}
@@ -362,127 +494,8 @@ export const NegocioHeader = (props: {
 
             </>
           ) : null}
-          {!Bpedido && NPedido && Status === 5 && Etapa === 6 ? (
-            <>
-              <Button
-                isLoading={load}
-                spinner={<BeatLoader size={8} color="white" />}
-                fontSize={'0.8rem'}
-                p={3}
-                colorScheme={"messenger"}
-                onClick={async () => {
-                  setload(true)
-                  toast({
-                    title: "Só um momento estou processando!",
-                    status: "warning",
-                    isClosable: true,
-                    position: 'top-right',
-                  });
-                  if (Data) {
-                    const [pedidos] = Data.attributes.pedidos.data
-                    const nPedido = pedidos?.attributes.nPedido
-                    const EmpresaId = Data.attributes.empresa.data.id
-                    const valor = pedidos?.attributes.totalGeral
-                    const vendedor = session?.user.name
-                    const vendedorId = session?.user.id
-                    const IdNegocio = Data.id
 
-                    await axios({
-                      url: `/api/db/nLote/${nPedido}`,
-                      method: "POST",
-                    })
-                      .then(() => { })
-                      .catch((error) => {
-                        console.log(error)
-                      });
-
-                    await axios({
-                      url: "/api/query/pedido/" + nPedido,
-                      method: "POST",
-                    })
-                      .then(async (response: any) => {
-                        console.log(response.data)
-                        await axios({
-                          url: `/api/db/trello/${nPedido}`,
-                          method: "POST",
-                        })
-                          .then((response) => {
-                            console.log(response.data)
-                          })
-                          .catch((error) => {
-                            console.log(error)
-                          });
-
-                        await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
-                          .then((response) => {
-                            console.log(response.data)
-                          })
-                          .catch((error) => {
-                            console.log(error)
-                          });
-                        toast({
-                          title: "Pedido realizado com sucesso!",
-                          status: "success",
-                          duration: 5000,
-                          position: 'top-right',
-                        });
-                        const requeste = await axios(`api/db/proposta/get/business/${IdNegocio}`);
-                        const resp = requeste.data;
-
-                      })
-                      .catch(async (err) => {
-                        console.log(err.response.data.message);
-                        console.log(err);
-                        if (err.response.data.message) {
-                          await axios({
-                            url: `/api/db/trello/${nPedido}`,
-                            method: "POST",
-                          })
-                            .then((response) => {
-                              console.log(response.data)
-                            })
-                            .catch((error) => {
-                              console.log(error)
-                            });
-
-                          await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
-                            .then((response) => {
-                              console.log(response.data)
-                            })
-                            .catch((error) => {
-                              console.log(error)
-                            });
-                          toast({
-                            title: "Opss.",
-                            description: err.response.data.message,
-                            status: "info",
-                            duration: 5000,
-                            position: 'top-right',
-                            isClosable: true,
-                          });
-                        } else {
-                          toast({
-                            title: "Opss.",
-                            description: "Entre en contata com o suporte",
-                            status: "error",
-                            duration: 3000,
-                            position: 'top-right',
-                            isClosable: true,
-                          });
-                        }
-                      });
-
-                    setload(false)
-                  }
-
-                }}
-                isDisabled={!!Data && Data.attributes.Bpedido !== null ? true : Data.attributes.itens.length < 1 ? true : false}
-              >
-                Gerar Pedido
-              </Button>
-            </>
-          ) : null}
-          {NPedido && Status === 3 && Etapa !== 6 ? (
+          {NPedido && !Bpedido && Status === 3 && Etapa !== 6 ? (
             <>
               <Button
                 colorScheme={"teal"}
@@ -496,7 +509,21 @@ export const NegocioHeader = (props: {
               </Button>
             </>
           ) : null}
-          {NPedido && Status === 1 && Etapa === 6 ? (
+          {Bpedido && Status === 5 && Etapa === 6 ? (
+            <>
+              <Button
+                colorScheme={"teal"}
+                variant={'solid'}
+                onClick={() => window.open(
+                  `/api/db/proposta/pdf/${NPedido}`,
+                  "_blank"
+                )}
+              >
+                PDF
+              </Button>
+            </>
+          ) : null}
+          {NPedido && Bpedido && Status === 1 && Etapa === 6 ? (
             <>
               <Button
                 colorScheme={"red"}
@@ -537,6 +564,29 @@ export const NegocioHeader = (props: {
             </>
           )}
         </Flex>
+        <Modal isCentered closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay
+            bg='blackAlpha.300'
+            backdropFilter='blur(10px) hue-rotate(90deg)'
+          />
+          <ModalContent bg={'gray.600'}>
+            <ModalHeader>Negócio Concluido</ModalHeader>
+            {/* <ModalCloseButton /> */}
+            <ModalBody>
+              <Text>Para finalizar é nessesario gerar um pedido para produção!</Text>
+            </ModalBody>
+            <ModalFooter>
+            <Button
+                fontSize={'0.8rem'}
+                p={3}
+                colorScheme={"messenger"}
+                onClick={Pedido}
+              >
+                Gerar Pedido
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </Flex >
     </>
   );

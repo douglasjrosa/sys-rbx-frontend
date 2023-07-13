@@ -3,27 +3,22 @@ import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function getId(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
+  if (req.method === 'GET') {
     const token = process.env.ATORIZZATION_TOKEN;
-    const { CNPJ } = req.body;
-    
-    const data = req.body;
+    const { CNPJ } = req.query;
 
     await axios({
-      method: 'POST',
+      method: 'GET',
       url:
         process.env.NEXT_PUBLIC_STRAPI_API_URL +
-        '/empresas/?filters[CNPJ][$eq]=' +
-        CNPJ,
-      data: data,
+        `/empresas/?filters[CNPJ][$eq]=${CNPJ}&populate=*`,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
       .then((Response) => {
-        console.log(Response.data);
-        res.status(200).json(Response.data);
+        res.status(200).json(Response.data.data);
       })
       .catch((err) => {
         res.status(400).json({
