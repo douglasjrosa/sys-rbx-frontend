@@ -26,7 +26,7 @@ export default async function PedidoBling(
         res.status(500).json({ message: "esse negocio nao esta concluido" });
       }
     } catch (error: any) {
-      // console.log("🚀 ~ file: [nPedido].ts:25 ~ error:", error);
+      console.log("🚀 ~ file: [nPedido].ts:25 ~ error:", error)
       res.status(500).json(error);
     }
   } else {

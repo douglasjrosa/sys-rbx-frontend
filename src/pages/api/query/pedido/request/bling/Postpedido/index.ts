@@ -97,7 +97,7 @@ export const PostPedido = async (dados: any) => {
 
     return templateParcela;
   });
-  console.log("🚀 ~ file: index.ts:100 ~ datasParcelas ~ datasParcelas:", datasParcelas)
+
 
   const parcela = () => {
     const prazo1 = "5 Dias";
@@ -134,14 +134,17 @@ export const PostPedido = async (dados: any) => {
   };
 
   const [xmlParcelas] =
-    DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
-      ? parcela()
-      : datasParcelas;
+  DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
+  ? parcela()
+  : datasParcelas;
+
 
   const desconto = DaDos.desconto
     .replace("R$", "")
     .replace(".", "")
     .replace(",", ".");
+
+
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
@@ -164,16 +167,16 @@ export const PostPedido = async (dados: any) => {
      <itens>${xmlprodutos}</itens>
      <parcelas>${xmlParcelas}</parcelas>
      <nf_produtor_rural_referenciada />
-     <vlr_frete>${parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
+     <vlr_frete>${!DaDos.valorFrete? 0.00 : parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
      <vlr_desconto>${desconto}</vlr_desconto>
      <obs>${DaDos.obs}</obs>
   </pedido>`;
+  console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
 
   try {
     const formData = new FormData();
     formData.append("apikey", apiKey);
     formData.append("xml", xml);
-    console.log("🚀 ~ file: index.ts:175 ~ PostPedido ~ xml:", xml)
 
     var requestOptions = {
       method: "POST",

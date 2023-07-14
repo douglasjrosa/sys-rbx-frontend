@@ -210,6 +210,29 @@ export const NegocioHeader = (props: {
     }
   }
 
+  const finalizar = async () =>{
+    toast({
+      title: "Só um momento estou processando!",
+      status: "warning",
+      isClosable: true,
+      position: 'top-right',
+    });
+    setload(true)
+      const [pedidos] = Data.attributes.pedidos.data
+      const nPedido = pedidos?.attributes.nPedido
+      const EmpresaId = Data.attributes.empresa.data.id
+      const valor = pedidos?.attributes.totalGeral
+      const vendedor = session?.user.name
+      const vendedorId = session?.user.id
+      const IdNegocio = Data.id
+
+      const request = await pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
+      console.log("🚀 ~ file: hearder.tsx:223 ~ finalizar ~ request:", request)
+      setload(false)
+      onClose()
+      props.onchat(true);
+  }
+
   const Pedido = async () => {
     setload(true)
     toast({
@@ -274,6 +297,7 @@ export const NegocioHeader = (props: {
           props.onchat(true);
         })
         .catch(async (err) => {
+
           props.onchat(true);
           console.log(err.response.data.message);
           console.log(err);
@@ -452,6 +476,7 @@ export const NegocioHeader = (props: {
         </Flex>
 
         <Flex alignItems={"center"} flexWrap={'wrap'} gap={3} w={"25%"}>
+
           {Blocksave? null : (
             <>
               <Button colorScheme={"whatsapp"} onClick={Salve}>
@@ -540,6 +565,9 @@ export const NegocioHeader = (props: {
           ) : null}
           {session?.user.pemission === 'Adm' && (
             <>
+              <Button isDisabled={!NPedido} colorScheme={"linkedin"} onClick={() => onOpen()}>
+                Reenviar Pedido
+              </Button>
               <Button
                 colorScheme={"red"}
                 onClick={async () => {
@@ -580,7 +608,8 @@ export const NegocioHeader = (props: {
                 fontSize={'0.8rem'}
                 p={3}
                 colorScheme={"messenger"}
-                onClick={Pedido}
+                // onClick={Pedido}
+                onClick={finalizar}
               >
                 Gerar Pedido
               </Button>

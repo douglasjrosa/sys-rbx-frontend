@@ -45,7 +45,7 @@ export default async function GetEmpresa(
 
     const somarValores = (valor1: any, valor2: any) => {
       if(infos.frete === 'FOB') return valor1
-      
+
       const numero1 =valor1? parseFloat(
         valor1.replace("R$", "").replace(".", "").replace(",", ".")
       ) : 0;
@@ -700,7 +700,7 @@ export default async function GetEmpresa(
       " - " +
       infos.cliente.nome.replace(/[.,]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '') +
       "-" +
-      new Date().toLocaleDateString("pt-BR");
+      new Date().toLocaleDateString("pt-BR")+ ".pdf";
     pdfDoc.on("end", () => {
       const pdf = Buffer.concat(chunks);
       res.setHeader("Content-Disposition", `inline; filename="${filename}"`);

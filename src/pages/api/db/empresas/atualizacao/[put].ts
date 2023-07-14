@@ -74,6 +74,7 @@ export default async function GetEmpresa(
       engradado_reforcado: bodyData.engRef === true ? "on" : "off",
       engradado_resistente: bodyData.engResi === true ? "on" : "off",
       palete_sob_medida: bodyData.platSMed === true ? "on" : "off",
+      modelo_especial: bodyData.modEsp === true ? "on" : "off",
       formaPagto: bodyData.forpg,
       prefPagto: bodyData.maxPg,
       frete: bodyData.frete === "" ? "fob" : bodyData.frete,

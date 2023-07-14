@@ -52,7 +52,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [DateEntrega, setDateEntrega] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [frete, setFrete] = useState("");
-  const [freteCif, setFreteCif] = useState<string>('');
+  const [freteCif, setFreteCif] = useState<string>('0,00');
   const [Loja, setLoja] = useState("");
   const [prazo, setPrazo] = useState("");
   const [tipoprazo, setTipoPrazo] = useState("");
@@ -478,7 +478,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const setFreteSave = (e: any) => {
     const Valor = e.target.value
     const valorLinpo = SetValue(Valor)
-    setFreteCif(valorLinpo)
+    setFreteCif(!valorLinpo ? '0,00' : valorLinpo)
   }
 
 

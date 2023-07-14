@@ -25,7 +25,7 @@ import { CompPessoa } from "@/components/elements/lista/pessoas";
 import { modCaix } from "@/components/data/modCaix";
 import { GetCnpj } from "@/function/getcnpj";
 
-export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
+export const FormEmpresa = (props: { data?: any, envio: string }) => {
   const { data: session } = useSession();
   const router = useRouter();
   const [CNPJ, setCNPJ] = useState('');
@@ -80,10 +80,16 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
   const [frete, setFrete] = useState("FOB");
   const [Razao, setRazao] = useState("");
   const [Responsavel, setResponsavel] = useState("");
+  const [ENVIO, setENVIO] = useState("");
   const [Inatividade, setInatividade] = useState<number>(60);
   const [ID, setID] = useState<string | null>(null);
   const [Autorize, setAutorize] = useState(false)
+  const [History, setHistory] = useState([])
   const toast = useToast();
+
+  if (props.envio && !ENVIO) {
+    setENVIO(props.envio)
+  }
 
   useEffect(() => {
     localStorage.removeItem('idRetorno')
@@ -97,6 +103,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
       setMaskCNPJ(mask(cnpj, ["99.999.999/9999-99"]))
       setNome(empresa.attributes?.nome);
       setFantasia(empresa.attributes?.fantasia);
+      setHistory(empresa.attributes?.history)
       setRazao(empresa.attributes?.razao);
       setTipoPessoa(empresa.attributes?.tipoPessoa);
       setFone(empresa.attributes?.fone === null ? '' : empresa.attributes?.fone);
@@ -151,7 +158,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
       const [response] = teset.data
       const userProps = response?.attributes?.user.data
       const vendedor = userProps?.attributes?.username
-      if (vendedor){
+      if (vendedor) {
         toast({
           render: () => (
             <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
@@ -165,9 +172,23 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
           isClosable: true,
           position: 'top',
         })
-        setTimeout(()=>router.push("/empresas/"), 5000)
-      } else {
+        setTimeout(() => router.push("/empresas/"), 5000)
+      } else  if (teset.data.length === 0){
         setAutorize(true)
+      } else {
+        toast({
+          render: () => (
+            <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+              <chakra.p>{response.attributes.nome}</chakra.p>
+              <chakra.p>CNPJ: {response.attributes.CNPJ}</chakra.p>
+              <chakra.p> Carteira: sem vendedor</chakra.p>
+            </Box>
+          ),
+          status: 'warning',
+          duration: 9000,
+          isClosable: true,
+          position: 'top',
+        })
       }
 
       setRazao(Data.razao_social)
@@ -196,63 +217,120 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
     }
   };
 
-  const data = {
-    nome: nome,
-    fantasia: fantasia,
-    tipoPessoa: tipoPessoa,
-    endereco: endereco,
-    numero: numero,
-    complemento: complemento,
-    bairro: bairro,
-    cep: cep,
-    cidade: cidade,
-    uf: uf,
-    fone: fone,
-    celular: celular,
-    email: email,
-    emailNfe: emailNfe,
-    site: site,
-    CNPJ: CNPJ,
-    Ie: Ie,
-    pais: pais,
-    codpais: codpais,
-    CNAE: CNAE,
-    porte: porte,
-    simples: simples,
-    ieStatus: ieStatus,
-    status: status,
-    adFrailLat: adFrailLat,
-    adFrailCab: adFrailCab,
-    adEspecialLat: adEspecialLat,
-    adEspecialCab: adEspecialCab,
-    latFCab: latFCab,
-    cabChao: cabChao,
-    cabTop: cabTop,
-    cxEco: cxEco,
-    cxEst: cxEst,
-    cxLev: cxLev,
-    cxRef: cxRef,
-    cxSupRef: cxSupRef,
-    platSMed: platSMed,
-    cxResi: cxResi,
-    engEco: engEco,
-    engLev: engLev,
-    engRef: engRef,
-    engResi: engResi,
-    modEsp: modEsp,
-    tablecalc: tablecalc,
-    maxPg: maxPg,
-    forpg: forpg,
-    frete: frete,
-    contribuinte: contribuinte,
-    responsavel: Responsavel,
-    inativOk: Inatividade,
-    razao: Razao,
-  };
-
 
   const save = async () => {
-    props.retornoData(data)
+
+    const date = new Date();
+    const dateIsso = date.toISOString();
+    const historico = ENVIO === 'POST' ? [
+      {
+        date: dateIsso,
+        vendedor: session?.user.name,
+        msg: `Empresa ${nome} foi cadastrado`,
+      },
+    ] : [
+      {
+        date: dateIsso,
+        vendedor: session?.user.name,
+        msg: `Empresa ${nome} foi atualizado`,
+      },
+    ];
+
+    const dataUpdate = {
+      data: {
+        nome: nome,
+        fantasia: fantasia,
+        tipoPessoa: tipoPessoa,
+        endereco: endereco,
+        numero: numero,
+        complemento: complemento,
+        bairro: bairro,
+        cep: cep,
+        cidade: cidade,
+        uf: uf,
+        fone: fone,
+        celular: celular,
+        email: email,
+        emailNfe: emailNfe,
+        site: site,
+        CNPJ: CNPJ,
+        Ie: Ie,
+        pais: pais,
+        codpais: codpais,
+        CNAE: CNAE,
+        porte: porte,
+        simples: simples,
+        ieStatus: ieStatus,
+        status: status,
+        adFrailLat: adFrailLat,
+        adFrailCab: adFrailCab,
+        adEspecialLat: adEspecialLat,
+        adEspecialCab: adEspecialCab,
+        latFCab: latFCab,
+        cabChao: cabChao,
+        cabTop: cabTop,
+        cxEco: cxEco,
+        cxEst: cxEst,
+        cxLev: cxLev,
+        cxRef: cxRef,
+        cxSupRef: cxSupRef,
+        platSMed: platSMed,
+        cxResi: cxResi,
+        engEco: engEco,
+        engLev: engLev,
+        engRef: engRef,
+        engResi: engResi,
+        modEsp: modEsp,
+        tablecalc: tablecalc,
+        maxPg: maxPg,
+        forpg: forpg,
+        frete: frete,
+        contribuinte: contribuinte,
+        responsavel: Responsavel,
+        inativOk: Inatividade,
+        razao: Razao,
+        history: History.length === 0 ? historico : [...History, ...historico]
+      },
+    };
+
+    if (ENVIO === 'POST') {
+      const url = `/api/db/empresas/post?Email=${session?.user.email}`;
+      await axios({
+        method: 'POST',
+        url: url,
+        data: dataUpdate,
+      })
+        .then((response) => {
+          console.log(response)
+          toast({
+            title: "Cliente criado com sucesso",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          });
+          router.push('/empresas');
+        })
+        .catch((err) => console.error(err));
+    } else {
+      const EMPRESAID = router.query.id;
+      const url = '/api/db/empresas/atualizacao/' + EMPRESAID;
+      await axios({
+        method: 'PUT',
+        url: url,
+        data: dataUpdate,
+      })
+        .then((response) => {
+          toast({
+            title: 'Cliente atualizado',
+            status: 'success',
+            duration: 2000,
+            isClosable: true,
+          });
+          router.push('/empresas');
+          return response.data;
+        })
+        .catch((err) => console.log(err));
+    }
   };
 
   function getResponsavel(respons: React.SetStateAction<string>) {
@@ -324,7 +402,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                 <Stack
                   px={4}
                   py={3}
-                  spacing={6}
+                  spacing={3}
                 >
                   <SimpleGrid columns={12} spacing={3}>
                     <Heading as={GridItem} colSpan={12} size="md">
@@ -379,7 +457,9 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
 
                 {!!Autorize && (
                   <>
-                    <Stack>
+                    <Stack
+                      px={4}
+                      py={3}>
                       <SimpleGrid columns={9} spacing={3}>
                         <FormControl as={GridItem} colSpan={[5, 2]}>
                           <FormLabel
@@ -948,29 +1028,29 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                         </FormControl>
                       </SimpleGrid>
 
-                      <SimpleGrid columns={12} spacing={5}>
-                      <Heading as={GridItem} colSpan={12} mb={3} size="sd">
-                      Dados de contato
+                      <SimpleGrid columns={12} spacing={3} mb={5}>
+                        <Heading as={GridItem} colSpan={12} size="sd">
+                          Dados de contato
                         </Heading>
-                        <FormControl as={GridItem} colSpan={[6, 2, 3, 1]}>
-                          <CompPessoa
-                            Resp={Responsavel}
-                            onAddResp={getResponsavel}
-                            ID={ID}
-                          />
-                        </FormControl>
-                        <FormControl as={GridItem} colSpan={[6, 2, 2, 1]}>
-                          <Button
-                            mt={5}
-                            h={8}
-                            colorScheme="teal"
-                            onClick={() => {
-                              localStorage.setItem('idRetorno', `${ID}`)
-                              router.push(`/pessoas/cadastro`)
-                            }}
-                          >
-                            + Nova Pessoa
-                          </Button>
+                        <FormControl as={GridItem} colSpan={[6, 2, 4, 3]}>
+                          <Flex flexDir={'row'} alignItems={'self-end'} gap={5}>
+                            <CompPessoa
+                              Resp={Responsavel}
+                              onAddResp={getResponsavel}
+                              ID={ID}
+                            />
+                            <Button
+                              h={8}
+                              px={5}
+                              colorScheme="teal"
+                              onClick={() => {
+                                localStorage.setItem('idRetorno', `${ID}`)
+                                router.push(`/pessoas/cadastro`)
+                              }}
+                            >
+                              + Nova Pessoa
+                            </Button>
+                          </Flex>
                         </FormControl>
 
                       </SimpleGrid>
@@ -1072,8 +1152,8 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                                               : item.id === "10"
                                                 ? engRef
                                                 : item.id === "11"
-                                                ? engResi
-                                                : engResi;
+                                                  ? engResi
+                                                  : modEsp;
                           return (
                             <Box
                               key={item.id}
@@ -1113,7 +1193,9 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
                                                           ? setEngLev
                                                           : item.id === "10"
                                                             ? setEngRef
-                                                            : setModEsp;
+                                                            : item.id === "11"
+                                                              ? setEngResi
+                                                              : setModEsp;
                                       if (set) {
                                         set(e.target.checked);
                                       }
@@ -1164,7 +1246,7 @@ export const FormEmpresa = (props: { data?: any, retornoData: any }) => {
             </GridItem>
           </SimpleGrid>
         </Box>
-      </Box>
+      </Box >
     </>
   );
 }
