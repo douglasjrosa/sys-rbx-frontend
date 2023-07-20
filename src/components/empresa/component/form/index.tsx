@@ -24,6 +24,7 @@ import { confgEnb } from "@/components/data/confgEnb";
 import { CompPessoa } from "@/components/elements/lista/pessoas";
 import { modCaix } from "@/components/data/modCaix";
 import { GetCnpj } from "@/function/getcnpj";
+import Loading from "@/components/elements/loading";
 
 export const FormEmpresa = (props: { data?: any, envio: string }) => {
   const { data: session } = useSession();
@@ -79,11 +80,13 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
   const [forpg, setForpg] = useState("desconto");
   const [frete, setFrete] = useState("FOB");
   const [Razao, setRazao] = useState("");
-  const [Responsavel, setResponsavel] = useState("");
+  const [Responsavel, setResponsavel] = useState<any>([]);
   const [ENVIO, setENVIO] = useState("");
   const [Inatividade, setInatividade] = useState<number>(60);
   const [ID, setID] = useState<string | null>(null);
   const [Autorize, setAutorize] = useState(false)
+  const [Block, setBlock] = useState(false)
+  const [load, setload] = useState(false)
   const [History, setHistory] = useState([])
   const toast = useToast();
 
@@ -94,8 +97,9 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
   useEffect(() => {
     localStorage.removeItem('idRetorno')
     if (props.data) {
+      setload(true)
       const empresa = props.data
-      setResponsavel(empresa.attributes?.responsavel.data?.id);
+      setResponsavel(empresa.attributes?.representantes);
       setID(empresa.id);
       setCNPJ(empresa.attributes?.CNPJ);
       setAutorize(props.data ? true : false)
@@ -148,6 +152,8 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
       setForpg(empresa.attributes?.forpg);
       setFrete(empresa.attributes?.frete);
       setStatus(empresa.attributes?.status);
+      setModEsp(empresa.attributes?.modEsp)
+      setload(false)
     }
   }, [props.data])
 
@@ -173,7 +179,7 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
           position: 'top',
         })
         setTimeout(() => router.push("/empresas/"), 5000)
-      } else  if (teset.data.length === 0){
+      } else if (teset.data.length === 0) {
         setAutorize(true)
       } else {
         toast({
@@ -219,7 +225,8 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
 
 
   const save = async () => {
-
+    setBlock(true)
+    setload(true)
     const date = new Date();
     const dateIsso = date.toISOString();
     const historico = ENVIO === 'POST' ? [
@@ -286,7 +293,7 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
         forpg: forpg,
         frete: frete,
         contribuinte: contribuinte,
-        responsavel: Responsavel,
+        representantes: Responsavel,
         inativOk: Inatividade,
         razao: Razao,
         history: History.length === 0 ? historico : [...History, ...historico]
@@ -310,7 +317,11 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
           });
           router.push('/empresas');
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error(err)
+          setBlock(false)
+          setload(false)
+        });
     } else {
       const EMPRESAID = router.query.id;
       const url = '/api/db/empresas/atualizacao/' + EMPRESAID;
@@ -329,7 +340,11 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
           router.push('/empresas');
           return response.data;
         })
-        .catch((err) => console.log(err));
+        .catch((err) => {
+          console.error(err)
+          setBlock(false)
+          setload(false)
+        });
     }
   };
 
@@ -352,6 +367,14 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
     setCelular(valorLinpo);
     setWhatsMask(masked);
   };
+
+  if (load) {
+    return (
+      <Box w={'100%'} h={'100%'} bg="gray.800">
+        <Loading size="200px">Carregando...</Loading>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -1037,19 +1060,8 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
                             <CompPessoa
                               Resp={Responsavel}
                               onAddResp={getResponsavel}
-                              ID={ID}
                             />
-                            <Button
-                              h={8}
-                              px={5}
-                              colorScheme="teal"
-                              onClick={() => {
-                                localStorage.setItem('idRetorno', `${ID}`)
-                                router.push(`/pessoas/cadastro`)
-                              }}
-                            >
-                              + Nova Pessoa
-                            </Button>
+
                           </Flex>
                         </FormControl>
 
@@ -1235,6 +1247,7 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
                         colorScheme="whatsapp"
                         fontWeight="md"
                         onClick={save}
+                        isDisabled={Block}
                       >
                         Save
                       </Button>

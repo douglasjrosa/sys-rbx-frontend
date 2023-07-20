@@ -56,7 +56,7 @@ export default async function PostTrello(
       pedido.attributes.frete === "" ? "Fob" : pedido.attributes.frete;
     const pgto = pedido.attributes.condi;
     const Bpedido = pedido.attributes.Bpedido;
-    const estrega = pedido.attributes.business.data.attributes.deadline;
+    const estrega = pedido.attributes.dataEntrega;
     const VendedorName = pedido.attributes.user.data.attributes.username;
     const fornecedorName = pedido.attributes.fornecedorId.data.attributes.nome;
     const userKey = '7f3afdbb72cb272f2ef99089cd9066c8';

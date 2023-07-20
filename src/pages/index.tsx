@@ -74,13 +74,16 @@ const Painel: React.FC = () => {
             corresponding = 'createdAt';
             correspondingDate = cliente.attributes.createdAt;
           } else if (
-            cliente.attributes.andamento === 5 &&
-            cliente.attributes.etapa === 1
+            cliente.attributes.andamento === 1 &&
+            cliente.attributes.etapa === 6
           ) {
-            corresponding = 'concluido';
+            console.log(cliente)
+            corresponding = 'Perca';
             correspondingDate = cliente.attributes.date_conclucao;
           } else if (
-            isSameDay(parseISO(cliente.attributes.date_conclucao), parseISO(dia.date))
+            isSameDay(parseISO(cliente.attributes.date_conclucao), parseISO(dia.date)) ||
+            cliente.attributes.andamento === 5 &&
+            cliente.attributes.etapa === 6
           ) {
             corresponding = 'dateConclusao';
             correspondingDate = cliente.attributes.date_conclucao;
@@ -183,7 +186,7 @@ const Painel: React.FC = () => {
         const resultado: any = [];
         listCliente.forEach((item: any) => {
           const cerrenponde = item.corresponding;
-          if (cerrenponde === 'deadline' && item.correspondingDate) {
+          if (cerrenponde === 'Perca') {
             resultado.push(item);
           }
         });
@@ -193,6 +196,7 @@ const Painel: React.FC = () => {
     })
     .filter((arr: any) => arr.length > 0)
     .flat();
+
 
   const somaPerca = arrayclienteDedline.reduce((total: number, item: any) => {
     if (item && item.attributes && item.attributes.Budget) {
@@ -206,7 +210,6 @@ const Painel: React.FC = () => {
   function handleDateChange(month: any) {
     (async () => {
       const data = month
-      console.log("🚀 ~ file: index.tsx:214 ~ data:", data)
       const daysOfMonth = await getAllDaysOfMonth(data.month, data.year);
       setCalendar(daysOfMonth.Dias);
       setIsLoading(true);

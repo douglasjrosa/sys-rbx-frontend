@@ -48,7 +48,6 @@ export const NegocioHeader = (props: {
   const toast = useToast();
   const { data: session } = useSession();
   const [Status, setStatus] = useState<any>();
-  const [StatusG, setStatusG] = useState<any>();
   const [Etapa, setEtapa] = useState<any>();
   const [Mperca, setMperca] = useState<any>();
   const [Busines, setBusines] = useState("");
@@ -67,7 +66,6 @@ export const NegocioHeader = (props: {
   useEffect(() => {
     if (props.onData) {
       setData(props.onData)
-      setStatusG(props.Status);
       setStatus(parseInt(props.Status));
       setBudget(SetValue(props.Budget));
       setDeadline(props.Deadline);
@@ -83,7 +81,7 @@ export const NegocioHeader = (props: {
       setBpedido(props.onData.attributes.Bpedido)
       const ITENS = pedidos?.attributes
       setDataItens(ITENS?.itens)
-      setBlocksave(props.nBusiness && parseInt(props.etapa) === 6 || parseInt(props.Status) === 1 && parseInt(props.etapa) === 6 ? true: false)
+      setBlocksave(props.nBusiness && parseInt(props.etapa) === 6 || parseInt(props.Status) === 1 && parseInt(props.etapa) === 6 ? true : false)
     }
   }, [props]);
 
@@ -93,11 +91,13 @@ export const NegocioHeader = (props: {
     msg: `Vendedor(a) ${session?.user.name}, alterou as informações desse Busines`,
   };
 
+  const filtro = StatusPerca.filter((e: any) => e.id == Mperca).map((i: any) => i.title)
   const ChatConcluido = {
-    msg: `Vendedor(a) ${session?.user.name}, concluiu esse Negocio`,
+    msg: Status === 5 ? `Parabens, você concluiu esse Negocio com susseso` : `Negocio perdido, motivo: ${filtro}`,
     date: new Date().toISOString(),
     user: "Sistema",
-    susseso: Status === 5 ? 'green' : Status === 1 ? 'red' : ''
+    susseso: Status === 5 ? 'green' : Status === 1 ? 'red' : '',
+    flag: Status === 5 ? "Ganho" : 'Perca'
   };
 
   const history = [...props.historia, historicomsg];
@@ -112,7 +112,7 @@ export const NegocioHeader = (props: {
         isClosable: true,
         position: 'top-right'
       });
-    } else  if (!NPedido && Etapa === 6 && Status === 5 && DataItens.length < 0) {
+    } else if (!NPedido && Etapa === 6 && Status === 5 && DataItens.length < 0) {
       toast({
         title: "Esse Negócio não pode ser finalizado",
         description: "para finalizar um negócio, a proposta deve ser gerada e autorizada",
@@ -152,7 +152,7 @@ export const NegocioHeader = (props: {
         },
       };
 
-      const data = StatusG !== 5 && Status === 5 ? data1 : data2;
+      const data = Etapa === 6 ? data1 : data2;
 
       await axios({
         url: "/api/db/business/put/id/" + ID,
@@ -160,15 +160,7 @@ export const NegocioHeader = (props: {
         data: data,
       })
         .then((res) => {
-        // console.log("🚀 ~ file: hearder.tsx:161 ~ .then ~ res:", res)
           if (NPedido && Etapa === 6 && Status === 5) {
-            // toast({
-            //   title: "Atualização feita",
-            //   description: "Prarabens Négocio concluido",
-            //   status: "success",
-            //   duration: 9000,
-            //   isClosable: true,
-            // });
             onOpen()
             setBlocksave(true)
           } else if (Etapa === 6 && Status === 1) {
@@ -210,7 +202,7 @@ export const NegocioHeader = (props: {
     }
   }
 
-  const finalizar = async () =>{
+  const finalizar = async () => {
     toast({
       title: "Só um momento estou processando!",
       status: "warning",
@@ -218,19 +210,19 @@ export const NegocioHeader = (props: {
       position: 'top-right',
     });
     setload(true)
-      const [pedidos] = Data.attributes.pedidos.data
-      const nPedido = pedidos?.attributes.nPedido
-      const EmpresaId = Data.attributes.empresa.data.id
-      const valor = pedidos?.attributes.totalGeral
-      const vendedor = session?.user.name
-      const vendedorId = session?.user.id
-      const IdNegocio = Data.id
+    const [pedidos] = Data.attributes.pedidos.data
+    const nPedido = pedidos?.attributes.nPedido
+    const EmpresaId = Data.attributes.empresa.data.id
+    const valor = pedidos?.attributes.totalGeral
+    const vendedor = session?.user.name
+    const vendedorId = session?.user.id
+    const IdNegocio = Data.id
 
-      const request = await pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
-      console.log("🚀 ~ file: hearder.tsx:223 ~ finalizar ~ request:", request)
-      setload(false)
-      onClose()
-      props.onchat(true);
+    const request = await pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
+    console.log("🚀 ~ file: hearder.tsx:223 ~ finalizar ~ request:", request)
+    setload(false)
+    onClose()
+    props.onchat(true);
   }
 
   const Pedido = async () => {
@@ -477,7 +469,7 @@ export const NegocioHeader = (props: {
 
         <Flex alignItems={"center"} flexWrap={'wrap'} gap={3} w={"25%"}>
 
-          {Blocksave? null : (
+          {Blocksave ? null : (
             <>
               <Button colorScheme={"whatsapp"} onClick={Salve}>
                 Salvar
@@ -548,8 +540,13 @@ export const NegocioHeader = (props: {
               </Button>
             </>
           ) : null}
-          {NPedido && Bpedido && Status === 1 && Etapa === 6 ? (
+          {NPedido && Status === 1 && Etapa === 6 ? (
             <>
+
+              <Button variant={'outline'} colorScheme={"whatsapp"} onClick={Salve}>
+                Atualizar
+              </Button>
+
               <Button
                 colorScheme={"red"}
                 variant={'outline'}
@@ -604,7 +601,7 @@ export const NegocioHeader = (props: {
               <Text>Para finalizar é nessesario gerar um pedido para produção!</Text>
             </ModalBody>
             <ModalFooter>
-            <Button
+              <Button
                 fontSize={'0.8rem'}
                 p={3}
                 colorScheme={"messenger"}

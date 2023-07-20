@@ -17,7 +17,6 @@ export const Presente = (props: { user: string }) => {
             `/api/db/empresas/search/powerbi/recuperado?Vendedor=${props.user}`
           );
           setData(response.data);
-          console.log("🚀 ~ file: index.tsx:19 ~ response.data:", props.user)
         } catch (error) {
           console.log(error);
         }

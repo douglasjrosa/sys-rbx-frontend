@@ -38,7 +38,7 @@
     "trello",
     "xktum"
   ],
-  "editor.fontFamily": "Fira Code",
+  "editor.fontFamily": "fira code retina",
   "editor.fontLigatures": false,
   "terminal.integrated.fontFamily": "monospace",
 }

@@ -1,10 +1,6 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unreachable */
-/* eslint-disable no-undef */
 import axios from "axios";
-import NextAuth, { DefaultUser } from "next-auth";
+import NextAuth, { DefaultUser, JWT } from "next-auth";
 import { Session } from "next-auth/core/types";
-import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 type ExtendedDefaultUser = DefaultUser & {
@@ -104,7 +100,7 @@ export default NextAuth({
         }
       }
 
-      return token as JWT;
+      return token as unknown as JWT;
     },
     session: async ({ session, token }): Promise<Session | any> => {
       if (
