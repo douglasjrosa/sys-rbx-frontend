@@ -1,10 +1,9 @@
+import fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next";
-import { getData } from "./lib/getinf";
+import path from "path";
 import PDFPrinter from "pdfmake";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
-import path from "path";
-import fs from "fs";
-import { Calculadora } from "./lib/calc";
+import { getData } from "./lib/getinf";
 
 function formatarTelefone(telefone: any) {
   // Remove letras e caracteres especiais
@@ -27,8 +26,6 @@ function formatarTelefone(telefone: any) {
   }
 }
 
-
-
 export default async function GetEmpresa(
   req: NextApiRequest,
   res: NextApiResponse
@@ -37,21 +34,24 @@ export default async function GetEmpresa(
     const { proposta } = req.query;
 
     const infos = await getData(proposta);
-    console.log("🚀 ~ file: [proposta].ts:17 ~ infos:", infos);
-    const resto = infos.dataEntrega
-    console.log(resto);
+
+    const resto = infos.dataEntrega;
 
     // const infos = Calculadora(infos1);
 
     const somarValores = (valor1: any, valor2: any) => {
-      if(infos.frete === 'FOB') return valor1
+      if (infos.frete === "FOB") return valor1;
 
-      const numero1 =valor1? parseFloat(
-        valor1.replace("R$", "").replace(".", "").replace(",", ".")
-      ) : 0;
-      const numero2 = valor2? parseFloat(
-        valor2.replace("R$", "").replace(".", "").replace(",", ".")
-      ) : 0;
+      const numero1 = valor1
+        ? parseFloat(
+            valor1.replace("R$", "").replace(".", "").replace(",", ".")
+          )
+        : 0;
+      const numero2 = valor2
+        ? parseFloat(
+            valor2.replace("R$", "").replace(".", "").replace(",", ".")
+          )
+        : 0;
       const soma = numero1 + numero2;
 
       if (!numero2) {
@@ -84,8 +84,6 @@ export default async function GetEmpresa(
     );
     const imageContent = fs.readFileSync(imagePath).toString("base64");
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
-
-
 
     const date = new Date().toLocaleDateString("pt-BR");
     const fonts = {
@@ -177,12 +175,9 @@ export default async function GetEmpresa(
     ];
 
     const desconto = infos.condi !== "Antecipado" ? semDesc : comDesc;
-    console.log(infos.fornecedor.data.razao)
+    console.log(infos.fornecedor.data.razao);
     const logo =
-      infos.fornecedor.data.cnpj === "04.586.593/0001-70"
-        ? dataUrl
-        : dataUrl2;
-
+      infos.fornecedor.data.cnpj === "04.586.593/0001-70" ? dataUrl : dataUrl2;
 
     const docDefinitions: TDocumentDefinitions = {
       defaultStyle: { font: "Helvetica" },
@@ -694,13 +689,23 @@ export default async function GetEmpresa(
     });
 
     pdfDoc.end();
+
+    const name = infos.cliente.nome
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, " ")
+      .replace(/[.,]/g, "")
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
     const filename =
       "Proposta comercial -" +
       infos.nPedido +
       " - " +
-      infos.cliente.nome.replace(/[.,]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '') +
+      name +
       "-" +
-      new Date().toLocaleDateString("pt-BR")+ ".pdf";
+      new Date().toLocaleDateString("pt-BR") +
+      ".pdf";
     pdfDoc.on("end", () => {
       const pdf = Buffer.concat(chunks);
       res.setHeader("Content-Disposition", `inline; filename="${filename}"`);

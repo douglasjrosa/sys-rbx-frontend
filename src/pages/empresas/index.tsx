@@ -1,13 +1,13 @@
-import { useRouter } from "next/router";
-import { Box, Button, Flex, chakra, Tooltip, useToast, Heading } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
 import { CarteiraAusente } from "@/components/empresa/component/empresas_ausente";
-import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
+import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
 import { FiltroCnpj } from "@/components/empresa/component/fitro/cnpj";
+import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
 import { formatDocument } from "@/function/hookDocument";
+import { Box, Button, Flex, Heading, chakra, useToast } from "@chakra-ui/react";
 import { cnpj } from 'cpf-cnpj-validator';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 
 function Empresas() {
@@ -92,19 +92,21 @@ function Empresas() {
             if (username !== session?.user.name) {
               resultado.push(item);
               if (filtro) {
-                return toast({
-                  render: () => (
-                    <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
-                      <chakra.p>{item.attributes.nome}</chakra.p>
-                      <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
-                      <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
-                    </Box>
-                  ),
-                  status: 'warning',
-                  duration: 9000,
-                  isClosable: true,
-                  position: 'top',
-                })
+                if (session?.user.pemission !== "Adm") {
+                  return toast({
+                    render: () => (
+                      <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                        <chakra.p>{item.attributes.nome}</chakra.p>
+                        <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
+                        <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
+                      </Box>
+                    ),
+                    status: 'warning',
+                    duration: 9000,
+                    isClosable: true,
+                    position: 'top',
+                  })
+                }
               }
             }
           }
@@ -116,19 +118,21 @@ function Empresas() {
           } else if (username) {
             if (username !== session?.user.name) {
               if (filtro) {
-                return toast({
-                  render: () => (
-                    <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
-                      <chakra.p>{item.attributes.nome}</chakra.p>
-                      <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
-                      <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
-                    </Box>
-                  ),
-                  status: 'warning',
-                  duration: 9000,
-                  isClosable: true,
-                  position: 'top',
-                })
+                if (session?.user.pemission !== "Adm") {
+                  return toast({
+                    render: () => (
+                      <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                        <chakra.p>{item.attributes.nome}</chakra.p>
+                        <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
+                        <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
+                      </Box>
+                    ),
+                    status: 'warning',
+                    duration: 9000,
+                    isClosable: true,
+                    position: 'top',
+                  })
+                }
               }
             }
           }
@@ -156,7 +160,7 @@ function Empresas() {
       if (resultFilter.length === 0 && filtro) {
         return toast({
           title: `Opa`,
-          description: `O CNPJ ${filtro}, não se enconta em nosso registros`,
+          description: `A empresa ${filtro}, não se enconta em nosso registros`,
           status: 'success',
           duration: 9000,
           isClosable: true,
@@ -173,19 +177,21 @@ function Empresas() {
             if (username !== session?.user.name) {
               resultado.push(item);
               if (filtro) {
-                return toast({
-                  render: () => (
-                    <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
-                      <chakra.p>{item.attributes.nome}</chakra.p>
-                      <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
-                      <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
-                    </Box>
-                  ),
-                  status: 'warning',
-                  duration: 9000,
-                  isClosable: true,
-                  position: 'top',
-                })
+                if (session?.user.pemission !== "Adm") {
+                  return toast({
+                    render: () => (
+                      <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                        <chakra.p>{item.attributes.nome}</chakra.p>
+                        <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
+                        <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
+                      </Box>
+                    ),
+                    status: 'warning',
+                    duration: 9000,
+                    isClosable: true,
+                    position: 'top',
+                  })
+                }
               }
             }
           }
@@ -198,19 +204,21 @@ function Empresas() {
           } else if (username) {
             if (username !== session?.user.name) {
               if (filtro) {
-                return toast({
-                  render: () => (
-                    <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
-                      <chakra.p>{item.attributes.nome}</chakra.p>
-                      <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
-                      <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
-                    </Box>
-                  ),
-                  status: 'warning',
-                  duration: 9000,
-                  isClosable: true,
-                  position: 'top',
-                })
+                if (session?.user.pemission !== "Adm") {
+                  return toast({
+                    render: () => (
+                      <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                        <chakra.p>{item.attributes.nome}</chakra.p>
+                        <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
+                        <chakra.p> Carteira: {item.attributes.user.data?.attributes.username}</chakra.p>
+                      </Box>
+                    ),
+                    status: 'warning',
+                    duration: 9000,
+                    isClosable: true,
+                    position: 'top',
+                  })
+                }
               }
             }
           }

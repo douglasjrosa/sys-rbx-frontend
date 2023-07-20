@@ -165,20 +165,22 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
       const userProps = response?.attributes?.user.data
       const vendedor = userProps?.attributes?.username
       if (vendedor) {
-        toast({
-          render: () => (
-            <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
-              <chakra.p>{response.attributes.nome}</chakra.p>
-              <chakra.p>CNPJ: {response.attributes.CNPJ}</chakra.p>
-              <chakra.p> Carteira: {vendedor}</chakra.p>
-            </Box>
-          ),
-          status: 'warning',
-          duration: 9000,
-          isClosable: true,
-          position: 'top',
-        })
-        setTimeout(() => router.push("/empresas/"), 5000)
+        if(session?.user.pemission !== 'Adm' && session?.user.name !== vendedor){
+          toast({
+            render: () => (
+              <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
+                <chakra.p>{response.attributes.nome}</chakra.p>
+                <chakra.p>CNPJ: {response.attributes.CNPJ}</chakra.p>
+                <chakra.p> Carteira: {vendedor}</chakra.p>
+              </Box>
+            ),
+            status: 'warning',
+            duration: 9000,
+            isClosable: true,
+            position: 'top',
+          })
+          setTimeout(() => router.push("/empresas/"), 5000)
+        }
       } else if (teset.data.length === 0) {
         setAutorize(true)
       } else {
