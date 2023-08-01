@@ -16,6 +16,7 @@ export const SelectMonth = (props: {
   const HandleClick = () =>{
     if (Object) {
       const [filtro] = Object.filter((item: any) => item.id === date)
+      console.log("🚀 ~ file: selectMont.tsx:19 ~ HandleClick ~ filtro:", filtro)
       props.onValue(filtro);
     }
   }
@@ -37,7 +38,7 @@ export const SelectMonth = (props: {
             onChange={(e) => {
               const value = parseInt(e.target.value);
               setDate(value);
-              props.onValue(value);
+              // props.onValue(value);
             }}
             value={date}
           >

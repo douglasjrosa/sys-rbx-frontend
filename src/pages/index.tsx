@@ -34,6 +34,7 @@ const Painel: React.FC = () => {
         try {
           const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`);
           setData(response.data);
+          console.log("🚀 ~ file: index.tsx:37 ~ response.data:", response.data)
         } catch (error) {
           console.log(error);
         } finally {
@@ -59,7 +60,7 @@ const Painel: React.FC = () => {
 
           // Verifica se a data de criação do projeto corresponde à dia.date atual
           if (isSameDay(createdAt, parseISO(dia.date))) {
-            if (c.attributes.andamento !== 5 && c.attributes.etapa !== 6) {
+            if (c.attributes.andamento !== 5 && c.attributes.etapa !== 6 || c.attributes.andamento === 1 && c.attributes.etapa === 6) {
               return true; // Inclui em clientesCorrespondentes
             }
           }
@@ -229,7 +230,7 @@ const Painel: React.FC = () => {
       return total;
     }
   }, 0);
- 
+
 
   function handleDateChange(month: any) {
     (async () => {

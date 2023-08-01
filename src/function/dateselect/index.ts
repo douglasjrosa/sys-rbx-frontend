@@ -8,7 +8,7 @@ export const generatePastAndFutureMonths = () => {
   const startOfMonth = new Date(currentYear, currentMonth, 1);
   const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
   const currentMonthName = startOfMonth.toLocaleString('pt-BR', { month: 'long' });
-  months.push({ id: 13, name: `${currentMonthName} de ${currentYear}`, month: currentMonth + 1, year: currentYear, start: startOfMonth, end: endOfMonth });
+  months.push({ id: 13, name: `${currentMonthName} de ${currentYear}`, month: currentMonth + 1, year: currentYear, start: startOfMonth.toISOString(), end: endOfMonth.toISOString() });
 
   // Gerar 12 meses anteriores
   for (let i = 1; i <= 12; i++) {
@@ -16,7 +16,7 @@ export const generatePastAndFutureMonths = () => {
     const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
     const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
     const monthName = startOfMonth.toLocaleString('pt-BR', { month: 'long' });
-    months.unshift({ id: 13 - i, name: `${monthName} de ${monthDate.getFullYear()}`, month: monthDate.getMonth() + 1, year: monthDate.getFullYear(), start: startOfMonth, end: endOfMonth });
+    months.unshift({ id: 13 - i, name: `${monthName} de ${monthDate.getFullYear()}`, month: monthDate.getMonth() + 1, year: monthDate.getFullYear(), start: startOfMonth.toISOString(), end: endOfMonth.toISOString() });
   }
 
   // Gerar 12 meses seguintes
@@ -25,7 +25,7 @@ export const generatePastAndFutureMonths = () => {
     const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
     const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
     const monthName = startOfMonth.toLocaleString('pt-BR', { month: 'long' });
-    months.push({ id: 13 + i, name: `${monthName} de ${monthDate.getFullYear()}`, month: monthDate.getMonth() + 1, year: monthDate.getFullYear(), start: startOfMonth, end: endOfMonth });
+    months.push({ id: 13 + i, name: `${monthName} de ${monthDate.getFullYear()}`, month: monthDate.getMonth() + 1, year: monthDate.getFullYear(), start: startOfMonth.toISOString(), end: endOfMonth.toISOString() });
   }
 
   return months;
