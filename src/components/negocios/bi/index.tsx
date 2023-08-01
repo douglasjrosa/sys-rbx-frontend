@@ -39,7 +39,12 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       const usuario: any = session?.user.name
       setUser(usuario);
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
-      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
+
+      const dataAtual = new Date();
+      const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
+      const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
+
+      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
         .then((response) => {
           const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
           const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
@@ -89,7 +94,11 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       const usuario = user
       setUser(usuario)
       const daysOfMonth = await getAllDaysOfMonth(MesAt);
-      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
+      const dataAtual = new Date();
+      const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
+      const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
+
+      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
         .then((response) => {
           const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
           const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
@@ -109,7 +118,11 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       (async () => {
         const usuario = User
         const daysOfMonth = await getAllDaysOfMonth(MesAt);
-        await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
+        const dataAtual = new Date();
+      const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
+      const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
+
+      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
           .then((response) => {
             const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
             const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
@@ -131,7 +144,11 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
         const usuario: any = session?.user.name
         setUser(usuario);
         const daysOfMonth = await getAllDaysOfMonth(MesAt);
-        await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${usuario}`)
+        const dataAtual = new Date();
+      const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
+      const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
+
+      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
           .then((response) => {
             const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
             const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)

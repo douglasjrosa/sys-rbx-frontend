@@ -27,6 +27,7 @@ import { BtmRetorno } from "@/components/elements/btmRetorno";
 import { SetValue } from "@/function/currenteValor";
 import { pedido } from "@/function/setpedido";
 import { BeatLoader } from "react-spinners";
+import formatarDataParaSaoPaulo from "@/function/formatHora";
 
 export const NegocioHeader = (props: {
   nBusiness: string;
@@ -56,7 +57,7 @@ export const NegocioHeader = (props: {
   const [Deadline, setDeadline] = useState("");
   const [NPedido, setNPedido] = useState("");
   const [Bpedido, setBpedido] = useState("");
-  const [DataRetorno, setDataRetorno] = useState<string>();
+  const [DataRetorno, setDataRetorno] = useState<any>();
   const [Data, setData] = useState<any | null>();
   const [DataItens, setDataItens] = useState<any | null>();
   const [load, setload] = useState<boolean>(false);
@@ -84,17 +85,19 @@ export const NegocioHeader = (props: {
       setBlocksave(props.nBusiness && parseInt(props.etapa) === 6 || parseInt(props.Status) === 1 && parseInt(props.etapa) === 6 ? true : false)
     }
   }, [props]);
+  const DataAtual = formatarDataParaSaoPaulo(new Date(Date.now()))
 
   const historicomsg = {
     vendedor: session?.user.name,
-    date: new Date().toLocaleString(),
+    date: DataAtual.toLocaleString(),
     msg: `Vendedor(a) ${session?.user.name}, alterou as informações desse Busines`,
   };
 
   const filtro = StatusPerca.filter((e: any) => e.id == Mperca).map((i: any) => i.title)
+
   const ChatConcluido = {
-    msg: Status === 5 ? `Parabens, você concluiu esse Negocio com susseso` : `Negocio perdido, motivo: ${filtro}`,
-    date: new Date().toISOString(),
+    msg: Status === 5 ? `Parabéns, você concluiu esse Negocio com sucesso` : `Negocio perdido, motivo: ${filtro}`,
+    date: DataAtual,
     user: "Sistema",
     susseso: Status === 5 ? 'green' : Status === 1 ? 'red' : '',
     flag: Status === 5 ? "Ganho" : 'Perca'
@@ -103,10 +106,11 @@ export const NegocioHeader = (props: {
   const history = [...props.historia, historicomsg];
 
   const Salve = async () => {
+
     if (Etapa === 6 && Status == 3) {
       toast({
         title: "Esse Negócio não pode ser finalizado",
-        description: "Ao concluir um Negócio, é obrigatorio definir um status",
+        description: "Ao concluir um Negócio, é obrigatório definir um status",
         status: "warning",
         duration: 9000,
         isClosable: true,
@@ -134,7 +138,7 @@ export const NegocioHeader = (props: {
           Mperca: Mperca,
           incidentRecord: [...props.chat, ChatConcluido],
           DataRetorno: DataRetorno,
-          date_conclucao: new Date(Date.now())
+          date_conclucao: DataAtual
         },
       };
 
@@ -386,7 +390,7 @@ export const NegocioHeader = (props: {
                   type={"date"}
                   fontSize="xs"
                   rounded="md"
-                  onChange={(e) => setDataRetorno(e.target.value)}
+                  onChange={(e) => setDataRetorno(formatarDataParaSaoPaulo(new Date(e.target.value)))}
                   value={DataRetorno}
                 />
               </Box>
@@ -598,7 +602,7 @@ export const NegocioHeader = (props: {
             <ModalHeader>Negócio Concluido</ModalHeader>
             {/* <ModalCloseButton /> */}
             <ModalBody>
-              <Text>Para finalizar é nessesario gerar um pedido para produção!</Text>
+              <Text>Para finalizar é necessário gerar um pedido para produção!</Text>
             </ModalBody>
             <ModalFooter>
               <Button

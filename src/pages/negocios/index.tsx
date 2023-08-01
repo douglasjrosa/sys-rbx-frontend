@@ -31,7 +31,12 @@ function Negocios() {
         setLoad(true);
         try {
           const daysOfMonth = await getAllDaysOfMonth(MesAt);
-          const response = await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${User}`);
+          const dataAtual = new Date();
+          const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
+          
+          const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0);
+
+          const response = await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`);
           setData(response.data);
           setTimeout(() => setLoad(false), 1500)
         } catch (error) {

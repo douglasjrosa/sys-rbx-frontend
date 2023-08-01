@@ -33,6 +33,7 @@ export const RenderCalendar = (props: { data: any }) => {
                 const clientes = item.clientes
 
                 const DateConclusaoFilter = clientes.filter((cliente: any) => cliente.corresponding === "dateConclusao")
+                console.log("🚀 ~ file: index.tsx:36 ~ {part?.map ~ DateConclusaoFilter:", DateConclusaoFilter)
 
 
                 const totalDateConclusao = DateConclusaoFilter.reduce((total: number, cliente: any) => {

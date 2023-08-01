@@ -34,7 +34,6 @@ const Painel: React.FC = () => {
         try {
           const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`);
           setData(response.data);
-          console.log("🚀 ~ file: index.tsx:37 ~ response.data:", response.data)
         } catch (error) {
           console.log(error);
         } finally {
@@ -100,7 +99,7 @@ const Painel: React.FC = () => {
             cliente.attributes.andamento === 1 &&
             cliente.attributes.etapa === 6
           ) {
-            console.log(cliente)
+            // console.log(cliente)
             corresponding = 'Perca';
             correspondingDate = cliente.attributes.date_conclucao;
           } else if (
