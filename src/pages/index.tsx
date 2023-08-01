@@ -57,11 +57,31 @@ const Painel: React.FC = () => {
           const deadline = parseISO(c.attributes.deadline);
           const dateConclusao = parseISO(c.attributes.date_conclucao);
 
-          return (
-            isSameDay(createdAt, parseISO(dia.date)) ||
-            isSameDay(deadline, parseISO(dia.date)) ||
-            isSameDay(dateConclusao, parseISO(dia.date))
-          );
+          // Verifica se a data de criação do projeto corresponde à dia.date atual
+          if (isSameDay(createdAt, parseISO(dia.date))) {
+            if (c.attributes.andamento !== 5 && c.attributes.etapa !== 6) {
+              return true; // Inclui em clientesCorrespondentes
+            }
+          }
+
+          // Verifica se a data de conclusão do projeto corresponde à dia.date atual
+          if (isSameDay(dateConclusao, parseISO(dia.date))) {
+            if (c.attributes.andamento === 5 && c.attributes.etapa === 6) {
+              return true; // Inclui em clientesCorrespondentes
+            }
+          }
+
+          // Verifica se a data do prazo do projeto corresponde à dia.date atual
+          if (c.attributes.andamento === 1 && c.attributes.etapa === 6) {
+            // Inclua em clientesCorrespondentes (se necessário)
+            // Você pode aplicar condições adicionais, se necessário, para este caso
+            // return true
+            if (isSameDay(dateConclusao, parseISO(dia.date))) {
+              return true; // Inclui em clientesCorrespondentes
+            }
+          }
+
+          return false; // Exclui de clientesCorrespondentes
         }).map((cliente: any) => {
           let corresponding;
           let correspondingDate;
@@ -69,6 +89,8 @@ const Painel: React.FC = () => {
           if (
             isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date)) &&
             cliente.attributes.andamento !== 5 &&
+            cliente.attributes.etapa !== 6 || isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date)) &&
+            cliente.attributes.andamento !== 1 &&
             cliente.attributes.etapa !== 6
           ) {
             corresponding = 'createdAt';
@@ -152,6 +174,7 @@ const Painel: React.FC = () => {
     }
   }, 0);
 
+
   const arrayclienteCreat = calendarData
     .flatMap((i: any) => {
       const listaCliente = i.map((l: any) => {
@@ -206,6 +229,7 @@ const Painel: React.FC = () => {
       return total;
     }
   }, 0);
+ 
 
   function handleDateChange(month: any) {
     (async () => {

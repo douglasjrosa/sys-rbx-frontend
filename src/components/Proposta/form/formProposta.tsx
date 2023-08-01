@@ -1,4 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import Loading from "@/components/elements/loading";
+import { CompBusiness } from "@/components/Proposta/business";
+import { ListaEmpresa } from "@/components/Proposta/ListaEmpresa";
+import { CompPrazo } from "@/components/Proposta/prazo";
+import { ProdutiList } from "@/components/Proposta/produt";
+import { TableConteudo } from "@/components/Proposta/tabela";
+import { SetValue } from "@/function/currenteValor";
 import {
   Box,
   Button,
@@ -12,13 +19,11 @@ import {
   Select,
   Table,
   TableContainer,
-  Tbody,
-  Text,
   Textarea,
   Th,
   Thead,
   Tr,
-  useToast,
+  useToast
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -27,13 +32,6 @@ import { SetStateAction, useEffect, useState } from "react";
 import { BsArrowLeftCircleFill, BsTrash } from "react-icons/bs";
 import { DateIso } from "../../../components/data/Date";
 import { ListFornecedor } from "../../../components/data/fornecedor";
-import { ListaEmpresa } from "@/components/Proposta/ListaEmpresa";
-import { CompBusiness } from "@/components/Proposta/business";
-import { CompPrazo } from "@/components/Proposta/prazo";
-import { ProdutiList } from "@/components/Proposta/produt";
-import { TableConteudo } from "@/components/Proposta/tabela";
-import Loading from "@/components/elements/loading";
-import { SetValue } from "@/function/currenteValor";
 
 const tempo = DateIso;
 
@@ -58,6 +56,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [tipoprazo, setTipoPrazo] = useState("");
   const [totalGeral, setTotalGeral] = useState("");
   const [Desconto, setDesconto] = useState("");
+  const [DescontoAdd, setDescontoAdd] = useState("");
+  const [DescontoTotal, setDescontoTotal] = useState("");
   const [saveNegocio, setSaveNegocio] = useState("");
   const [hirtori, setHistory] = useState([]);
   const [MSG, setMSG] = useState([]);
@@ -67,6 +67,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [ENVIO, setEMVIO] = useState("");
   const [incidentRecord, setIncidentRecord] = useState([]);
   const toast = useToast();
+
 
   if (props.ITENS && ListItens.length === 0) {
     setItens(props.ITENS);
@@ -121,7 +122,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       const total = Number(total1.toFixed(2))
       const somaTota = acc + total
       const TotoalConvert = Number(somaTota.toFixed(2));
-      return TotoalConvert;
+      return !DescontoAdd? TotoalConvert :  TotoalConvert + parseFloat(DescontoAdd);
     }, 0);
     return totalItem.toLocaleString("pt-br", {
       style: "currency",
@@ -153,7 +154,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
           const valor = Number(f.vFinal.replace(".", "").replace(",", "."));
           const ValorGeral =
             Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
-          const descont = ValorGeral * 0.05;
+          const descont =ValorGeral * 0.05;
           const somaDescontMin =
             Math.round(parseFloat(descont.toFixed(2)) * 100) / 100;
           const TotalDesc = ValorGeral - somaDescontMin;
@@ -178,7 +179,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       );
     }
   }, [prazo]);
- console.log(props.envio)
+  console.log(props.envio)
 
   const SalvarProdutos = async () => {
     setLoadingGeral(true)
@@ -261,7 +262,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
         const total = Number(total1.toFixed(2))
         const somaTota = acc + total
         const TotoalConvert = Number(somaTota.toFixed(2));
-        return TotoalConvert;
+        return !DescontoAdd? TotoalConvert :  TotoalConvert - parseFloat(DescontoAdd);
       }, 0);
 
       const totalValor = totalItem.toLocaleString("pt-br", {
@@ -296,126 +297,126 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
         id: Id,
         hirtori: hirtori,
         incidentRecord: MSG,
-        fornecedorId: session?.user.id
+        fornecedorId: session?.user.id,
+        descontoAdd: DescontoAdd,
       };
       if (ENVIO === 'POST') {
         console.log('aki')
 
-          const dadosPost = data;
-          const url = "/api/db/proposta/post";
-          await axios({
-            method: "POST",
-            url: url,
-            data: dadosPost,
-          })
-            .then(async (res: any) => {
-              console.log("🚀 ~ file: formProposta.tsx:312 ~ .then ~ res:", res.data)
-              const date = new Date();
-              const DateAtua = date.toISOString();
+        const dadosPost = data;
+        const url = "/api/db/proposta/post";
+        await axios({
+          method: "POST",
+          url: url,
+          data: dadosPost,
+        })
+          .then(async (res: any) => {
+            const date = new Date();
+            const DateAtua = date.toISOString();
 
-              const msg = {
-                vendedor: session?.user.name,
-                date: new Date().toISOString(),
-                msg: `Vendedor ${session?.user.name} criou essa proposta `,
-              };
-              const msg2 = {
-                date: DateAtua,
-                msg: `Proposta criada com o valor total ${dadosPost.totalGeral} contendo ${parseInt(dadosPost.itens.length) + 1
-                  } items`,
-                user: "Sistema",
-              };
+            const msg = {
+              vendedor: session?.user.name,
+              date: new Date().toISOString(),
+              msg: `Vendedor ${session?.user.name} criou essa proposta `,
+            };
+            const msg2 = {
+              date: DateAtua,
+              msg: `Proposta criada com o valor total ${dadosPost.totalGeral} contendo ${parseInt(dadosPost.itens.length) + 1
+                } items`,
+              user: "Sistema",
+            };
 
-              const record = [...dadosPost.hirtori, msg];
-              const record2 = [...dadosPost.incidentRecord, msg2];
+            const record = [...dadosPost.hirtori, msg];
+            const record2 = [...dadosPost.incidentRecord, msg2];
 
-              const data = {
-                data: {
-                  history: record,
-                  incidentRecord: record2,
-                  Budget: dadosPost.totalGeral
-                },
-              };
+            const data = {
+              data: {
+                history: record,
+                incidentRecord: record2,
+                Budget: dadosPost.totalGeral
+              },
+            };
 
-              await axios({
-                method: "PUT",
-                url: "/api/db/business/put/id/" + NNegocio,
-                data: data,
-              });
-
-              toast({
-                title: "Proposta Criada",
-                description: res.data.message,
-                status: "success",
-                duration: 1000,
-                isClosable: true,
-              });
-              console.log(NNegocio)
-              setTimeout(() => router.push(`/negocios/${NNegocio}`), 500)
-            })
-            .catch((err) => {
-              console.error(err.data);
+            await axios({
+              method: "PUT",
+              url: "/api/db/business/put/id/" + NNegocio,
+              data: data,
             });
+
+            toast({
+              title: "Proposta Criada",
+              description: res.data.message,
+              status: "success",
+              duration: 1000,
+              isClosable: true,
+            });
+            console.log(NNegocio)
+            setTimeout(() => router.push(`/negocios/${NNegocio}`), 500)
+          })
+          .catch((err) => {
+            console.error(err.data);
+          });
 
       } else {
 
-          const dadosPost = data;
-          const url = `/api/db/proposta/put/${dadosPost.id}`;
-          await axios({
-            method: "PUT",
-            url: url,
-            data: dadosPost,
-          })
-            .then(async (res: any) => {
-              console.log("🚀 ~ file: [pedido].tsx:80 ~ .then ~ res:", res)
-              const date = new Date();
-              const DateAtua = date.toISOString();
+        const dadosPost = data;
+        const url = `/api/db/proposta/put/${dadosPost.id}`;
+        await axios({
+          method: "PUT",
+          url: url,
+          data: dadosPost,
+        })
+          .then(async (res: any) => {
+            console.log("🚀 ~ file: [pedido].tsx:80 ~ .then ~ res:", res)
+            const date = new Date();
+            const DateAtua = date.toISOString();
 
-              const msg = {
-                vendedor: session?.user.name,
-                date: new Date().toISOString(),
-                msg: `Vendedor ${session?.user.name} atualizou essa proposta `,
-              };
+            const msg = {
+              vendedor: session?.user.name,
+              date: new Date().toISOString(),
+              msg: `Vendedor ${session?.user.name} atualizou essa proposta `,
+            };
 
-              const msg2 = {
-                date: DateAtua,
-                msg: `Proposta atualizada, valor total agora é ${dadosPost.totalGeral}, pasando a ter ${parseInt(dadosPost.itens.length) + 1
-                  } items`,
-                user: "Sistema",
-              };
+            const msg2 = {
+              date: DateAtua,
+              msg: `Proposta atualizada, valor total agora é ${dadosPost.totalGeral}, passando a ter ${parseInt(dadosPost.itens.length) + 1
+                } items`,
+              user: "Sistema",
+            };
 
-              const record = [...dadosPost.hirtori, msg];
-              const record2 = [...dadosPost.incidentRecord, msg2];
+            const record = [...dadosPost.hirtori, msg];
+            const record2 = [...dadosPost.incidentRecord, msg2];
 
-              const data = {
-                data: {
-                  history: record,
-                  incidentRecord: record2,
-                  Budget: dadosPost.totalGeral
-                },
-              };
+            const data = {
+              data: {
+                history: record,
+                incidentRecord: record2,
+                Budget: dadosPost.totalGeral
+              },
+            };
 
-              await axios({
-                method: "PUT",
-                url: "/api/db/business/put/id/" + PEDIDO,
-                data: data,
-              })
-                .then((resp) => console.log(resp.data))
-                .catch((err) => console.log(err))
-
-              setTimeout(() => router.push(`/negocios/${PEDIDO}`), 500)
-
-              toast({
-                title: "Proposta Atualizada",
-                description: res.data.message,
-                status: "success",
-                duration: 1000,
-                isClosable: true,
-              });
+            await axios({
+              method: "PUT",
+              url: "/api/db/business/put/id/" + PEDIDO,
+              data: data,
             })
-            .catch((err: any) => {
-              setLoadingGeral(false)
-              console.log(err.response);
+              .then((resp) => console.log(resp.data))
+              .catch((err) => console.log(err))
+
+            setTimeout(() => router.push(`/negocios/${PEDIDO}`), 500)
+
+            toast({
+              title: "Proposta Atualizada",
+              description: res.data.message,
+              status: "success",
+              duration: 1000,
+              isClosable: true,
             });
+          })
+          .catch((err: any) => {
+            setLoadingGeral(false)
+            console.log(err.response);
+          });
       }
 
     }
@@ -477,9 +478,25 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
 
   const setFreteSave = (e: any) => {
     const Valor = e.target.value
+    const sinal = Valor.split("")
     const valorLinpo = SetValue(Valor)
     setFreteCif(!valorLinpo ? '0,00' : valorLinpo)
   }
+
+  const setAdddescont = (e: any) => {
+    const Valor = e.target.value
+    const sinal = Valor.split("")
+    if (!Valor){
+      setFreteCif('0,00')
+    } else if(sinal[0] === '-'){
+      const valorLinpo = SetValue(Valor)
+      setFreteCif( sinal[0] + valorLinpo)
+    }else{
+      const valorLinpo = SetValue(Valor)
+      setFreteCif(valorLinpo)
+    }
+  }
+
 
 
   return (
@@ -630,6 +647,29 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                 value={freteCif}
               />
             </Box>
+            {session?.user.pemission !== 'Adm' ? null : (
+              <>
+                <Box>
+                  <FormLabel
+                    fontSize="xs"
+                    fontWeight="md"
+                  >
+                    Desconto Adicional
+                  </FormLabel>
+                  <Input
+                    type="text"
+                    textAlign={"end"}
+                    size="sm"
+                    w={"7rem"}
+                    fontSize="xs"
+                    rounded="md"
+                    onChange={(e) => setDescontoAdd(e.target.value)}
+                    onBlur={setAdddescont}
+                    value={DescontoAdd}
+                  />
+                </Box>
+              </>
+            )}
           </Box>
           <Box mt={7}>
             <Heading size="sm">Itens da proposta comercial</Heading>
@@ -723,6 +763,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                   <TableConteudo
                     Itens={ListItens}
                     Prazo={prazo}
+                    descontoAdd={DescontoAdd}
                     loading={loadingTable}
                     returnItem={getItemFinal}
                   />

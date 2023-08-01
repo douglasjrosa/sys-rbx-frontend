@@ -75,7 +75,7 @@ function Empresas() {
         setOPen(false)
         return toast({
           title: `Opa`,
-          description: `O CNPJ ${formatDocument(filtro, 'CNPJ')}, não se enconta em nosso registros`,
+          description: `O CNPJ ${formatDocument(filtro, 'CNPJ')}, não se encontra em nosso registros`,
           status: 'success',
           duration: 9000,
           isClosable: true,
@@ -160,14 +160,14 @@ function Empresas() {
       if (resultFilter.length === 0 && filtro) {
         return toast({
           title: `Opa`,
-          description: `A empresa ${filtro}, não se enconta em nosso registros`,
+          description: `A empresa ${filtro}, não se encontra em nosso registros`,
           status: 'success',
           duration: 9000,
           isClosable: true,
         })
       }
       resultFilter.forEach((item: any) => {
-        const username = item.attributes.user.data?.attributes.username;
+        const username = item.attributes.user.data?.attribute.username;
         if (session?.user.pemission === "Adm") {
           if (username === session?.user.name) {
             resultadouser.push(item);
@@ -231,13 +231,13 @@ function Empresas() {
 
   return (
     <>
-      <Box w={'100%'} h={'100%'} bg={'gray.800'} color={'white'} px={5} py={2} >
+      <Box w={'100%'} h={'100%'} bg={'gray.800'} color={'white'} px={5} py={2} fontSize={'0.8rem'}>
         <Heading>Empresas</Heading>
         <Flex w={'100%'} py={'2rem'} justifyContent={'space-between'} flexDir={'row'} alignItems={'self-end'} px={6} gap={6} borderBottom={'1px'} borderColor={'white'} mb={'1rem'}>
           <Box>
             <FiltroEmpresa empresa={filterEmpresa} />
           </Box>
-          <Box>
+          <Box hidden>
             <FiltroCnpj empresa={filterCnpj} rrastreio={(resp: any) => {
               setOPen(resp)
               setText(resp)

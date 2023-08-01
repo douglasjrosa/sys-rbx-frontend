@@ -34,10 +34,10 @@ export const RenderCalendar = (props: { data: any }) => {
 
                 const DateConclusaoFilter = clientes.filter((cliente: any) => cliente.corresponding === "dateConclusao")
 
+
                 const totalDateConclusao = DateConclusaoFilter.reduce((total: number, cliente: any) => {
                   const budget = cliente.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", ".");
                   const valor = total + parseFloat(budget);
-                  // const valor = SetValue(cliente.attributes.Budget);
                   return valor
                 }, 0);
 

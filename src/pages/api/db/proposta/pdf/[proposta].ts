@@ -7,17 +7,17 @@ import { getData } from "./lib/getinf";
 
 function formatarTelefone(telefone: any) {
   // Remove letras e caracteres especiais
-  const numeros = telefone.replace(/\D/g, "");
+  const números = telefone.replace(/\D/g, "");
 
-  if (numeros.length === 11) {
+  if (números.length === 11) {
     // Formato (99) 9 9999-9999
-    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 3)} ${numeros.slice(
+    return `(${números.slice(0, 2)}) ${números.slice(2, 3)} ${números.slice(
       3,
       7
-    )}-${numeros.slice(7)}`;
-  } else if (numeros.length === 10) {
+    )}-${números.slice(7)}`;
+  } else if (números.length === 10) {
     // Formato (99) 9999-9999
-    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(
+    return `(${números.slice(0, 2)}) ${números.slice(2, 6)}-${números.slice(
       6
     )}`;
   } else {
@@ -517,6 +517,7 @@ export default async function GetEmpresa(
                                   style: "clienteFornecedor",
                                 },
                               ],
+
                               [
                                 {
                                   margin: [0, 5, 0, 0],
@@ -528,10 +529,11 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: infos.prazo,
+                                  text: infos.condi === 'Antecipado' || infos.condi === 'Antecipado' ? null: infos.prazo,
                                   style: "clienteFornecedor",
                                 },
                               ],
+
                               [
                                 {
                                   margin: [0, 5, 0, 0],

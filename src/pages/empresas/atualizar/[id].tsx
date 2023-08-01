@@ -34,7 +34,7 @@ export default function EmpresaId() {
           if (DataEmp?.attributes.user.data?.attributes.username !== session?.user.name) {
             if (session?.user.pemission !== 'Adm') {
               toast({
-                title: `O clienete ${DataEmp?.attributes.nome}`,
+                title: `O cliente ${DataEmp?.attributes.nome}`,
                 description: `pertence ao vendedor(a) ${DataEmp?.attributes.user.data?.attributes.username}`,
                 status: 'warning',
                 duration: 9000,

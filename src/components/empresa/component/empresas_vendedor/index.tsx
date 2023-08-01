@@ -1,12 +1,14 @@
 import Loading from "@/components/elements/loading";
+import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { SetValue } from "@/function/currenteValor";
 import { Box, Flex, Heading, IconButton, Table, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr } from "@chakra-ui/react"
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { FaMoneyBillWaveAlt } from "react-icons/fa";
+import { HiChatBubbleLeftRight } from "react-icons/hi2";
 import { GrEdit } from "react-icons/gr";
+import { FaMoneyBillAlt } from "react-icons/fa";
 
 export const CarteiraVendedor = (props: { data: any }) => {
   const [Data, setData] = useState<any | null>(null);
@@ -20,6 +22,22 @@ export const CarteiraVendedor = (props: { data: any }) => {
   }, [props.data])
 
   const BodyTabela = !!Data && Data.map((i: any) => {
+
+    const negocio = i.attributes.businesses.data.length > 0 ? i.attributes.businesses.data : null
+
+    const iconeTest = negocio.filter((n: any) => {
+      if(n.attributes.andamento === 3 && n.attributes.etapa === 1) {
+        return 'true'
+      } else {
+        return 'false'
+      }
+    });
+
+    console.log('teste', iconeTest)
+
+
+    const interacao = encontrarObjetoMaisProximoComCor(i.attributes.interacaos.data)
+    
 
     const valor = SetValue(i.attributes.valor_ultima_compra)
 
@@ -38,11 +56,27 @@ export const CarteiraVendedor = (props: { data: any }) => {
 
     const text = !UltimaCompra ? '' : ` - há ${diferencaEmDias} dias`
 
+    const color = '';
+
+    const icons = '';
+
     return (
       <>
-        <tr key={i.id} style={{ borderBottom: '1px solid #ffff', cursor: 'pointer' }} onClick={() => router.push(`/empresas/atualizar/${i.id}`)}>
+        <tr key={i.id} style={{ borderBottom: '1px solid #ffff', cursor: 'pointer' }} onClick={() => {
+          // router.push(`/empresas/atualizar/${i.id}`)
+          router.push(`/empresas/CNPJ/${i.id}`)
+        }}>
           <td style={{ padding: '0.9rem 1.2rem' }}>{i.attributes.nome}</td>
-          <td style={{ padding: '0.9rem 1.2rem' }}>{valor + text}</td>
+          <td style={{ padding: '0.9rem 1.2rem' }}>{!!interacao && (
+            <Flex w={'100%'} justifyContent={'center'}>
+              <HiChatBubbleLeftRight color={interacao.cor} fontSize={'2rem'} />
+            </Flex>
+          )}</td>
+          <td style={{ padding: '0.9rem 1.2rem' }}>{iconeTest.length > 0 && (
+            <Flex w={'100%'} justifyContent={'center'}>
+            <FaMoneyBillAlt color={'green'} fontSize={'2rem'} />
+          </Flex>
+          )}</td>
         </tr>
       </>
     )
@@ -69,7 +103,8 @@ export const CarteiraVendedor = (props: { data: any }) => {
             <thead>
               <tr style={{ background: '#ffffff12', borderBottom: '1px solid #ffff' }}>
                 <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' }}>Nome</th>
-                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '36%' }}>Última compra</th>
+                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '6%' }}>Interações</th>
+                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '6%' }}>Negocios</th>
               </tr>
             </thead>
             <tbody>

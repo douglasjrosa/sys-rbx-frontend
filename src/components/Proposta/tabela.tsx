@@ -18,6 +18,7 @@ export const TableConteudo = (props: {
   Prazo: string;
   loading: boolean;
   returnItem: any;
+  descontoAdd: string
   // retunLoading: any;
 }): ReactJSXElement => {
   const [ListItens, setItens] = useState<any>([]);
@@ -73,8 +74,8 @@ export const TableConteudo = (props: {
         const somaAcrescimo =
           acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
         const somaDescont = descont * i.Qtd;
-        const somaDescontMin =
-          Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
+        const somaDescontMin =!props.descontoAdd?
+          Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100 : Math.round(parseFloat(somaDescont.toFixed(2)) + parseFloat(props.descontoAdd) * 100) / 100 ;
         const TotalItem = somaAcrescimo - somaDescontMin;
         const result =
           Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
