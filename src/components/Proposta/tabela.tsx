@@ -23,11 +23,15 @@ export const TableConteudo = (props: {
 }): ReactJSXElement => {
   const [ListItens, setItens] = useState<any>([]);
   const [LoadingTable, setLoadingTable] = useState<boolean>(false);
+  const [DescAdd, setDescAdd] = useState<any>(0.00)
 
   useEffect(() => {
     setLoadingTable(props.loading);
     setItens(props.Itens);
-  }, [props.Itens, props.loading]);
+    if (props.descontoAdd) {
+      setDescAdd(props.descontoAdd);
+    }
+  }, [props.Itens, props.loading, props.descontoAdd]);
 
   const handleAdd = (Obj: any, id: number) => {
     const [ListaObj] = ListItens.filter((i: any) => i.id === id);
@@ -73,9 +77,10 @@ export const TableConteudo = (props: {
           props.Prazo === "Antecipado" ? ValorOriginal * 0.05 : 0;
         const somaAcrescimo =
           acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
-        const somaDescont = descont * i.Qtd;
-        const somaDescontMin =!props.descontoAdd?
-          Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100 : Math.round(parseFloat(somaDescont.toFixed(2)) + parseFloat(props.descontoAdd) * 100) / 100 ;
+          const DesCalc = descont + DescAdd
+        const somaDescont = DesCalc * i.Qtd;
+        const somaDescontMin =
+        Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
         const TotalItem = somaAcrescimo - somaDescontMin;
         const result =
           Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;

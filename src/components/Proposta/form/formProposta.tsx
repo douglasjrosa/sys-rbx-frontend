@@ -367,7 +367,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
           data: dadosPost,
         })
           .then(async (res: any) => {
-            console.log("🚀 ~ file: [pedido].tsx:80 ~ .then ~ res:", res)
+
             const date = new Date();
             const DateAtua = date.toISOString();
 
@@ -487,13 +487,13 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     const Valor = e.target.value
     const sinal = Valor.split("")
     if (!Valor){
-      setFreteCif('0,00')
+      setDescontoAdd('0,00')
     } else if(sinal[0] === '-'){
       const valorLinpo = SetValue(Valor)
-      setFreteCif( sinal[0] + valorLinpo)
+      setDescontoAdd( sinal[0] + valorLinpo)
     }else{
       const valorLinpo = SetValue(Valor)
-      setFreteCif(valorLinpo)
+      setDescontoAdd(valorLinpo)
     }
   }
 
@@ -663,8 +663,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                     w={"7rem"}
                     fontSize="xs"
                     rounded="md"
-                    onChange={(e) => setDescontoAdd(e.target.value)}
-                    onBlur={setAdddescont}
+                    onChange={setAdddescont}
                     value={DescontoAdd}
                   />
                 </Box>
