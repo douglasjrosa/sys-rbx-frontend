@@ -1,8 +1,6 @@
 import { EtapasNegocio } from "@/components/data/etapa";
 import { StatusAndamento } from "@/components/data/status";
 import Loading from "@/components/elements/loading";
-import { SelectUser } from "@/components/negocios/bi/painel/calendario/select/SelecUser";
-import { SelectEmpresas } from "@/components/negocios/bi/painel/calendario/select/selectEmpresas";
 import { getAllDaysOfMonth } from "@/function/Datearray";
 import { SetValue } from "@/function/currenteValor";
 import { Box, Flex, Table, TableContainer, Tbody, Td, Th, Thead, Tr, chakra } from "@chakra-ui/react";
@@ -14,6 +12,8 @@ import { BtCreate } from "../component/butonCreate";
 import { Ausente } from "./ausente";
 import { NovoCliente } from "./novo";
 import { Presente } from "./presente";
+import { SelectUser } from "@/components/painel/calendario/select/SelecUser";
+import { SelectEmpresas } from "@/components/painel/calendario/select/selectEmpresas";
 
 
 export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdados: number }) => {
