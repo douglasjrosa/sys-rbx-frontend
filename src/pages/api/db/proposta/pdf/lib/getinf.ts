@@ -62,7 +62,10 @@ export const getData = async (proposta: any) => {
     const fornecedor = dadosFornecedor;
     const cliente = inf.empresa.data.attributes;
     const condi = inf.condi;
-    const Desconto = inf.desconto
+    const Desconto_Converte = parseFloat(inf.desconto.replace('.', '').replace(',', '.'));
+    const Desconto = !Desconto_Converte? 0 : Desconto_Converte;
+    const DescontoAdd_Converte = parseFloat(inf.descontoAdd.replace('.', '').replace(',', '.'))
+    const DescontoAdd = !DescontoAdd_Converte? 0 : DescontoAdd_Converte
     const itens = inf.itens;
     const prazo = inf.prazo === null ? "" : inf.prazo;
     const venc = inf.vencPrint;
@@ -97,6 +100,7 @@ export const getData = async (proposta: any) => {
       Vendedor,
       cliente_pedido,
       Desconto,
+      DescontoAdd,
       dataEntrega
     };
     return data;

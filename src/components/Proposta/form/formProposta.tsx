@@ -56,7 +56,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [tipoprazo, setTipoPrazo] = useState("");
   const [totalGeral, setTotalGeral] = useState("");
   const [Desconto, setDesconto] = useState("");
-  const [DescontoAdd, setDescontoAdd] = useState("");
+  const [DescontoAdd, setDescontoAdd] = useState('');
   const [DescontoTotal, setDescontoTotal] = useState("");
   const [saveNegocio, setSaveNegocio] = useState("");
   const [hirtori, setHistory] = useState([]);
@@ -99,7 +99,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       setHistory(resp.attributes.history);
       setCnpj(resp.attributes.empresa.data.attributes.CNPJ)
       setIncidentRecord(resp.attributes.incidentRecord)
-    }
+      const descontodb = PROPOSTA?.attributes.descontoAdd
+      setDescontoAdd(!descontodb ? 0.00 : descontodb.replace(".", "").replace(",", "."))    }
   }, []);
 
 
@@ -122,9 +123,11 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       const total = Number(total1.toFixed(2))
       const somaTota = acc + total
       const TotoalConvert = Number(somaTota.toFixed(2));
-      return !DescontoAdd? TotoalConvert :  TotoalConvert + parseFloat(DescontoAdd);
+      return !DescontoAdd? TotoalConvert :  TotoalConvert - parseFloat(DescontoAdd.replace('.', '').replace(',', '.'));
     }, 0);
-    return totalItem.toLocaleString("pt-br", {
+
+    const ValorAtt = totalItem
+    return ValorAtt.toLocaleString("pt-br", {
       style: "currency",
       currency: "BRL",
     });
@@ -133,9 +136,10 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const DescontoGeral = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const descontos = ListItens.map((i: any) => i.desconto * i.Qtd);
-    const total = descontos.reduce(
+    const total1 = descontos.reduce(
       (acc: number, valorAtual: number) => acc + valorAtual
     );
+    const total = !DescontoAdd? total1 : total1 + parseFloat(DescontoAdd.replace('.', '').replace(',', '.'));
     return total.toLocaleString("pt-br", {
       style: "currency",
       currency: "BRL",
@@ -298,10 +302,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
         hirtori: hirtori,
         incidentRecord: MSG,
         fornecedorId: session?.user.id,
-        descontoAdd: DescontoAdd,
+        descontoAdd: DescontoAdd.toString(),
       };
       if (ENVIO === 'POST') {
-        console.log('aki')
 
         const dadosPost = data;
         const url = "/api/db/proposta/post";
