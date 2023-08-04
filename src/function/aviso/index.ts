@@ -26,43 +26,41 @@ export const calcularDiferencaEmDias = (data1: Date, data2: Date): number => {
 };
 
 // Função para encontrar o objeto mais próximo da data atual e definir a cor
-export const encontrarObjetoMaisProximoComCor = (
-  dados: ObjetoDados[]
-): { data: Date; cor: 'yellow' | 'red' | 'blue', info: string } | null => {
-  const dataAtual = startOfDay(new Date()); // Zera o horário da data atual
-  let objetoMaisProximo: ObjetoDados | null = null;
-  let menorDiferencaEmDias = Number.MAX_SAFE_INTEGER;
-  let objetoMaisProximoDataMaior: ObjetoDados | null = null;
 
-  for (const objeto of dados) {
+
+export const encontrarObjetoMaisProximoComCor = (
+  dados: any[]
+): { data: Date | null; cor: 'yellow' | 'red' | 'blue'| 'gray', info: string } => {
+  const dataAtual = startOfDay(new Date()); // Zera o horário da data atual
+  let objetoMaisProximo: any | null = null;
+  let menorDiferencaEmDias = Number.MAX_SAFE_INTEGER;
+  let objetoMaisProximoDataMaior: any | null = null;
+
+  const data = dados.slice(-1)
+
+
+  for (const objeto of data) {
+    if (!objeto.attributes.proxima) {
+      // Caso não haja data disponível, retorna o objeto específico
+      return { data: null, cor: 'gray', info: 'Você não tem interação agendada' };
+    }
+
     const proximaData = startOfDay(parseISO(objeto.attributes.proxima)); // Converte a string para um objeto Date e zera o horário
-    const diferencaEmDias = differenceInDays(dataAtual, proximaData); // Calcula a diferença em dias
+  
+    const diferencaEmDias = calcularDiferencaEmDias(dataAtual, proximaData); // Calcula a diferença em dias
 
     if (diferencaEmDias === 0) {
       return { data: proximaData, cor: 'yellow', info : 'Você tem interação agendada para hoje' };
     }
 
-    if (diferencaEmDias < 0 && diferencaEmDias > -1) {
-      return { data: proximaData, cor: 'red', info: 'Você tem interação que ja passou, a data agendada era' };
+    if (diferencaEmDias < 0) {
+      return { data: proximaData, cor: 'red', info: 'Você tem interação que já passou, a data agendada era' };
     }
 
-    if (diferencaEmDias > 1 && diferencaEmDias <= 5) {
-      if (proximaData > dataAtual) {
-        if (!objetoMaisProximoDataMaior || proximaData < new Date(Date.parse(objetoMaisProximoDataMaior.attributes.proxima))) {
-          objetoMaisProximoDataMaior = objeto;
-        }
-      } else {
-        if (diferencaEmDias < menorDiferencaEmDias) {
-          menorDiferencaEmDias = diferencaEmDias;
-          objetoMaisProximo = objeto;
-        }
-      }
+    if (diferencaEmDias > 0) {
+      return { data: proximaData, cor: 'blue', info: 'Você tem interação agendada para'};
     }
   }
 
-  if (objetoMaisProximoDataMaior) {
-    return { data: new Date(Date.parse(objetoMaisProximoDataMaior.attributes.proxima)), cor: 'blue', info: 'Você tem interação agendada para'};
-  }
-
-  return objetoMaisProximo ? { data: new Date(Date.parse(objetoMaisProximo.attributes.proxima)), cor: 'blue', info: 'Você tem interação agendada para' } : null;
+  return objetoMaisProximo ? { data: new Date(Date.parse(objetoMaisProximo.attributes.proxima)), cor: 'blue', info: 'Você tem interação agendada para' } : { data: null, cor: 'gray', info: 'Você não tem interação agendada' };
 };

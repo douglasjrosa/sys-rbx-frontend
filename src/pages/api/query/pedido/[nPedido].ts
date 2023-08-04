@@ -23,7 +23,7 @@ export default async function PedidoBling(
         const getPedido = await PostPedido(data);
         res.status(200).send(getPedido);
       } else {
-        res.status(500).json({ message: "esse negocio nao esta concluido" });
+        res.status(500).json({ message: "esse negocio nao esta Concluido" });
       }
     } catch (error: any) {
       console.log("🚀 ~ file: [nPedido].ts:25 ~ error:", error)

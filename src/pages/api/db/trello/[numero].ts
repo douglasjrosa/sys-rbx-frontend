@@ -46,6 +46,7 @@ export default async function PostTrello(
     });
     const pedido = requestPedido.data.data[0];
 
+
     const lote = await GetLoteProposta(numero);
 
     const items = pedido.attributes.itens;
@@ -55,12 +56,14 @@ export default async function PostTrello(
     const frete =
       pedido.attributes.frete === "" ? "Fob" : pedido.attributes.frete;
     const pgto = pedido.attributes.condi;
+    const Prazo = pedido.attributes.prazo;
     const Bpedido = pedido.attributes.Bpedido;
     const estrega = pedido.attributes.dataEntrega;
     const VendedorName = pedido.attributes.user.data.attributes.username;
     const fornecedorName = pedido.attributes.fornecedorId.data.attributes.nome;
-    const userKey = '7f3afdbb72cb272f2ef99089cd9066c8';
-    const userToken = "ad565886cde4f9d1466040864b94a879d2281ec2f83c43d9cf0d74dbd752509d";
+    const userKey = "7f3afdbb72cb272f2ef99089cd9066c8";
+    const userToken =
+      "ad565886cde4f9d1466040864b94a879d2281ec2f83c43d9cf0d74dbd752509d";
     const pedidoCliente = pedido.attributes.cliente_pedido;
 
     const Prefuncionario = await GetTrelloId();
@@ -81,11 +84,13 @@ export default async function PostTrello(
       "5d7bbf629972e80b374829bb" /*Fábrica*/,
     ];
     try {
-      const promises = items.map(async (i: any) => {
+      const promises = items.map(async (i: any, index: number) => {
         const Prenlote = lote
           .filter(
             (f: any) =>
-              f.attributes.produtosId == i.prodId && f.attributes.qtde == i.Qtd && f.attributes.item_id == i.id
+              f.attributes.produtosId == i.prodId &&
+              f.attributes.qtde == i.Qtd &&
+              f.attributes.item_id == i.id
           )
           .map((p: any) => p.attributes.lote);
         const nlote = Prenlote[0];
@@ -113,12 +118,13 @@ export default async function PostTrello(
         Empresa: ${fornecedorName},
         Tipo de frete: ${frete},
         Bling: Nº. ${Bpedido},
-        Pedido: Nº. ${pedidoCliente},
+        Negocio Id: Nº. ${negocioId},
         Lote: Nº. ${nlote},
         Forma de pagamento: ${pgto},
+        ${pgto === 'A Prazo' && (`Prazo de pagamento: ${Prazo}`)}
         Modelo: ${i.modelo}`,
           idMembers: trelloMembers,
-          due: estrega,
+          due: estrega+'T16:00:00.000Z',
           dueReminder: 2880,
           pos: "top",
         });
@@ -135,16 +141,21 @@ export default async function PostTrello(
           data: dataBoard,
         };
 
+        // Introduce a 1-second delay between each iteration
+        const delay = (ms: number) =>
+          new Promise((resolve) => setTimeout(resolve, ms));
+        await delay(500 * index);
+
         return await axios
           .request(config)
-          .then(async(res: any) => {
-            const resposta = `card id: ${res.data.id} pode ser acessado pelo link: ${res.data.shortUrl}`
+          .then(async (res: any) => {
+            const resposta = `card id: ${res.data.id} pode ser acessado pelo link: ${res.data.shortUrl}`;
             const text = {
-              "msg": resposta,
-              "date": new Date().toISOString(),
-              "user": "Sistema"
+              msg: resposta,
+              date: new Date().toISOString(),
+              user: "Sistema",
             };
-            await IncidentRecord(text, negocioId)
+            await IncidentRecord(text, negocioId);
             return resposta;
           })
           .catch(async (err: any) => {
@@ -174,7 +185,6 @@ export default async function PostTrello(
       });
 
       const result = await Promise.all(promises);
-      console.log("🚀 ~ file: [numero].ts:172 ~ result:", result)
       res.status(201).json(result);
     } catch (error: any) {
       res.status(error.status || 400).json(error);

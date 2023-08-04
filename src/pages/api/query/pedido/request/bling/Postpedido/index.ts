@@ -9,13 +9,17 @@ export const PostPedido = async (dados: any) => {
   const apiKeyRenato: any = process.env.ATORIZZATION_TOKEN_BLING_RENATO;
 
   const DaDos = await dados.attributes;
+  console.log("🚀 ~ file: index.ts:12 ~ PostPedido ~ DaDos:", DaDos)
 
   const empresa = DaDos.empresa.data.attributes;
   const empresaId = DaDos.empresa.data.id;
   const empresaUlt = DaDos.empresa.data.attributes.ultima_compra;
   const Produto = await DaDos.itens;
+  const NPedido = DaDos.nPedido
 
-  const apiKey = DaDos.fornecedorId.data.attributes.nome === 'MAX BRASIL DERIVADOS DE MADEIRA LTDA'? apiKeyMax : DaDos.fornecedorId.data.attributes.nome === 'BRAGHETO PALETES E EMBALAGENS LTDA'? apiKeyBragheto : apiKeyRenato
+
+  const apiKey = DaDos.fornecedorId.data.attributes.nome == 'Max Brasil Derivados de Madeira'? apiKeyMax : DaDos.fornecedorId.data.attributes.nome == 'Bragheto Paletes e Embalagens'? apiKeyBragheto : apiKeyRenato
+
 
 
   const Produtos = Produto.map((i: any) => {
@@ -169,9 +173,9 @@ export const PostPedido = async (dados: any) => {
      <nf_produtor_rural_referenciada />
      <vlr_frete>${!DaDos.valorFrete? 0.00 : parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
      <vlr_desconto>${desconto}</vlr_desconto>
-     <obs>${DaDos.obs}</obs>
+     <obs>${DaDos.obs}${!!NPedido && (", Pedido de N°: " + NPedido)}</obs>
   </pedido>`;
-  console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
+  // console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
 
   try {
     const formData = new FormData();
@@ -182,7 +186,7 @@ export const PostPedido = async (dados: any) => {
       method: "POST",
       body: formData,
     };
-      console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
+      // console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
 
     const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();

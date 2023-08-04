@@ -25,11 +25,13 @@ export const TableConteudo = (props: {
   const [LoadingTable, setLoadingTable] = useState<boolean>(false);
   const [DescAdd, setDescAdd] = useState<any>(0.00)
 
+
   useEffect(() => {
     setLoadingTable(props.loading);
     setItens(props.Itens);
     if (props.descontoAdd) {
-      setDescAdd(props.descontoAdd);
+      setDescAdd(parseFloat(props.descontoAdd.replace('.', '').replace(',', '.')));
+
     }
   }, [props.Itens, props.loading, props.descontoAdd]);
 
@@ -56,8 +58,6 @@ export const TableConteudo = (props: {
       };
       const valor2Original = i.vFinal.replace(".", "");
       const ValorProd = Number(valor2Original.replace(",", "."));
-      const somaDescont = ValorProd * i.Qtd;
-      const somaDescontMin = parseInt(somaDescont.toFixed(2));
 
       const total = () => {
         if (i.Qtd === 1 && i.mont === false && i.expo === false) {
@@ -77,7 +77,7 @@ export const TableConteudo = (props: {
           props.Prazo === "Antecipado" ? ValorOriginal * 0.05 : 0;
         const somaAcrescimo =
           acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
-          const DesCalc = descont + DescAdd
+          const DesCalc = descont 
         const somaDescont = DesCalc * i.Qtd;
         const somaDescontMin =
         Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;

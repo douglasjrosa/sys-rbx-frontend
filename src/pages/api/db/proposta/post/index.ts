@@ -11,6 +11,7 @@ export default async function PostEmpresa(
   if (req.method === "POST") {
     // const data = JSON.parse(req.body);
     const data = req.body;
+    console.log("🚀 ~ file: index.ts:14 ~ data:", data)
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
       baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
@@ -104,10 +105,11 @@ export default async function PostEmpresa(
         businessId: data.business,
         obs: data.obs,
         cliente_pedido: data.cliente_pedido,
-        dataEntrega: data.dataEntrega
+        dataEntrega: data.dataEntrega,
+        descontoAdd: data.descontoAdd
       },
     };
-    console.log(DataPost);
+
     await axiosRequet
       .post(`/pedidos`, DataPost)
       .then(async (response) => {
