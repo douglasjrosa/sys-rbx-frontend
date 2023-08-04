@@ -33,6 +33,7 @@ export const getData = async (proposta: any) => {
 
   try {
     const response = await axios(config);
+    console.log("🚀 ~ file: getinf.ts:36 ~ getData ~ response:", response)
     const result = response.data?.data?.[0];
     const inf = result.attributes;
     const Vendedor = inf.user.data.attributes.username

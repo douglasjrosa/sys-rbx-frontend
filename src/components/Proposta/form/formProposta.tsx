@@ -765,7 +765,6 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                   <TableConteudo
                     Itens={ListItens}
                     Prazo={prazo}
-                    descontoAdd={DescontoAdd}
                     loading={loadingTable}
                     returnItem={getItemFinal}
                   />

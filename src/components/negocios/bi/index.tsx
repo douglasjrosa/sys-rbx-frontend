@@ -16,7 +16,7 @@ import { StatusAndamento } from "@/components/data/status";
 import { SetValue } from "@/function/currenteValor";
 
 
-export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdados: number }) => {
+export const PowerBi = (props: { reload: boolean; dados: any; setdados: number }) => {
   const router = useRouter()
   const { data: session } = useSession();
   const [data, setData] = useState([])
@@ -35,10 +35,9 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
 
   useEffect(() => {
     (async () => {
-      // setLoad(true)
+      setLoad(true)
       const usuario: any = session?.user.name
       setUser(usuario);
-      const daysOfMonth = await getAllDaysOfMonth(MesAt);
 
       const dataAtual = new Date();
       const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
@@ -49,7 +48,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
           const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
           const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
           setData(filtro1);
-          setTimeout(() => setLoad(false), 1500)
+          setLoad(false)
         })
         .catch((error: any) => {
           console.log(error);
@@ -116,8 +115,6 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       setData(enpresa)
     } else {
       (async () => {
-        const usuario = User
-        const daysOfMonth = await getAllDaysOfMonth(MesAt);
         const dataAtual = new Date();
       const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
       const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);

@@ -18,20 +18,16 @@ export const TableConteudo = (props: {
   Prazo: string;
   loading: boolean;
   returnItem: any;
-  descontoAdd: string
   // retunLoading: any;
 }): ReactJSXElement => {
   const [ListItens, setItens] = useState<any>([]);
   const [LoadingTable, setLoadingTable] = useState<boolean>(false);
-  const [DescAdd, setDescAdd] = useState<any>(0.00)
+
 
   useEffect(() => {
     setLoadingTable(props.loading);
     setItens(props.Itens);
-    if (props.descontoAdd) {
-      setDescAdd(props.descontoAdd);
-    }
-  }, [props.Itens, props.loading, props.descontoAdd]);
+  }, [props.Itens, props.loading]);
 
   const handleAdd = (Obj: any, id: number) => {
     const [ListaObj] = ListItens.filter((i: any) => i.id === id);
@@ -77,7 +73,7 @@ export const TableConteudo = (props: {
           props.Prazo === "Antecipado" ? ValorOriginal * 0.05 : 0;
         const somaAcrescimo =
           acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
-          const DesCalc = descont + DescAdd
+          const DesCalc = descont
         const somaDescont = DesCalc * i.Qtd;
         const somaDescontMin =
         Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
