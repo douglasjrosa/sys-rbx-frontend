@@ -174,7 +174,7 @@ export default async function GetEmpresa(
       },
     ];
 
-    const desconto = infos.Desconto === 0 && infos.DescontoAdd === 0 ? semDesc : comDesc;
+    const desconto = infos.Desconto === 0 && infos.DescontoAdd === 0 ? null : comDesc;
 
     const logo =
       infos.fornecedor.data.cnpj === "04.586.593/0001-70" ? dataUrl : dataUrl2;

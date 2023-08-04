@@ -1,6 +1,6 @@
-import { RenderCalendar } from '@/components/negocios/bi/painel/calendario/render';
-import { SelectUser } from '@/components/negocios/bi/painel/calendario/select/SelecUser';
-import { SelectMonth } from '@/components/negocios/bi/painel/calendario/select/selectMont';
+import { RenderCalendar } from '@/components/painel/calendario/render';
+import { SelectUser } from '@/components/painel/calendario/select/SelecUser';
+import { SelectMonth } from '@/components/painel/calendario/select/selectMont';
 import { getAllDaysOfMonth } from '@/function/Datearray';
 import { Box, Flex, FormLabel, Heading, chakra } from '@chakra-ui/react';
 import axios from 'axios';
