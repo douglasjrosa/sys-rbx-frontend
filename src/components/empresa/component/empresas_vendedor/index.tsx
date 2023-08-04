@@ -26,39 +26,14 @@ export const CarteiraVendedor = (props: { data: any }) => {
     const negocio = i.attributes.businesses.data.length > 0 ? i.attributes.businesses.data : null
 
     const iconeTest = negocio.filter((n: any) => {
-      if(n.attributes.andamento === 3 && n.attributes.etapa === 1) {
-        return 'true'
+      if(n.attributes.andamento === 3 && n.attributes.etapa !== 6) {
+        return true
       } else {
-        return 'false'
+        return false
       }
     });
 
-    console.log('teste', iconeTest)
-
-
     const interacao = encontrarObjetoMaisProximoComCor(i.attributes.interacaos.data)
-    
-
-    const valor = SetValue(i.attributes.valor_ultima_compra)
-
-    const UltimaCompra = i.attributes.ultima_compra
-    // Supondo que você tenha a data da última compra armazenada em uma variável chamada 'dataUltimaCompra'
-    const dataUltimaCompra: Date = new Date(UltimaCompra); // Exemplo de data da última compra
-
-    // Obtém a data atual
-    const dataAtual: Date = new Date();
-
-    // Calcula a diferença em milissegundos entre as duas datas
-    const diferencaEmMilissegundos: number = dataAtual.getTime() - dataUltimaCompra.getTime();
-
-    // Converte a diferença em milissegundos para dias
-    const diferencaEmDias: number = Math.floor(diferencaEmMilissegundos / (1000 * 60 * 60 * 24));
-
-    const text = !UltimaCompra ? '' : ` - há ${diferencaEmDias} dias`
-
-    const color = '';
-
-    const icons = '';
 
     return (
       <>
@@ -92,8 +67,8 @@ export const CarteiraVendedor = (props: { data: any }) => {
 
   return (
     <>
-      <Box color={'white'} w={{ base: '100%', lg: '50%' }}>
-        <Heading>Empresas na minha carteira</Heading>
+      <Box color={'white'} w={{ base: '100%', lg: '50%' }} >
+        <Heading size={'lg'}>Empresas na minha carteira</Heading>
         <Box
           mt={5}
           maxH={{ base: '23rem', lg: '90%' }}
