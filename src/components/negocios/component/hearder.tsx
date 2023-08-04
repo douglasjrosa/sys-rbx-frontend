@@ -198,7 +198,7 @@ export const NegocioHeader = (props: {
   const masckValor = (e: any) => {
     const valor = e.target.value.replace('.', '').replace(',', '')
     const valorformat = SetValue(valor);
-
+    console.log(valor.length)
     if (valor.length > 15) {
       setBudget(valorformat.slice(-15))
     } else {
@@ -223,6 +223,7 @@ export const NegocioHeader = (props: {
     const IdNegocio = Data.id
 
     const request = await pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
+    console.log("🚀 ~ file: hearder.tsx:223 ~ finalizar ~ request:", request)
     setload(false)
     onClose()
     props.onchat(true);
@@ -346,6 +347,7 @@ export const NegocioHeader = (props: {
   function getAtendimento(atendimento: SetStateAction<string>) {
     setApproach(atendimento);
   }
+  console.log(Blocksave)
 
   return (
     <>

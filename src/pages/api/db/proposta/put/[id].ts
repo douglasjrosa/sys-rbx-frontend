@@ -11,10 +11,9 @@ export default async function PUTEmpresa(
   if (req.method === "PUT") {
     // const data = JSON.parse(req.body);
     const data = req.body;
-    console.log("🚀 ~ file: [id].ts:14 ~ data:", data)
 
     const ID = req.query.id;
-
+    console.log("🚀 ~ file: [id].ts:16 ~ ID:", ID)
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
       baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
@@ -56,8 +55,7 @@ export default async function PUTEmpresa(
         vencPrint: data.vencPrint,
         obs: data.obs,
         cliente_pedido: data.cliente_pedido,
-        dataEntrega: data.dataEntrega,
-        descontoAdd: data.descontoAdd
+        dataEntrega: data.dataEntrega
       },
     };
     console.log("🚀 ~ file: [id].ts:60 ~ DataPost:", DataPost)
@@ -81,10 +79,10 @@ export default async function PUTEmpresa(
           : i.expo === false && i.mont === true
           ? "este item, deve ser enviado montado para cliente"
           : i.expo === true && i.mont === true
-          ? "este item, deve ser enviado montado para cliente, e também feito o tratamento para exportação"
+          ? "este item, deve ser enviado montado para cliente, e tambem feito o tratamento para exportação"
           : "";
 
-      const resp = `✔️ produto: ${prod}  modelo: ${noldProd}  quant.: ${quant},${
+      const resp = `✔️ produto: ${prod}  medelo: ${noldProd}  quant.: ${quant},${
         text !== "" ? ` observação: ${text},` : "\n"
       }\n`;
       return resp;
@@ -92,12 +90,13 @@ export default async function PUTEmpresa(
     const txtOcorrencia = {
       date: isoDateTime,
       user: "Sistema",
-      msg: `Proposta comercial de numero: ${data.nPedido}, do cliente ${ClienteName},\nfoi atualizada pelo vendedor ${data.vendedor} no dia ${VisibliDateTime},\nconteudo da proposta: \n\n${mapItens} \n\nObservações gerais: \n\n ${data.obs}`,
+      msg: `Proposta comercial de numero: ${data.nPedido}, do cliente ${ClienteName},\nfoi atualizada pelo vendedor ${data.vendedor} no dia ${VisibliDateTime},\nconteudo da proposta: \n\n${mapItens} \n\nObservaçoes gerais: \n\n ${data.obs}`,
     };
 
     await axiosRequet
       .put(`/pedidos/${ID}`, DataPost)
       .then(async (response) => {
+        console.log(response.data);
 
         const url = `empresas/${clienteId}`;
         const Register = await Historico(txt, url);

@@ -34,7 +34,6 @@ export default async function GetEmpresa(
     const { proposta } = req.query;
 
     const infos = await getData(proposta);
-    console.log("🚀 ~ file: [proposta].ts:37 ~ infos:", infos)
 
     const resto = infos.dataEntrega;
 
@@ -148,7 +147,6 @@ export default async function GetEmpresa(
       ];
     });
 
-    const sometotalDescont = infos.Desconto + infos.DescontoAdd
     const comDesc = [
       {
         margin: [0, 45, 0, 0],
@@ -159,10 +157,7 @@ export default async function GetEmpresa(
       {
         margin: [0, 45, 0, 0],
         border: [false, false, false, false],
-        text: sometotalDescont.toLocaleString("pt-br", {
-          style: "currency",
-          currency: "BRL",
-        }),
+        text: infos.Desconto,
       },
     ];
 

@@ -245,7 +245,7 @@ function Empresas() {
           </Box>
           <Button onClick={() => router.push('/empresas/cadastro')} colorScheme="green">+ Nova Empresa</Button>
         </Flex>
-        <Box display={'flex'} flexDirection={{ base: 'column', lg: 'row' }} w={'100%'} h={'80%'} pt={5} gap={10}>
+        <Box display={'flex'} flexDirection={{ base: 'column', lg: 'row' }} w={'100%'} h={'80%'} pt={5} gap={10} >
           <CarteiraVendedor data={DataSearchUser} />
           <CarteiraAusente data={DataSearch} />
         </Box>

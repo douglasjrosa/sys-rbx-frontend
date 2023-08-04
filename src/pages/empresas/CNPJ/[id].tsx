@@ -1,7 +1,5 @@
-import { EtapasNegocio } from "@/components/data/etapa";
 import { ObjContato } from "@/components/data/objetivo";
 import { StatusPerca } from "@/components/data/perca";
-import { StatusAndamento } from "@/components/data/status";
 import { TipoContato } from "@/components/data/tipo";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
 import Loading from "@/components/elements/loading";
@@ -10,7 +8,7 @@ import { MaskCnpj } from "@/function/Mask/cnpj";
 import { formatarTelefone } from "@/function/Mask/telefone-whatsapp";
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { capitalizeWords } from "@/function/captalize";
-import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Table, Tbody, Tr, Td } from "@chakra-ui/react";
+import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select } from "@chakra-ui/react";
 import axios from "axios";
 import { parseISO } from "date-fns";
 import { useSession } from "next-auth/react";
@@ -68,10 +66,9 @@ export default function Infos() {
         setEmail(response.attributes.email)
         setHistorico(response.attributes.history.slice(-3))
         setNegocio(response.attributes.businesses.data.slice(-5))
-        const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}`);
-        const response2 = request2.data;
-        setInteracoes(response2)
+        setInteracoes(response.attributes.interacaos.data)
         setload(false)
+
       } catch (error: any) {
         toast({
           title: 'Erro.',
@@ -118,9 +115,23 @@ export default function Infos() {
       })
         .then(async (resposta: any) => {
           try {
-            const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}`);
-            const response2 = request2.data;
-            setInteracoes(response2)
+            const request = await axios(`/api/db/empresas/getId/${ID}`);
+            const response = request.data.data;
+            setRepresentantes(response.attributes.representantes)
+            setNome(response.attributes.nome)
+            setRazao(response.attributes.razao)
+            setEndereço(response.attributes.endereco)
+            setCNPJ(response.attributes.CNPJ)
+            setNumero(response.attributes.numero)
+            setBairro(response.attributes.bairro)
+            setCEP(response.attributes.cep)
+            setCidade(response.attributes.cidade)
+            setUf(response.attributes.uf)
+            setTelefone(response.attributes.fone)
+            setEmail(response.attributes.email)
+            setHistorico(response.attributes.history.slice(-3))
+            setNegocio(response.attributes.businesses.data.slice(-5))
+            setInteracoes(response.attributes.interacaos.data)
             setload(false)
             onClose()
           } catch (error: any) {
@@ -131,7 +142,7 @@ export default function Infos() {
               duration: 9000,
               isClosable: true,
             })
-          
+            // setTimeout(() => router.push('/empresas'), 1000)
           }
         })
         .catch((error: any) => {
@@ -141,8 +152,8 @@ export default function Infos() {
   }
 
   const Alert = encontrarObjetoMaisProximoComCor(Interacoes)
-  const letra = Alert?.cor === 'yellow' ? 'black' : 'white'
-
+  const letra = Alert?.cor === 'yellow'? 'black' : 'white'
+  console.log("🚀 ~ file: [id].tsx:154 ~ Infos ~ Alert:", Alert)
 
   return (
     <>
@@ -169,34 +180,22 @@ export default function Infos() {
             {/* constato */}
             <Box w={'100%'} bg={'#2d3748'} rounded={16} p={[3, 3, 5]}>
               <Box><Heading size={'md'}>Contatos</Heading></Box>
-              <Box px={[1, 2, 3, 5]} py={3}>
+              <Box px={[1, 2, 3, 5]} py={[0, 3, 1, 0, 5, 5]}>
 
                 {!!Representantes && Representantes.map((item: any, index: number) => {
                   const telefone = !item.whatsapp ? item.telefone : item.whatsapp
                   return (
                     <>
                       <Box>
-                        <Heading size={'sm'}>{item.nome}</Heading>
-                        <Flex w={'100%'} p={1}>
+                        <Heading size={'sm'}>Constato {index + 1}</Heading>
+                        <Flex w={'100%'} p={[1, 3, 3, 3]}>
                           <Box w={'50%'}>
-                            <Flex gap={3}>
-                              <chakra.p>Cargo:</chakra.p>
-                              <chakra.p>{item.Cargo}</chakra.p>
-                            </Flex>
-                            <Flex gap={3}>
-                              <chakra.p>Departamento:</chakra.p>
-                              <chakra.p>{item.departamento}</chakra.p>
-                            </Flex>
+                            <chakra.p>{item.nome}</chakra.p>
+                            <chakra.p>{item.Cargo}</chakra.p>
                           </Box>
                           <Box w={'50%'}>
-                            <Flex gap={3}>
-                              <chakra.p>Telefone:</chakra.p>
-                              <chakra.p>{formatarTelefone(telefone)}</chakra.p>
-                            </Flex>
-                            <Flex gap={3}>
-                              <chakra.p>E-mail:</chakra.p>
-                              <chakra.p>{item.email}</chakra.p>
-                            </Flex>
+                            <chakra.p>{formatarTelefone(telefone)}</chakra.p>
+                            <chakra.p>{item.email}</chakra.p>
                           </Box>
                         </Flex>
                       </Box>
@@ -215,51 +214,31 @@ export default function Infos() {
             {/* dados cadastrais */}
             <Box w={'100%'} bg={'#2d3748'} rounded={16} p={[3, 3, 5]}>
               <Box><Heading size={'md'}>Dados Cadastrais</Heading></Box>
-              <Flex w={'100%'} px={[1, 2, 3, 5]} py={[0, 3, 1, 0, 5, 5]} fontSize={'15px'}>
-                <table style={{ width: '100%' }}>
-                  <tbody>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>Razão Social: </td>
-                      <td> {Razao}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>CNPJ: </td>
-                      <td>{MaskCnpj(CNPJ)}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>Logradouro: </td>
-                      <td>{Endereço}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>N°: </td>
-                      <td>{Numero}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>Bairro: </td>
-                      <td>{Bairro}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>Cep; </td>
-                      <td>{MaskCep(CEP)}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>Cidade: </td>
-                      <td>{Cidade}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>Uf: </td>
-                      <td>{Uf}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>Telefone: </td>
-                      <td>{formatarTelefone(Telefone)}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 'bold' }}>E-mail: </td>
-                      <td>{Email}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <Flex px={[1, 2, 3, 5]} py={[0, 3, 1, 0, 5, 5]} fontSize={'15px'}>
+                <Box w={'10rem'} fontWeight={'bold'}>
+                  <chakra.p>Razão Social</chakra.p>
+                  <chakra.p>CNPJ</chakra.p>
+                  <chakra.p>Logradouro</chakra.p>
+                  <chakra.p>N°</chakra.p>
+                  <chakra.p>Bairro</chakra.p>
+                  <chakra.p>Cep</chakra.p>
+                  <chakra.p>Cidade</chakra.p>
+                  <chakra.p>Uf</chakra.p>
+                  <chakra.p>Telefone</chakra.p>
+                  <chakra.p>E-mail</chakra.p>
+                </Box>
+                <Box w={'80%'}>
+                  <chakra.p>{Razao}</chakra.p>
+                  <chakra.p>{MaskCnpj(CNPJ)}</chakra.p>
+                  <chakra.p>{Endereço}</chakra.p>
+                  <chakra.p>{Numero}</chakra.p>
+                  <chakra.p>{Bairro}</chakra.p>
+                  <chakra.p>{MaskCep(CEP)}</chakra.p>
+                  <chakra.p>{Cidade}</chakra.p>
+                  <chakra.p>{Uf}</chakra.p>
+                  <chakra.p>{formatarTelefone(Telefone)}</chakra.p>
+                  <chakra.p>{Email}</chakra.p>
+                </Box>
               </Flex>
             </Box>
 
@@ -304,10 +283,10 @@ export default function Infos() {
               </Flex>
               <Flex h={'70%'} overflowY={'auto'} flexDir={'column'} gap={3}>
                 {Interacoes.map((i: any) => {
-                  console.log(i)
                   const [obj] = ObjContato.filter((o: any) => o.id == i.attributes.objetivo).map((d: any) => d.title)
                   const [tipo] = TipoContato.filter((t: any) => t.id == i.attributes.tipo).map((d: any) => d.title)
                   const date = new Date(parseISO(i.attributes.proxima))
+                  console.log(i)
 
                   return (
                     <>
@@ -337,42 +316,35 @@ export default function Infos() {
             </Flex>
 
             {/* últimos negocios */}
-            <Box w={'100%'} bg={'#2d3748'} rounded={16} p={5}>
-              <Box><Heading size={'md'} mb={3}>Últimas Negocios</Heading></Box>
-              <table style={{width: '100%'}}>
-                <thead>
-                  <tr>
-                    <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Etapa</th>
-                    <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Status</th>
-                    <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Valor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Negocio.map((i: any) => {
-                    console.log(i);
-                    const valor = parseFloat(i.attributes.Budget.replace('.', '').replace(',', '.'))
-
-                    const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes.andamento).map((s: any) =>s.title)
-
-                    const [andamento] = EtapasNegocio.filter((v: any) => v.id == i.attributes.etapa).map((v: any) =>v.title)
-
-                    const color = i.attributes.etapa === 6 && i.attributes.andamento === 1 ? 'red' : i.attributes.etapa === 6 && i.attributes.andamento === 5 ? 'green' : 'yellow';
-
-                    return (
-                      <>
-                        <tr>
-                          <td style={{textAlign: 'center', color: color}}>{andamento}</td>
-                          <td style={{textAlign: 'center', color: color}}>{Status}</td>
-                          <td style={{textAlign: 'center', color: color}}>{valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                        </tr>
-                      </>
-                    )
-                  })}
-
-                </tbody>
-              </table>
+            <Box w={'100%'} h={'40%'} bg={'#2d3748'} rounded={16} p={5}>
+              <Box><Heading size={'md'}>Últimas Negocios</Heading></Box>
               <Flex w={'100%'} h={'90%'} p={2} flexDir={'column'} gap={5} overflowY={'auto'}>
+                {Negocio.map((i: any) => {
+                  const valor = parseFloat(i.attributes.Budget.replace('.', '').replace(',', '.'))
 
+                  const Status = i.attributes.etapa === 6 && i.attributes.andamento === 5 ? "Concluído" : i.attributes.etapa === 6 && i.attributes.andamento === 1 ? 'Perdido' : 'Em Andamento'
+
+                  const Motivo = !!i.attributes.Mperca && StatusPerca.filter((p: any) => p.id == i.attributes.Mperca).map((i: any) => i.title)
+                  return (
+                    <>
+                      <Box p={3} rounded={10} bg={'#feffdccc'} color={'black'} key={i.id}>
+                        <Flex gap={5}>
+                          <Box><chakra.span fontWeight={'bold'}>Negocio N°:</chakra.span> {i.attributes.nBusiness}</Box>
+                          <Box><chakra.span fontWeight={'bold'}>Valor:</chakra.span> {valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Box>
+                        </Flex>
+                        <Flex gap={5}>
+                          <Box><chakra.span fontWeight={'bold'}>Status:</chakra.span> {Status}</Box>
+                          {Status === 'Perdido' && (
+                            <>
+                              <Box><chakra.span fontWeight={'bold'}>Motivo:</chakra.span> {Motivo}</Box>
+                            </>
+                          )}
+                        </Flex>
+
+                      </Box>
+                    </>
+                  )
+                })}
               </Flex>
             </Box>
           </Flex>

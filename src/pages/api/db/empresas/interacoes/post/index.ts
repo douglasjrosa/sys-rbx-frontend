@@ -21,6 +21,7 @@ export default async function GetEmpresa(
       data: data
     })
       .then((RequestEnpresa) => {
+        console.log(RequestEnpresa.data.data)
         res.status(200).json(RequestEnpresa.data.data);
       })
       .catch((error) => {

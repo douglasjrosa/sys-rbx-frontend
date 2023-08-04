@@ -69,9 +69,9 @@ export default function Proposta() {
     })();
   }, [Email, PEDIDO, router, toast]);
 
-  // if (Bling) {
-  //   router.push(`/negocios/${PEDIDO}`);
-  // }
+  if (Bling) {
+    router.push(`/negocios/${PEDIDO}`);
+  }
 
   if (loadingGeral) {
     return <Loading size="200px">Carregando...</Loading>;

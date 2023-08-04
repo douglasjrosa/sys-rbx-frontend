@@ -56,7 +56,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [tipoprazo, setTipoPrazo] = useState("");
   const [totalGeral, setTotalGeral] = useState("");
   const [Desconto, setDesconto] = useState("");
-  const [DescontoAdd, setDescontoAdd] = useState('');
+  const [DescontoAdd, setDescontoAdd] = useState("");
   const [DescontoTotal, setDescontoTotal] = useState("");
   const [saveNegocio, setSaveNegocio] = useState("");
   const [hirtori, setHistory] = useState([]);
@@ -80,7 +80,6 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     if (props.ondata) {
       const resp = props.ondata
       const [PROPOSTA] = resp.attributes?.pedidos.data
-      console.log("🚀 ~ file: formProposta.tsx:83 ~ useEffect ~ PROPOSTA:", PROPOSTA)
       setId(PROPOSTA?.id);
       setFrete(PROPOSTA?.attributes?.frete);
       setDate(PROPOSTA?.attributes?.dataPedido);
@@ -100,8 +99,6 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       setHistory(resp.attributes.history);
       setCnpj(resp.attributes.empresa.data.attributes.CNPJ)
       setIncidentRecord(resp.attributes.incidentRecord)
-      const descontodb = PROPOSTA?.attributes.descontoAdd
-      setDescontoAdd(!descontodb ? 0.00 : descontodb.replace(".", "").replace(",", "."))
     }
   }, []);
 
@@ -125,11 +122,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       const total = Number(total1.toFixed(2))
       const somaTota = acc + total
       const TotoalConvert = Number(somaTota.toFixed(2));
-      return !DescontoAdd? TotoalConvert :  TotoalConvert - parseFloat(DescontoAdd.replace('.', '').replace(',', '.'));
+      return !DescontoAdd? TotoalConvert :  TotoalConvert + parseFloat(DescontoAdd);
     }, 0);
-
-    const ValorAtt = totalItem
-    return ValorAtt.toLocaleString("pt-br", {
+    return totalItem.toLocaleString("pt-br", {
       style: "currency",
       currency: "BRL",
     });
@@ -138,10 +133,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const DescontoGeral = () => {
     if (ListItens.length === 0) return "R$ 0,00";
     const descontos = ListItens.map((i: any) => i.desconto * i.Qtd);
-    const total1 = descontos.reduce(
+    const total = descontos.reduce(
       (acc: number, valorAtual: number) => acc + valorAtual
     );
-    const total = !DescontoAdd? total1 : total1 + parseFloat(DescontoAdd.replace('.', '').replace(',', '.'));
     return total.toLocaleString("pt-br", {
       style: "currency",
       currency: "BRL",
@@ -185,6 +179,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       );
     }
   }, [prazo]);
+  console.log(props.envio)
 
   const SalvarProdutos = async () => {
     setLoadingGeral(true)

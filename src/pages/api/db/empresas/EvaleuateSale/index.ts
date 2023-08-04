@@ -96,13 +96,11 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
 
 
     } catch (err: any) {
-      if(err.response){
-        res.status(400).json({
-          error: err.response.data,
-          mensage: err.response.data.error,
-          detalhe: err.response.data.error.details,
-        });
-      }
+      res.status(400).json({
+        error: err.response.data,
+        mensage: err.response.data.error,
+        detalhe: err.response.data.error.details,
+      });
     }
   } else {
     return res.status(405).send({ message: "Only GET requests are allowed" });
