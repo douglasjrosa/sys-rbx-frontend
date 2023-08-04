@@ -303,10 +303,10 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
         hirtori: hirtori,
         incidentRecord: MSG,
         fornecedorId: session?.user.id,
-        descontoAdd: DescontoAdd,
+        descontoAdd: DescontoAdd.toString(),
       };
       if (ENVIO === 'POST') {
-        console.log('aki')
+       
 
         const dadosPost = data;
         const url = "/api/db/proposta/post";

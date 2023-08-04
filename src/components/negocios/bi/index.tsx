@@ -1,19 +1,19 @@
 import { EtapasNegocio } from "@/components/data/etapa";
-import { SelectUser } from "@/components/painel/calendario/select/SelecUser"
-import { Box, Flex, Table, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, chakra } from "@chakra-ui/react"
-import { useEffect, useState } from "react";
-import { Ausente } from "./ausente";
-import { Presente } from "./presente";
-import { useRouter } from "next/router";
+import { StatusAndamento } from "@/components/data/status";
 import Loading from "@/components/elements/loading";
+import { SelectUser } from "@/components/negocios/bi/painel/calendario/select/SelecUser";
+import { SelectEmpresas } from "@/components/negocios/bi/painel/calendario/select/selectEmpresas";
 import { getAllDaysOfMonth } from "@/function/Datearray";
+import { SetValue } from "@/function/currenteValor";
+import { Box, Flex, Table, TableContainer, Tbody, Td, Th, Thead, Tr, chakra } from "@chakra-ui/react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { NovoCliente } from "./novo";
-import { SelectEmpresas } from "@/components/painel/calendario/select/selectEmpresas";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { BtCreate } from "../component/butonCreate";
-import { SetValue } from "@/function/currenteValor";
-import { StatusAndamento } from "@/components/data/status";
+import { Ausente } from "./ausente";
+import { NovoCliente } from "./novo";
+import { Presente } from "./presente";
 
 
 export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdados: number }) => {
@@ -80,8 +80,8 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
       return 1;
     }
 
-    const BudgetA =!a.attributes.Budget? 0.0 : parseFloat(a.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."));
-    const BudgetB =!b.attributes.Budget? 0.0 : parseFloat(b.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."));
+    const BudgetA = !a.attributes.Budget ? 0.0 : parseFloat(a.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."));
+    const BudgetB = !b.attributes.Budget ? 0.0 : parseFloat(b.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."));
 
     return BudgetB - BudgetA;
   }
@@ -119,10 +119,10 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
         const usuario = User
         const daysOfMonth = await getAllDaysOfMonth(MesAt);
         const dataAtual = new Date();
-      const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
-      const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
+        const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
+        const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
 
-      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
+        await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
           .then((response) => {
             const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
             const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
@@ -145,10 +145,10 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
         setUser(usuario);
         const daysOfMonth = await getAllDaysOfMonth(MesAt);
         const dataAtual = new Date();
-      const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
-      const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
+        const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
+        const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
 
-      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
+        await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
           .then((response) => {
             const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
             const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
@@ -209,7 +209,7 @@ export const PowerBi = (props: { reload: boolean; dados: any; user: any; setdado
                   <Tbody>
                     {data.map((itens: any) => {
                       const statusAtual = itens.attributes.andamento
-                      const [statusRepresente] = StatusAndamento.filter((i: any) => i.id == statusAtual).map((e: any)=> e.title);
+                      const [statusRepresente] = StatusAndamento.filter((i: any) => i.id == statusAtual).map((e: any) => e.title);
                       const etapa = EtapasNegocio.filter((e: any) => e.id == itens.attributes.etapa).map((e: any) => e.title)
 
                       const colorLine = itens.attributes.DataRetorno <= new Date().toISOString() ? 'red.600' : '';
