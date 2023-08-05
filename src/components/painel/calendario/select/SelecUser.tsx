@@ -9,15 +9,15 @@ interface User {
 }
 
 export const SelectUser = (props: {
-  onValue: any;
+  onValue: any; user: string
 }) => {
   const { data: session } = useSession();
-  const [user, setUser] = useState<string | any>(session?.user.name);
+  const [user, setUser] = useState<string>('');
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    const usuario = session?.user.name
-    localStorage.setItem('user', `${usuario}`)
+    const usuario = props.user
+    setUser(usuario)
     const fetchData = async () => {
       try {
         const response = await axios.get('/api/db/user');

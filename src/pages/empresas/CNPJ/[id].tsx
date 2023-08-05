@@ -10,7 +10,7 @@ import { MaskCnpj } from "@/function/Mask/cnpj";
 import { formatarTelefone } from "@/function/Mask/telefone-whatsapp";
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { capitalizeWords } from "@/function/captalize";
-import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Table, Tbody, Tr, Td } from "@chakra-ui/react";
+import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Table, Tbody, Tr, Td, Link } from "@chakra-ui/react";
 import axios from "axios";
 import { parseISO } from "date-fns";
 import { useSession } from "next-auth/react";
@@ -173,6 +173,7 @@ export default function Infos() {
 
                 {!!Representantes && Representantes.map((item: any, index: number) => {
                   const telefone = !item.whatsapp ? item.telefone : item.whatsapp
+
                   return (
                     <>
                       <Box>
@@ -191,11 +192,12 @@ export default function Infos() {
                           <Box w={'50%'}>
                             <Flex gap={3}>
                               <chakra.p>Telefone:</chakra.p>
-                              <chakra.p>{formatarTelefone(telefone)}</chakra.p>
+                              {telefone.length === 11 && (<chakra.a onClick={()=>window.open(`https://wa.me//55${item.whatsapp}?text=Ola%20${item.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{color: 'blue.500'}} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
+                              {telefone.length < 11 && (<chakra.p>{telefone.length}{formatarTelefone(telefone)}</chakra.p>)}
                             </Flex>
                             <Flex gap={3}>
                               <chakra.p>E-mail:</chakra.p>
-                              <chakra.p>{item.email}</chakra.p>
+                              <Link href={`mailto:${item.email}`} _hover={{color: 'blue.500'}} textDecor={'underline'} color={'blue.100'}>{item.email}</Link>
                             </Flex>
                           </Box>
                         </Flex>

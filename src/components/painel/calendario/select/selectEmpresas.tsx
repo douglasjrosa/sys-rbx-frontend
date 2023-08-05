@@ -42,7 +42,7 @@ export const SelectEmpresas = (props: {
           })
           .catch((err) => console.log(err))
       } else {
-        console.log('empressa')
+        console.log('empress')
         await axios.get(`/api/db/business/get/filter?Empresa=${IdEmp}`)
           .then((resp) => {
             props.onValue(resp.data)
@@ -68,7 +68,6 @@ export const SelectEmpresas = (props: {
             w={'20rem'}
             onChange={(e) => setIdEmp(e.target.value)}
             value={IdEmp}
-            // isDisabled={session?.user.pemission !== 'Adm'}
             color="white"
             bg='gray.800'
           >

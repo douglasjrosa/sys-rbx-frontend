@@ -16,88 +16,46 @@ import { StatusAndamento } from "@/components/data/status";
 import { SetValue } from "@/function/currenteValor";
 
 
-export const PowerBi = (props: { reload: boolean; dados: any; setdados: number }) => {
+export const PowerBi = () => {
   const router = useRouter()
   const { data: session } = useSession();
   const [data, setData] = useState([])
   const [User, setUser] = useState('')
   const [load, setLoad] = useState<boolean>(true);
 
-  useEffect(() => {
-    setLoad(props.reload)
-    const filtro = props.dados.filter((c: any) => c.attributes.etapa !== 6)
-    const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
-    setData(filtro1);
-  }, [props.dados, props.reload])
 
-  const DateAt = new Date()
-  const MesAt = DateAt.getMonth() + 1;
-
-  useEffect(() => {
+  if (!User) {
     (async () => {
-      setLoad(true)
-      const usuario: any = session?.user.name
-      setUser(usuario);
-
       const dataAtual = new Date();
       const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
       const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
 
-      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
-        .then((response) => {
-          const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
-          const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
-          setData(filtro1);
+      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${session?.user.name}`)
+      .then((response) => {
+        const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
+        const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
+        setData(filtro1);
+        const user: any = session?.user.name
+        setUser(user)
           setLoad(false)
         })
         .catch((error: any) => {
           console.log(error);
         })
     })();
-  }, [MesAt, props, session?.user.name])
-
-  // Função de comparação
-  function compararPorNomeEIdade(a: any, b: any) {
-
-    const etapaA = a.attributes.etapa;
-    const etapaB = b.attributes.etapa;
-
-    if (etapaA > etapaB) {
-      return -1;
-    }
-    if (etapaA < etapaB) {
-      return 1;
-    }
-
-    const andaA = a.attributes.andamento;
-    const andaB = b.attributes.andamento;
-
-    if (andaA > andaB) {
-      return -1;
-    }
-    if (andaA < andaB) {
-      return 1;
-    }
-
-    const BudgetA =!a.attributes.Budget? 0.0 : parseFloat(a.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."));
-    const BudgetB =!b.attributes.Budget? 0.0 : parseFloat(b.attributes.Budget.replace(/[^0-9,]/g, "").replace(".", "").replace(",", "."));
-
-    return BudgetB - BudgetA;
   }
 
-  // Reorganizar o array por ordem alfabética pelo nome e pelos valores numéricos em ordem decrescente
-  data.sort(compararPorNomeEIdade);
 
   function handleUserChange(user: React.SetStateAction<any>) {
+    setLoad(true);
     (async () => {
       const usuario = user
       setUser(usuario)
-      const daysOfMonth = await getAllDaysOfMonth(MesAt);
       const dataAtual = new Date();
       const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
       const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
 
-      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
+      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${user}`)
         .then((response) => {
           const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
           const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
@@ -111,36 +69,11 @@ export const PowerBi = (props: { reload: boolean; dados: any; setdados: number }
   }
 
   function handleEnpresa(enpresa: React.SetStateAction<any>) {
-    if (enpresa) {
+     setLoad(true);
+    if (enpresa.length > 0) {
       setData(enpresa)
     } else {
       (async () => {
-        const dataAtual = new Date();
-      const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
-      const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
-
-      await axios.get(`/api/db/business/get/calendar/list?DataIncicio=${primeiroDiaTresMesesAtras.toISOString()}&DataFim=${ultimoDiaMesAtual.toISOString()}&Vendedor=${User}`)
-          .then((response) => {
-            const filtro = response.data.filter((c: any) => c.attributes.etapa !== 6)
-            const filtro1 = filtro.filter((c: any) => c.attributes.andamento !== 5)
-            setData(filtro1);
-            setLoad(false);
-          })
-          .catch((error: any) => {
-            console.log(error);
-          })
-      })();
-    }
-  }
-
-  function tragetReload(Loading: boolean) {
-    // setLoad(Loading);
-    if (Loading === true) {
-      setLoad(true);
-      (async () => {
-        const usuario: any = session?.user.name
-        setUser(usuario);
-        const daysOfMonth = await getAllDaysOfMonth(MesAt);
         const dataAtual = new Date();
       const primeiroDiaTresMesesAtras = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1);
       const ultimoDiaMesAtual = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0);
@@ -175,14 +108,14 @@ export const PowerBi = (props: { reload: boolean; dados: any; setdados: number }
         <Flex px={5} mt={5} mb={10} justifyContent={'space-between'} w={'100%'}>
           <Flex gap={16}>
             <Box>
-              <SelectUser onValue={handleUserChange} />
+              <SelectUser onValue={handleUserChange} user={User} />
             </Box>
             <Box>
               <SelectEmpresas Usuario={User} onValue={handleEnpresa} />
             </Box>
           </Flex>
 
-          <BtCreate onLoading={tragetReload} user={User} />
+          <BtCreate user={User} />
 
         </Flex>
         <Box w='100%' display={{ lg: 'flex', sm: 'block' }} p={{ lg: 3, sm: 5 }}>

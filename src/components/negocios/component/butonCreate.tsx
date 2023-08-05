@@ -66,7 +66,7 @@ export const theme = extendTheme({
   },
 });
 
-export const BtCreate = (props: { onLoading: any; user: any }) => {
+export const BtCreate = (props: { user: any }) => {
   const { data: session } = useSession();
   const [work, setWork] = useState<any | null>([]);
   const [budgets, setBudgets] = useState<any>();
@@ -114,7 +114,7 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
   };
 
   const salve = async () => {
-    props.onLoading(true);
+    // props.onLoading(true);
 
     const data = {
       status: true,
@@ -137,7 +137,7 @@ export const BtCreate = (props: { onLoading: any; user: any }) => {
     })
       .then((res) => {
         console.log(res.data.nBusiness);
-        router.push(`/negocios/${res.data.nBusiness}`)
+        // router.push(`/negocios/${res.data.nBusiness}`)
       })
       .catch((err) => console.error(err));
   };
