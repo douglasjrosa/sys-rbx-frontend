@@ -259,7 +259,7 @@ const Painel: React.FC = () => {
             {session?.user.pemission === 'Adm' && (
               <>
                 <Box>
-                  <SelectUser onValue={handleUserChange} />
+                  <SelectUser onValue={handleUserChange} user={User} />
                 </Box>
               </>
             )}
