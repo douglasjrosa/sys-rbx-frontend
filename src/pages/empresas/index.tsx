@@ -5,12 +5,37 @@ import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
 import { formatDocument } from "@/function/hookDocument";
 import { Box, Button, Flex, Heading, chakra, useToast } from "@chakra-ui/react";
 import { cnpj } from 'cpf-cnpj-validator';
+import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 
-function Empresas() {
+export const getStaticProps: GetStaticProps = async () => {
+  try {
+    const request = await fetch("http://localhost:3000/api/db/empresas/getEmpresamin?EMPRESAS=true");
+    const dados = await request.json();
+
+    return {
+      props: {
+        dados,
+      },
+      revalidate: 120, // Regenerar a cada 60 segundos
+    };
+  } catch (error) {
+    console.error("Erro ao buscar dados:", error);
+
+    return {
+      props: {
+        dados: [],
+      },
+      revalidate: 120,
+    };
+  }
+};
+
+
+function Empresas({ dados }: any) {
   const router = useRouter();
   const { data: session } = useSession();
   const [Data, setData] = useState<any | null>(null);
@@ -25,36 +50,31 @@ function Empresas() {
 
   useEffect(() => {
     (async () => {
-      await fetch("/api/db/empresas/getEmpresamin?EMPRESAS=true")
-        .then((Response) => Response.json())
-        .then((resposta: any) => {
-          setData(resposta)
-          const resultadouser: any = [];
-          const resultado: any = [];
-          resposta.forEach((item: any) => {
-            const username = item.attributes.user.data?.attributes.username;
-            if (session?.user.pemission === "Adm") {
-              if (username === session?.user.name) {
-                resultadouser.push(item);
-              } else if (!username) {
-                resultado.push(item);
-              } else if (username) {
-                if (username !== session?.user.name) {
-                  resultado.push(item);
-                }
-              }
-            } else {
-              if (username === session?.user.name) {
-                resultadouser.push(item);
-              } else if (!username) {
-                resultado.push(item);
-              }
+      setData(dados)
+      const resultadouser: any = [];
+      const resultado: any = [];
+      dados.forEach((item: any) => {
+        const username = item.attributes.user.data?.attributes.username;
+        if (session?.user.pemission === "Adm") {
+          if (username === session?.user.name) {
+            resultadouser.push(item);
+          } else if (!username) {
+            resultado.push(item);
+          } else if (username) {
+            if (username !== session?.user.name) {
+              resultado.push(item);
             }
-          });
-          setDataSearchUser(resultadouser)
-          setDataSearch(resultado)
-        })
-        .catch((err) => console.log)
+          }
+        } else {
+          if (username === session?.user.name) {
+            resultadouser.push(item);
+          } else if (!username) {
+            resultado.push(item);
+          }
+        }
+      });
+      setDataSearchUser(resultadouser)
+      setDataSearch(resultado)
     })()
   }, [session?.user.name, session?.user.pemission, toast]);
 

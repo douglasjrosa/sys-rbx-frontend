@@ -30,10 +30,6 @@ export default function Proposta() {
       try {
         const request = await axios(`/api/db/business/get/id/${PEDIDO}`)
         const response = request.data
-        const pedidoId = response.attributes.pedidos.data[0].id
-        // const requestPdido = await axios(`/api/db/proposta/get/id/${pedidoId}`)
-        // const responsePedido = requestPdido.data
-        // console.log("🚀 ~ file: [pedido].tsx:37 ~ responsePedido:", responsePedido)
         const CNPJ = response.attributes.empresa.data.attributes.CNPJ
         const getProdutos = await axios(`/api/query/get/produto/cnpj/${CNPJ}`, { method: "POST", data: Email });
         const RespProduto = getProdutos.data
@@ -52,7 +48,7 @@ export default function Proposta() {
             duration: 9000,
             isClosable: true,
           });
-          setTimeout(() => router.push(`/negocios/${PEDIDO}`), 5 * 1000);
+         router.push(`/negocios/${PEDIDO}`);
         }
         setLoadingGeral(false)
       } catch (error: any) {
@@ -64,7 +60,7 @@ export default function Proposta() {
           duration: 9000,
           isClosable: true,
         });
-        setTimeout(() => router.push(`/negocios/${PEDIDO}`), 5 * 1000);
+        router.push(`/negocios/${PEDIDO}`);
       }
     })();
   }, [Email, PEDIDO, router, toast]);

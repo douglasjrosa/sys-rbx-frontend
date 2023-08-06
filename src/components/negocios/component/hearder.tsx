@@ -488,7 +488,7 @@ export const NegocioHeader = (props: {
                   if (NPedido) {
                     router.push("/propostas/update/" + ID)
                   } else {
-                    router.push(`/propostas/create?negocio=${ID}`);
+                    router.push(`/propostas/create/${ID}`);
                   }
                 }}
               >

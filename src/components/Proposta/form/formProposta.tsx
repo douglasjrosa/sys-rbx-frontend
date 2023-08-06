@@ -353,8 +353,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               duration: 1000,
               isClosable: true,
             });
-            console.log(NNegocio)
-            setTimeout(() => router.push(`/negocios/${NNegocio}`), 500)
+
+            router.push(`/negocios/${NNegocio}`)
           })
           .catch((err) => {
             console.error(err.data);
@@ -406,7 +406,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               .then((resp) => console.log(resp.data))
               .catch((err) => console.log(err))
 
-            setTimeout(() => router.push(`/negocios/${PEDIDO}`), 500)
+            router.push(`/negocios/${PEDIDO}`)
 
             toast({
               title: "Proposta Atualizada",
