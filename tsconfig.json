@@ -1,10 +1,21 @@
 {
   "compilerOptions": {
     "target": "es5",
+<<<<<<< HEAD
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+=======
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+>>>>>>> 2cecaf86e55c7c8cd329b1786995b93d1a123cd2
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -13,6 +24,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+<<<<<<< HEAD
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"]
@@ -21,4 +33,17 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/pages/api/db/trello/[numero]ts", "node_modules/@types"],
   "exclude": ["node_modules"],
 
+=======
+    "incremental": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "src/pages/_app.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+>>>>>>> 2cecaf86e55c7c8cd329b1786995b93d1a123cd2
 }
