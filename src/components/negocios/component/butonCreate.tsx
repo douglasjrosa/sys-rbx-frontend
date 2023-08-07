@@ -67,7 +67,7 @@ export const theme = extendTheme({
   },
 });
 
-export const BtCreate = (props: { user: any; onLoading: boolean }) => {
+export const BtCreate = (props: { user: any; onLoading: any }) => {
   const { data: session } = useSession();
   const [work, setWork] = useState<any | null>([]);
   const [budgets, setBudgets] = useState<any>();

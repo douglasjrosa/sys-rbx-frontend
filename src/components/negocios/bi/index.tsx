@@ -92,7 +92,7 @@ export const PowerBi = () => {
     }
   }
 
-function handleLoad(event:boolean){
+function handleLoad(event:any){
   setLoad(event)
 }
 
