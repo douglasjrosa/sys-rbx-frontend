@@ -137,7 +137,7 @@ export const BtCreate = (props: { user: any }) => {
     })
       .then((res) => {
         console.log(res.data.nBusiness);
-        // router.push(`/negocios/${res.data.nBusiness}`)
+        router.push(`/negocios/${res.data.nBusiness}`)
       })
       .catch((err) => console.error(err));
   };
