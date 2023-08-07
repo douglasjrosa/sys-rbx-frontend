@@ -63,9 +63,9 @@ export const getData = async (proposta: any) => {
     const fornecedor = dadosFornecedor;
     const cliente = inf.empresa.data.attributes;
     const condi = inf.condi;
-    const Desconto_Converte = parseFloat(inf.desconto.replace('.', '').replace(',', '.'));
+    const Desconto_Converte =!inf.desconto? null : parseFloat(inf.desconto.replace('.', '').replace(',', '.'));
     const Desconto = !Desconto_Converte? 0 : Desconto_Converte;
-    const DescontoAdd_Converte = parseFloat(inf.descontoAdd.replace('.', '').replace(',', '.'))
+    const DescontoAdd_Converte =!inf.descontoAdd? null : parseFloat(inf.descontoAdd.replace('.', '').replace(',', '.'))
     const DescontoAdd = !DescontoAdd_Converte? 0 : DescontoAdd_Converte
     const itens = inf.itens;
     const prazo = inf.prazo === null ? "" : inf.prazo;
