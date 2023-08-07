@@ -25,7 +25,7 @@ export const getStaticProps: GetStaticProps = async () => {
       props: {
         dados,
       },
-      revalidate: 120, // Regenerar a cada 60 segundos
+      revalidate: 5, // Regenerar a cada 60 segundos
     };
   } catch (error) {
     console.error("Erro ao buscar dados:", error);
@@ -34,7 +34,7 @@ export const getStaticProps: GetStaticProps = async () => {
       props: {
         dados: [],
       },
-      revalidate: 120,
+      revalidate: 5,
     };
   }
 };
