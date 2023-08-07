@@ -1,5 +1,6 @@
 /* eslint-disable react/no-children-prop */
 import { EtapasNegocio } from "@/components/data/etapa";
+import Loading from "@/components/elements/loading";
 import { SetValue } from "@/function/currenteValor";
 import {
   Box,
@@ -66,7 +67,7 @@ export const theme = extendTheme({
   },
 });
 
-export const BtCreate = (props: { user: any }) => {
+export const BtCreate = (props: { user: any; onLoading: boolean }) => {
   const { data: session } = useSession();
   const [work, setWork] = useState<any | null>([]);
   const [budgets, setBudgets] = useState<any>();
@@ -114,7 +115,7 @@ export const BtCreate = (props: { user: any }) => {
   };
 
   const salve = async () => {
-    // props.onLoading(true);
+    props.onLoading(true);
 
     const data = {
       status: true,
@@ -141,7 +142,6 @@ export const BtCreate = (props: { user: any }) => {
       })
       .catch((err) => console.error(err));
   };
-
 
 
   const getValue = (e: any) => {

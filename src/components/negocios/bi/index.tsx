@@ -92,6 +92,10 @@ export const PowerBi = () => {
     }
   }
 
+function handleLoad(event:boolean){
+  setLoad(event)
+}
+
   if (load) {
     return (
       <>
@@ -115,7 +119,7 @@ export const PowerBi = () => {
             </Box>
           </Flex>
 
-          <BtCreate user={User} />
+          <BtCreate user={User} onLoading={handleLoad} />
 
         </Flex>
         <Box w='100%' display={{ lg: 'flex', sm: 'block' }} p={{ lg: 3, sm: 5 }}>
