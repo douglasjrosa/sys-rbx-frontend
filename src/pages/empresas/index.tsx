@@ -13,7 +13,12 @@ import { useEffect, useState } from "react";
 
 export const getStaticProps: GetStaticProps = async () => {
   try {
-    const request = await fetch("http://localhost:3000/api/db/empresas/getEmpresamin?EMPRESAS=true");
+    const request = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate=*&pagination[limit]=8000`,{
+      headers: {
+        Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
     const dados = await request.json();
 
     return {
@@ -50,10 +55,11 @@ function Empresas({ dados }: any) {
 
   useEffect(() => {
     (async () => {
-      setData(dados)
+      setData(dados.data)
+      console.log("🚀 ~ file: index.tsx:59 ~ dados:", dados)
       const resultadouser: any = [];
       const resultado: any = [];
-      dados.forEach((item: any) => {
+      dados.data.forEach((item: any) => {
         const username = item.attributes.user.data?.attributes.username;
         if (session?.user.pemission === "Adm") {
           if (username === session?.user.name) {
