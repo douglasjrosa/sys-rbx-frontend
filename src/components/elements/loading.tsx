@@ -6,13 +6,13 @@ function Loading(props: any) {
   delete pageProps.children;
 
   return (
-    <Flex flexDir="column">
+    <Flex w={'100%'} h={'100%'} bg={'gray.800'} flexDir="column">
       <Center mt="20vh">
-        <CircularProgress color="green.300" isIndeterminate {...pageProps} />
+        <CircularProgress color="green.500" isIndeterminate {...pageProps} />
       </Center>
 
       <Center mt="30px">
-        <Heading color="gray.500" variant="H1">
+        <Heading color="white" variant="H1">
           {children}
         </Heading>
       </Center>

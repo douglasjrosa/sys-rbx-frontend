@@ -23,13 +23,11 @@ export const TableConteudo = (props: {
   const [ListItens, setItens] = useState<any>([]);
   const [LoadingTable, setLoadingTable] = useState<boolean>(false);
 
-  useEffect(() => {
-    setLoadingTable(props.loading);
-  }, [props.loading]);
 
   useEffect(() => {
+    setLoadingTable(props.loading);
     setItens(props.Itens);
-  }, [props.Itens]);
+  }, [props.Itens, props.loading]);
 
   const handleAdd = (Obj: any, id: number) => {
     const [ListaObj] = ListItens.filter((i: any) => i.id === id);
@@ -58,7 +56,7 @@ export const TableConteudo = (props: {
       const somaDescontMin = parseInt(somaDescont.toFixed(2));
 
       const total = () => {
-        if (i.Qtd === 1 && i.mont === false && i.expo === false ) {
+        if (i.Qtd === 1 && i.mont === false && i.expo === false) {
           return i.total;
         }
         const ValorOriginal =
@@ -75,9 +73,10 @@ export const TableConteudo = (props: {
           props.Prazo === "Antecipado" ? ValorOriginal * 0.05 : 0;
         const somaAcrescimo =
           acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
-        const somaDescont = descont * i.Qtd;
+          const DesCalc = descont
+        const somaDescont = DesCalc * i.Qtd;
         const somaDescontMin =
-          Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
+        Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
         const TotalItem = somaAcrescimo - somaDescontMin;
         const result =
           Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
@@ -104,6 +103,7 @@ export const TableConteudo = (props: {
         const dt = { expo: valor };
         handleAdd(dt, i.id);
       };
+
       const ValorFinal = parseFloat(i.vFinal.replace('.', '').replace(',', '.')).toLocaleString("pt-br", {
         style: "currency",
         currency: "BRL",
@@ -112,7 +112,7 @@ export const TableConteudo = (props: {
         <>
           <Tr key={i.id}>
             <Td isNumeric w={'1.3rem'} px='0' py='1' textAlign={'center'}>{x + 1}</Td>
-            <Td px='1rem' fontSize={'0.7rem'}>{i.nomeProd}</Td>
+            <Td px='1rem' bg={'gray.800'} color={'white'} fontSize={'0.7rem'}>{i.nomeProd}</Td>
             <Td px='0' py='1' fontSize={'0.8rem'} textAlign={"center"}>{codig()}</Td>
             <Td px='0' py='1' fontSize={'0.8rem'}>
               <Input
@@ -133,23 +133,28 @@ export const TableConteudo = (props: {
             <Td px='0' py='1' fontSize={'0.8rem'} textAlign={"center"}>{i.largura}</Td>
             <Td px='0' py='1' fontSize={'0.8rem'} textAlign={"center"}>{i.comprimento}</Td>
             <Td px='0' py='1' fontSize={'0.8rem'}>
-              <Checkbox
-                borderColor="whatsapp.600"
-                rounded="md"
-                px="3"
-                onChange={GetMont}
-                isChecked={i.mont}
-              />
+              <Flex w={'100%'} justifyContent={'center'}>
+                <Checkbox
+                  borderColor="whatsapp.600"
+                  rounded="md"
+                  px="3"
+                  onChange={GetMont}
+                  isChecked={i.mont}
+                />
+              </Flex>
             </Td>
             <Td px='0' py='1' fontSize={'0.8rem'}>
-              <Checkbox
-                borderColor="whatsapp.600"
-                rounded="md"
-                px="3"
-                onChange={GetExpo}
-                isChecked={i.expo}
-              />
+              <Flex w={'100%'} justifyContent={'center'}>
+                <Checkbox
+                  borderColor="whatsapp.600"
+                  rounded="md"
+                  px="3"
+                  onChange={GetExpo}
+                  isChecked={i.expo}
+                />
+              </Flex>
             </Td>
+
             <Td px='0' py='1' fontSize={'0.8rem'} textAlign={"center"}>
               {ValorFinal}
             </Td>
@@ -159,10 +164,12 @@ export const TableConteudo = (props: {
                 currency: "BRL",
               })}
             </Td>
-            <Td px='5' py='1' fontSize={'0.8rem'}>
-              <Button onClick={remove} boxShadow={'lg'} border={'1px solid'} borderColor={'whatsapp.500'} p={'3'}>
-                <BsTrash />
-              </Button>
+            <Td px='3%' py='1' fontSize={'0.8rem'} w={"5rem"}>
+              <Flex w={'100%'} justifyContent={'center'}>
+                <Button onClick={remove} boxShadow={'lg'} colorScheme="green" p={'3'}>
+                  <BsTrash />
+                </Button>
+              </Flex>
             </Td>
           </Tr>
         </>

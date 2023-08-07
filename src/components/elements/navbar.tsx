@@ -21,13 +21,15 @@ function Navbar() {
   const [Dados, setDados] = useState<any>([]);
 
   useEffect(() => {
-    if (session?.user.pemission !== 'Adm') {
+    if (session?.user.primeiro_acesso === true ) {
+      router.push('/user')
+    } else if (session?.user.pemission !== 'Adm') {
       const filtro = NavMenuItems.filter((p) => p.permission !== 'Adm');
       setDados(filtro);
     } else {
       setDados(NavMenuItems);
     }
-  }, [session?.user.pemission]);
+  }, [router, session?.user.pemission, session?.user.primeiro_acesso]);
 
   return (
     <Flex
@@ -51,13 +53,13 @@ function Navbar() {
             {Dados.map((navItem: any) => (
               <ListItem key={`navbar-${navItem.id}`}>
                 <Text>
-                  <ListIcon fontSize="2xl" color="greenyellow" as={navItem.icon} />
+                  <ListIcon fontSize="2xl" color="lime" as={navItem.icon} />
                   <NextLink href={navItem.url} as={navItem.url} passHref>
                     <Link
                       fontSize="lg"
                       color={
                         router.asPath === navItem.url
-                          ? 'greenyellow'
+                          ? 'lime'
                           : 'whiteAlpha.800'
                       }
                     >

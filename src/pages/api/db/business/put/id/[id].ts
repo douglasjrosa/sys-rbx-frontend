@@ -23,18 +23,18 @@ export default async function GetEmpresa(
     })
       .then(async (Response) => {
         res.status(200).json(Response.data.data);
-        console.log("🚀 ~ file: [id].ts:26 ~ .then ~ Response.data.data:", Response.data.data)
+        
       })
       .catch((err) => {
         console.error(err);
         // console.error(err.response.data);
-        // console.error(err.response.data.error);
+        console.error(err.response.data.error);
         // console.error(err.response.data.error.details);
-        // res.status(400).json({
-        //   error: err.response.data,
-        //   mensage: err.response.data.error,
-        //   detalhe: err.response.data.error.details,
-        // });
+        res.status(400).json({
+          error: err.response.data,
+          mensage: err.response.data.error,
+          detalhe: err.response.data.error?.details,
+        });
       });
   } else {
     return res.status(405).send({ message: 'Only PUT requests are allowed' });

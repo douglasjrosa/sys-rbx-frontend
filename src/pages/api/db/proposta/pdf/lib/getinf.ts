@@ -12,14 +12,34 @@ export const getData = async (proposta: any) => {
     },
   };
 
+  const converterData = (data: string) => {
+    if (!data) return ""; // Verifica se a variável data não está vazia
+
+    const dataObjeto = new Date(data);
+    // Ajuste do fuso horário para o horário de Brasília (GMT-3)
+    const fusoHorario = -3; // Horário de Brasília (GMT-3)
+    const dataBrasilia = new Date(
+      dataObjeto.getTime() + fusoHorario * 3600000
+    );
+    dataBrasilia.setDate(dataBrasilia.getDate() + 1); // Adiciona um dia
+    const hoje = new Date();
+    const diferenca = Math.ceil(
+      (dataBrasilia.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const resultado = diferenca + " Dias";
+
+    return resultado;
+  };
+
   try {
     const response = await axios(config);
+    console.log("🚀 ~ file: getinf.ts:36 ~ getData ~ response:", response)
     const result = response.data?.data?.[0];
     const inf = result.attributes;
-    console.log("🚀 ~ file: getinf.ts:19 ~ getData ~ inf:", inf)
     const Vendedor = inf.user.data.attributes.username
     const empresaFornec = inf.fornecedorId.data.attributes;
-    const dataEntrega = !inf.dataEntrega? '' : inf.dataEntrega
+    const dataEntrega1 = !inf.dataEntrega? '' : inf.dataEntrega
+    const dataEntrega = converterData(dataEntrega1)
 
     const dadosFornecedor = {
       data: {
@@ -43,7 +63,10 @@ export const getData = async (proposta: any) => {
     const fornecedor = dadosFornecedor;
     const cliente = inf.empresa.data.attributes;
     const condi = inf.condi;
-    const Desconto = inf.desconto
+    const Desconto_Converte = parseFloat(inf.desconto.replace('.', '').replace(',', '.'));
+    const Desconto = !Desconto_Converte? 0 : Desconto_Converte;
+    const DescontoAdd_Converte = parseFloat(inf.descontoAdd.replace('.', '').replace(',', '.'))
+    const DescontoAdd = !DescontoAdd_Converte? 0 : DescontoAdd_Converte
     const itens = inf.itens;
     const prazo = inf.prazo === null ? "" : inf.prazo;
     const venc = inf.vencPrint;
@@ -78,11 +101,12 @@ export const getData = async (proposta: any) => {
       Vendedor,
       cliente_pedido,
       Desconto,
+      DescontoAdd,
       dataEntrega
     };
     return data;
   } catch (error) {
-    console.error("🚀 ~ file: getinf.ts:23 ~ getData ~ error:", error);
+    console.error("🚀 ~ file: /api/db/proposta/pdf/lib/getinf.ts:23 ~ getData ~ error:", error);
     throw error;
   }
 };

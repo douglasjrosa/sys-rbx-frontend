@@ -1,4 +1,5 @@
-import { Box, Flex, IconButton, Textarea, useToast } from '@chakra-ui/react';
+import { NotasSms } from '@/components/data/notas';
+import { Box, Flex, FormLabel, IconButton, Select, Textarea, useToast } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
@@ -11,6 +12,7 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
   const toast = useToast();
   const { data: session } = useSession();
   const [Valor, setValor] = useState('');
+  const [Flag, setFlag] = useState('Notas');
 
   useEffect(() => {
     setTimeout(() => {
@@ -25,6 +27,7 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
     const msg = {
       date: DateAtua,
       user: session?.user.name,
+      flag: Flag,
       msg: Valor,
     };
 
@@ -65,35 +68,59 @@ export const NegocioFooter = (props: { onGetValue: any; data: any }) => {
     <>
 
       <Flex
-        px={'4rem'}
-        // h={'100%'}
+        px={{ base: '2rem', md: '4rem' }}
+        py={4}
+        h={'100%'}
         justifyContent={'space-between'}
         alignItems={'center'}
-        bg={'#f0f2f5'}
+        gap={5}
       >
         <Textarea
           resize={'none'}
           overflowY={'hidden'}
           fontSize={'15px'}
           lineHeight={'1.2'}
-          bg={'#f0f0f0'}
+          bg={'#ffffff12'}
+          color={'white'}
           p={'10px'}
-          w={'95%'}
+          w={'85%'}
           rounded={'5px'}
           borderColor={'gray.300'}
           rows={1}
-          boxShadow={'dark-lg'}
           onChange={(e: any) => setValor(e.target.value)}
-          value={Valor}
         />
-        <IconButton
-          aria-label="Send"
-          fontSize={'xl'}
-          icon={<FaLocationArrow />}
-          color="gray.600"
-          onClick={addItens}
-        />
-      </Flex>
+        <Box color={'white'}>
+          <Select
+            bg='#2a303b'
+            borderColor='white'
+            p={'10px'}
+            rounded={'5px'}
+            fontSize='12px'
+            w='11rem'
+            focusBorderColor='white'
+            onChange={(e)=> setFlag(e.target.value)}
+            value={Flag}
+          >
+            {NotasSms.map((i: any) => {
+              return (
+                <>
+                  <option key={i.id} style={{ backgroundColor: '#2a303b' }} selected={i.id === 1? true : false} value={i.title}>{i.title}</option >
+                </>
+          )
+            })}
+        </Select>
+      </Box>
+      <IconButton
+        aria-label="Send"
+        style={{ backgroundColor: '#38A169' }}
+        fontSize={'xl'}
+        icon={<FaLocationArrow />}
+        color="gray.700"
+        onClick={addItens}
+        h='3rem'
+        w='5rem'
+      />
+    </Flex >
 
     </>
   );

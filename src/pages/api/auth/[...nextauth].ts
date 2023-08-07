@@ -1,10 +1,6 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unreachable */
-/* eslint-disable no-undef */
 import axios from "axios";
-import NextAuth, { DefaultUser } from "next-auth";
+import NextAuth, { DefaultUser, JWT } from "next-auth";
 import { Session } from "next-auth/core/types";
-import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 type ExtendedDefaultUser = DefaultUser & {
@@ -44,7 +40,7 @@ export default NextAuth({
 
           const { jwt, user } = await res.data;
 
-          const { confirmed, blocked, username, id, email, pemission } =
+          const { confirmed, blocked, username, id, email, pemission, primeiro_acesso } =
             await user;
           const response = {
             jwt: jwt,
@@ -54,6 +50,7 @@ export default NextAuth({
             confirmed: confirmed,
             blocked: blocked,
             pemission: pemission,
+            primeiro_acesso,
           };
 
           if (!jwt || !id || !username || !email) {
@@ -73,7 +70,7 @@ export default NextAuth({
     signIn: "/auth/signin",
     // signOut: '/auth/signout',
     // error: '/auth/error', // Error code passed in query string as ?error=
-    // verifyRequest: '/auth/verify-request', // (used for check email message)
+    verifyRequest: '/auth/verify-request', // (used for check email message)
     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
 
@@ -103,7 +100,7 @@ export default NextAuth({
         }
       }
 
-      return token as JWT;
+      return token as unknown as JWT;
     },
     session: async ({ session, token }): Promise<Session | any> => {
       if (

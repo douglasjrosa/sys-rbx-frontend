@@ -49,7 +49,7 @@ export default async function GetEmpresa(
       ? Number(anoVigente + "000" + 1)
       : newBusinesses;
 
-    const getVendedor = await axiosRequet.get("/users/" + data.user);
+    const getVendedor = await axiosRequet.get("/users/" + data.vendedor);
     const respVendedor = getVendedor.data.username;
 
     const getCliente = await axiosRequet.get("/empresas/" + data.empresa);
@@ -59,7 +59,7 @@ export default async function GetEmpresa(
       data: {
         status: true,
         statusAnd: "Ativo",
-        deadline: data.deadline,
+        DataRetorno: data.DataRetorno,
         nBusiness: nBusiness.toString(),
         Budget: data.Budget,
         Approach: data.Approach,
@@ -75,7 +75,7 @@ export default async function GetEmpresa(
     await axiosRequet
       .post(`/businesses`, dataAtualizado)
       .then(async (response) => {
-        // console.log(response.data);
+        console.log(response.data);
         const isoDateTime = new Date().toISOString();
         const VisibliDateTime = new Date().toISOString();
         await RegCompra(Number(data.empresa), data.Budget)
@@ -87,10 +87,10 @@ export default async function GetEmpresa(
         };
         const url = `empresas/${data.empresa}`;
         const Register = await Historico(txt, url);
-        // const url2 = `businesses/${response.data.data.attributes.nBusiness}`;
-        // await Historico(txt, url2);
+
         res.status(200).json({
           status: 200,
+          nBusiness: response.data.data.id,
           message: `Business numero: ${nBusiness}, foi criado pelo vendedor ${respVendedor} para o cliente ${respCliente} no dia ${VisibliDateTime}`,
           historico: Register,
         });

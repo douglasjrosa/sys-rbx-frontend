@@ -1,4 +1,4 @@
-import { Select } from '@chakra-ui/react';
+import { Box, Button, Flex, FormLabel, Heading, Select } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 import { memo, useEffect, useState } from 'react';
@@ -9,13 +9,15 @@ interface User {
 }
 
 export const SelectUser = (props: {
-  onValue: any;
+  onValue: any; user: string
 }) => {
   const { data: session } = useSession();
-  const [user, setUser] = useState<string | any>(session?.user.name);
+  const [user, setUser] = useState<string>('');
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
+    const usuario = props.user
+    setUser(usuario)
     const fetchData = async () => {
       try {
         const response = await axios.get('/api/db/user');
@@ -27,26 +29,59 @@ export const SelectUser = (props: {
     fetchData();
   }, [props, session?.user.name]);
 
-  const handleUserChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
-    setUser(value);
-    props.onValue(value);
+  const handleUserChange = () => {
+    props.onValue(user);
   };
 
-
   return (
-    <Select
-      w={'12rem'}
-      onChange={handleUserChange}
-      isDisabled={session?.user.pemission !== 'Adm'}
-      value={user}
-    >
-      {users.map((user) => (
-        <option key={user.id} value={user.username}>
-          {user.username}
-        </option>
-      ))}
-    </Select>
+    <>
+      {session?.user.pemission !== 'Adm' ? (
+        <>
+          <FormLabel
+            htmlFor="cnpj"
+            fontSize="xs"
+            fontWeight="md"
+            color="white"
+          >
+            Usuário
+          </FormLabel>
+          <Box w={'16rem'}>
+            <Heading>{session?.user.name}</Heading>
+          </Box>
+        </>
+      ) : (
+        <>
+          <Flex flexDir={'row'} w={'100%'} alignItems={'self-end'} gap={5}>
+            <Box>
+              <FormLabel
+                htmlFor="cnpj"
+                fontSize="xs"
+                fontWeight="md"
+                color="white"
+              >
+                Usuário
+              </FormLabel>
+              <Select
+                w={'12rem'}
+                onChange={(e) => setUser(e.target.value)}
+                value={user}
+                color="white"
+                bg='gray.800'
+              >
+                {users.map((user) => (
+                  <option style={{ backgroundColor: "#1A202C" }} key={user.id} value={user.username}>
+                    {user.username}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+            <Button variant={'solid'} colorScheme={'green'} px={6} onClick={handleUserChange}>Filtrar</Button>
+          </Flex>
+
+        </>
+      )}
+
+    </>
   );
 };
 

@@ -1,37 +1,27 @@
-import { FormLabel, Input } from '@chakra-ui/react';
+import { Box, FormLabel, Input, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
-export const ListaEmpresa = (props: { onChangeValue: any }) => {
-  const [dados, setDados] = useState<any>([]);
+export const ListaEmpresa = (props: { onChangeValue: string }) => {
+  const [dados, setDados] = useState<string>('');
 
   useEffect(() => {
-    (async () => {
-      const id = localStorage.getItem('id');
-      const resposta = await fetch('/api/db/business/get/id/' + id);
-      const resp = await resposta.json();
-      const retorno = resp.attributes.empresa.data;
-      setDados(retorno.attributes.nome);
-      props.onChangeValue(retorno.attributes.CNPJ);
-    })();
-  }, [props, props.onChangeValue]);
+    if (props.onChangeValue){
+    setDados(props.onChangeValue);
+  }
+  }, [props.onChangeValue]);
 
   return (
     <>
       <FormLabel
         fontSize="xs"
         fontWeight="md"
-        color="gray.700"
+        color="white"
       >
         Empresas
       </FormLabel>
-      <Input
-        shadow="sm"
-        size="xs"
-        w="full"
-        fontSize="xs"
-        rounded="md"
-        value={dados}
-      />
+      <Box  w="full">
+      <Text>{dados}</Text>
+      </Box>
     </>
   );
 };

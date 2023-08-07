@@ -43,4 +43,8 @@ export const modCaix = [
     id: '11',
     title: 'Engradado resistente',
   },
+  {
+    id: '12',
+    title: 'Modelo especial',
+  },
 ];

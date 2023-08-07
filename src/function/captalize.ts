@@ -1,4 +1,3 @@
-
 export function capitalizeWords(str: string): string {
   // Verifica se a string é nula ou indefinida
   if (str === null || str === undefined) {
@@ -7,8 +6,11 @@ export function capitalizeWords(str: string): string {
 
   const str1 = str.toLowerCase();
 
+  // Remove espaços em excesso entre as palavras
+  const trimmedStr = str1.replace(/\s+/g, ' ');
+
   // Divide a string em um array de palavras, ignorando caracteres especiais e números
-  const words = str1.split(/[^A-Za-z0-9]+/).filter(word => word !== '');
+  const words = trimmedStr.split(' ');
 
   // Itera por cada palavra no array
   for (let i = 0; i < words.length; i++) {
@@ -16,6 +18,8 @@ export function capitalizeWords(str: string): string {
     words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1).toLowerCase();
   }
 
-  // Junta as palavras de volta em uma única string e retorna o resultado
-  return words.join(' ');
+  // Junta as palavras de volta em uma única string
+  const result = words.join(' ');
+
+  return result;
 }

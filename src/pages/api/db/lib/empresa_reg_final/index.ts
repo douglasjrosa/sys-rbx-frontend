@@ -3,7 +3,7 @@ import axios from "axios";
 export const RegCompraFim = async (id: number, valor: string, data: any) => {
   const bodyData = {
     data: {
-      ultima_compra_comcluida: data.toISOString(),
+      ultima_compra_comcluida: data.toISOString().slice(0, 10),
       valor_ultima_compra: valor,
     },
   };

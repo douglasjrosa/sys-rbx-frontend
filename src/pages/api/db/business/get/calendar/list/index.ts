@@ -78,7 +78,9 @@ export default async function GetEmpresa(
       });
 
       res.status(200).json(sortedData);
+     
     } catch (error: any) {
+      console.log("🚀 ~ file: index.ts:85 ~ error.response?:", error.response)
       res
         .status(error.response?.status || 500)
         .json(error.response?.data || { message: "Internal Server Error" });

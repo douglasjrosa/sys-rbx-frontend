@@ -1,16 +1,15 @@
 /* eslint-disable react/no-children-prop */
+import { EtapasNegocio } from "@/components/data/etapa";
+import { SetValue } from "@/function/currenteValor";
 import {
   Box,
   Button,
   ButtonGroup,
   ChakraProvider,
   extendTheme,
-  FormControl,
-  FormLabel,
   IconButton,
   Input,
   InputGroup,
-  InputLeftElement,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -19,11 +18,11 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Select,
-  Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { MdOutlineAddCircleOutline } from "react-icons/md";
 import { BeatLoader } from "react-spinners";
@@ -67,58 +66,39 @@ export const theme = extendTheme({
   },
 });
 
-export const BtCreate = (props: { onLoading: any }) => {
+export const BtCreate = (props: { user: any }) => {
   const { data: session } = useSession();
-  const [work, setWork] = useState([]);
-  const [budgets, setBudgets] = useState("");
-  const [budgetsMask, setBudgetsMask] = useState("");
+  const [work, setWork] = useState<any | null>([]);
+  const [budgets, setBudgets] = useState<any>();
   const [Approach, setApproach] = useState("");
   const [Empresa, setEmpresa] = useState("");
   const [Deadline, setDeadline] = useState("");
+  const [Etapa, setEtapa] = useState("");
+  const [USER, setUSER] = useState<string | null>(null);
   const { onOpen, onClose, isOpen } = useDisclosure();
+  const dataAtual: Date = new Date();
+  const router= useRouter()
+
 
   useEffect(() => {
-    (async () => {
-      // let url = "/api/db/empresas/getEmpresamin";
-      let url = `/api/db/empresas/get?Vendedor=${session?.user.name}`;
-      await axios({
-        method: "GET",
-        url: url,
-      })
-        .then(function (response) {
-          setWork(response.data);
-        })
-        .catch(function (error) {
+    const usuario = props.user
+    if (usuario) {
+      (async () => {
+        const url = `/api/db/empresas/get?Vendedor=${usuario}`;
+        const url1 = `/api/db/empresas/get`;
+        try {
+          const response = await axios(url);
+          const response1 = await axios(url1);
+          const GetVendedor = response.data;
+          const GetEnpresas = response1.data;
+          const resultado = [...GetVendedor, ...GetEnpresas]
+          setWork(resultado);
+        } catch (error) {
           console.log(error);
-        });
-    })();
-  }, [session?.user.name]);
-
-  const maskPreco = (e: any) => {
-    const originalVelue: any = unMask(e.target.value);
-    const maskedValue = mask(originalVelue, [
-      ", 9",
-      ",99",
-      "9,99",
-      "99,99",
-      "999,99",
-      "9.999,99",
-      "99.999,99",
-      "999.999,99",
-      "9.999.999,99",
-      "99.999.999,99",
-      "999.999.999,99",
-    ]);
-    const valor =
-      originalVelue > 99
-        ? originalVelue
-          .replace(/[^\d]/g, "")
-          .replace(/^0+/, "")
-          .replace(/(\d{1,})(\d{2})$/, "$1.$2")
-        : originalVelue;
-    setBudgets(valor);
-    setBudgetsMask(maskedValue);
-  };
+        }
+      })();
+    }
+  }, [props.user]);
 
   const historico = {
     vendedor: session?.user.name,
@@ -134,21 +114,19 @@ export const BtCreate = (props: { onLoading: any }) => {
   };
 
   const salve = async () => {
-    props.onLoading(true);
+    // props.onLoading(true);
+
     const data = {
       status: true,
       deadline: Deadline,
-      Budget: !budgets
-        ? "R$ 0,00"
-        : parseFloat(budgets).toLocaleString("pt-br", {
-          style: "currency",
-          currency: "BRL",
-        }),
+      Budget: budgets,
       Approach: Approach,
       empresa: Empresa,
       history: historico,
       vendedor: session?.user.id,
+      DataRetorno: dataAtual.toISOString(),
       incidentRecord: [MSG],
+      etapa: Etapa,
     };
 
     const url = "/api/db/business/post";
@@ -158,24 +136,19 @@ export const BtCreate = (props: { onLoading: any }) => {
       data: data,
     })
       .then((res) => {
-        console.log(res);
-        props.onLoading(false);
-        Reset();
-
+        console.log(res.data.nBusiness);
+        // router.push(`/negocios/${res.data.nBusiness}`)
       })
       .catch((err) => console.error(err));
   };
 
-  const Reset = () => {
-    setBudgets("");
-    setBudgetsMask("");
-    setApproach("");
-    setEmpresa("");
-    setDeadline("");
-    setBudgetsMask("");
-    onClose();
-  };
 
+
+  const getValue = (e: any) => {
+    const valor = e.target.value
+    const valor_limpo = SetValue(valor);
+    setBudgets(valor_limpo)
+  }
   return (
     <ChakraProvider theme={theme}>
       <Popover
@@ -204,10 +177,10 @@ export const BtCreate = (props: { onLoading: any }) => {
             Preencha com as informações abaixo
             <Select
               mt={2}
-              placeholder="Selecione uma empresa"
               onChange={(e) => setEmpresa(e.target.value)}
               value={Empresa}
             >
+              <option style={{ backgroundColor: "#2A4365" }} value="">Selecione uma empresa</option>
               {work.map((item: any) => {
                 return (
                   <option
@@ -220,45 +193,35 @@ export const BtCreate = (props: { onLoading: any }) => {
                 );
               })}
             </Select>
-            <Tooltip label="Tipo de atendimento">
-              <Select
-                mt={2}
-                placeholder="Selecione o tipo de Atendimento"
-                onChange={(e) => setApproach(e.target.value)}
-                value={Approach}
-              >
+            <Select
+              mt={2}
+              onChange={(e) => setEtapa(e.target.value)}
+              value={Etapa}
+            >
+              <option style={{ backgroundColor: "#2A4365" }} value="">Selecione a etapa do negócio</option>
+              {EtapasNegocio.map((item: any) => {
+                if (item.id === '6') {
+                  return ''
+                }
                 return (
-                <option style={{ backgroundColor: "#2A4365" }} value="">
-                  {" "}
-                </option>
-                <option style={{ backgroundColor: "#2A4365" }} value="interno">
-                  Cliente entrou em contato
-                </option>
-                <option style={{ backgroundColor: "#2A4365" }} value="externo">
-                  Vendedor entrou em contato
-                </option>
+                  <option
+                    style={{ backgroundColor: "#2A4365" }}
+                    key={item.id}
+                    value={item.id}
+                  >
+                    {item.title}
+                  </option>
                 );
-              </Select>
-            </Tooltip>
+              })}
+            </Select>
             <InputGroup mt={2}>
-              <InputLeftElement pointerEvents="none" children={"R$"} />
               <Input
                 type="text"
                 placeholder="Orçamento estimado"
-                value={budgetsMask}
-                onChange={maskPreco}
+                value={budgets}
+                onChange={getValue}
               />
             </InputGroup>
-            <Tooltip label="Prazo de entrega">
-              <FormControl variant="floating" mt={5} id="first-name">
-                <Input
-                  type={"date"}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  value={Deadline}
-                />
-                <FormLabel>Prazo de entrega</FormLabel>
-              </FormControl>
-            </Tooltip>
           </PopoverBody>
           <PopoverFooter
             display="flex"
@@ -268,12 +231,11 @@ export const BtCreate = (props: { onLoading: any }) => {
           >
             <Box fontSize="sm"></Box>
             <ButtonGroup size="sm">
-              <Button colorScheme="blue" onClick={Reset}>
+              <Button colorScheme="blue" onClick={onClose}>
                 Cancelar
               </Button>
               <Button
-                isLoading={Empresa && Deadline ? false : true}
-                spinner={<BeatLoader size={8} color="white" />}
+                isDisabled={Empresa && budgets ? false : true}
                 colorScheme="whatsapp"
                 onClick={salve}
               >

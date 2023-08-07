@@ -1,11 +1,10 @@
 export const DateIso = () => {
   const currentTime = new Date();
-  const mesOriginal = currentTime.getMonth() + 1;
-  const mes = mesOriginal < 10 ? '0' + mesOriginal : mesOriginal;
-  const diaOriginal = currentTime.getDate();
-  const dia = diaOriginal < 10 ? '0' + diaOriginal : diaOriginal;
-  const date = currentTime.getFullYear() + '-' + mes + '-' + dia;
-  return date;
+  const year = currentTime.getFullYear();
+  const month = String(currentTime.getMonth() + 1).padStart(2, '0');
+  const day = String(currentTime.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 };
 
 export const DateTimeIso = () => {

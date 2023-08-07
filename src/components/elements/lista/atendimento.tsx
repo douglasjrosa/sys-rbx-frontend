@@ -18,10 +18,6 @@ export const SelecAtendimento = (props: { Resp: string; onAddResp: any }) => {
       <FormLabel
         fontSize="xs"
         fontWeight="md"
-        color="gray.700"
-        _dark={{
-          color: 'gray.50',
-        }}
       >
         Atendimento
       </FormLabel>
@@ -31,14 +27,12 @@ export const SelecAtendimento = (props: { Resp: string; onAddResp: any }) => {
         w="full"
         fontSize="xs"
         rounded="md"
-        placeholder=" "
-        border={'1px solid #6666'}
         onChange={atualizarValor}
         value={valor}
       >
-        <option value=""> </option>
-        <option value="interno">Cliente entrou em contato</option>
-        <option value="externo">Vendedor entrou em contato</option>
+        <option style={{ backgroundColor: "#1A202C" }} value=""> </option>
+        <option style={{ backgroundColor: "#1A202C" }} value="interno">Cliente entrou em contato</option>
+        <option style={{ backgroundColor: "#1A202C" }} value="externo">Vendedor entrou em contato</option>
       </Select>
     </Box>
   );

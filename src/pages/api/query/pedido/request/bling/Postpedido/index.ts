@@ -9,12 +9,11 @@ export const PostPedido = async (dados: any) => {
   const apiKeyRenato: any = process.env.ATORIZZATION_TOKEN_BLING_RENATO;
 
   const DaDos = await dados.attributes;
+
   const empresa = DaDos.empresa.data.attributes;
   const empresaId = DaDos.empresa.data.id;
   const empresaUlt = DaDos.empresa.data.attributes.ultima_compra;
   const Produto = await DaDos.itens;
-
-  console.log("🚀 ~ file: index.ts:11 ~ PostPedido ~ DaDos:", DaDos.fornecedorId.data.attributes.nome )
 
   const apiKey = DaDos.fornecedorId.data.attributes.nome === 'MAX BRASIL DERIVADOS DE MADEIRA LTDA'? apiKeyMax : DaDos.fornecedorId.data.attributes.nome === 'BRAGHETO PALETES E EMBALAGENS LTDA'? apiKeyBragheto : apiKeyRenato
 
@@ -61,10 +60,10 @@ export const PostPedido = async (dados: any) => {
   });
 
   const xmlprodutos = Array.isArray(Produtos)
-    ? Produtos.reduce((acc: any, cur: any) => acc + cur)
-    : Produtos;
+  ? Produtos.reduce((acc: any, cur: any) => acc + cur)
+  : Produtos;
 
-  const prazo1 = DaDos.prazo === "" ? "5 Dias" : DaDos.prazo;
+  const prazo1 = !DaDos.prazo || DaDos.prazo === "" ? "5 Dias" : DaDos.prazo;
   const Valor = DaDos.totalGeral
     .replace("R$", "")
     .replace(".", "")
@@ -98,6 +97,7 @@ export const PostPedido = async (dados: any) => {
 
     return templateParcela;
   });
+
 
   const parcela = () => {
     const prazo1 = "5 Dias";
@@ -134,14 +134,17 @@ export const PostPedido = async (dados: any) => {
   };
 
   const [xmlParcelas] =
-    DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
-      ? parcela()
-      : datasParcelas;
+  DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
+  ? parcela()
+  : datasParcelas;
+
 
   const desconto = DaDos.desconto
     .replace("R$", "")
     .replace(".", "")
     .replace(",", ".");
+
+
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
@@ -164,10 +167,11 @@ export const PostPedido = async (dados: any) => {
      <itens>${xmlprodutos}</itens>
      <parcelas>${xmlParcelas}</parcelas>
      <nf_produtor_rural_referenciada />
-     <vlr_frete>${parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
+     <vlr_frete>${!DaDos.valorFrete? 0.00 : parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
      <vlr_desconto>${desconto}</vlr_desconto>
      <obs>${DaDos.obs}</obs>
   </pedido>`;
+  console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
 
   try {
     const formData = new FormData();
@@ -178,6 +182,7 @@ export const PostPedido = async (dados: any) => {
       method: "POST",
       body: formData,
     };
+      console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
 
     const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
@@ -220,6 +225,7 @@ export const PostPedido = async (dados: any) => {
 
     return resposta;
   } catch (error: any) {
+    console.log("🚀 ~ file: index.ts:221 ~ PostPedido ~ error:", error)
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
       status: error.response?.status ?? 400,

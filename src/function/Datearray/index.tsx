@@ -1,10 +1,10 @@
 import axios from "axios";
 
-export const getAllDaysOfMonth = async (month: number | undefined) => {
-  const Month: any = !month ? new Date().getMonth() + 1 : month;
-
-  const firstDay = new Date(new Date().getFullYear(), Month - 1, 1);
-  const lastDay = new Date(new Date().getFullYear(), Month, 0);
+export const getAllDaysOfMonth = async (month?: number, year?: number) => {
+  const currentYear = year || new Date().getFullYear();
+  const currentMonth = month ? month - 1 : new Date().getMonth();
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth + 1, 0);
   const days: { id: number, date: string }[] = [];
   let currentDate = new Date(firstDay);
 
@@ -34,7 +34,7 @@ export const getAllDaysOfMonth = async (month: number | undefined) => {
   // Filtrando os dias da semana, excluindo feriados, domingos e sábados
   const diasDaSemana = days.filter((day) => {
     const isFeriado = feriados.includes(day.date);
-    const diaDaSemana = new Date(day.date).getDay(); // 0 (domingo) a 6 (sábado)
+    const diaDaSemana = new Date(day.date).getUTCDay(); // 0 (domingo) a 6 (sábado)
     return !isFeriado && diaDaSemana !== 0 && diaDaSemana !== 6;
   });
 

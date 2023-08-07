@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Flex, useToast } from '@chakra-ui/react';
+import { Box, Flex, useToast } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Loading from './elements/loading';
@@ -35,7 +35,7 @@ function Layout({ children }: { children: React.ReactNode }): JSX.Element {
   if (
     !session &&
     router.asPath ===
-      '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin'
+    '/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000&error=CredentialsSignin'
   ) {
     toast({
       title: 'Email ou senha incorreto',
@@ -50,12 +50,20 @@ function Layout({ children }: { children: React.ReactNode }): JSX.Element {
 
   if (!status && router.asPath === '/') {
     router.push('/auth/signin');
-    return <Loading size="200px">Carregando...</Loading>;
+    return (
+      <Box w={'100vw'} h={'100vh'}>
+        <Loading size="200px">Carregando...</Loading>
+      </Box>
+    );
   }
 
   if (!session && router.asPath === '/') {
     router.push('/auth/signin');
-    return <Loading size="200px">Carregando...</Loading>;
+    return (
+      <Box w={'100vw'} h={'100vh'}>
+        <Loading size="200px">Carregando...</Loading>
+      </Box>
+    );
   }
 
   if (
@@ -63,14 +71,22 @@ function Layout({ children }: { children: React.ReactNode }): JSX.Element {
     (status && router.asPath === '/auth/signin')
   ) {
     router.push('/');
-    const UserEmail: any|null = session?.user.email
+    const UserEmail: any | null = session?.user.email
     localStorage.setItem("email", UserEmail);
-    return <Loading size="200px">Redirecionando...</Loading>;
+    return (
+      <Box w={'100vw'} h={'100vh'}>
+        <Loading size="200px">Carregando...</Loading>
+      </Box>
+    );
   }
 
   if (router.asPath === '/auth/signin#') {
     router.push('/auth/signin');
-    return <Loading size="200px">Redirecionando...</Loading>;
+    return (
+      <Box w={'100vw'} h={'100vh'}>
+        <Loading size="200px">Carregando...</Loading>
+      </Box>
+    );
   }
 
 

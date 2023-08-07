@@ -13,12 +13,14 @@ import {
 } from '@chakra-ui/react';
 import { NextPage } from 'next';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { FormEventHandler, useState } from 'react';
 
 const SignIn: NextPage = (): JSX.Element => {
   const [user, setUser] = useState<string>('');
   const [pass, setPass] = useState<string>('');
   const toast = useToast();
+  const router = useRouter()
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ const SignIn: NextPage = (): JSX.Element => {
       password: pass,
       redirect: false,
     });
-    
+
     if (res.status !== 200) {
       toast({
         title: 'Usuario ou Senha Incorreto',
@@ -43,39 +45,49 @@ const SignIn: NextPage = (): JSX.Element => {
       minH={'100vh'}
       minW={'100vw'}
       direction={{ base: 'column', md: 'row' }}
+      bg={'white'}
     >
-      <Flex p={8} flex={1} align={'center'} justify={'center'}>
-        <Stack spacing={4} w={'full'} maxW={'md'}>
-          <Heading fontSize={'2xl'}>Sign in to your account</Heading>
+      <Flex p={8} bg={'white'} flex={1} align={'center'} justify={'center'}>
+        <Stack spacing={4} w={'full'} maxW={'md'} bg={'white'}>
+          <Image
+            alt={'Logo'}
+            objectFit={'cover'}
+            bg={'white'}
+            w={'18rem'}
+            m={'auto'}
+            src={'https://ribermax.com.br/images/logomarca-efect.webp?w=1080&q=75'}
+          />
           <form onSubmit={handleSubmit}>
-            <FormControl>
-              <FormLabel htmlFor="email">Email address</FormLabel>
+            <FormControl bg={'white'}>
+              <FormLabel bg={'white'} color={'black'} htmlFor="email">Usuário</FormLabel>
               <Input
-                borderColor="gray.400"
+                borderColor="gray.500"
+                color={'black'}
                 name="email"
                 type="text"
                 onChange={(e) => setUser(e.target.value)}
               />
             </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
+            <FormControl bg={'white'}>
+              <FormLabel bg={'white'} color={'black'} htmlFor="password">Senha</FormLabel>
               <Input
-                borderColor="gray.400"
+                borderColor="gray.500"
+                color={'black'}
                 name="password"
                 type="password"
                 onChange={(e) => setPass(e.target.value)}
               />
             </FormControl>
-            <Stack spacing={6}>
+            <Stack bg={'white'} spacing={6}>
               <Stack
                 direction={{ base: 'column', sm: 'row' }}
                 align={'start'}
                 justify={'space-between'}
               >
-                <Link color={'blue.500'}>Forgot password?</Link>
+                {/* <Link color={'blue.500'} onClick={() => router.push('/auth/verify-request')}>Esqueceu sua senha?</Link> */}
               </Stack>
               <Button colorScheme={'blue'} variant={'solid'} type="submit">
-                Sign in
+                Entrar
               </Button>
             </Stack>
           </form>
@@ -85,9 +97,7 @@ const SignIn: NextPage = (): JSX.Element => {
         <Image
           alt={'Login Image'}
           objectFit={'cover'}
-          src={
-            'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1352&q=80'
-          }
+          src={'https://ribermax.com.br/images/porto%20de%20santos.jpg?w=1080&q=75'}
         />
       </Flex>
     </Stack>

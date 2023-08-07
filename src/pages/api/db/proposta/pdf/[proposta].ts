@@ -1,10 +1,30 @@
+import fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next";
-import { getData } from "./lib/getinf";
+import path from "path";
 import PDFPrinter from "pdfmake";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
-import path from "path";
-import fs from "fs";
-import { TestDb } from "@/components/data/teste";
+import { getData } from "./lib/getinf";
+
+function formatarTelefone(telefone: any) {
+  // Remove letras e caracteres especiais
+  const números = telefone.replace(/\D/g, "");
+
+  if (números.length === 11) {
+    // Formato (99) 9 9999-9999
+    return `(${números.slice(0, 2)}) ${números.slice(2, 3)} ${números.slice(
+      3,
+      7
+    )}-${números.slice(7)}`;
+  } else if (números.length === 10) {
+    // Formato (99) 9999-9999
+    return `(${números.slice(0, 2)}) ${números.slice(2, 6)}-${números.slice(
+      6
+    )}`;
+  } else {
+    // Retorna vazio se não houver nada
+    return "";
+  }
+}
 
 export default async function GetEmpresa(
   req: NextApiRequest,
@@ -14,7 +34,39 @@ export default async function GetEmpresa(
     const { proposta } = req.query;
 
     const infos = await getData(proposta);
-    // console.log("🚀 ~ file: [proposta].ts:17 ~ infos:", infos)
+    console.log("🚀 ~ file: [proposta].ts:37 ~ infos:", infos)
+
+    const resto = infos.dataEntrega;
+
+    // const infos = Calculadora(infos1);
+
+    const somarValores = (valor1: any, valor2: any) => {
+      if (infos.frete === "FOB") return valor1;
+
+      const numero1 = valor1
+        ? parseFloat(
+            valor1.replace("R$", "").replace(".", "").replace(",", ".")
+          )
+        : 0;
+      const numero2 = valor2
+        ? parseFloat(
+            valor2.replace("R$", "").replace(".", "").replace(",", ".")
+          )
+        : 0;
+      const soma = numero1 + numero2;
+
+      if (!numero2) {
+        return numero1.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        });
+      }
+
+      return soma.toLocaleString("pt-br", {
+        style: "currency",
+        currency: "BRL",
+      });
+    };
 
     const imagePath2 = path.join(
       process.cwd(),
@@ -35,7 +87,6 @@ export default async function GetEmpresa(
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
 
     const date = new Date().toLocaleDateString("pt-BR");
-
     const fonts = {
       Helvetica: {
         normal: "Helvetica",
@@ -97,6 +148,7 @@ export default async function GetEmpresa(
       ];
     });
 
+    const sometotalDescont = infos.Desconto + infos.DescontoAdd
     const comDesc = [
       {
         margin: [0, 45, 0, 0],
@@ -107,7 +159,10 @@ export default async function GetEmpresa(
       {
         margin: [0, 45, 0, 0],
         border: [false, false, false, false],
-        text: infos.Desconto,
+        text: sometotalDescont.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        }),
       },
     ];
 
@@ -124,12 +179,11 @@ export default async function GetEmpresa(
       },
     ];
 
-    const desconto = infos.condi !== "Antecipado" ? semDesc : comDesc;
+    const desconto = infos.Desconto === 0 && infos.DescontoAdd === 0 ? semDesc : comDesc;
 
     const logo =
-      infos.fornecedor.data.razao === "BRAGHETO PALETES E EMBALAGENS LTDA"
-        ? dataUrl
-        : dataUrl2;
+      infos.fornecedor.data.cnpj === "04.586.593/0001-70" ? dataUrl : dataUrl2;
+
     const docDefinitions: TDocumentDefinitions = {
       defaultStyle: { font: "Helvetica" },
       content: [
@@ -193,7 +247,7 @@ export default async function GetEmpresa(
                           border: [false, false, false, false],
                           style: "clienteFornecedor",
                           table: {
-                            widths: ["32%", "*"],
+                            widths: ["24%", "*"],
                             body: [
                               [
                                 {
@@ -281,7 +335,7 @@ export default async function GetEmpresa(
                           border: [false, false, false, false],
                           style: "clienteFornecedor",
                           table: {
-                            widths: ["21%", "*"],
+                            widths: ["23%", "*"],
                             body: [
                               [
                                 {
@@ -304,7 +358,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.cliente.nome,
+                                  text: infos.cliente.razao,
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -314,7 +368,10 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.cliente.CNPJ,
+                                  text: infos.cliente.CNPJ.replace(
+                                    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+                                    "$1.$2.$3/$4-$5"
+                                  ),
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -347,7 +404,7 @@ export default async function GetEmpresa(
                                   border: [false, false, false, false],
                                 },
                                 {
-                                  text: infos.cliente.fone,
+                                  text: formatarTelefone(infos.cliente.fone),
                                   border: [false, false, false, false],
                                 },
                               ],
@@ -465,6 +522,7 @@ export default async function GetEmpresa(
                                   style: "clienteFornecedor",
                                 },
                               ],
+
                               [
                                 {
                                   margin: [0, 5, 0, 0],
@@ -476,10 +534,11 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: infos.prazo,
+                                  text: infos.condi === 'Antecipado' || infos.condi === 'Antecipado' ? null: infos.prazo,
                                   style: "clienteFornecedor",
                                 },
                               ],
+
                               [
                                 {
                                   margin: [0, 5, 0, 0],
@@ -499,7 +558,7 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: "Prazo parcial de entrega:",
+                                  text: "Prazo de produção:",
                                   bold: "true",
                                   fontSize: 8,
                                 },
@@ -536,7 +595,10 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: infos.totoalGeral,
+                                  text: somarValores(
+                                    infos.totoalGeral,
+                                    infos.Valfrete
+                                  ),
                                 },
                               ],
                             ],
@@ -570,16 +632,16 @@ export default async function GetEmpresa(
           table: {
             widths: [
               "2%",
-              "25%",
+              "24%",
+              "6%",
+              "4%",
+              "6%",
               "7%",
-              "5%",
               "7%",
               "8%",
               "8%",
-              "6%",
-              "6%",
               "12%",
-              "18%",
+              "15%",
             ],
             headerRows: 1,
             heights: 4,
@@ -592,8 +654,8 @@ export default async function GetEmpresa(
                 { text: "Alt.", style: "tableTitle" },
                 { text: "Larg.", style: "tableTitle" },
                 { text: "Comp.", style: "tableTitle" },
-                { text: "MONT.", style: "tableTitle" },
-                { text: "EXP.", style: "tableTitle" },
+                { text: "MONT.(+ 10%)", style: "tableTitle" },
+                { text: "EXP.    (+ 10%)", style: "tableTitle" },
                 { text: "Valor Un.", style: "tableTitle" },
                 { text: "Total", style: "tableTitle" },
               ],
@@ -634,12 +696,23 @@ export default async function GetEmpresa(
     });
 
     pdfDoc.end();
-    const filename ="Proposta comercial -" +
+
+    const name = infos.cliente.nome
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, " ")
+      .replace(/[.,]/g, "")
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    const filename =
+      "Proposta comercial -" +
       infos.nPedido +
       " - " +
-      infos.cliente.nome +
+      name +
       "-" +
-      new Date().toLocaleDateString('pt-BR');
+      new Date().toLocaleDateString("pt-BR") +
+      ".pdf";
     pdfDoc.on("end", () => {
       const pdf = Buffer.concat(chunks);
       res.setHeader("Content-Disposition", `inline; filename="${filename}"`);

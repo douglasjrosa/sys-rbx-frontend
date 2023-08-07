@@ -2,7 +2,6 @@ import {
   Avatar,
   Button,
   Flex,
-<<<<<<<< HEAD:src/components/elements/profile-popover.tsx
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -12,18 +11,12 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Portal,
-========
->>>>>>>> 2cecaf86e55c7c8cd329b1786995b93d1a123cd2:src/components/elements/profile-popover.js
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-<<<<<<<< HEAD:src/components/elements/profile-popover.tsx
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-========
-import { signOut, useSession } from 'next-auth/client';
->>>>>>>> 2cecaf86e55c7c8cd329b1786995b93d1a123cd2:src/components/elements/profile-popover.js
 
 const ProfilePopover = () => {
   const { data: session } = useSession();
@@ -42,6 +35,7 @@ const ProfilePopover = () => {
                   h="56px"
                   bg="transparent"
                   _hover={{ bg: 'gray.400' }}
+
                 >
                   <Avatar
                     name={session.user.name}
@@ -52,9 +46,9 @@ const ProfilePopover = () => {
               </PopoverTrigger>
 
               <Portal>
-                <PopoverContent>
+                <PopoverContent color={'gray.800'}>
                   <PopoverArrow />
-                  <PopoverHeader>{session.user.name}</PopoverHeader>
+                  <PopoverHeader border='1' borderColor={'gray.400'}>{session.user.name}</PopoverHeader>
                   <PopoverCloseButton />
                   <PopoverBody>
                     <NextLink href="/perfil">
@@ -63,12 +57,15 @@ const ProfilePopover = () => {
                       </Button>
                     </NextLink>
                   </PopoverBody>
-                  <PopoverFooter>
+                  <PopoverFooter border='1' borderColor={'gray.300'}>
                     <Flex justifyContent="flex-end">
                       <Button
                         bg="red.200"
                         rightIcon={<ExternalLinkIcon />}
-                        onClick={() => router.push('/api/auth/signout')}
+                        onClick={() => signOut({
+                          redirect: false,
+                          callbackUrl: '/auth/signin'
+                        })}
                       >
                         Sair
                       </Button>

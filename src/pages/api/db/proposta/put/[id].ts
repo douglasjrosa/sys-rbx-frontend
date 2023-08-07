@@ -13,6 +13,7 @@ export default async function PUTEmpresa(
     const data = req.body;
 
     const ID = req.query.id;
+    console.log("🚀 ~ file: [id].ts:16 ~ ID:", ID)
     const token = process.env.ATORIZZATION_TOKEN;
     const axiosRequet = axios.create({
       baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
@@ -53,9 +54,11 @@ export default async function PUTEmpresa(
         valorFrete: data.valorFrete,
         vencPrint: data.vencPrint,
         obs: data.obs,
-        cliente_pedido: data.cliente_pedido
+        cliente_pedido: data.cliente_pedido,
+        dataEntrega: data.dataEntrega
       },
     };
+    console.log("🚀 ~ file: [id].ts:60 ~ DataPost:", DataPost)
 
     const now = new Date();
     const VisibliDateTime =  new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString();
@@ -107,9 +110,9 @@ export default async function PUTEmpresa(
         });
       })
       .catch(async (error) => {
-        console.log(error);
-        console.log(error.response.data.error.details.errors);
+        console.log(error.response.data.error);
 
+        res.status(500).json(error.response.data.error);
         const now = new Date();
         const isoDateTime = now.toISOString();
         const txt = {
@@ -120,15 +123,10 @@ export default async function PUTEmpresa(
           user: 'Sistema'
         };
         const url = `empresas/${clienteId}`;
-        const Register = await Historico(txt, url);
+        await Historico(txt, url);
         const url2 = `businesses/${data.business}`;
         await Historico(txt, url2);
 
-        res.status(500).json({
-          historico: Register,
-          error: error.response,
-          message: error.response,
-        });
       });
   } else {
     return res.status(405).send({ message: "Only PUT requests are allowed" });

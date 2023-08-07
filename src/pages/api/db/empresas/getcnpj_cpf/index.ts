@@ -6,6 +6,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const token = process.env.ATORIZZATION_TOKEN;
     const { CNPJ } = req.body;
+    
     const data = req.body;
 
     await axios({

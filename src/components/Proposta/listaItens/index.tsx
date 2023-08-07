@@ -13,6 +13,7 @@ import { BTMPdf } from "../BTMPdf";
 import { BeatLoader } from "react-spinners";
 import Loading from "@/components/elements/loading";
 import { useSession } from "next-auth/react";
+import { SetValue } from "@/function/currenteValor";
 
 
 export const CardList = (props: { id: string; onloading: any; desbilitar: any }) => {
@@ -36,7 +37,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
     })();
   }, [props, url]);
 
-  const pedido = async (numero: string, id: any) => {
+  const pedido = async (numero: string, id: any, ValorVenda: string) => {
     setLoad(true)
     toast({
       title: "Só um momento estou processando!",
@@ -71,10 +72,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
             console.log(error)
           });
 
-        await axios({
-          url: `/api/db/empresas/setVendedor?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}`,
-          method: "GET",
-        })
+        await axios(`/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${ValorVenda}`)
           .then((response) => {
             console.log(response.data)
           })
@@ -92,7 +90,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
         setData(resp);
         setLoad(false)
         setIdLoad('')
-        router.push("/negocios/" + props.id);
+        // router.push("/negocios/" + props.id);
       })
       .catch(async (err) => {
         console.log(err.response.data.message);
@@ -102,6 +100,14 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
             url: `/api/db/trello/${numero}`,
             method: "POST",
           })
+            .then((response) => {
+              console.log(response.data)
+            })
+            .catch((error) => {
+              console.log(error)
+            });
+
+          await axios(`/api/db/empresas/EvaleuateSale?id=${id}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${ValorVenda}`)
             .then((response) => {
               console.log(response.data)
             })
@@ -148,6 +154,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
         borderColor={"gray.400"}
         rounded={"1rem"}
         boxShadow={'2xl'}
+        bg={'#2a303b'}
       >
         <Flex w={"full"} overflowX={"hidden"} flexWrap={'wrap'} gap={4}>
 
@@ -177,7 +184,7 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
                   <Box
                     rounded="xl"
                     shadow="md"
-                    bg="white"
+                    bg="gray.300"
                     w="25rem"
                     px={4}
                     py={4}
@@ -298,10 +305,11 @@ export const CardList = (props: { id: string; onloading: any; desbilitar: any })
                             p={3}
                             colorScheme={"messenger"}
                             onClick={() => {
+                              const totalValor = SetValue(i.attributes.totalGeral)
                               setIdLoad(i.id)
-                              pedido(i.attributes.nPedido, i.attributes.empresa.data.id)
+                              pedido(i.attributes.nPedido, i.attributes.empresa.data.id, totalValor)
                             }}
-                            isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
+                          isDisabled={i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false}
                           >
                             Gerar Pedido
                           </Button>

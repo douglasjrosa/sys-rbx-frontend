@@ -24,9 +24,9 @@ export default async function GetEmpresa(
     try {
       const response = await axios.get(url, config);
       res.status(200).json(response.data);
-    } catch (error) {
-      console.error("Ocorreu um erro durante a solicitação:", error);
-      res.status(500).json({ error: "Ocorreu um erro durante a solicitação" });
+    } catch (error: any) {
+      console.error("Ocorreu um erro durante a solicitação:", error.response.data);
+      res.status(500).json(error.response.data.message);
     }
   } else {
     return res.status(405).send({ message: "Only GET requests are allowed" });
