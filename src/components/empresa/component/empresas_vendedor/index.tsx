@@ -8,13 +8,12 @@ import { HiChatBubbleLeftRight } from "react-icons/hi2";
 import { FaMoneyBillAlt } from "react-icons/fa";
 
 
-
-export const CarteiraVendedor = (props: { filtro: any }) => {
+export const CarteiraVendedor = (props: {filtro: any }) => {
   const [Data, setData] = useState<any | null>(null);
   const [Interacao, setInteracao] = useState<any | null>(null);
   const { data: session } = useSession()
   const router = useRouter()
-  console.log("🚀 ~ file: index.tsx:20 ~ useEffect ~ props.filtro.status:", props.filtro)
+
 
   useEffect(() => {
     if (props.filtro.status === 1) {
@@ -33,7 +32,9 @@ export const CarteiraVendedor = (props: { filtro: any }) => {
         }
       })()
     }
-  }, [props.filtro])
+  }, [])
+
+
 
   const filter = (empresa: string) => {
     const interacaolist = !Interacao ? [] : Interacao.filter((f: any) => f.attributes.vendedor.data.attributes.username === session?.user.name && f.attributes.empresa.data.attributes.nome === empresa)
@@ -59,7 +60,6 @@ export const CarteiraVendedor = (props: { filtro: any }) => {
     return (
       <>
         <tr key={i.id} style={{ borderBottom: '1px solid #ffff', cursor: 'pointer' }} onClick={() => {
-          // router.push(`/empresas/atualizar/${i.id}`)
           router.push(`/empresas/CNPJ/${i.id}`)
         }}>
           <td style={{ padding: '0.9rem 1.2rem' }}>{i.attributes.nome}</td>
@@ -113,3 +113,4 @@ export const CarteiraVendedor = (props: { filtro: any }) => {
     </>
   )
 }
+

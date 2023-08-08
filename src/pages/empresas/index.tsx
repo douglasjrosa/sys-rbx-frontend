@@ -1,20 +1,20 @@
+import Loading from "@/components/elements/loading";
 import { CarteiraAusente } from "@/components/empresa/component/empresas_ausente";
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
 import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
 import { Box, Button, Flex, Heading, chakra, useToast } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
+import { GetServerSideProps, GetStaticProps } from "next";
+import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 
-function Empresas() {
+function Empresas({user,livre,interacoes}: any) {
   const router = useRouter();
   const { data: session } = useSession();
-  const [Data, setData] = useState<any | null>(null);
   const [DataSearch, setDataSearch] = useState<any | null>({ status: 0, data: [] });
   const [DataSearchUser, setDataSearchUser] = useState<any | null>({ status: 0, data: [] });
   const toast = useToast()
-
 
   function filterEmpresa(SearchEmpr: React.SetStateAction<any>) {
     (async () => {
@@ -92,14 +92,8 @@ function Empresas() {
       })
 
       if (filtro.length === 0) {
-        setDataSearchUser({
-          status: 0,
-          data: []
-        })
-        setDataSearch({
-          status: 0,
-          data: []
-        })
+        setDataSearchUser({ status: 0, data: [] })
+        setDataSearch({ status: 0, data: [] })
       } else {
         setDataSearchUser({ status: 1, data: resultadouser })
         setDataSearch({ status: 1, data: resultado })

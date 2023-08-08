@@ -9,7 +9,7 @@ export default async function GetEmpresa(
   if (req.method === "GET") {
     const token = process.env.ATORIZZATION_TOKEN;
 
-    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$null]=true&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&fields[2]=valor_ultima_compra&fields[3]=ultima_compra&populate=*&pagination[limit]=8000`;
+    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$null]=true&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&populate=*&pagination[limit]=8000`;
 
     await axios(url, {
       headers: {
