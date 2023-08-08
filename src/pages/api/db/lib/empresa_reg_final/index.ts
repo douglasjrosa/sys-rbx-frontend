@@ -1,9 +1,11 @@
 import axios from "axios";
 
 export const RegCompraFim = async (id: number, valor: string, data: any) => {
+
+  const DateNow = new Date()
   const bodyData = {
     data: {
-      ultima_compra_comcluida: data.toISOString().slice(0, 10),
+      ultima_compra_comcluida: DateNow.toISOString().slice(0, 10),
       valor_ultima_compra: valor,
     },
   };

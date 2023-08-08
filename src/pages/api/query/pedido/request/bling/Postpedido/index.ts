@@ -15,7 +15,11 @@ export const PostPedido = async (dados: any) => {
   const empresaUlt = DaDos.empresa.data.attributes.ultima_compra;
   const Produto = await DaDos.itens;
 
-  const apiKey = DaDos.fornecedorId.data.attributes.nome === 'MAX BRASIL DERIVADOS DE MADEIRA LTDA'? apiKeyMax : DaDos.fornecedorId.data.attributes.nome === 'BRAGHETO PALETES E EMBALAGENS LTDA'? apiKeyBragheto : apiKeyRenato
+  const CnpjFornecedor = DaDos.fornecedorId.data.attributes.CNPJ
+
+  const apiKey = CnpjFornecedor == 17757153000180 ? apiKeyMax : CnpjFornecedor == '04586593000170' ? apiKeyBragheto : apiKeyRenato
+  console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", apiKey)
+  console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", CnpjFornecedor)
 
 
   const Produtos = Produto.map((i: any) => {
@@ -139,10 +143,8 @@ export const PostPedido = async (dados: any) => {
   : datasParcelas;
 
 
-  const desconto = DaDos.desconto
-    .replace("R$", "")
-    .replace(".", "")
-    .replace(",", ".");
+  const desconto = DaDos.desconto === 'R$ 0,00'? '0.00' : parseFloat(DaDos.desconto.replace(".", "").replace(",", "."));
+  console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", DaDos.desconto)
 
 
 
@@ -171,7 +173,7 @@ export const PostPedido = async (dados: any) => {
      <vlr_desconto>${desconto}</vlr_desconto>
      <obs>${DaDos.obs}</obs>
   </pedido>`;
-  console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
+  // console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
 
   try {
     const formData = new FormData();
@@ -182,7 +184,7 @@ export const PostPedido = async (dados: any) => {
       method: "POST",
       body: formData,
     };
-      console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
+      // console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
 
     const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
@@ -193,20 +195,20 @@ export const PostPedido = async (dados: any) => {
       "Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)";
 
     if (erros) {
-      if (erros.erro?.msg === txt) {
+      if (erros?.erro.msg === txt) {
         const resposta = {
-          msg: `${erros.erro.msg}, mas Pedido, foi salvo`,
+          msg: `${erros?.erro.msg}, mas Pedido, foi salvo`,
           status: 201,
         };
 
         return resposta;
       } else {
-        throw Object.assign(new Error(erros[0].erro.msg), {
+        throw Object.assign(new Error(erros[0]?.erro.msg), {
           response: {
             status: response.status,
           },
-          erro: erros[0].erro?.cod,
-          detalhes: erros[0].erro.msg,
+          erro: erros[0]?.erro?.cod,
+          detalhes: erros[0]?.erro.msg,
         });
       }
     }
@@ -228,9 +230,9 @@ export const PostPedido = async (dados: any) => {
     console.log("🚀 ~ file: index.ts:221 ~ PostPedido ~ error:", error)
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
-      status: error.response?.status ?? 400,
-      erro: error.erro ?? "[]",
-      detalhes: error.detalhes ?? "null",
+      status:  400,
+      erro: '',
+      detalhes: error.detalhes ?? "",
     };
     throw errorResponse;
   }

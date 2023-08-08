@@ -1,15 +1,13 @@
-import Loading from "@/components/elements/loading";
 import { CarteiraAusente } from "@/components/empresa/component/empresas_ausente";
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
 import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
 import { Box, Button, Flex, Heading, chakra, useToast } from "@chakra-ui/react";
-import { GetServerSideProps, GetStaticProps } from "next";
-import { getSession, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 
-function Empresas({user,livre,interacoes}: any) {
+function Empresas() {
   const router = useRouter();
   const { data: session } = useSession();
   const [DataSearch, setDataSearch] = useState<any | null>({ status: 0, data: [] });
@@ -28,7 +26,7 @@ function Empresas({user,livre,interacoes}: any) {
           title: `Opa`,
           description: `A empresa ${filtro}, não se encontra em nosso registros`,
           status: 'success',
-          duration: 9000,
+          duration: 2500,
           isClosable: true,
         })
       }
@@ -53,7 +51,7 @@ function Empresas({user,livre,interacoes}: any) {
                       </Box>
                     ),
                     status: 'warning',
-                    duration: 9000,
+                    duration: 2500,
                     isClosable: true,
                     position: 'top',
                   })
@@ -80,7 +78,7 @@ function Empresas({user,livre,interacoes}: any) {
                       </Box>
                     ),
                     status: 'warning',
-                    duration: 9000,
+                    duration: 2500,
                     isClosable: true,
                     position: 'top',
                   })
