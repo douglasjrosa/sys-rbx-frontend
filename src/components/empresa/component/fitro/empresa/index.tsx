@@ -19,13 +19,14 @@ export const FiltroEmpresa = (props: { empresa: any }) => {
       <Flex gap={5}>
         <Input
           type="text"
+          size={'sm'}
           borderColor="white"
           focusBorderColor="white"
           rounded="md"
           onChange={(e) => setSearchEmpr(e.target.value)}
           value={SearchEmpr}
         />
-        <Button px={8} onClick={Pesqisa} colorScheme="green">Filtro</Button>
+        <Button px={8} size={'sm'} onClick={Pesqisa} colorScheme="green">Filtro</Button>
       </Flex>
     </>
   )

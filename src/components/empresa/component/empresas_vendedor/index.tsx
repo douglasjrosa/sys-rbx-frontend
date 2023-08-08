@@ -32,7 +32,7 @@ export const CarteiraVendedor = (props: {filtro: any }) => {
         }
       })()
     }
-  }, [])
+  }, [props.filtro, session?.user.name])
 
 
 
@@ -62,13 +62,13 @@ export const CarteiraVendedor = (props: {filtro: any }) => {
         <tr key={i.id} style={{ borderBottom: '1px solid #ffff', cursor: 'pointer' }} onClick={() => {
           router.push(`/empresas/CNPJ/${i.id}`)
         }}>
-          <td style={{ padding: '0.9rem 1.2rem' }}>{i.attributes.nome}</td>
-          <td style={{ padding: '0.9rem 1.2rem' }}>{!!interacao && (
+          <td style={{ padding: '0.3rem 1.2rem' }}>{i.attributes.nome}</td>
+          <td style={{ padding: '0.3rem 1.2rem' }}>{!!interacao && (
             <Flex w={'100%'} justifyContent={'center'}>
               {i.attributes.interacaos.data.length === 0 ? null : (<HiChatBubbleLeftRight color={interacao.cor} fontSize={'1.5rem'} />)}
             </Flex>
           )}</td>
-          <td style={{ padding: '0.9rem 1.2rem' }}>{iconeTest.length > 0 && (
+          <td style={{ padding: '0.3rem 1.2rem' }}>{iconeTest.length > 0 && (
             <Flex w={'100%'} justifyContent={'center'}>
               <FaMoneyBillAlt color={'green'} fontSize={'1.5rem'} />
             </Flex>
@@ -92,6 +92,7 @@ export const CarteiraVendedor = (props: {filtro: any }) => {
         <Heading size={'lg'}>Empresas na minha carteira</Heading>
         <Box
           mt={5}
+          pe={3}
           maxH={{ base: '23rem', lg: '90%' }}
           overflow={'auto'}
         >

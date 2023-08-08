@@ -72,6 +72,7 @@ export const PowerBi = () => {
      setLoad(true);
     if (enpresa.length > 0) {
       setData(enpresa)
+      setLoad(false)
     } else {
       (async () => {
         const dataAtual = new Date();
@@ -123,7 +124,7 @@ function handleLoad(event:any){
 
         </Flex>
         <Box w='100%' display={{ lg: 'flex', sm: 'block' }} p={{ lg: 3, sm: 5 }}>
-          <Box w={{ lg: '60%', sm: '100%' }} bg={'#ffffff12'} px={4} rounded={5}>
+          <Box w={{ lg: '68%', sm: '100%' }} bg={'#ffffff12'} px={4} rounded={5}>
 
             <Flex direction={'column'} w={'100%'} my='5'>
               <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Funil de vendas</chakra.span>
@@ -133,7 +134,7 @@ function handleLoad(event:any){
                 <Table variant='simple'>
                   <Thead bg={'gray.600'}>
                     <Tr>
-                      <Th color={'white'} borderBottom={'none'} w={'29px'}>Empresa</Th>
+                      <Th color={'white'} borderBottom={'none'} w={'20px'}>Empresa</Th>
                       <Th color={'white'} borderBottom={'none'} w={'13rem'}>Etapa</Th>
                       <Th color={'white'} borderBottom={'none'} w={'9rem'}>Status</Th>
                       <Th color={'white'} borderBottom={'none'} w={'9rem'}>Valor</Th>
@@ -155,11 +156,11 @@ function handleLoad(event:any){
                       return (
                         <>
                           <Tr key={itens.id} onClick={() => router.push(`/negocios/${itens.id}`)} cursor={'pointer'}>
-                            <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
-                            <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{etapa}</Td>
-                            <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{statusRepresente}</Td>
-                            <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{SetValue(itens.attributes.Budget)}</Td>
-                            <Td color={'white'} bg={colorLine} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{dataFormatada}</Td>
+                            <Td color={'white'} w={'20px'} p={2} textAlign={'center'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
+                            <Td color={'white'} fontSize={'12px'} p={2}textAlign={'center'} borderBottom={'1px solid #CBD5E0'}>{etapa}</Td>
+                            <Td color={'white'} fontSize={'12px'} p={2} textAlign={'center'} borderBottom={'1px solid #CBD5E0'}>{statusRepresente}</Td>
+                            <Td color={'white'} fontSize={'12px'} p={2} textAlign={'center'} borderBottom={'1px solid #CBD5E0'}>{SetValue(itens.attributes.Budget)}</Td>
+                            <Td color={'white'} bg={colorLine} p={2} textAlign={'center'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{dataFormatada}</Td>
                           </Tr>
                         </>
                       )
@@ -170,8 +171,8 @@ function handleLoad(event:any){
             </Box>
 
           </Box>
-          <Flex w={{ lg: '50%', sm: '100%' }} p={{ lg: 3, sm: 1 }} gap={{ lg: 3, sm: 1 }} direction={'column'}>
-            <Box w={{ lg: '83%', sm: '100%' }} bg={'red.600'} p={2} rounded={5}>
+          <Flex w={{ lg: '30%', sm: '100%' }} p={{ lg: 3, sm: 1 }} gap={{ lg: 3, sm: 1 }} direction={'column'}>
+            <Box w={'100%'} bg={'red.600'} p={2} rounded={5}>
               <Flex direction={'column'} w={'100%'}>
                 <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Clientes em Inatividade</chakra.span>
               </Flex>
@@ -192,7 +193,7 @@ function handleLoad(event:any){
               </Box>
             </Box>
 
-            <Box w={{ lg: '83%', sm: '100%' }} bg={'green.600'} p={2} rounded={5}>
+            <Box w={'100%' } bg={'green.600'} p={2} rounded={5}>
               <Flex direction={'column'} w={'100%'}>
                 <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Clientes novos</chakra.span>
               </Flex>
@@ -213,7 +214,7 @@ function handleLoad(event:any){
               </Box>
 
             </Box>
-            <Box w={{ lg: '83%', sm: '100%' }} bg={'blue.600'} p={2} rounded={5}>
+            <Box w={'100%'} bg={'blue.600'} p={2} rounded={5}>
               <Flex direction={'column'} w={'100%'}>
                 <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Clientes recuperados</chakra.span>
               </Flex>

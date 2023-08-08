@@ -1,6 +1,5 @@
 import { EtapasNegocio } from "@/components/data/etapa";
 import { ObjContato } from "@/components/data/objetivo";
-import { StatusPerca } from "@/components/data/perca";
 import { StatusAndamento } from "@/components/data/status";
 import { TipoContato } from "@/components/data/tipo";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
@@ -10,7 +9,7 @@ import { MaskCnpj } from "@/function/Mask/cnpj";
 import { formatarTelefone } from "@/function/Mask/telefone-whatsapp";
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { capitalizeWords } from "@/function/captalize";
-import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Table, Tbody, Tr, Td, Link } from "@chakra-ui/react";
+import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Link } from "@chakra-ui/react";
 import axios from "axios";
 import { parseISO } from "date-fns";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -18,46 +17,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FiEdit3, FiPlusCircle } from "react-icons/fi";
-
-
-// export const getStaticProps: GetStaticProps = async (context: any) => {
-//   const { parans } = context
-//   try {
-//     const request = await fetch(`/api/db/empresas/getId/${parans.id}`);
-//     const dados = await request.json();
-
-//     return {
-//       props: {
-//         dados,
-//       },
-//       revalidate: 15, // Regenerar a cada 60 segundos
-//     };
-//   } catch (error) {
-//     console.error("Erro ao buscar dados:", error);
-
-//     return {
-//       props: {
-//         dados: [],
-//       },
-//       revalidate: 15,
-//     };
-//   }
-// };
-
-// export const getStaticPaths: GetStaticPaths = async () => {
-//   const response = await fetch('/api/db/empresas/getEmpresamin/min')
-//   const data = await response.json()
-
-//   const paths = data.map((item: any) => {
-//     return {
-//       parans: {
-//         id: `${item.id}`
-//       }
-//     }
-//   })
-
-//   return { paths, fallback: true }
-// }
 
 export default function Infos() {
   const { data: session } = useSession()
@@ -91,7 +50,6 @@ export default function Infos() {
   useEffect(() => {
     (async () => {
       try {
-
         const request = await axios(`/api/db/empresas/getId/${ID}`);
         const response = request.data.data;
         setRepresentantes(response.attributes.representantes)
@@ -123,7 +81,7 @@ export default function Infos() {
         setTimeout(() => router.push('/empresas'), 1000)
       }
     })()
-  }, [])
+  }, [router, session?.user.name, toast])
 
   if (load) return <Flex w={'100%'} h={'100vh'} bg={'gray.800'} justifyContent={'center'} alignItems={'center'}><Loading size="200px">Carregando...</Loading></Flex>
 
@@ -337,7 +295,7 @@ export default function Infos() {
           <Flex h={'100%'} w={'50%'} flexDir={'column'} gap={3} px={3}>
 
             {/* interações */}
-            <Flex flexDir={'column'} justifyContent={'space-between'} w={'100%'} h={'60%'} bg={'#2d3748'} rounded={16} p={5}>
+            <Flex flexDir={'column'} justifyContent={'space-between'} w={'100%'} h={'80%'} bg={'#2d3748'} rounded={16} p={5}>
               <Flex flexDir={'row'} justifyContent={'space-between'} alignItems={'center'} pb={3}>
                 <Heading size={'md'}>
                   Últimas Interações

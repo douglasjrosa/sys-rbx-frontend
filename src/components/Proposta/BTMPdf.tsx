@@ -1,6 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Box, Button } from "@chakra-ui/react";
-import axios from "axios";
+import React from "react";
+import { Button } from "@chakra-ui/react";
 
 
 export const BTMPdf = (props: { nPedido: any; empresa: string }) => {
