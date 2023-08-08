@@ -13,11 +13,51 @@ import { capitalizeWords } from "@/function/captalize";
 import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Table, Tbody, Tr, Td, Link } from "@chakra-ui/react";
 import axios from "axios";
 import { parseISO } from "date-fns";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FiEdit3, FiPlusCircle } from "react-icons/fi";
 
+
+// export const getStaticProps: GetStaticProps = async (context: any) => {
+//   const { parans } = context
+//   try {
+//     const request = await fetch(`/api/db/empresas/getId/${parans.id}`);
+//     const dados = await request.json();
+
+//     return {
+//       props: {
+//         dados,
+//       },
+//       revalidate: 15, // Regenerar a cada 60 segundos
+//     };
+//   } catch (error) {
+//     console.error("Erro ao buscar dados:", error);
+
+//     return {
+//       props: {
+//         dados: [],
+//       },
+//       revalidate: 15,
+//     };
+//   }
+// };
+
+// export const getStaticPaths: GetStaticPaths = async () => {
+//   const response = await fetch('/api/db/empresas/getEmpresamin/min')
+//   const data = await response.json()
+
+//   const paths = data.map((item: any) => {
+//     return {
+//       parans: {
+//         id: `${item.id}`
+//       }
+//     }
+//   })
+
+//   return { paths, fallback: true }
+// }
 
 export default function Infos() {
   const { data: session } = useSession()
@@ -51,7 +91,7 @@ export default function Infos() {
   useEffect(() => {
     (async () => {
       try {
-        // GET http://localhost:3000/api/db/empresas/getId/73
+
         const request = await axios(`/api/db/empresas/getId/${ID}`);
         const response = request.data.data;
         setRepresentantes(response.attributes.representantes)
@@ -68,7 +108,7 @@ export default function Infos() {
         setEmail(response.attributes.email)
         setHistorico(response.attributes.history.slice(-3))
         setNegocio(response.attributes.businesses.data.slice(-5))
-        const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}`);
+        const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${response.attributes.nome}`);
         const response2 = request2.data;
         setInteracoes(response2)
         setload(false)
@@ -110,15 +150,19 @@ export default function Infos() {
         }
       }
       setload(true)
-      const url = `/api/db/empresas/interacoes/post?Vendedor=${session?.user.name}`
+      const url = `/api/db/empresas/interacoes/post?Vendedor=${session?.user.name}&Empresa=${Nome}`
       await axios({
         url: url,
         method: 'POST',
         data: dados
       })
         .then(async (resposta: any) => {
+          setDescricao('')
+          setTipo('')
+          setObjetivo('')
+          setProximo('')
           try {
-            const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}`);
+            const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${Nome}`);
             const response2 = request2.data;
             setInteracoes(response2)
             setload(false)
@@ -194,12 +238,12 @@ export default function Infos() {
                           <Box w={'50%'}>
                             <Flex gap={3}>
                               <chakra.p>Telefone:</chakra.p>
-                              {telefone.length === 11 && (<chakra.a onClick={()=>window.open(`https://wa.me//55${item.whatsapp}?text=Ola%20${item.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{color: 'blue.500'}} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
+                              {telefone.length === 11 && (<chakra.a onClick={() => window.open(`https://wa.me//55${item.whatsapp}?text=Ola%20${item.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{ color: 'blue.500' }} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
                               {telefone.length < 11 && (<chakra.p>{telefone.length}{formatarTelefone(telefone)}</chakra.p>)}
                             </Flex>
                             <Flex gap={3}>
                               <chakra.p>E-mail:</chakra.p>
-                              <Link href={`mailto:${item.email}`} _hover={{color: 'blue.500'}} textDecor={'underline'} color={'blue.100'}>{item.email}</Link>
+                              <Link href={`mailto:${item.email}`} _hover={{ color: 'blue.500' }} textDecor={'underline'} color={'blue.100'}>{item.email}</Link>
                             </Flex>
                           </Box>
                         </Flex>
@@ -308,7 +352,7 @@ export default function Infos() {
               </Flex>
               <Flex h={'70%'} overflowY={'auto'} flexDir={'column'} gap={3}>
                 {Interacoes.map((i: any) => {
-                  console.log(i)
+                  // console.log(i)
                   const [obj] = ObjContato.filter((o: any) => o.id == i.attributes.objetivo).map((d: any) => d.title)
                   const [tipo] = TipoContato.filter((t: any) => t.id == i.attributes.tipo).map((d: any) => d.title)
                   const date = new Date(parseISO(i.attributes.proxima))
@@ -343,12 +387,12 @@ export default function Infos() {
             {/* últimos negocios */}
             <Box w={'100%'} bg={'#2d3748'} rounded={16} p={5}>
               <Box><Heading size={'md'} mb={3}>Últimas Negocios</Heading></Box>
-              <table style={{width: '100%'}}>
+              <table style={{ width: '100%' }}>
                 <thead>
                   <tr>
-                    <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Etapa</th>
-                    <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Status</th>
-                    <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Valor</th>
+                    <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Etapa</th>
+                    <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Status</th>
+                    <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Valor</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -356,18 +400,18 @@ export default function Infos() {
                     console.log(i);
                     const valor = parseFloat(i.attributes.Budget.replace('.', '').replace(',', '.'))
 
-                    const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes.andamento).map((s: any) =>s.title)
+                    const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes.andamento).map((s: any) => s.title)
 
-                    const [andamento] = EtapasNegocio.filter((v: any) => v.id == i.attributes.etapa).map((v: any) =>v.title)
+                    const [andamento] = EtapasNegocio.filter((v: any) => v.id == i.attributes.etapa).map((v: any) => v.title)
 
                     const color = i.attributes.etapa === 6 && i.attributes.andamento === 1 ? 'red' : i.attributes.etapa === 6 && i.attributes.andamento === 5 ? 'green' : 'yellow';
 
                     return (
                       <>
                         <tr>
-                          <td style={{textAlign: 'center', color: color}}>{andamento}</td>
-                          <td style={{textAlign: 'center', color: color}}>{Status}</td>
-                          <td style={{textAlign: 'center', color: color}}>{valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                          <td style={{ textAlign: 'center', color: color }}>{andamento}</td>
+                          <td style={{ textAlign: 'center', color: color }}>{Status}</td>
+                          <td style={{ textAlign: 'center', color: color }}>{valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         </tr>
                       </>
                     )
@@ -418,23 +462,29 @@ export default function Infos() {
                       style={{ backgroundColor: '#4A5568' }}
                       value={'1'}
                     >
-                      Notas, Mensagem de texto
+                      Notas
                     </chakra.option>
                     <chakra.option
                       style={{ backgroundColor: '#4A5568' }}
                       value={'2'}
                     >
-                      Chamada por voz
+                      Mensagem de texto
                     </chakra.option>
                     <chakra.option
                       style={{ backgroundColor: '#4A5568' }}
                       value={'3'}
                     >
-                      Mensagem por e-mail
+                      Chamada por voz
                     </chakra.option>
                     <chakra.option
                       style={{ backgroundColor: '#4A5568' }}
                       value={'4'}
+                    >
+                      Mensagem por e-mail
+                    </chakra.option>
+                    <chakra.option
+                      style={{ backgroundColor: '#4A5568' }}
+                      value={'5'}
                     >
                       Contato presencial
                     </chakra.option>
