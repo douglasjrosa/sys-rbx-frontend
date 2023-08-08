@@ -72,6 +72,7 @@ export const PowerBi = () => {
      setLoad(true);
     if (enpresa.length > 0) {
       setData(enpresa)
+      setLoad(false)
     } else {
       (async () => {
         const dataAtual = new Date();
@@ -92,6 +93,13 @@ export const PowerBi = () => {
     }
   }
 
+<<<<<<< HEAD
+=======
+function handleLoad(event:any){
+  setLoad(event)
+}
+
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
   if (load) {
     return (
       <>
@@ -115,11 +123,19 @@ export const PowerBi = () => {
             </Box>
           </Flex>
 
+<<<<<<< HEAD
           <BtCreate user={User} />
 
         </Flex>
         <Box w='100%' display={{ lg: 'flex', sm: 'block' }} p={{ lg: 3, sm: 5 }}>
           <Box w={{ lg: '60%', sm: '100%' }} bg={'#ffffff12'} px={4} rounded={5}>
+=======
+          <BtCreate user={User} onLoading={handleLoad} />
+
+        </Flex>
+        <Box w='100%' display={{ lg: 'flex', sm: 'block' }} p={{ lg: 3, sm: 5 }}>
+          <Box w={{ lg: '68%', sm: '100%' }} bg={'#ffffff12'} px={4} rounded={5}>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 
             <Flex direction={'column'} w={'100%'} my='5'>
               <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Funil de vendas</chakra.span>
@@ -129,7 +145,11 @@ export const PowerBi = () => {
                 <Table variant='simple'>
                   <Thead bg={'gray.600'}>
                     <Tr>
+<<<<<<< HEAD
                       <Th color={'white'} borderBottom={'none'} w={'29px'}>Empresa</Th>
+=======
+                      <Th color={'white'} borderBottom={'none'} w={'20px'}>Empresa</Th>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                       <Th color={'white'} borderBottom={'none'} w={'13rem'}>Etapa</Th>
                       <Th color={'white'} borderBottom={'none'} w={'9rem'}>Status</Th>
                       <Th color={'white'} borderBottom={'none'} w={'9rem'}>Valor</Th>
@@ -151,11 +171,19 @@ export const PowerBi = () => {
                       return (
                         <>
                           <Tr key={itens.id} onClick={() => router.push(`/negocios/${itens.id}`)} cursor={'pointer'}>
+<<<<<<< HEAD
                             <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
                             <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{etapa}</Td>
                             <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{statusRepresente}</Td>
                             <Td color={'white'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{SetValue(itens.attributes.Budget)}</Td>
                             <Td color={'white'} bg={colorLine} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{dataFormatada}</Td>
+=======
+                            <Td color={'white'} w={'20px'} p={2} textAlign={'center'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{itens.attributes.empresa.data?.attributes.nome}</Td>
+                            <Td color={'white'} fontSize={'12px'} p={2}textAlign={'center'} borderBottom={'1px solid #CBD5E0'}>{etapa}</Td>
+                            <Td color={'white'} fontSize={'12px'} p={2} textAlign={'center'} borderBottom={'1px solid #CBD5E0'}>{statusRepresente}</Td>
+                            <Td color={'white'} fontSize={'12px'} p={2} textAlign={'center'} borderBottom={'1px solid #CBD5E0'}>{SetValue(itens.attributes.Budget)}</Td>
+                            <Td color={'white'} bg={colorLine} p={2} textAlign={'center'} fontSize={'12px'} borderBottom={'1px solid #CBD5E0'}>{dataFormatada}</Td>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                           </Tr>
                         </>
                       )
@@ -166,8 +194,13 @@ export const PowerBi = () => {
             </Box>
 
           </Box>
+<<<<<<< HEAD
           <Flex w={{ lg: '50%', sm: '100%' }} p={{ lg: 3, sm: 1 }} gap={{ lg: 3, sm: 1 }} direction={'column'}>
             <Box w={{ lg: '83%', sm: '100%' }} bg={'red.600'} p={2} rounded={5}>
+=======
+          <Flex w={{ lg: '30%', sm: '100%' }} p={{ lg: 3, sm: 1 }} gap={{ lg: 3, sm: 1 }} direction={'column'}>
+            <Box w={'100%'} bg={'red.600'} p={2} rounded={5}>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
               <Flex direction={'column'} w={'100%'}>
                 <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Clientes em Inatividade</chakra.span>
               </Flex>
@@ -182,19 +215,50 @@ export const PowerBi = () => {
                     </Thead>
                     <Tbody>
                       <Ausente user={User} />
+<<<<<<< HEAD
+=======
                     </Tbody>
                   </Table>
                 </TableContainer>
               </Box>
             </Box>
 
-            <Box w={{ lg: '83%', sm: '100%' }} bg={'green.600'} p={2} rounded={5}>
+            <Box w={'100%' } bg={'green.600'} p={2} rounded={5}>
               <Flex direction={'column'} w={'100%'}>
                 <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Clientes novos</chakra.span>
               </Flex>
               <Box>
                 <TableContainer>
                   <Table>
+                    <Thead bg={'green.500'}>
+                      <Tr>
+                        <Th color={'white'} border={'none'} w={{ sm: '60%', lg: '40%' }} textAlign={'center'}>Empresa</Th>
+                        <Th color={'white'} border={'none'} textAlign={'center'}>Data de entrada</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      <NovoCliente user={User} />
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              </Box>
+            </Box>
+<<<<<<< HEAD
+
+            <Box w={{ lg: '83%', sm: '100%' }} bg={'green.600'} p={2} rounded={5}>
+              <Flex direction={'column'} w={'100%'}>
+                <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Clientes novos</chakra.span>
+=======
+            <Box w={'100%'} bg={'blue.600'} p={2} rounded={5}>
+              <Flex direction={'column'} w={'100%'}>
+                <chakra.span fontSize={'20px'} fontWeight={'medium'} color={'white'}>Clientes recuperados</chakra.span>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
+              </Flex>
+              <Box>
+                <TableContainer>
+                  <Table>
+<<<<<<< HEAD
                     <Thead bg={'green.500'}>
                       <Tr>
                         <Th color={'white'} border={'none'} w={{ sm: '60%', lg: '40%' }} textAlign={'center'}>Empresa</Th>
@@ -223,6 +287,15 @@ export const PowerBi = () => {
                       </Tr>
                     </Thead>
                     <Tbody>
+=======
+                    <Thead bg={'blue.400'}>
+                      <Tr>
+                        <Th color={'white'} border={'none'} textAlign={'center'}>Empresa</Th>
+                        <Th color={'white'} border={'none'} textAlign={'center'}>valor de compra</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                       <Presente user={User} />
                     </Tbody>
                   </Table>

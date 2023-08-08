@@ -2,10 +2,14 @@ import {
   Box,
   Flex,
 } from "@chakra-ui/react";
+<<<<<<< HEAD
 import { useState } from "react";
 import { PowerBi } from "@/components/negocios/bi";
 import Loading from "@/components/elements/loading";
+=======
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 
+import { PowerBi } from "@/components/negocios/bi";
 
 function Negocios() {
 

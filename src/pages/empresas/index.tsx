@@ -1,5 +1,6 @@
 import { CarteiraAusente } from "@/components/empresa/component/empresas_ausente";
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
+<<<<<<< HEAD
 import { FiltroCnpj } from "@/components/empresa/component/fitro/cnpj";
 import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
 import { formatDocument } from "@/function/hookDocument";
@@ -9,6 +10,13 @@ import { GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+=======
+import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
+import { Box, Button, Flex, Heading, chakra, useToast } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useState } from "react";
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 
 
 export const getStaticProps: GetStaticProps = async () => {
@@ -43,6 +51,7 @@ export const getStaticProps: GetStaticProps = async () => {
 function Empresas({ dados }: any) {
   const router = useRouter();
   const { data: session } = useSession();
+<<<<<<< HEAD
   const [Data, setData] = useState<any | null>(null);
   const [DataSearch, setDataSearch] = useState<any | null>(null);
   const [DataSearchUser, setDataSearchUser] = useState<any | null>(null);
@@ -184,16 +193,39 @@ function Empresas({ dados }: any) {
 
 
       if (resultFilter.length === 0 && filtro) {
+=======
+  const [DataSearch, setDataSearch] = useState<any | null>({ status: 0, data: [] });
+  const [DataSearchUser, setDataSearchUser] = useState<any | null>({ status: 0, data: [] });
+  const toast = useToast()
+
+  function filterEmpresa(SearchEmpr: React.SetStateAction<any>) {
+    (async () => {
+      const filtro = SearchEmpr.toLowerCase();
+      const resultadouser: any = [];
+      const resultado: any = [];
+      const resultFilter = await fetch(`/api/db/empresas/search/empresa?EMPRESA=${filtro}`)
+      const response = await resultFilter.json()
+      if (response.length === 0 && filtro) {
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
         return toast({
           title: `Opa`,
           description: `A empresa ${filtro}, não se encontra em nosso registros`,
           status: 'success',
+<<<<<<< HEAD
           duration: 9000,
           isClosable: true,
         })
       }
       resultFilter.forEach((item: any) => {
         const username = item.attributes.user.data?.attribute.username;
+=======
+          duration: 2500,
+          isClosable: true,
+        })
+      }
+      response.forEach((item: any) => {
+        const username = item.attributes.user.data?.attributes.username;
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
         if (session?.user.pemission === "Adm") {
           if (username === session?.user.name) {
             resultadouser.push(item);
@@ -213,7 +245,11 @@ function Empresas({ dados }: any) {
                       </Box>
                     ),
                     status: 'warning',
+<<<<<<< HEAD
                     duration: 9000,
+=======
+                    duration: 2500,
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                     isClosable: true,
                     position: 'top',
                   })
@@ -240,7 +276,11 @@ function Empresas({ dados }: any) {
                       </Box>
                     ),
                     status: 'warning',
+<<<<<<< HEAD
                     duration: 9000,
+=======
+                    duration: 2500,
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                     isClosable: true,
                     position: 'top',
                   })
@@ -249,15 +289,28 @@ function Empresas({ dados }: any) {
             }
           }
         }
+<<<<<<< HEAD
       });
       setDataSearchUser(resultadouser)
       setDataSearch(resultado)
+=======
+      })
+
+      if (filtro.length === 0) {
+        setDataSearchUser({ status: 0, data: [] })
+        setDataSearch({ status: 0, data: [] })
+      } else {
+        setDataSearchUser({ status: 1, data: resultadouser })
+        setDataSearch({ status: 1, data: resultado })
+      }
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
     })();
   };
 
   return (
     <>
       <Box w={'100%'} h={'100%'} bg={'gray.800'} color={'white'} px={5} py={2} fontSize={'0.8rem'}>
+<<<<<<< HEAD
         <Heading>Empresas</Heading>
         <Flex w={'100%'} py={'2rem'} justifyContent={'space-between'} flexDir={'row'} alignItems={'self-end'} px={6} gap={6} borderBottom={'1px'} borderColor={'white'} mb={'1rem'}>
           <Box>
@@ -274,6 +327,18 @@ function Empresas({ dados }: any) {
         <Box display={'flex'} flexDirection={{ base: 'column', lg: 'row' }} w={'100%'} h={'80%'} pt={5} gap={10} >
           <CarteiraVendedor data={DataSearchUser} />
           <CarteiraAusente data={DataSearch} />
+=======
+        <Heading size={'lg'}>Empresas</Heading>
+        <Flex w={'100%'} py={'1rem'} justifyContent={'space-between'} flexDir={'row'} alignItems={'self-end'} px={6} gap={6} borderBottom={'1px'} borderColor={'white'} mb={'1rem'}>
+          <Box>
+            <FiltroEmpresa empresa={filterEmpresa} />
+          </Box>
+          <Button size={'sm'} onClick={() => router.push('/empresas/cadastro')} colorScheme="green">+ Nova Empresa</Button>
+        </Flex>
+        <Box display={'flex'} flexDirection={{ base: 'column', lg: 'row' }} w={'100%'} h={'76%'} pt={5} gap={5} >
+          <CarteiraVendedor filtro={DataSearchUser} />
+          <CarteiraAusente filtro={DataSearch} />
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
         </Box>
       </Box>
     </>

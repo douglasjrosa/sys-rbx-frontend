@@ -1,5 +1,9 @@
 /* eslint-disable react/no-children-prop */
 import { EtapasNegocio } from "@/components/data/etapa";
+<<<<<<< HEAD
+=======
+import Loading from "@/components/elements/loading";
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 import { SetValue } from "@/function/currenteValor";
 import {
   Box,
@@ -66,7 +70,11 @@ export const theme = extendTheme({
   },
 });
 
+<<<<<<< HEAD
 export const BtCreate = (props: { user: any }) => {
+=======
+export const BtCreate = (props: { user: any; onLoading: any }) => {
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
   const { data: session } = useSession();
   const [work, setWork] = useState<any | null>([]);
   const [budgets, setBudgets] = useState<any>();
@@ -114,7 +122,11 @@ export const BtCreate = (props: { user: any }) => {
   };
 
   const salve = async () => {
+<<<<<<< HEAD
     // props.onLoading(true);
+=======
+    props.onLoading(true);
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 
     const data = {
       status: true,
@@ -137,13 +149,20 @@ export const BtCreate = (props: { user: any }) => {
     })
       .then((res) => {
         console.log(res.data.nBusiness);
+<<<<<<< HEAD
         // router.push(`/negocios/${res.data.nBusiness}`)
+=======
+        router.push(`/negocios/${res.data.nBusiness}`)
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
       })
       .catch((err) => console.error(err));
   };
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
   const getValue = (e: any) => {
     const valor = e.target.value
     const valor_limpo = SetValue(valor);

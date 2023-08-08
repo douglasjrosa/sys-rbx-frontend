@@ -1,6 +1,9 @@
 import { EtapasNegocio } from "@/components/data/etapa";
 import { ObjContato } from "@/components/data/objetivo";
+<<<<<<< HEAD
 import { StatusPerca } from "@/components/data/perca";
+=======
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 import { StatusAndamento } from "@/components/data/status";
 import { TipoContato } from "@/components/data/tipo";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
@@ -10,15 +13,25 @@ import { MaskCnpj } from "@/function/Mask/cnpj";
 import { formatarTelefone } from "@/function/Mask/telefone-whatsapp";
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { capitalizeWords } from "@/function/captalize";
+<<<<<<< HEAD
 import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Table, Tbody, Tr, Td, Link } from "@chakra-ui/react";
 import axios from "axios";
 import { parseISO } from "date-fns";
+=======
+import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Link } from "@chakra-ui/react";
+import axios from "axios";
+import { parseISO } from "date-fns";
+import { GetStaticPaths, GetStaticProps } from "next";
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FiEdit3, FiPlusCircle } from "react-icons/fi";
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 export default function Infos() {
   const { data: session } = useSession()
   const router = useRouter()
@@ -51,7 +64,10 @@ export default function Infos() {
   useEffect(() => {
     (async () => {
       try {
+<<<<<<< HEAD
         // GET http://localhost:3000/api/db/empresas/getId/73
+=======
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
         const request = await axios(`/api/db/empresas/getId/${ID}`);
         const response = request.data.data;
         setRepresentantes(response.attributes.representantes)
@@ -68,7 +84,11 @@ export default function Infos() {
         setEmail(response.attributes.email)
         setHistorico(response.attributes.history.slice(-3))
         setNegocio(response.attributes.businesses.data.slice(-5))
+<<<<<<< HEAD
         const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}`);
+=======
+        const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${response.attributes.nome}`);
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
         const response2 = request2.data;
         setInteracoes(response2)
         setload(false)
@@ -83,7 +103,11 @@ export default function Infos() {
         setTimeout(() => router.push('/empresas'), 1000)
       }
     })()
+<<<<<<< HEAD
   }, [])
+=======
+  }, [router, session?.user.name, toast])
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 
   if (load) return <Flex w={'100%'} h={'100vh'} bg={'gray.800'} justifyContent={'center'} alignItems={'center'}><Loading size="200px">Carregando...</Loading></Flex>
 
@@ -110,15 +134,28 @@ export default function Infos() {
         }
       }
       setload(true)
+<<<<<<< HEAD
       const url = `/api/db/empresas/interacoes/post?Vendedor=${session?.user.name}`
+=======
+      const url = `/api/db/empresas/interacoes/post?Vendedor=${session?.user.name}&Empresa=${Nome}`
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
       await axios({
         url: url,
         method: 'POST',
         data: dados
       })
         .then(async (resposta: any) => {
+<<<<<<< HEAD
           try {
             const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}`);
+=======
+          setDescricao('')
+          setTipo('')
+          setObjetivo('')
+          setProximo('')
+          try {
+            const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${Nome}`);
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
             const response2 = request2.data;
             setInteracoes(response2)
             setload(false)
@@ -194,12 +231,20 @@ export default function Infos() {
                           <Box w={'50%'}>
                             <Flex gap={3}>
                               <chakra.p>Telefone:</chakra.p>
+<<<<<<< HEAD
                               {telefone.length === 11 && (<chakra.a onClick={()=>window.open(`https://wa.me//55${item.whatsapp}?text=Ola%20${item.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{color: 'blue.500'}} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
+=======
+                              {telefone.length === 11 && (<chakra.a onClick={() => window.open(`https://wa.me//55${item.whatsapp}?text=Ola%20${item.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{ color: 'blue.500' }} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                               {telefone.length < 11 && (<chakra.p>{telefone.length}{formatarTelefone(telefone)}</chakra.p>)}
                             </Flex>
                             <Flex gap={3}>
                               <chakra.p>E-mail:</chakra.p>
+<<<<<<< HEAD
                               <Link href={`mailto:${item.email}`} _hover={{color: 'blue.500'}} textDecor={'underline'} color={'blue.100'}>{item.email}</Link>
+=======
+                              <Link href={`mailto:${item.email}`} _hover={{ color: 'blue.500' }} textDecor={'underline'} color={'blue.100'}>{item.email}</Link>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                             </Flex>
                           </Box>
                         </Flex>
@@ -293,7 +338,11 @@ export default function Infos() {
           <Flex h={'100%'} w={'50%'} flexDir={'column'} gap={3} px={3}>
 
             {/* interações */}
+<<<<<<< HEAD
             <Flex flexDir={'column'} justifyContent={'space-between'} w={'100%'} h={'60%'} bg={'#2d3748'} rounded={16} p={5}>
+=======
+            <Flex flexDir={'column'} justifyContent={'space-between'} w={'100%'} h={'80%'} bg={'#2d3748'} rounded={16} p={5}>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
               <Flex flexDir={'row'} justifyContent={'space-between'} alignItems={'center'} pb={3}>
                 <Heading size={'md'}>
                   Últimas Interações
@@ -308,7 +357,11 @@ export default function Infos() {
               </Flex>
               <Flex h={'70%'} overflowY={'auto'} flexDir={'column'} gap={3}>
                 {Interacoes.map((i: any) => {
+<<<<<<< HEAD
                   console.log(i)
+=======
+                  // console.log(i)
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                   const [obj] = ObjContato.filter((o: any) => o.id == i.attributes.objetivo).map((d: any) => d.title)
                   const [tipo] = TipoContato.filter((t: any) => t.id == i.attributes.tipo).map((d: any) => d.title)
                   const date = new Date(parseISO(i.attributes.proxima))
@@ -343,12 +396,21 @@ export default function Infos() {
             {/* últimos negocios */}
             <Box w={'100%'} bg={'#2d3748'} rounded={16} p={5}>
               <Box><Heading size={'md'} mb={3}>Últimas Negocios</Heading></Box>
+<<<<<<< HEAD
               <table style={{width: '100%'}}>
                 <thead>
                   <tr>
                     <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Etapa</th>
                     <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Status</th>
                     <th style={{textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem'}}>Valor</th>
+=======
+              <table style={{ width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Etapa</th>
+                    <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Status</th>
+                    <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Valor</th>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                   </tr>
                 </thead>
                 <tbody>
@@ -356,18 +418,30 @@ export default function Infos() {
                     console.log(i);
                     const valor = parseFloat(i.attributes.Budget.replace('.', '').replace(',', '.'))
 
+<<<<<<< HEAD
                     const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes.andamento).map((s: any) =>s.title)
 
                     const [andamento] = EtapasNegocio.filter((v: any) => v.id == i.attributes.etapa).map((v: any) =>v.title)
+=======
+                    const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes.andamento).map((s: any) => s.title)
+
+                    const [andamento] = EtapasNegocio.filter((v: any) => v.id == i.attributes.etapa).map((v: any) => v.title)
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 
                     const color = i.attributes.etapa === 6 && i.attributes.andamento === 1 ? 'red' : i.attributes.etapa === 6 && i.attributes.andamento === 5 ? 'green' : 'yellow';
 
                     return (
                       <>
                         <tr>
+<<<<<<< HEAD
                           <td style={{textAlign: 'center', color: color}}>{andamento}</td>
                           <td style={{textAlign: 'center', color: color}}>{Status}</td>
                           <td style={{textAlign: 'center', color: color}}>{valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+=======
+                          <td style={{ textAlign: 'center', color: color }}>{andamento}</td>
+                          <td style={{ textAlign: 'center', color: color }}>{Status}</td>
+                          <td style={{ textAlign: 'center', color: color }}>{valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                         </tr>
                       </>
                     )
@@ -418,24 +492,45 @@ export default function Infos() {
                       style={{ backgroundColor: '#4A5568' }}
                       value={'1'}
                     >
+<<<<<<< HEAD
                       Notas, Mensagem de texto
+=======
+                      Notas
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                     </chakra.option>
                     <chakra.option
                       style={{ backgroundColor: '#4A5568' }}
                       value={'2'}
                     >
+<<<<<<< HEAD
                       Chamada por voz
+=======
+                      Mensagem de texto
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                     </chakra.option>
                     <chakra.option
                       style={{ backgroundColor: '#4A5568' }}
                       value={'3'}
                     >
+<<<<<<< HEAD
                       Mensagem por e-mail
+=======
+                      Chamada por voz
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                     </chakra.option>
                     <chakra.option
                       style={{ backgroundColor: '#4A5568' }}
                       value={'4'}
                     >
+<<<<<<< HEAD
+=======
+                      Mensagem por e-mail
+                    </chakra.option>
+                    <chakra.option
+                      style={{ backgroundColor: '#4A5568' }}
+                      value={'5'}
+                    >
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
                       Contato presencial
                     </chakra.option>
                   </Select>

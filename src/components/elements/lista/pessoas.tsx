@@ -25,6 +25,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
   const [Obs, setObs] = useState('');
   const [Id, setId] = useState<number>();
   const [UPdate, setUPdate] = useState(false);
+<<<<<<< HEAD
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 useEffect(()=>{
@@ -32,6 +33,16 @@ useEffect(()=>{
     setDados(props.Resp)
   }
 },[])
+=======
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  useEffect(() => {
+    if (props.Resp) {
+      setDados(props.Resp)
+    }
+  }, [props.Resp])
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 
 
   const reset = () => {
@@ -140,7 +151,11 @@ useEffect(()=>{
           + Nova Pessoa
         </Button>
 
+<<<<<<< HEAD
         {dados.map((i: any) => <PessoasData data={i} respData={Remover} respAtualizar={Atualizar} />)}
+=======
+        {dados.map((i: any) => <PessoasData key={i.id}  data={i} respData={Remover} respAtualizar={Atualizar} />)}
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
 
       </Flex>
       <Modal isOpen={isOpen} onClose={onClose}>

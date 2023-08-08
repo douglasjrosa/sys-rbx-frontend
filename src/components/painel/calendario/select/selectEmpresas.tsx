@@ -27,15 +27,27 @@ export const SelectEmpresas = (props: {
   const EspecifcFilter: any = [
     { id: 1, nome: 'EM ANDAMENTO' },
     { id: 2, nome: 'CONCLUÍDOS' },
+<<<<<<< HEAD
     { id: 3, nome: 'TODOS OS NEGÓCIOS' }
+=======
+    { id: 3, nome: 'TODOS OS NEGÓCIOS' },
+    { id: 4, nome: 'PERDIDO' }
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
   ]
 
   const HandleValue = () => {
     (async () => {
+<<<<<<< HEAD
       if(IdEmp === '0') props.onValue(null)
       const filter = EspecifcFilter.filter((f: any) => f.nome === IdEmp)
       if(filter.length > 0){
         console.log('filtro')
+=======
+
+      if (IdEmp === '0') props.onValue(null)
+      const filter = EspecifcFilter.filter((f: any) => f.nome === IdEmp)
+      if (filter.length > 0) {
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
         await axios.get(`/api/db/business/get/filter?Pesqisa=${IdEmp}&Vendedor=${props.Usuario}`)
           .then((resp) => {
             props.onValue(resp.data)
@@ -46,6 +58,10 @@ export const SelectEmpresas = (props: {
         await axios.get(`/api/db/business/get/filter?Empresa=${IdEmp}`)
           .then((resp) => {
             props.onValue(resp.data)
+<<<<<<< HEAD
+=======
+            console.log("🚀 ~ file: selectEmpresas.tsx:49 ~ .then ~ resp.data:", resp.data)
+>>>>>>> 97b4a077b485d38a2a7219c0b16394ba608290aa
           })
           .catch((err) => console.log(err))
       }
