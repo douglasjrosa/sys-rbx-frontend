@@ -104,7 +104,8 @@ export default async function PostEmpresa(
         businessId: data.business,
         obs: data.obs,
         cliente_pedido: data.cliente_pedido,
-        dataEntrega: data.dataEntrega
+        dataEntrega: data.dataEntrega,
+        descontoAdd: data.descontoAdd
       },
     };
     console.log(DataPost);
@@ -118,7 +119,7 @@ export default async function PostEmpresa(
         const isoDateTime = now.toISOString();
         const txt = {
           date: isoDateTime,
-          vendedors: data.vendedor,
+          vendedor: data.vendedor,
           msg: `Proposta comercial de numero: ${response.data.data.attributes.nPedido}, foi registrada para o cliente ${ClienteTitle} pelo vendedor ${data.vendedor} no dia ${VisibliDateTime}`,
         };
 
@@ -141,7 +142,7 @@ export default async function PostEmpresa(
         const isoDateTime = now.toISOString();
         const txt = {
           date: isoDateTime,
-          vendedors: data.vendedor,
+          vendedor: data.vendedor,
           msg: "Proposta não foi criada devido a erro",
           error: error.response.data,
           user: 'Sistema'

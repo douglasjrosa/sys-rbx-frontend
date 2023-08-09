@@ -34,7 +34,7 @@ export default async function GetEmpresa(
     const { proposta } = req.query;
 
     const infos = await getData(proposta);
-    console.log("🚀 ~ file: [proposta].ts:37 ~ infos:", infos)
+    // console.log("🚀 ~ file: [proposta].ts:37 ~ infos:", infos)
 
     const resto = infos.dataEntrega;
 
@@ -112,13 +112,9 @@ export default async function GetEmpresa(
           : i.expo === false && i.mont === true
           ? 1.1
           : 0;
-      const descont = infos.condi === "Antecipado" ? ValorOriginal * 0.05 : 0;
       const somaAcrescimo =
         acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
-      const somaDescont = descont * i.Qtd;
-      const somaDescontMin =
-        Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
-      const TotalItem = somaAcrescimo - somaDescontMin;
+      const TotalItem = somaAcrescimo;
       const result = Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
       const total = result.toLocaleString("pt-br", {
         style: "currency",
@@ -148,7 +144,7 @@ export default async function GetEmpresa(
       ];
     });
 
-    const sometotalDescont = infos.Desconto + infos.DescontoAdd
+
     const comDesc = [
       {
         margin: [0, 45, 0, 0],
@@ -159,10 +155,7 @@ export default async function GetEmpresa(
       {
         margin: [0, 45, 0, 0],
         border: [false, false, false, false],
-        text: sometotalDescont.toLocaleString("pt-br", {
-          style: "currency",
-          currency: "BRL",
-        }),
+        text: infos.Desconto,
       },
     ];
 
@@ -179,7 +172,8 @@ export default async function GetEmpresa(
       },
     ];
 
-    const desconto = infos.Desconto === 0 && infos.DescontoAdd === 0 ? semDesc : comDesc;
+    const descontoNumber = Number(infos.Desconto.replace('R$', '').replace('.', '').replace(',', '.'))
+    const desconto = descontoNumber === 0 ? semDesc : comDesc;
 
     const logo =
       infos.fornecedor.data.cnpj === "04.586.593/0001-70" ? dataUrl : dataUrl2;

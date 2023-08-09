@@ -60,7 +60,7 @@ export const CarteiraAusente = (props: { filtro: any }) => {
     let interacao
 
     const interacaolist = filter(empresa)
-    console.log("🚀 ~ file: index.tsx:59 ~ BodyTabela ~ interacaolist:", interacaolist)
+    // console.log("🚀 ~ file: index.tsx:59 ~ BodyTabela ~ interacaolist:", interacaolist)
 
     const dataAtual = startOfDay(new Date())
 

@@ -55,7 +55,8 @@ export default async function PUTEmpresa(
         vencPrint: data.vencPrint,
         obs: data.obs,
         cliente_pedido: data.cliente_pedido,
-        dataEntrega: data.dataEntrega
+        dataEntrega: data.dataEntrega,
+        descontoAdd: data.descontoAdd
       },
     };
     console.log("🚀 ~ file: [id].ts:60 ~ DataPost:", DataPost)
@@ -65,7 +66,7 @@ export default async function PUTEmpresa(
     const isoDateTime = now.toISOString();
     const txt = {
       date: isoDateTime,
-      vendedors: data.vendedor,
+      vendedor: data.vendedor,
       msg: `Proposta comercial de numero: ${data.nPedido}, do cliente ${ClienteName}, foi atualizada pelo vendedor ${data.vendedor} no dia ${VisibliDateTime}`,
     };
     const ItensPropsta = data.itens;
@@ -79,10 +80,10 @@ export default async function PUTEmpresa(
           : i.expo === false && i.mont === true
           ? "este item, deve ser enviado montado para cliente"
           : i.expo === true && i.mont === true
-          ? "este item, deve ser enviado montado para cliente, e tambem feito o tratamento para exportação"
+          ? "este item, deve ser enviado montado para cliente, e também feito o tratamento para exportação"
           : "";
 
-      const resp = `✔️ produto: ${prod}  medelo: ${noldProd}  quant.: ${quant},${
+      const resp = `✔️ produto: ${prod}  modelo: ${noldProd}  quant.: ${quant},${
         text !== "" ? ` observação: ${text},` : "\n"
       }\n`;
       return resp;
@@ -90,7 +91,7 @@ export default async function PUTEmpresa(
     const txtOcorrencia = {
       date: isoDateTime,
       user: "Sistema",
-      msg: `Proposta comercial de numero: ${data.nPedido}, do cliente ${ClienteName},\nfoi atualizada pelo vendedor ${data.vendedor} no dia ${VisibliDateTime},\nconteudo da proposta: \n\n${mapItens} \n\nObservaçoes gerais: \n\n ${data.obs}`,
+      msg: `Proposta comercial de numero: ${data.nPedido}, do cliente ${ClienteName},\nfoi atualizada pelo vendedor ${data.vendedor} no dia ${VisibliDateTime},\nconteudo da proposta: \n\n${mapItens} \n\nObservações gerais: \n\n ${data.obs}`,
     };
 
     await axiosRequet
@@ -110,14 +111,14 @@ export default async function PUTEmpresa(
         });
       })
       .catch(async (error) => {
-        console.log(error.response.data.error);
+        console.log(error.response.data.error.details);
 
         res.status(500).json(error.response.data.error);
         const now = new Date();
         const isoDateTime = now.toISOString();
         const txt = {
           date: isoDateTime,
-          vendedors: data.vendedor,
+          vendedor: data.vendedor,
           msg: "Proposta não foi atualizada devido a erro",
           error: error.response,
           user: 'Sistema'

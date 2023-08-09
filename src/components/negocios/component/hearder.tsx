@@ -26,7 +26,6 @@ import { EtapasNegocio } from "@/components/data/etapa";
 import { BtmRetorno } from "@/components/elements/btmRetorno";
 import { SetValue } from "@/function/currenteValor";
 import { pedido } from "@/function/setpedido";
-import { BeatLoader } from "react-spinners";
 import formatarDataParaSaoPaulo from "@/function/formatHora";
 
 export const NegocioHeader = (props: {
@@ -223,7 +222,7 @@ export const NegocioHeader = (props: {
     const IdNegocio = Data.id
 
     const request = await pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
-    console.log("🚀 ~ file: hearder.tsx:223 ~ finalizar ~ request:", request)
+    // console.log("🚀 ~ file: hearder.tsx:223 ~ finalizar ~ request:", request)
     setload(false)
     onClose()
     props.onchat(true);
@@ -344,10 +343,8 @@ export const NegocioHeader = (props: {
   function getStatus(statusinf: SetStateAction<any>) {
     setStatus(parseInt(statusinf));
   }
-  function getAtendimento(atendimento: SetStateAction<string>) {
-    setApproach(atendimento);
-  }
-  console.log(Blocksave)
+
+  // console.log(Blocksave)
 
   return (
     <>

@@ -157,8 +157,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     const freteValor = SetValueNumero(freteCif)
     const somaDecont = ValorDesconto + parseFloat(DescontoAdd)
     const Soma = (freteValor + valorTotal) - somaDecont
-    console.log("🚀 ~ file: formProposta.tsx:157 ~ useEffect ~ frete:", SetValueNumero(freteCif))
-    console.log("🚀 ~ file: formProposta.tsx:161 ~ useEffect ~ Soma:", Soma)
+
     setTotalGeral(Math.round(Soma * 100) / 100);
     setDesconto(somaDecont);
   }, [DescontoGeral, ListItens, TotalGreal]);
@@ -240,25 +239,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
         };
       });
 
-      const totalItem = ListItens.reduce((acc: number, item: any) => {
-        const valorOriginal = Number(item.vFinal.replace(".", "").replace(",", "."))
-        const valor: number = valorOriginal - item.desconto;
-        const qtd: number = item.Qtd;
-        const mont: boolean = item.mont;
-        const expo: boolean = item.expo;
-        const acrec: number =
-          mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
-        const somaAcrescimo: number = acrec === 0
-          ? 0
-          : (valorOriginal * acrec - valorOriginal) * qtd;
-        const total1 = valor * qtd + somaAcrescimo;
-        const total = Number(total1.toFixed(2))
-        const somaTota = acc + total
-        const TotoalConvert = Number(somaTota.toFixed(2));
-        return TotoalConvert;
-      }, 0);
-
-      const totalValor = totalItem.toLocaleString("pt-br", {
+      const totalValor = totalGeral.toLocaleString("pt-br", {
         style: "currency",
         currency: "BRL",
       });
@@ -277,9 +258,10 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
         condi: prazo,
         prazo: tipoprazo,
         totalGeral: totalValor,
-        deconto: prazo !== 'Antecipado'
-          ? "R$ 0,00"
-          : Desconto,
+        deconto: Desconto.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          }),
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
@@ -383,7 +365,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               data: {
                 history: record,
                 incidentRecord: record2,
-                Budget: dadosPost.totalGeral
+                Budget: totalValor
               },
             };
 
@@ -477,7 +459,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     if (!Valor) {
       setDescontoAdd('0,00')
     } else if (sinal[0] === '-') {
-      const valorLinpo = SetValue(Valor)
+      const valorLinpo = SetValueNumero(Valor)
       setDescontoAdd(sinal[0] + valorLinpo)
     } else {
       const valorLinpo = SetValue(Valor)

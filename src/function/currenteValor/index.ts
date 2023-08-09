@@ -8,7 +8,7 @@ export const SetValue = (numero: string): string => {
   const parteInteira = numeroLimpo.slice(0, -2).replace(/^0+/, "");
   const parteDecimal = numeroLimpo.slice(-2);
 
-  let parteInteiraFormatada = parteInteira.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  let parteInteiraFormatada = parteInteira;
   if (parteInteiraFormatada === "") {
     parteInteiraFormatada = "0";
   }
