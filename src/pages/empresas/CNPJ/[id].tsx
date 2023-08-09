@@ -126,9 +126,15 @@ export default function Infos() {
           setObjetivo('')
           setProximo('')
           try {
-            const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${Nome}`);
-            const response2 = request2.data;
-            setInteracoes(response2)
+            if(session?.user.pemission === 'Adm'){
+              const request2 = await axios(`/api/db/empresas/interacoes/get_adm?Empresa=${Nome}`);
+              const response2 = request2.data;
+              setInteracoes(response2)
+            } else {
+              const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${Nome}`);
+              const response2 = request2.data;
+              setInteracoes(response2)
+            }
             setload(false)
             onClose()
           } catch (error: any) {

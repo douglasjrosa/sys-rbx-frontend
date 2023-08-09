@@ -13,7 +13,6 @@ export default async function GetEmpresa(
     // const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes?filters[vendedor][username][$eq]=${Vendedor}&filters[empresa][nome][$eq]=${Empresa}`;
     const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes?filters[vendedor][username][$eq]=${Vendedor}&filters[empresa][nome][$eq]=${Empresa}&populate=*`;
 
-
     await axios(url, {
       headers: {
         Authorization: `Bearer ${token}`,
