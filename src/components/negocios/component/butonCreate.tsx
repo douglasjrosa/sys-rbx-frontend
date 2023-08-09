@@ -22,7 +22,9 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { useSession } from "next-auth/react";
+import { GetServerSideProps, GetStaticPropsContext } from "next";
+
+import { getSession, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { MdOutlineAddCircleOutline } from "react-icons/md";
@@ -67,6 +69,7 @@ export const theme = extendTheme({
   },
 });
 
+
 export const BtCreate = (props: { user: any; onLoading: any }) => {
   const { data: session } = useSession();
   const [work, setWork] = useState<any | null>([]);
@@ -79,7 +82,6 @@ export const BtCreate = (props: { user: any; onLoading: any }) => {
   const { onOpen, onClose, isOpen } = useDisclosure();
   const dataAtual: Date = new Date();
   const router= useRouter()
-
 
   useEffect(() => {
     const usuario = props.user

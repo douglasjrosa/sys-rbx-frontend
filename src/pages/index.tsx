@@ -32,6 +32,7 @@ const Painel: React.FC = () => {
       if (daysOfMonth.DataInicio && daysOfMonth.DataFim) {
         setIsLoading(true);
         try {
+          // `http://localhost:3000/api/db/business/get/calendar?DataIncicio=2023-08-01T03:00:00.000Z&DataFim=2023-08-31T03:00:00.000Z`
           const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}`);
           setData(response.data);
         } catch (error) {

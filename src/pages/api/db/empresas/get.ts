@@ -10,7 +10,7 @@ export default async function GetEmpresa(
   if (req.method === "GET" && req.query.Vendedor !== "") {
     const Vendedor = req.query.Vendedor;
     const url = !Vendedor
-      ? `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$null]=true&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&populate[user][fields][0]=username&populate[businesses][fields][0]=nBusiness`
+      ? `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$null]=true&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&pagination[limit]=8000`
       : `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresas?filters[user][username][$eq]=${Vendedor}&filters[status][$eq]=true&sort[0]=nome%3Aasc&fields[0]=nome&fields[1]=CNPJ&populate[user][fields][0]=username&populate[businesses][fields][0]=nBusiness`;
     await axios(url, {
       headers: {
