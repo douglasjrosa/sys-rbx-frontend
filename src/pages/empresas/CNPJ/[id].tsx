@@ -272,10 +272,10 @@ export default function Infos() {
             </Box>
 
             {/* historico */}
-            <Box w={'100%'} h={'20%'} bg={'#2d3748'} rounded={16} p={5}>
+            <Box w={'100%'} bg={'#2d3748'} rounded={16} p={5}>
               <Box><Heading size={'md'}>Historico</Heading></Box>
               <Flex w={'100%'} h={'80%'} overflowY={'auto'} gap={3} flexDir={'column'}>
-                {Historico.map((item: any) => {
+                {/* {Historico.map((item: any) => {
 
                   const Data = new Date(item.date)
                   return (
@@ -288,7 +288,7 @@ export default function Infos() {
 
                     </>
                   )
-                })}
+                })} */}
               </Flex>
             </Box>
 
@@ -319,7 +319,7 @@ export default function Infos() {
 
                   return (
                     <>
-                      <Box bg={'gray.100'} rounded={10} px={5} py={3} color={'black'} fontSize={'0.7rem'}>
+                      <Box bg={'gray.100'} rounded={10} px={5} py={2} color={'black'} fontSize={'0.7rem'}>
                         <Heading size={'sm'}>{obj}</Heading>
                         <chakra.p fontSize={'0.8rem'}>{i.attributes.descricao}</chakra.p>
                         <Flex justifyContent={'space-between'} mt={1}>
