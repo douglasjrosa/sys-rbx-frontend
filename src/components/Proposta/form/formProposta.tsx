@@ -6,6 +6,7 @@ import { CompPrazo } from "@/components/Proposta/prazo";
 import { ProdutiList } from "@/components/Proposta/produt";
 import { TableConteudo } from "@/components/Proposta/tabela";
 import { SetValue } from "@/function/currenteValor";
+import { SetValueNumero } from "@/function/currentValorNumber";
 import {
   Box,
   Button,
@@ -50,14 +51,13 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [DateEntrega, setDateEntrega] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [frete, setFrete] = useState("");
-  const [freteCif, setFreteCif] = useState<string>('0,00');
+  const [freteCif, setFreteCif] = useState<any>('0.00');
   const [Loja, setLoja] = useState("");
   const [prazo, setPrazo] = useState("");
   const [tipoprazo, setTipoPrazo] = useState("");
   const [totalGeral, setTotalGeral] = useState<any>("");
   const [Desconto, setDesconto] = useState<any>("");
   const [DescontoAdd, setDescontoAdd] = useState('');
-  const [DescontoTotal, setDescontoTotal] = useState("");
   const [saveNegocio, setSaveNegocio] = useState("");
   const [hirtori, setHistory] = useState([]);
   const [MSG, setMSG] = useState([]);
@@ -124,13 +124,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       const total = Number(total1.toFixed(2))
       const somaTota = acc + total
       const TotoalConvert = Number(somaTota.toFixed(2));
-      console.log("🚀 ~ file: formProposta.tsx:127 ~ totalItem ~ TotoalConvert:", TotoalConvert)
       return TotoalConvert;
     }, 0);
-    console.log("🚀 ~ file: formProposta.tsx:130 ~ totalItem ~ ListItens:", ListItens)
-
     const ValorAtt = totalItem
-    console.log("🚀 ~ file: formProposta.tsx:131 ~ TotalGreal ~ totalItem:", totalItem)
     return ValorAtt
   };
 
@@ -143,39 +139,42 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       const descont = ValorGeral * 0.05;
       const descont1 = descont * i.Qtd;
       const somaDescontMin =
-      Math.round(parseFloat(descont1.toFixed(2)) * 100) / 100;
+        Math.round(parseFloat(descont1.toFixed(2)) * 100) / 100;
 
       return somaDescontMin;
     });
-    const total1 = prazo !== "Antecipado"? 0.00 : descontos.reduce(
+    const total1 = prazo !== "Antecipado" ? 0.00 : descontos.reduce(
       (acc: number, valorAtual: number) => acc + valorAtual
     );
     const total = total1;
-    return  total
+    return total
   };
 
   useEffect(() => {
 
     const valorTotal = TotalGreal()
     const ValorDesconto = DescontoGeral()
-    const somaDecont = ValorDesconto +  parseFloat(DescontoAdd)
-    const Soma = valorTotal - somaDecont
+    const freteValor = SetValueNumero(freteCif)
+    const somaDecont = ValorDesconto + parseFloat(DescontoAdd)
+    const Soma = (freteValor + valorTotal) - somaDecont
+    console.log("🚀 ~ file: formProposta.tsx:157 ~ useEffect ~ frete:", SetValueNumero(freteCif))
+    console.log("🚀 ~ file: formProposta.tsx:161 ~ useEffect ~ Soma:", Soma)
     setTotalGeral(Math.round(Soma * 100) / 100);
     setDesconto(somaDecont);
   }, [DescontoGeral, ListItens, TotalGreal]);
 
   useEffect(() => {
-      setItens(
-        ListItens.map((f: any) => {
-          const valor = Number(f.vFinal.replace(".", "").replace(",", "."));
-          const ValorGeral =
-            Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
-          const TotalDesc = ValorGeral ;
-          f.total = Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100;
-          const data = { ...f };
-          return data;
-        })
-      );
+    setItens(
+      ListItens.map((f: any) => {
+        const valor = Number(f.vFinal.replace(".", "").replace(",", "."));
+        const ValorGeral =
+          Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
+        const TotalDesc = ValorGeral;
+        f.total = Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100;
+        const data = { ...f };
+        return data;
+      })
+    );
   }, [prazo]);
 
 
@@ -490,9 +489,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
 
   return (
     <>
-      <Flex h="100vh" w="100%" flexDir={"column"} px={'10'} py={1} bg={'gray.800'} color={'white'} justifyContent={'space-between'} >
-        <Box w="100%" bg={'gray.800'} mt={5}>
-          <Flex gap={3}>
+      <Flex h="100vh" w="100%" flexDir={"column"} px={'5'} py={1} bg={'gray.800'} color={'white'} justifyContent={'space-between'} >
+        <Box w="100%" bg={'gray.800'} mt={3}>
+          <Flex gap={3} alignItems={'center'}>
             <IconButton aria-label='voltar' rounded={'3xl'} onClick={() => router.back()} icon={<BsArrowLeftCircleFill size={30} color="#136dcc" />} />
             <Heading size="md">Proposta comercial</Heading>
           </Flex>
@@ -513,8 +512,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               <Input
                 shadow="sm"
                 type={"date"}
-                size="sm"
-                w="full"
+                size="xs"
+                w="24"
                 fontSize="xs"
                 rounded="md"
                 isDisabled
@@ -533,8 +532,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                 shadow="sm"
                 type={"date"}
                 color={'white'}
-                size="sm"
-                w="full"
+                 size="xs"
+                 w="28"
                 fontSize="xs"
                 rounded="md"
                 onChange={(e) => setDateEntrega(e.target.value)}
@@ -550,8 +549,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               </FormLabel>
               <Select
                 shadow="sm"
-                size="sm"
-                w="full"
+                 size="xs"
+                w="28"
                 fontSize="xs"
                 rounded="md"
                 onChange={(e) => setLoja(e.target.value)}
@@ -578,8 +577,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               </FormLabel>
               <Select
                 shadow="sm"
-                size="sm"
-                w="full"
+                 size="xs"
+                w="36"
                 fontSize="xs"
                 rounded="md"
                 onChange={(e) => setPrazo(e.target.value)}
@@ -604,8 +603,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               </FormLabel>
               <Select
                 shadow="sm"
-                size="sm"
-                w="full"
+                 size="xs"
+                w="24"
                 fontSize="xs"
                 rounded="md"
                 onChange={(e) => setFrete(e.target.value)}
@@ -626,8 +625,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               <Input
                 type="text"
                 textAlign={"end"}
-                size="sm"
-                w={"7rem"}
+                 size="xs"
+                w={24}
                 step={'0.01'}
                 fontSize="xs"
                 rounded="md"
@@ -647,8 +646,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                   <Input
                     type="text"
                     textAlign={"end"}
-                    size="sm"
-                    w={"7rem"}
+                     size="xs"
+                    w={24}
                     fontSize="xs"
                     rounded="md"
                     onChange={setAdddescont}
@@ -658,8 +657,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               </>
             )}
           </Box>
-          <Box mt={7}>
-            <Heading size="sm">Itens da proposta comercial</Heading>
+          <Box mt={4}>
+            <Heading  size="sm">Itens da proposta comercial</Heading>
           </Box>
           <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
             {!disbleProd && (<Box w={"300px"} />)}
@@ -679,8 +678,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               <Input
                 shadow="sm"
                 type={"text"}
-                size="sm"
-                w="full"
+                size="xs"
+                w="32"
                 fontSize="xs"
                 rounded="md"
                 onChange={(e) => setClientePedido(e.target.value)}
@@ -698,9 +697,10 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                   </FormLabel>
                   <Textarea
                     w="full"
+                    h={"10"}
                     onChange={(e) => setObs(e.target.value)}
                     placeholder="Breve descrição sobre o andamento"
-                    size="sm"
+                    size="xs"
                     value={obs}
                   />
                 </Box>
@@ -769,8 +769,14 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                 currency: "BRL",
               })}
             </chakra.p>
-            <chakra.p>Desconto: {Desconto}</chakra.p>
-            <chakra.p>Valor Total: {totalGeral}</chakra.p>
+            <chakra.p>Desconto: {Desconto.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            })}</chakra.p>
+            <chakra.p>Valor Total: {totalGeral.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            })}</chakra.p>
           </Flex>
           <Button colorScheme={"whatsapp"} onClick={SalvarProdutos} isDisabled={loadingTable}>
             Salvar Proposta

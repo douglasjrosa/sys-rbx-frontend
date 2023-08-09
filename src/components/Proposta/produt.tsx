@@ -49,7 +49,7 @@ export const ProdutiList = (props: {
       <Box>
         <Box
           display="flex"
-          gap={8}
+          gap={5}
           w={"320px"}
           alignItems="center"
         >
@@ -62,8 +62,8 @@ export const ProdutiList = (props: {
             </FormLabel>
             <Select
               shadow="sm"
-              size="sm"
-              w="15rem"
+              size="xs"
+              w="14rem"
               fontSize="xs"
               rounded="md"
               onChange={(e) => setItenId(e.target.value)}

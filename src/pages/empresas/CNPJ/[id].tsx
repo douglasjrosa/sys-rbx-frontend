@@ -9,10 +9,9 @@ import { MaskCnpj } from "@/function/Mask/cnpj";
 import { formatarTelefone } from "@/function/Mask/telefone-whatsapp";
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { capitalizeWords } from "@/function/captalize";
-import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Link } from "@chakra-ui/react";
+import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Link } from "@chakra-ui/react";
 import axios from "axios";
 import { parseISO } from "date-fns";
-import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -66,10 +65,15 @@ export default function Infos() {
         setEmail(response.attributes.email)
         setHistorico(response.attributes.history.slice(-3))
         setNegocio(response.attributes.businesses.data.slice(-5))
-        const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${response.attributes.nome}`);
-        const response2 = request2.data;
-        // console.log("🚀 ~ file: [id].tsx:71 ~ response2:", response2)
-        setInteracoes(response2)
+        if(session?.user.pemission === 'Adm'){
+          const request2 = await axios(`/api/db/empresas/interacoes/get_adm?Empresa=${response.attributes.nome}`);
+          const response2 = request2.data;
+          setInteracoes(response2)
+        } else {
+          const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${response.attributes.nome}`);
+          const response2 = request2.data;
+          setInteracoes(response2)
+        }
         setload(false)
       } catch (error: any) {
         toast({
@@ -82,7 +86,7 @@ export default function Infos() {
         setTimeout(() => router.push('/empresas'), 1000)
       }
     })()
-  }, [ID, router, session?.user.name, toast])
+  }, [ID, router, session?.user.name, session?.user.pemission, toast])
 
   if (load) return <Flex w={'100%'} h={'100vh'} bg={'gray.800'} justifyContent={'center'} alignItems={'center'}><Loading size="200px">Carregando...</Loading></Flex>
 

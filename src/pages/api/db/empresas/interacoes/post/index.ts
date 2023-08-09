@@ -9,7 +9,6 @@ export default async function GetEmpresa(
   const token = process.env.ATORIZZATION_TOKEN;
   if (req.method === "POST") {
     const data = req.body;
-    console.log("🚀 ~ file: index.ts:12 ~ data:", data)
     const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes`;
 
     await axios(url, {
