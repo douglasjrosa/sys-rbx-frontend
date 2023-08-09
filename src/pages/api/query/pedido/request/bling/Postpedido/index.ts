@@ -227,7 +227,7 @@ export const PostPedido = async (dados: any) => {
 
     return resposta;
   } catch (error: any) {
-    // console.log("🚀 ~ file: index.ts:221 ~ PostPedido ~ error:", error)
+    console.log("🚀 ~ file: index.ts:230 ~ PostPedido ~ error:", error.response.data)
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
       status:  400,
