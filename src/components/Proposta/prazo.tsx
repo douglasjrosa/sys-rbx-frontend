@@ -31,7 +31,7 @@ export const CompPrazo = (props: { Resp: string; onAddResp: any; oncnpj: string 
     { nome: 'Picelli', cnpj: "53342523000182" },
   ]
   const [selectLista] = listEmpr.filter((i: any) => i.cnpj == props.oncnpj).map((i: any) => i.nome)
-  const PropPrazo = selectLista === undefined ? 'Padão' : selectLista
+  const PropPrazo = selectLista === undefined ? 'Padrão' : selectLista
   const data = dados.filter((i: any) => i.propriedade == PropPrazo)
 
   return (
