@@ -54,8 +54,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [Loja, setLoja] = useState("");
   const [prazo, setPrazo] = useState("");
   const [tipoprazo, setTipoPrazo] = useState("");
-  const [totalGeral, setTotalGeral] = useState("");
-  const [Desconto, setDesconto] = useState("");
+  const [totalGeral, setTotalGeral] = useState<any>("");
+  const [Desconto, setDesconto] = useState<any>("");
   const [DescontoAdd, setDescontoAdd] = useState('');
   const [DescontoTotal, setDescontoTotal] = useState("");
   const [saveNegocio, setSaveNegocio] = useState("");
@@ -100,17 +100,18 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       setCnpj(resp.attributes.empresa.data.attributes.CNPJ)
       setIncidentRecord(resp.attributes.incidentRecord)
       const descontodb = PROPOSTA?.attributes.descontoAdd
-      setDescontoAdd(!descontodb ? 0.00 : descontodb.replace(".", "").replace(",", "."))    }
+      setDescontoAdd(!descontodb ? 0.00 : descontodb.replace(".", "").replace(",", "."))
+    }
   }, []);
 
 
   const disbleProd = !prazo || !DateEntrega || !Loja || !frete ? false : true;
 
   const TotalGreal = () => {
-    if (ListItens.length === 0) return "R$ 0,00";
+    if (ListItens.length === 0) return 0.00;
     const totalItem = ListItens.reduce((acc: number, item: any) => {
       const valorOriginal = Number(item.vFinal.replace(".", "").replace(",", "."))
-      const valor: number = valorOriginal - item.desconto;
+      const valor: number = valorOriginal;
       const qtd: number = item.Qtd;
       const mont: boolean = item.mont;
       const expo: boolean = item.expo;
@@ -123,67 +124,60 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       const total = Number(total1.toFixed(2))
       const somaTota = acc + total
       const TotoalConvert = Number(somaTota.toFixed(2));
-      return !DescontoAdd? TotoalConvert :  TotoalConvert - parseFloat(DescontoAdd.replace('.', '').replace(',', '.'));
+      console.log("🚀 ~ file: formProposta.tsx:127 ~ totalItem ~ TotoalConvert:", TotoalConvert)
+      return TotoalConvert;
     }, 0);
+    console.log("🚀 ~ file: formProposta.tsx:130 ~ totalItem ~ ListItens:", ListItens)
 
     const ValorAtt = totalItem
-    return ValorAtt.toLocaleString("pt-br", {
-      style: "currency",
-      currency: "BRL",
-    });
+    console.log("🚀 ~ file: formProposta.tsx:131 ~ TotalGreal ~ totalItem:", totalItem)
+    return ValorAtt
   };
 
   const DescontoGeral = () => {
-    if (ListItens.length === 0) return "R$ 0,00";
-    const descontos = ListItens.map((i: any) => i.desconto * i.Qtd);
-    const total1 = descontos.reduce(
+    if (ListItens.length === 0) return 0.00;
+    const descontos = ListItens.map((i: any) => {
+      const valor = Number(i.vFinal.replace(".", "").replace(",", "."));
+      const ValorGeral =
+        Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
+      const descont = ValorGeral * 0.05;
+      const descont1 = descont * i.Qtd;
+      const somaDescontMin =
+      Math.round(parseFloat(descont1.toFixed(2)) * 100) / 100;
+
+      return somaDescontMin;
+    });
+    const total1 = prazo !== "Antecipado"? 0.00 : descontos.reduce(
       (acc: number, valorAtual: number) => acc + valorAtual
     );
-    const total = !DescontoAdd? total1 : total1 + parseFloat(DescontoAdd.replace('.', '').replace(',', '.'));
-    return total.toLocaleString("pt-br", {
-      style: "currency",
-      currency: "BRL",
-    });
+    const total = total1;
+    return  total
   };
 
   useEffect(() => {
-    setTotalGeral(TotalGreal());
-    setDesconto(DescontoGeral());
+
+    const valorTotal = TotalGreal()
+    const ValorDesconto = DescontoGeral()
+    const somaDecont = ValorDesconto +  parseFloat(DescontoAdd)
+    const Soma = valorTotal - somaDecont
+    setTotalGeral(Math.round(Soma * 100) / 100);
+    setDesconto(somaDecont);
   }, [DescontoGeral, ListItens, TotalGreal]);
 
   useEffect(() => {
-    if (prazo === "Antecipado") {
       setItens(
         ListItens.map((f: any) => {
           const valor = Number(f.vFinal.replace(".", "").replace(",", "."));
           const ValorGeral =
             Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
-          const descont =ValorGeral * 0.05;
-          const somaDescontMin =
-            Math.round(parseFloat(descont.toFixed(2)) * 100) / 100;
-          const TotalDesc = ValorGeral - somaDescontMin;
+          const TotalDesc = ValorGeral ;
           f.total = Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100;
-          f.desconto =
-            Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100;
           const data = { ...f };
           return data;
         })
       );
-    } else {
-      setItens(
-        ListItens.map((f: any) => {
-          const valor = Number(f.vFinal.replace(".", "").replace(",", "."));
-          const ValorGeral =
-            Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
-          f.total = Math.round(parseFloat(ValorGeral.toFixed(2)) * 100) / 100;
-          f.desconto = 0;
-          const data = { ...f };
-          return data;
-        })
-      );
-    }
   }, [prazo]);
-  console.log(props.envio)
+
 
   const SalvarProdutos = async () => {
     setLoadingGeral(true)
@@ -236,13 +230,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               : i.expo === false && i.mont === true
                 ? 1.1
                 : 0;
-        const descont = tipoprazo === "Antecipado" ? ValorOriginal * 0.05 : 0;
         const somaAcrescimo =
           acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd;
-        const somaDescont = descont * i.Qtd;
-        const somaDescontMin =
-          Math.round(parseFloat(somaDescont.toFixed(2)) * 100) / 100;
-        const TotalItem = somaAcrescimo - somaDescontMin;
+        const TotalItem = somaAcrescimo;
         const result = Math.round(parseFloat(TotalItem.toFixed(2)) * 100) / 100;
 
         return {
@@ -266,7 +256,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
         const total = Number(total1.toFixed(2))
         const somaTota = acc + total
         const TotoalConvert = Number(somaTota.toFixed(2));
-        return !DescontoAdd? TotoalConvert :  TotoalConvert - parseFloat(DescontoAdd);
+        return TotoalConvert;
       }, 0);
 
       const totalValor = totalItem.toLocaleString("pt-br", {
@@ -445,14 +435,10 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     resposta.mont = false;
     resposta.codg = resposta.prodId;
     resposta.Qtd = 1;
-    const desconto = prazo === "Antecipado" ? valor * 0.05 : 0;
-    const somaDescontMin =
-      Math.round(parseFloat(desconto.toFixed(2)) * 100) / 100;
-    const TotalDesc = valor - somaDescontMin;
     const retorno = {
       ...resposta,
-      desconto: Math.round(parseFloat(somaDescontMin.toFixed(2)) * 100) / 100,
-      total: Math.round(parseFloat(TotalDesc.toFixed(2)) * 100) / 100,
+
+      total: Math.round(parseFloat(valor.toFixed(2)) * 100) / 100,
     };
     const newItens = lista.map((f: any) => ({
       ...f,
@@ -489,12 +475,12 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const setAdddescont = (e: any) => {
     const Valor = e.target.value
     const sinal = Valor.split("")
-    if (!Valor){
+    if (!Valor) {
       setDescontoAdd('0,00')
-    } else if(sinal[0] === '-'){
+    } else if (sinal[0] === '-') {
       const valorLinpo = SetValue(Valor)
-      setDescontoAdd( sinal[0] + valorLinpo)
-    }else{
+      setDescontoAdd(sinal[0] + valorLinpo)
+    } else {
       const valorLinpo = SetValue(Valor)
       setDescontoAdd(valorLinpo)
     }
@@ -524,7 +510,6 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               >
                 Data
               </FormLabel>
-              {/* <Text>{new Date(date).toLocaleDateString()}</Text> */}
               <Input
                 shadow="sm"
                 type={"date"}
@@ -764,7 +749,6 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                   </Thead>
                   <TableConteudo
                     Itens={ListItens}
-                    Prazo={prazo}
                     loading={loadingTable}
                     returnItem={getItemFinal}
                   />

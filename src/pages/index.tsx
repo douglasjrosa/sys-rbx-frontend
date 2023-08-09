@@ -59,7 +59,7 @@ const Painel: React.FC = () => {
 
           // Verifica se a data de criação do projeto corresponde à dia.date atual
           if (isSameDay(createdAt, parseISO(dia.date))) {
-            if (c.attributes.andamento !== 5 && c.attributes.etapa !== 6 || c.attributes.andamento === 1 && c.attributes.etapa === 6) {
+            if (c.attributes.andamento !== 5 && c.attributes.etapa !== 6 || c.attributes.andamento !== 1 && c.attributes.etapa !== 6) {
               return true; // Inclui em clientesCorrespondentes
             }
           }
