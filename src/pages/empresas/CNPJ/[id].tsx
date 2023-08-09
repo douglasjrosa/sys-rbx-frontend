@@ -33,8 +33,8 @@ export default function Infos() {
   const [Uf, setUf] = useState('')
   const [Telefone, setTelefone] = useState('')
   const [Email, setEmail] = useState('')
-  const [Tipo, setTipo] = useState('')
-  const [Objetivo, setObjetivo] = useState('')
+  const [Tipo, setTipo] = useState('1')
+  const [Objetivo, setObjetivo] = useState('1')
   const [Descricao, setDescricao] = useState('')
   const [Proximo, setProximo] = useState('')
   const [Representantes, setRepresentantes] = useState([])
@@ -68,6 +68,7 @@ export default function Infos() {
         setNegocio(response.attributes.businesses.data.slice(-5))
         const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${response.attributes.nome}`);
         const response2 = request2.data;
+        // console.log("🚀 ~ file: [id].tsx:71 ~ response2:", response2)
         setInteracoes(response2)
         setload(false)
       } catch (error: any) {
@@ -81,7 +82,7 @@ export default function Infos() {
         setTimeout(() => router.push('/empresas'), 1000)
       }
     })()
-  }, [router, session?.user.name, toast])
+  }, [ID, router, session?.user.name, toast])
 
   if (load) return <Flex w={'100%'} h={'100vh'} bg={'gray.800'} justifyContent={'center'} alignItems={'center'}><Loading size="200px">Carregando...</Loading></Flex>
 
@@ -100,15 +101,16 @@ export default function Infos() {
           "vendedor": session?.user.id,
           "empresa": ID,
           "descricao": Descricao,
-          "tipo": Tipo,
-          "objetivo": Objetivo,
+          "tipo": parseInt(Tipo),
+          "objetivo": parseInt(Objetivo),
           "proxima": Proximo,
           "pontual": true,
           "CNPJ": CNPJ
         }
       }
+
       setload(true)
-      const url = `/api/db/empresas/interacoes/post?Vendedor=${session?.user.name}&Empresa=${Nome}`
+      const url = `/api/db/empresas/interacoes/post`
       await axios({
         url: url,
         method: 'POST',
@@ -317,11 +319,12 @@ export default function Infos() {
 
                   return (
                     <>
-                      <Box bg={'gray.100'} rounded={10} p={5} color={'black'} fontSize={'0.7rem'}>
+                      <Box bg={'gray.100'} rounded={10} px={5} py={3} color={'black'} fontSize={'0.7rem'}>
                         <Heading size={'sm'}>{obj}</Heading>
                         <chakra.p fontSize={'0.8rem'}>{i.attributes.descricao}</chakra.p>
-                        <Flex justifyContent={'space-between'}>
+                        <Flex justifyContent={'space-between'} mt={1}>
                           <chakra.span p={'0.1rem'} px={'0.3rem'} color={'white'} bg={'blue.400'}>{tipo}</chakra.span>
+                          {session?.user.pemission === 'Adm' && (<chakra.p>{i.attributes.vendedor.data.attributes.nome}</chakra.p>)}
                           <chakra.p textDecor={'underline'}>{date.toLocaleDateString()}</chakra.p>
                         </Flex>
 

@@ -390,7 +390,7 @@ export const NegocioHeader = (props: {
                   type={"date"}
                   fontSize="xs"
                   rounded="md"
-                  onChange={(e) => setDataRetorno(formatarDataParaSaoPaulo(new Date(e.target.value)))}
+                  onChange={(e) => setDataRetorno(e.target.value)}
                   value={DataRetorno}
                 />
               </Box>

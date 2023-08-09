@@ -53,7 +53,7 @@ const Painel: React.FC = () => {
     if (data && negocioFilter) {
       const diasMesclados = calendar.map((dia: any) => {
         const clientesCorrespondentes = negocioFilter.filter((c: any) => {
-          const createdAt = parseISO(c.attributes.createdAt);
+          const createdAt = parseISO(c.attributes.DataRetorno);
           const deadline = parseISO(c.attributes.deadline);
           const dateConclusao = parseISO(c.attributes.date_conclucao);
 
@@ -87,14 +87,14 @@ const Painel: React.FC = () => {
           let correspondingDate;
 
           if (
-            isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date)) &&
+            isSameDay(parseISO(cliente.attributes.DataRetorno), parseISO(dia.date)) &&
             cliente.attributes.andamento !== 5 &&
-            cliente.attributes.etapa !== 6 || isSameDay(parseISO(cliente.attributes.createdAt), parseISO(dia.date)) &&
+            cliente.attributes.etapa !== 6 || isSameDay(parseISO(cliente.attributes.DataRetorno), parseISO(dia.date)) &&
             cliente.attributes.andamento !== 1 &&
             cliente.attributes.etapa !== 6
           ) {
             corresponding = 'createdAt';
-            correspondingDate = cliente.attributes.createdAt;
+            correspondingDate = cliente.attributes.DataRetorno;
           } else if (
             cliente.attributes.andamento === 1 &&
             cliente.attributes.etapa === 6

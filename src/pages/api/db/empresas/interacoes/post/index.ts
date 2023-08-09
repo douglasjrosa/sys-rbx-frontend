@@ -7,33 +7,27 @@ export default async function GetEmpresa(
   res: NextApiResponse
 ) {
   const token = process.env.ATORIZZATION_TOKEN;
-  if (req.method === "POST" && req.query.Vendedor !== "") {
-    const Vendedor = req.query.Vendedor;
-    const data = req.body
-    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes`
+  if (req.method === "POST") {
+    const data = req.body;
+    console.log("🚀 ~ file: index.ts:12 ~ data:", data)
+    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes`;
 
     await axios(url, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      method: 'POST',
-      data: data
+      method: "POST",
+      data: data,
     })
       .then((RequestEnpresa) => {
         res.status(200).json(RequestEnpresa.data.data);
       })
-      .catch((error) => {
-        console.log(error);
-        res.status(400).json(error);
+      .catch((error: any) => {
+        console.log(error.response.data.error.details);
+        res.status(400).json(error.response.data.error);
       });
   } else {
-    if (req.method !== "POST") {
-      return res
-        .status(405)
-        .send({ message: "Only POST requests are allowed" });
-    } else {
-      return res.status(500).send({ message: "falta vendedor" });
-    }
+    return res.status(405).send({ message: "Only POST requests are allowed" });
   }
 }
