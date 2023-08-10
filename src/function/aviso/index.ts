@@ -30,7 +30,7 @@ export const calcularDiferencaEmDias = (data1: Date, data2: Date): number => {
 
 export const encontrarObjetoMaisProximoComCor = (
   dados: any[]
-): { data: Date | null; cor: 'yellow' | 'red' | 'blue'| 'gray', info: string } => {
+): { data: Date | null; cor: 'yellow' | 'red' | '#3B2DFF'| 'gray', info: string } => {
   const dataAtual = startOfDay(new Date()); // Zera o horário da data atual
   let objetoMaisProximo: any | null = null;
   let menorDiferencaEmDias = Number.MAX_SAFE_INTEGER;
@@ -54,13 +54,13 @@ export const encontrarObjetoMaisProximoComCor = (
     }
 
     if (diferencaEmDias < 0) {
-      return { data: proximaData, cor: 'red', info: 'Você tem interação que já passou, a data agendada era' };
+      return { data: proximaData, cor: '#FC0707', info: 'Você tem interação que já passou, a data agendada era' };
     }
 
     if (diferencaEmDias > 0) {
-      return { data: proximaData, cor: 'blue', info: 'Você tem interação agendada para'};
+      return { data: proximaData, cor: '#3B2DFF', info: 'Você tem interação agendada para'};
     }
   }
 
-  return objetoMaisProximo ? { data: new Date(Date.parse(objetoMaisProximo.attributes.proxima)), cor: 'blue', info: 'Você tem interação agendada para' } : { data: null, cor: 'gray', info: 'Você não tem interação agendada' };
+  return objetoMaisProximo ? { data: new Date(Date.parse(objetoMaisProximo.attributes.proxima)), cor: '#3B2DFF', info: 'Você tem interação agendada para' } : { data: null, cor: 'gray', info: 'Você não tem interação agendada' };
 };

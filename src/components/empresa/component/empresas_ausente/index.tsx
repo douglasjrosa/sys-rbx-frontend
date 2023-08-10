@@ -60,9 +60,11 @@ export const CarteiraAusente = (props: { filtro: any }) => {
     let interacao
 
     const interacaolist = filter(empresa)
+    
     // console.log("🚀 ~ file: index.tsx:59 ~ BodyTabela ~ interacaolist:", interacaolist)
 
     const dataAtual = startOfDay(new Date())
+    // console.log("🚀 ~ file: index.tsx:66 ~ BodyTabela ~ dataAtual:", dataAtual)
 
     const calcularDiferencaEmDias = (data1: Date, data2: Date): number => {
       const umDiaEmMilissegundos = 24 * 60 * 60 * 1000;
@@ -73,6 +75,7 @@ export const CarteiraAusente = (props: { filtro: any }) => {
 
     if (interacaolist?.attributes.proxima) {
       const proximaData = startOfDay(parseISO(interacaolist.attributes.proxima)); // Converte a string para um objeto Date e zera o horário
+      // console.log("🚀 ~ file: index.tsx:77 ~ BodyTabela ~ proximaData:", proximaData)
 
       const diferencaEmDias = calcularDiferencaEmDias(dataAtual, proximaData); // Calcula a diferença em dias
 
@@ -81,11 +84,11 @@ export const CarteiraAusente = (props: { filtro: any }) => {
       }
 
       if (diferencaEmDias < 0) {
-        interacao = { data: proximaData, cor: 'red', info: 'Você tem interação que já passou, a data agendada era' };
+        interacao = { data: proximaData, cor: '#FC0707', info: 'Você tem interação que já passou, a data agendada era' };
       }
 
       if (diferencaEmDias > 0) {
-        interacao = { data: proximaData, cor: 'blue', info: 'Você tem interação agendada para' };
+        interacao = { data: proximaData, cor: '#3B2DFF', info: 'Você tem interação agendada para' };
       }
     }
 
