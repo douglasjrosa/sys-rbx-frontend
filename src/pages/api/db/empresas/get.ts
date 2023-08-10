@@ -28,7 +28,7 @@ export default async function GetEmpresa(
   } else if (req.method === "POST") {
     const url =
       process.env.NEXT_PUBLIC_STRAPI_API_URL +
-      "/empresas?filters[status][$eq]=true&populate=*";
+      "/empresas?filters[status][$eq]=true&pagination[limit]=8000";
 
     await fetch(url, {
       method: "GET",

@@ -1,7 +1,7 @@
 import { Flex, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Loading from "@/components/elements/loading";
 import { FormProposta } from "@/components/Proposta/form/formProposta";
 import { useSession } from "next-auth/react";
@@ -60,7 +60,7 @@ export default function Proposta() {
         router.push(`/negocios/${NNegocio}`);
       }
     })();
-  }, [NNegocio, router, toast]);
+  }, [NNegocio, router, toast, session?.user.email]);
 
   if (Bling) {
     const [pedidos] = Data.attributes.pedidos.data

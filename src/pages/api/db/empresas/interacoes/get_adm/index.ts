@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -7,11 +6,9 @@ export default async function GetEmpresa(
   res: NextApiResponse
 ) {
   const token = process.env.ATORIZZATION_TOKEN;
-  if (req.method === "GET" && req.query.Vendedor !== "") {
-    const Vendedor = req.query.Vendedor;
+  if (req.method === "GET" && req.query.Empresa !== "") {
     const Empresa = req.query.Empresa;
-    // const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes?filters[vendedor][username][$eq]=${Vendedor}&filters[empresa][nome][$eq]=${Empresa}`;
-    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes?filters[vendedor][username][$eq]=${Vendedor}&filters[empresa][nome][$eq]=${Empresa}&populate=*`;
+    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes?filters[empresa][nome][$eq]=${Empresa}&populate=*`;
 
     await axios(url, {
       headers: {
@@ -32,7 +29,7 @@ export default async function GetEmpresa(
         .status(405)
         .send({ message: "Only GET requests are allowed" });
     } else {
-      return res.status(500).send({ message: "falta vendedor" });
+      return res.status(500).send({ message: "falta Empresa" });
     }
   }
 }

@@ -1,18 +1,22 @@
 export const TipoContato = [
   {
     id: '1',
-    title: 'Notas, Mensagem de texto',
+    title: 'Notas',
   },
   {
     id: '2',
-    title: 'Chamada por voz',
+    title: 'Mensagem de texto',
   },
   {
     id: '3',
-    title: 'Mensagem por e-mail',
+    title: 'Chamada por voz',
   },
   {
     id: '4',
+    title: 'Mensagem por e-mail',
+  },
+  {
+    id: '5',
     title: 'Contato presencial',
   }
 ];

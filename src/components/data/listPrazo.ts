@@ -2,22 +2,22 @@ export const listPrazo = [
   {
     id: 1,
     titulo: '7 Dias',
-    propriedade: 'Padão'
+    propriedade: 'Padrão'
   },
   {
     id: 2,
     titulo: '15 Dias',
-    propriedade: 'Padão'
+    propriedade: 'Padrão'
   },
   {
     id: 3,
     titulo: '28 Dias',
-    propriedade: 'Padão'
+    propriedade: 'Padrão'
   },
   {
     id: 4,
     titulo: '30 Dias',
-    propriedade: 'Padão'
+    propriedade: 'Padrão'
   },
   {
     id: 5,
@@ -37,12 +37,12 @@ export const listPrazo = [
   {
     id: 8,
     titulo: '28 / 35 Dias',
-    propriedade: 'Padão'
+    propriedade: 'Padrão'
   },
   {
     id: 9,
     titulo: '28 / 35 / 42 Dias',
-    propriedade: 'Padão'
+    propriedade: 'Padrão'
   },
   {
     id: 10,
