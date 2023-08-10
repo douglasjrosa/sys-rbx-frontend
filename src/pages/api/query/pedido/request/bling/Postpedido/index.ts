@@ -18,12 +18,13 @@ export const PostPedido = async (dados: any) => {
   const CnpjFornecedor = DaDos.fornecedorId.data.attributes.CNPJ
 
   const apiKey = CnpjFornecedor == 17757153000180 ? apiKeyMax : CnpjFornecedor == '04586593000170' ? apiKeyBragheto : apiKeyRenato
-  console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", apiKey)
-  console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", CnpjFornecedor)
+  // console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", apiKey)
+  // console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", CnpjFornecedor)
 
 
   const Produtos = Produto.map((i: any) => {
     const valorOriginal = Number(i.vFinal.replace(".", "").replace(",", "."));
+
     const acrec: number =
       i.mont && i.expo
         ? 1.2
@@ -34,9 +35,9 @@ export const PostPedido = async (dados: any) => {
         : 0;
     const somaAcrescimo: number =
       acrec === 0 ? 0 : valorOriginal * acrec - valorOriginal;
-    const valor: number = valorOriginal - i.desconto;
+    const valor: number = somaAcrescimo + valorOriginal;
+    const valorUnit = Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
 
-    const valorUnit = valor + somaAcrescimo;
 
     const setItens = `
     <item>
@@ -143,8 +144,9 @@ export const PostPedido = async (dados: any) => {
   : datasParcelas;
 
 
-  const desconto = DaDos.desconto === 'R$ 0,00'? '0.00' : parseFloat(DaDos.desconto.replace(".", "").replace(",", "."));
-  console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", DaDos.desconto)
+  const desconto = parseFloat(DaDos.desconto.replace("R$", "").replace(".", "").replace(",", "."));
+  // console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", DaDos.desconto)
+  // console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", desconto)
 
 
 
@@ -190,6 +192,7 @@ export const PostPedido = async (dados: any) => {
     const response = await requet.json();
 
     const { pedidos, erros } = response.retorno;
+    console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ erros:", erros)
 
     const txt =
       "Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)";
@@ -227,7 +230,7 @@ export const PostPedido = async (dados: any) => {
 
     return resposta;
   } catch (error: any) {
-    console.log("🚀 ~ file: index.ts:230 ~ PostPedido ~ error:", error.response.data)
+    console.log("🚀 ~ file: index.ts:230 ~ PostPedido ~ error:", error)
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
       status:  400,
