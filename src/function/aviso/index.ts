@@ -30,7 +30,7 @@ export const calcularDiferencaEmDias = (data1: Date, data2: Date): number => {
 
 export const encontrarObjetoMaisProximoComCor = (
   dados: any[]
-): { data: Date | null; cor: 'yellow' | 'red' | '#3B2DFF'| 'gray', info: string } => {
+): { data: Date | null; cor: 'yellow' | '#FC0707' | '#3B2DFF'| 'gray', info: string } => {
   const dataAtual = startOfDay(new Date()); // Zera o horário da data atual
   let objetoMaisProximo: any | null = null;
   let menorDiferencaEmDias = Number.MAX_SAFE_INTEGER;
