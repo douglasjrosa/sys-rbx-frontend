@@ -9,6 +9,7 @@ export const PostPedido = async (dados: any) => {
   const apiKeyRenato: any = process.env.ATORIZZATION_TOKEN_BLING_RENATO;
 
   const DaDos = await dados.attributes;
+  console.log("🚀 ~ file: index.ts:12 ~ PostPedido ~ DaDos:", DaDos)
 
   const empresa = DaDos.empresa.data.attributes;
   const empresaId = DaDos.empresa.data.id;
@@ -16,6 +17,7 @@ export const PostPedido = async (dados: any) => {
   const Produto = await DaDos.itens;
 
   const CnpjFornecedor = DaDos.fornecedorId.data.attributes.CNPJ
+  const numeroClinete = DaDos.cliente_pedido
 
   const apiKey = CnpjFornecedor == 17757153000180 ? apiKeyMax : CnpjFornecedor == '04586593000170' ? apiKeyBragheto : apiKeyRenato
   // console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", apiKey)
@@ -148,8 +150,6 @@ export const PostPedido = async (dados: any) => {
   // console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", DaDos.desconto)
   // console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", desconto)
 
-
-
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
      <cliente>
@@ -171,11 +171,11 @@ export const PostPedido = async (dados: any) => {
      <itens>${xmlprodutos}</itens>
      <parcelas>${xmlParcelas}</parcelas>
      <nf_produtor_rural_referenciada />
-     <vlr_frete>${!DaDos.valorFrete? 0.00 : parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
+     <vlr_frete>${DaDos.frete !== 'CIF'? '' : !DaDos.valorFrete? 0.00 : parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
      <vlr_desconto>${desconto}</vlr_desconto>
-     <obs>${DaDos.obs}</obs>
+     <obs>${DaDos.obs}${!numeroClinete? '' : `N° pedido cliente: ${numeroClinete}`}</obs>
   </pedido>`;
-  // console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
+  console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
 
   try {
     const formData = new FormData();
