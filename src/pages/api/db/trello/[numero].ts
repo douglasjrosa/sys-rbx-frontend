@@ -119,7 +119,7 @@ export default async function PostTrello(
         Tipo de frete: ${frete},
         Bling: Nº. ${Bpedido},
         Negocio Id: Nº. ${negocioId},
-        Pedido: Nº. ${pedidoCliente},
+        Pedido: Nº. ${pedidoCliente === null? '':pedidoCliente},
         Lote: Nº. ${nlote},
         Forma de pagamento: ${pgto},
         ${pgto === 'A Prazo' && (`Prazo de pagamento: ${Prazo}`)}

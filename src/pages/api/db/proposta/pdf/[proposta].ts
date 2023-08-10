@@ -579,7 +579,7 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: FretValo,
+                                  text: infos.frete === 'FOB'? '' : FretValo,
                                   style: "clienteFornecedor",
                                 },
                               ],
