@@ -134,11 +134,11 @@ function handleLoad(event:any){
                 <Table variant='simple'>
                   <Thead bg={'gray.600'}>
                     <Tr>
-                      <Th color={'white'} borderBottom={'none'} w={'20px'}>Empresa</Th>
-                      <Th color={'white'} borderBottom={'none'} w={'13rem'}>Etapa</Th>
-                      <Th color={'white'} borderBottom={'none'} w={'9rem'}>Status</Th>
-                      <Th color={'white'} borderBottom={'none'} w={'9rem'}>Valor</Th>
-                      <Th color={'white'} borderBottom={'none'} w={'9rem'}>Retornar em</Th>
+                      <Th color={'white'} textAlign={'center'} borderBottom={'none'} w={'20px'}>Empresa</Th>
+                      <Th color={'white'} textAlign={'center'} borderBottom={'none'} w={'5rem'}>Etapa</Th>
+                      <Th color={'white'} textAlign={'center'} borderBottom={'none'} w={'5rem'}>Status</Th>
+                      <Th color={'white'} textAlign={'center'} borderBottom={'none'} w={'5rem'}>Valor</Th>
+                      <Th color={'white'} textAlign={'center'} borderBottom={'none'} w={'5rem'}>Retornar em</Th>
                     </Tr>
                   </Thead>
                   <Tbody>

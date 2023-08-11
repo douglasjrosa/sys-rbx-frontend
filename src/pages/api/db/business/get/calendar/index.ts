@@ -8,10 +8,10 @@ export default async function GetEmpresa(
   if (req.method === "GET") {
     try {
       const token = process.env.ATORIZZATION_TOKEN;
-      const { DataIncicio, DataFim } = req.query;
+      const { DataIncicio, DataFim, Vendedor} = req.query;
 
       const conclucaoResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[date_conclucao][$between]=${DataIncicio}&filters[date_conclucao][$between]=${DataFim}&filters[status][$eq]=true&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[date_conclucao][$between]=${DataIncicio}&filters[date_conclucao][$between]=${DataFim}&filters[vendedor][username][$eq]=${Vendedor}&filters[status][$eq]=true&filters[andamento][$eq]=5&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -21,7 +21,7 @@ export default async function GetEmpresa(
       );
 
       const dataRetornoResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[DataRetorno][$between]=${DataIncicio}&filters[DataRetorno][$between]=${DataFim}&filters[status][$eq]=true&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[DataRetorno][$between]=${DataIncicio}&filters[DataRetorno][$between]=${DataFim}&filters[vendedor][username][$eq]=${Vendedor}&filters[status][$eq]=true&filters[andamento][$eq]=3&sort[0]=id%3Adesc&fields[0]=etapa&fields[1]=andamento&fields[2]=Budget&fields[3]=DataRetorno&populate[vendedor][fields][0]=username`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -31,7 +31,7 @@ export default async function GetEmpresa(
       );
 
       const deadlineResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[deadline][$between]=${DataIncicio}&filters[deadline][$between]=${DataFim}&filters[status][$eq]=true&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[date_conclucao][$between]=${DataIncicio}&filters[date_conclucao][$between]=${DataFim}&filters[status][$eq]=true&filters[vendedor][username][$eq]=${Vendedor}&filters[andamento][$eq]=1&sort[0]=id%3Adesc&fields[0]=etapa&fields[1]=andamento&fields[2]=Budget&fields[3]=DataRetorno&populate[vendedor][fields][0]=username`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -40,44 +40,43 @@ export default async function GetEmpresa(
         }
       );
 
-      const createdAtResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[createdAt][$between]=${DataIncicio}&filters[createdAt][$between]=${DataFim}&filters[status][$eq]=true&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const em_aberto_bruto = dataRetornoResponse.data.data;
+      const perdido_bruto = deadlineResponse.data.data;
+      const conclusao_bruto = conclucaoResponse.data.data;
+      const data = conclucaoResponse.data.data;
 
-      const data = [
-        ...conclucaoResponse.data.data,
-        ...dataRetornoResponse.data.data,
-        ...deadlineResponse.data.data,
-        ...createdAtResponse.data.data,
-      ];
+      const em_aberto_reduce = em_aberto_bruto.reduce((cc: number, d: any) =>{
+        const budget = parseFloat(d.attributes.Budget.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.'));
+        const soma = cc + (isNaN(budget) ? 0 : budget);
+        const valor = Math.round(parseFloat(soma.toFixed(2)) * 100) / 100;
+        return valor
+      }, 0);
+      const em_aberto = em_aberto_reduce.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-      // Remover IDs duplicados
-      const uniqueData = data.reduce((acc, obj) => {
-        if (!acc[obj.id]) {
-          acc[obj.id] = obj;
-        }
-        return acc;
-      }, {});
+      const conclusao_reduce = conclusao_bruto.reduce((cc: number, d: any) =>{
+        const budget = parseFloat(d.attributes.Budget.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.'));
+        const soma = cc + (isNaN(budget) ? 0 : budget);
+        const valor = Math.round(parseFloat(soma.toFixed(2)) * 100) / 100;
+        return valor
+      }, 0);
+      const conclusao = conclusao_reduce.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-      const sortedData = Object.values(uniqueData);
+      const perdido_reduce = perdido_bruto.reduce((cc: number, d: any) =>{
+        const budget = parseFloat(d.attributes.Budget.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.'));
+        const soma = cc + (isNaN(budget) ? 0 : budget);
+        const valor = Math.round(parseFloat(soma.toFixed(2)) * 100) / 100;
+        return valor
+      }, 0);
+      const perdido = perdido_reduce.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-      sortedData.sort((objetoA: any, objetoB: any) => {
-        if (objetoA.id < objetoB.id) {
-          return 1;
-        } else if (objetoA.id > objetoB.id) {
-          return -1;
-        } else {
-          return 0;
-        }
-      });
+      const DataRetono = {
+        em_aberto,
+        perdido,
+        conclusao,
+        data
+      }
 
-      res.status(200).json(sortedData);
+      res.status(200).json(DataRetono);
     } catch (error: any) {
       res
         .status(error.response?.status || 500)
