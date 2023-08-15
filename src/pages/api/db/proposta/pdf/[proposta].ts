@@ -172,7 +172,8 @@ export default async function GetEmpresa(
       },
     ];
 
-    const FretValo = Number(infos.Valfrete.replace('R$', '').replace('.', '').replace(',', '.')).toLocaleString("pt-br", {
+    console.log("🚀 ~ file: [proposta].ts:176 ~ FretValo ~ infos.Valfrete:", infos.Valfrete)
+    const FretValo =!infos.Valfrete? 'R$ 0,00' :  Number(infos.Valfrete.replace('.', '').replace(',', '.')).toLocaleString("pt-br", {
       style: "currency",
       currency: "BRL",
     })
