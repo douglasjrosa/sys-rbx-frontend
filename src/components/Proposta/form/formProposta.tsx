@@ -79,11 +79,14 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   useEffect(() => {
     if (props.ondata) {
       const resp = props.ondata
+      console.log("🚀 ~ file: formProposta.tsx:82 ~ useEffect ~ resp:", resp)
       const [PROPOSTA] = resp.attributes?.pedidos.data
       setId(PROPOSTA?.id);
-      setFrete(PROPOSTA?.attributes?.frete);
+      const verifiqueFrete = ENVIO === 'UPDATE'? PROPOSTA?.attributes?.frete : resp.attributes.empresa.data.attributes.frete
+      setFrete(verifiqueFrete);
       setDate(PROPOSTA?.attributes?.dataPedido);
-      setPrazo(PROPOSTA?.attributes?.condi);
+      const verifiquePrazo = ENVIO === 'UPDATE'? PROPOSTA?.attributes?.condi : resp.attributes.empresa.data.attributes.forpg
+      setPrazo(verifiquePrazo);
       setRelatEmpresa(resp.attributes?.empresa.data);
       SetNome(resp.attributes.empresa.data.attributes.nome)
       setRelatEmpresaId(resp.attributes?.empresa.data.id);

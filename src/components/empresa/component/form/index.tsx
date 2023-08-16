@@ -165,7 +165,7 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
       const userProps = response?.attributes?.user.data
       const vendedor = userProps?.attributes?.username
       if (vendedor) {
-        if(session?.user.pemission !== 'Adm' && session?.user.name !== vendedor){
+        if (session?.user.pemission !== 'Adm' && session?.user.name !== vendedor) {
           toast({
             render: () => (
               <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
@@ -488,7 +488,6 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
                       <SimpleGrid columns={9} spacing={3}>
                         <FormControl as={GridItem} colSpan={[5, 2]}>
                           <FormLabel
-                            htmlFor="rozao"
                             fontSize="xs"
                             fontWeight="md"
                           >
@@ -508,7 +507,6 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
                         </FormControl>
                         <FormControl as={GridItem} colSpan={[5, 2]}>
                           <FormLabel
-                            htmlFor="rozao"
                             fontSize="xs"
                             fontWeight="md"
                           >
@@ -528,7 +526,6 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
                         </FormControl>
                         <FormControl as={GridItem} colSpan={[5, 2]}>
                           <FormLabel
-                            htmlFor="rozao"
                             fontSize="xs"
                             fontWeight="md"
                           >
@@ -930,128 +927,132 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
                       py={3}
                       spacing={3}
                     >
-                      <SimpleGrid columns={12} spacing={3}>
-                        <Heading as={GridItem} colSpan={12} size="sd">
-                          Configurações da Empresa
-                        </Heading>
+                      {session?.user.pemission === 'Adm' && (
+                        <>
+                          <SimpleGrid columns={12} spacing={3}>
+                            <Heading as={GridItem} colSpan={12} size="sd">
+                              Configurações da Empresa
+                            </Heading>
 
-                        <FormControl as={GridItem} colSpan={[6, 3]}>
-                          <FormLabel
-                            fontSize="xs"
-                            fontWeight="md"
-                          >
-                            Tabela de cálculo
-                          </FormLabel>
-                          <Select
-                            focusBorderColor="#ffff"
-                            bg='#ffffff12'
-                            shadow="sm"
-                            size="xs"
-                            w="full"
-                            fontSize="xs"
-                            rounded="md"
-                            onChange={(e) => setTablecalc(e.target.value)}
-                            value={tablecalc}
-                          >
-                            <option style={{ backgroundColor: "#1A202C" }} value="">Selecione uma opção</option>
-                            <option style={{ backgroundColor: "#1A202C" }} selected value="0.30">Balcão</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="0.26" selected>
-                              Vip
-                            </option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="0.23">Bronze</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="0.20">Prata</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="0.17">Ouro</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="0.14">Platinum</option>
-                          </Select>
-                        </FormControl>
+                            <FormControl as={GridItem} colSpan={[6, 3]}>
+                              <FormLabel
+                                fontSize="xs"
+                                fontWeight="md"
+                              >
+                                Tabela de cálculo
+                              </FormLabel>
+                              <Select
+                                focusBorderColor="#ffff"
+                                bg='#ffffff12'
+                                shadow="sm"
+                                size="xs"
+                                w="full"
+                                fontSize="xs"
+                                rounded="md"
+                                onChange={(e) => setTablecalc(e.target.value)}
+                                value={tablecalc}
+                              >
+                                <option style={{ backgroundColor: "#1A202C" }} value="">Selecione uma opção</option>
+                                <option style={{ backgroundColor: "#1A202C" }} selected value="0.30">Balcão</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="0.26" selected>
+                                  Vip
+                                </option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="0.23">Bronze</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="0.20">Prata</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="0.17">Ouro</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="0.14">Platinum</option>
+                              </Select>
+                            </FormControl>
 
-                        <FormControl hidden={session?.user.pemission === 'Adm' ? false : true} as={GridItem} colSpan={[6, 3]}>
-                          <FormLabel
-                            htmlFor="prazo pagamento"
-                            fontSize="xs"
-                            fontWeight="md"
-                          >
-                            Máximo prazo p/ pagamento:
-                          </FormLabel>
-                          <Select
-                            focusBorderColor="#ffff"
-                            bg='#ffffff12'
-                            shadow="sm"
-                            size="xs"
-                            w="full"
-                            fontSize="xs"
-                            rounded="md"
-                            onChange={(e) => setMaxpg(e.target.value)}
-                            value={maxPg}
-                          >
-                            <option style={{ backgroundColor: "#1A202C" }}>Selecione uma tabela</option>
-                            <option style={{ backgroundColor: "#1A202C" }} selected value="0">À vista (antecipado)</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="5">5 dias</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="15">15 dias</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="28">28 Dias</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="35">28 e 35 dias</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="42">28, 35 e 42 dias</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="90">
-                              90 dias (Casos muito excepcionais)
-                            </option>
-                          </Select>
-                        </FormControl>
+                            <FormControl hidden={session?.user.pemission === 'Adm' ? false : true} as={GridItem} colSpan={[6, 3]}>
+                              <FormLabel
+                                htmlFor="prazo pagamento"
+                                fontSize="xs"
+                                fontWeight="md"
+                              >
+                                Máximo prazo p/ pagamento:
+                              </FormLabel>
+                              <Select
+                                focusBorderColor="#ffff"
+                                bg='#ffffff12'
+                                shadow="sm"
+                                size="xs"
+                                w="full"
+                                fontSize="xs"
+                                rounded="md"
+                                onChange={(e) => setMaxpg(e.target.value)}
+                                value={maxPg}
+                              >
+                                <option style={{ backgroundColor: "#1A202C" }}>Selecione uma tabela</option>
+                                <option style={{ backgroundColor: "#1A202C" }} selected value="0">À vista (antecipado)</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="5">5 dias</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="15">15 dias</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="28">28 Dias</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="35">28 e 35 dias</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="42">28, 35 e 42 dias</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="90">
+                                  90 dias (Casos muito excepcionais)
+                                </option>
+                              </Select>
+                            </FormControl>
 
-                        <FormControl as={GridItem} colSpan={[6, 3]}>
-                          <FormLabel
-                            htmlFor="pagamento"
-                            fontSize="xs"
-                            fontWeight="md"
-                          >
-                            Preferência de pagamento:
-                          </FormLabel>
-                          <Select
+                            <FormControl as={GridItem} colSpan={[6, 3]}>
+                              <FormLabel
+                                htmlFor="pagamento"
+                                fontSize="xs"
+                                fontWeight="md"
+                              >
+                                Preferência de pagamento:
+                              </FormLabel>
+                              <Select
 
-                            focusBorderColor="#ffff"
-                            bg='#ffffff12'
-                            shadow="sm"
-                            size="xs"
-                            w="full"
-                            fontSize="xs"
-                            rounded="md"
-                            onChange={(e) => setForpg(e.target.value)}
-                            value={forpg}
-                          >
-                            <option style={{ backgroundColor: "#1A202C" }} >Escolha uma opção</option>
-                            <option style={{ backgroundColor: "#1A202C" }} selected value="desconto">Desconto À VISTA</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="prazo">
-                              Maior prazo para pagamento
-                            </option>
-                          </Select>
-                        </FormControl>
+                                focusBorderColor="#ffff"
+                                bg='#ffffff12'
+                                shadow="sm"
+                                size="xs"
+                                w="full"
+                                fontSize="xs"
+                                rounded="md"
+                                onChange={(e) => setForpg(e.target.value)}
+                                value={forpg}
+                              >
+                                <option style={{ backgroundColor: "#1A202C" }} >Escolha uma opção</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="Máximo prazo de pagamento">Máximo prazo de pagamento</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="Antecipado">Antecipado</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="À vista">À vista</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="A Prazo">A prazo</option>
+                              </Select>
+                            </FormControl>
 
-                        <FormControl as={GridItem} colSpan={[6, 3]}>
-                          <FormLabel
-                            htmlFor="frete"
-                            fontSize="xs"
-                            fontWeight="md"
+                            <FormControl as={GridItem} colSpan={[6, 3]}>
+                              <FormLabel
+                                htmlFor="frete"
+                                fontSize="xs"
+                                fontWeight="md"
 
-                          >
-                            Frete
-                          </FormLabel>
-                          <Select
+                              >
+                                Frete
+                              </FormLabel>
+                              <Select
 
-                            focusBorderColor="#ffff"
-                            bg='#ffffff12'
-                            shadow="sm"
-                            size="xs"
-                            w="full"
-                            fontSize="xs"
-                            rounded="md"
-                            onChange={(e) => setFrete(e.target.value)}
-                            value={frete}
-                          >
-                            <option style={{ backgroundColor: "#1A202C" }}>Escolha uma opção</option>
-                            <option style={{ backgroundColor: "#1A202C" }} selected value="FOB">FOB - Por conta do cliente</option>
-                            <option style={{ backgroundColor: "#1A202C" }} value="CIF">CIF - Por conta da Ribermax</option>
-                          </Select>
-                        </FormControl>
-                      </SimpleGrid>
+                                focusBorderColor="#ffff"
+                                bg='#ffffff12'
+                                shadow="sm"
+                                size="xs"
+                                w="full"
+                                fontSize="xs"
+                                rounded="md"
+                                onChange={(e) => setFrete(e.target.value)}
+                                value={frete}
+                              >
+                                <option style={{ backgroundColor: "#1A202C" }}>Escolha uma opção</option>
+                                <option style={{ backgroundColor: "#1A202C" }} selected value="FOB">FOB - Por conta do cliente</option>
+                                <option style={{ backgroundColor: "#1A202C" }} value="CIF">CIF - Por conta da Ribermax</option>
+                              </Select>
+                            </FormControl>
+                          </SimpleGrid>
+                        </>
+                      )}
 
                       <SimpleGrid columns={12} spacing={3} mb={5}>
                         <Heading as={GridItem} colSpan={12} size="sd">
