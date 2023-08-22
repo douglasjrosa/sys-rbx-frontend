@@ -172,6 +172,11 @@ export default async function GetEmpresa(
       },
     ];
 
+    const FretValo =!infos.Valfrete? 'R$ 0,00' :  Number(infos.Valfrete.replace('.', '').replace(',', '.')).toLocaleString("pt-br", {
+      style: "currency",
+      currency: "BRL",
+    })
+
     const descontoNumber = Number(infos.Desconto.replace('R$', '').replace('.', '').replace(',', '.'))
     const desconto = descontoNumber === 0 ? semDesc : comDesc;
 
@@ -574,7 +579,7 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: infos.Valfrete,
+                                  text: infos.frete === 'FOB'? '' : FretValo,
                                   style: "clienteFornecedor",
                                 },
                               ],

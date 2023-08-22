@@ -79,11 +79,14 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   useEffect(() => {
     if (props.ondata) {
       const resp = props.ondata
+      console.log("🚀 ~ file: formProposta.tsx:82 ~ useEffect ~ resp:", resp)
       const [PROPOSTA] = resp.attributes?.pedidos.data
       setId(PROPOSTA?.id);
-      setFrete(PROPOSTA?.attributes?.frete);
+      const verifiqueFrete = ENVIO === 'UPDATE'? PROPOSTA?.attributes?.frete : resp.attributes.empresa.data.attributes.frete
+      setFrete(verifiqueFrete);
       setDate(PROPOSTA?.attributes?.dataPedido);
-      setPrazo(PROPOSTA?.attributes?.condi);
+      const verifiquePrazo = ENVIO === 'UPDATE'? PROPOSTA?.attributes?.condi : resp.attributes.empresa.data.attributes.forpg
+      setPrazo(verifiquePrazo);
       setRelatEmpresa(resp.attributes?.empresa.data);
       SetNome(resp.attributes.empresa.data.attributes.nome)
       setRelatEmpresaId(resp.attributes?.empresa.data.id);
@@ -156,7 +159,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     const ValorDesconto = DescontoGeral()
     const freteValor = SetValueNumero(freteCif)
     const somaDecont = ValorDesconto + parseFloat(DescontoAdd)
-    const Soma = (freteValor + valorTotal) - somaDecont
+    const Soma =  valorTotal - somaDecont
 
     setTotalGeral(Math.round(Soma * 100) / 100);
     setDesconto(somaDecont);
@@ -295,8 +298,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
             };
             const msg2 = {
               date: DateAtua,
-              msg: `Proposta criada com o valor total ${dadosPost.totalGeral} contendo ${parseInt(dadosPost.itens.length) + 1
-                } items`,
+              msg: `Proposta criada com o valor total ${dadosPost.totalGeral} contendo ${dadosPost.itens.length} items`,
               user: "Sistema",
             };
 
@@ -353,8 +355,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
 
             const msg2 = {
               date: DateAtua,
-              msg: `Proposta atualizada, valor total agora é ${dadosPost.totalGeral}, passando a ter ${parseInt(dadosPost.itens.length) + 1
-                } items`,
+              msg: `Proposta atualizada, valor total agora é ${dadosPost.totalGeral}, passando a ter ${dadosPost.itens.length} items`,
               user: "Sistema",
             };
 
@@ -755,7 +756,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               style: "currency",
               currency: "BRL",
             })}</chakra.p>
-            <chakra.p>Valor Total: {totalGeral.toLocaleString("pt-br", {
+            <chakra.p>Valor Total: {(SetValueNumero(freteCif) + totalGeral).toLocaleString("pt-br", {
               style: "currency",
               currency: "BRL",
             })}</chakra.p>

@@ -62,7 +62,6 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
           },
         })
           .then((Response) => {
-            console.log("🚀 ~ file: index.ts:66 ~ .then ~ Response.data:", Response.data)
             res.status(200).json(Response.data);
           })
           .catch((err) => {
@@ -96,11 +95,13 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
 
 
     } catch (err: any) {
-      res.status(400).json({
-        error: err.response.data,
-        mensage: err.response.data.error,
-        detalhe: err.response.data.error.details,
-      });
+      console.log("🚀 ~ file: index.ts:99 ~ getId ~ err:", err)
+      // res.status(400).json({
+      //   error: err.response?.data,
+      //   mensage: err.response?.data.error,
+      //   detalhe: err.response?.data.error.details,
+      // });
+      res.status(400).json(err);
     }
   } else {
     return res.status(405).send({ message: "Only GET requests are allowed" });

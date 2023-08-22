@@ -9,6 +9,7 @@ export const PostPedido = async (dados: any) => {
   const apiKeyRenato: any = process.env.ATORIZZATION_TOKEN_BLING_RENATO;
 
   const DaDos = await dados.attributes;
+  console.log("🚀 ~ file: index.ts:12 ~ PostPedido ~ DaDos:", DaDos)
 
   const empresa = DaDos.empresa.data.attributes;
   const empresaId = DaDos.empresa.data.id;
@@ -16,14 +17,16 @@ export const PostPedido = async (dados: any) => {
   const Produto = await DaDos.itens;
 
   const CnpjFornecedor = DaDos.fornecedorId.data.attributes.CNPJ
+  const numeroClinete = DaDos.cliente_pedido
 
   const apiKey = CnpjFornecedor == 17757153000180 ? apiKeyMax : CnpjFornecedor == '04586593000170' ? apiKeyBragheto : apiKeyRenato
-  console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", apiKey)
-  console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", CnpjFornecedor)
+  // console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", apiKey)
+  // console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", CnpjFornecedor)
 
 
   const Produtos = Produto.map((i: any) => {
     const valorOriginal = Number(i.vFinal.replace(".", "").replace(",", "."));
+
     const acrec: number =
       i.mont && i.expo
         ? 1.2
@@ -34,9 +37,9 @@ export const PostPedido = async (dados: any) => {
         : 0;
     const somaAcrescimo: number =
       acrec === 0 ? 0 : valorOriginal * acrec - valorOriginal;
-    const valor: number = valorOriginal - i.desconto;
+    const valor: number = somaAcrescimo + valorOriginal;
+    const valorUnit = Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
 
-    const valorUnit = valor + somaAcrescimo;
 
     const setItens = `
     <item>
@@ -143,10 +146,9 @@ export const PostPedido = async (dados: any) => {
   : datasParcelas;
 
 
-  const desconto = DaDos.desconto === 'R$ 0,00'? '0.00' : parseFloat(DaDos.desconto.replace(".", "").replace(",", "."));
-  console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", DaDos.desconto)
-
-
+  const desconto = parseFloat(DaDos.desconto.replace("R$", "").replace(".", "").replace(",", "."));
+  // console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", DaDos.desconto)
+  // console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", desconto)
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
@@ -169,11 +171,11 @@ export const PostPedido = async (dados: any) => {
      <itens>${xmlprodutos}</itens>
      <parcelas>${xmlParcelas}</parcelas>
      <nf_produtor_rural_referenciada />
-     <vlr_frete>${!DaDos.valorFrete? 0.00 : parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
+     <vlr_frete>${DaDos.frete !== 'CIF'? '' : !DaDos.valorFrete? 0.00 : parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
      <vlr_desconto>${desconto}</vlr_desconto>
-     <obs>${DaDos.obs}</obs>
+     <obs>${DaDos.obs}${!numeroClinete? '' : `N° pedido cliente: ${numeroClinete}`}</obs>
   </pedido>`;
-  // console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
+  console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
 
   try {
     const formData = new FormData();
@@ -190,6 +192,7 @@ export const PostPedido = async (dados: any) => {
     const response = await requet.json();
 
     const { pedidos, erros } = response.retorno;
+    console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ erros:", erros)
 
     const txt =
       "Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)";
@@ -227,7 +230,7 @@ export const PostPedido = async (dados: any) => {
 
     return resposta;
   } catch (error: any) {
-    // console.log("🚀 ~ file: index.ts:221 ~ PostPedido ~ error:", error)
+    console.log("🚀 ~ file: index.ts:230 ~ PostPedido ~ error:", error)
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
       status:  400,

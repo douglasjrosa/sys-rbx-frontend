@@ -166,7 +166,6 @@ export default function Infos() {
             <Box><BtmRetorno Url="/empresas" /></Box>
             <Heading>{Nome}</Heading>
           </Flex>
-          {session?.user.pemission === 'Adm' && (
             <IconButton
               color={'white'}
               onClick={() => router.push(`/empresas/atualizar/${ID}`)}
@@ -174,7 +173,6 @@ export default function Infos() {
               aria-label='Editar Empresa'
               icon={<FiEdit3 size={'27px'} />}
             />
-          )}
         </Flex>
 
         {/* colunas */}
