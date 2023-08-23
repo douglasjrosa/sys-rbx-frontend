@@ -2,6 +2,7 @@ import { capitalizeWords } from '@/function/captalize';
 import { Box, Button, Flex, FormControl, FormLabel, GridItem, Heading, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, SimpleGrid, Textarea, useDisclosure } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { PessoasData } from './pessoasdata';
+import { useSession } from 'next-auth/react';
 
 interface pessoalResp {
   id: number;
@@ -25,14 +26,21 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
   const [Obs, setObs] = useState('');
   const [Id, setId] = useState<number>();
   const [UPdate, setUPdate] = useState(false);
+  const { data: session } = useSession();
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
     if (props.Resp) {
-      setDados(props.Resp)
+      const dadosEntrada: any = props.Resp
+      const SemVendedor = dadosEntrada.filter((i: any) => i.Vendedor === '' || !i.Vendedor);
+      const setVendedor = dadosEntrada.filter((i: any) => i.Vendedor === session?.user?.name);
+      const setAdm = dadosEntrada.filter((i: any) => i.Vendedor === 'Adm');
+      const DataArray = [...SemVendedor, ...setVendedor, ...setAdm]
+
+      setDados(DataArray)
     }
-  }, [props.Resp])
+  }, [props.Resp, session?.user?.name])
 
 
   const reset = () => {
@@ -43,6 +51,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
     setDepartamento('');
     setCargo('');
     setObs('');
+
   }
 
   const SaveAdd = () => {
@@ -55,7 +64,8 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
         whatsapp: WhatApp,
         departamento: Departamento,
         Cargo: Cargo,
-        obs: Obs
+        obs: Obs,
+        Vendedor: session?.user?.pemission === "Adm" ? 'Adm' : session?.user?.name
       }
       const valor = [Data];
       setDados(valor);
@@ -71,7 +81,8 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
         whatsapp: WhatApp,
         departamento: Departamento,
         Cargo: Cargo,
-        obs: Obs
+        obs: Obs,
+        Vendedor: session?.user?.pemission === "Adm" ? 'Adm' : session?.user?.name
       }
       const valor = [...dados, Data];
       setDados(valor);
@@ -141,7 +152,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
           + Nova Pessoa
         </Button>
 
-        {dados.map((i: any) => <PessoasData key={i.id}  data={i} respData={Remover} respAtualizar={Atualizar} />)}
+        {dados.map((i: any) => <PessoasData key={i.id} data={i} respData={Remover} respAtualizar={Atualizar} />)}
 
       </Flex>
       <Modal isOpen={isOpen} onClose={onClose}>

@@ -33,6 +33,7 @@ import { SetStateAction, useEffect, useState } from "react";
 import { BsArrowLeftCircleFill, BsTrash } from "react-icons/bs";
 import { DateIso } from "../../../components/data/Date";
 import { ListFornecedor } from "../../../components/data/fornecedor";
+import { SetFormaPg } from "@/components/elements/SetFormaPg";
 
 const tempo = DateIso;
 
@@ -50,6 +51,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [date, setDate] = useState(tempo);
   const [DateEntrega, setDateEntrega] = useState("");
   const [cnpj, setCnpj] = useState("");
+  const [EmpresaId, setEmpresaId] = useState("");
   const [frete, setFrete] = useState("");
   const [freteCif, setFreteCif] = useState<any>('0.00');
   const [Loja, setLoja] = useState("");
@@ -65,6 +67,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [Id, setId] = useState("");
   const [clientePedido, setClientePedido] = useState("");
   const [RegistroForgpg, setRegistroForgpg] = useState("");
+  console.log("🚀 ~ file: formProposta.tsx:70 ~ FormProposta ~ RegistroForgpg:", RegistroForgpg)
   const [RegistroFrete, setRegistroFrete] = useState("");
   const [ENVIO, setEMVIO] = useState("");
   const [incidentRecord, setIncidentRecord] = useState([]);
@@ -472,6 +475,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     }
   }
 
+  function setPrazoRetorno(prazo: SetStateAction<string>) {
+    setPrazo(prazo);
+  }
 
 
   return (
@@ -556,28 +562,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               </Select>
             </Box>
             <Box>
-              <FormLabel
-                fontSize="xs"
-                fontWeight="md"
-              >
-                Condição de pagamento
-              </FormLabel>
-              <Select
-                shadow="sm"
-                 size="xs"
-                w="36"
-                fontSize="xs"
-                rounded="md"
-                onChange={(e) => setPrazo(e.target.value)}
-                value={prazo}
-                isDisabled={RegistroForgpg && session?.user.pemission !== 'Adm'? true : false}
-              >
-                <option style={{ backgroundColor: "#1A202C" }} >Tipos de pagamentos</option>
-                <option style={{ backgroundColor: "#1A202C" }} value="Máximo prazo de pagamento">Máximo prazo de pagamento</option>
-                <option style={{ backgroundColor: "#1A202C" }} value="Antecipado">Antecipado</option>
-                <option style={{ backgroundColor: "#1A202C" }} value="À vista">À vista</option>
-                <option style={{ backgroundColor: "#1A202C" }} value="A Prazo">A prazo</option>
-              </Select>
+              <SetFormaPg id={RelatEnpresaId} retorno={prazo} envio={setPrazoRetorno} Disable={RegistroForgpg && session?.user.pemission !== 'Adm'? true : false} />
             </Box>
             <Box hidden={prazo === "A Prazo" ? false : true}>
               <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} oncnpj={cnpj} />

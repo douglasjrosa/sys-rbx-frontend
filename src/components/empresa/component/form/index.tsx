@@ -25,6 +25,8 @@ import { CompPessoa } from "@/components/elements/lista/pessoas";
 import { modCaix } from "@/components/data/modCaix";
 import { GetCnpj } from "@/function/getcnpj";
 import Loading from "@/components/elements/loading";
+import { PrazoPg } from "@/components/elements/PrazoPg";
+import { FormaPg } from "@/components/elements/FomaPg";
 
 export const FormEmpresa = (props: { data?: any, envio: string }) => {
   const { data: session } = useSession();
@@ -83,7 +85,7 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
   const [Responsavel, setResponsavel] = useState<any>([]);
   const [ENVIO, setENVIO] = useState("");
   const [Inatividade, setInatividade] = useState<number>(60);
-  const [ID, setID] = useState<string | null>(null);
+  const [ID, setID] = useState<string>('');
   const [Autorize, setAutorize] = useState(false)
   const [Block, setBlock] = useState(false)
   const [load, setload] = useState(false)
@@ -100,7 +102,8 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
       setload(true)
       const empresa = props.data
       setResponsavel(empresa.attributes?.representantes);
-      setID(empresa.id);
+      const IdEmpresa = empresa.id.toString()
+      setID(IdEmpresa);
       setCNPJ(empresa.attributes?.CNPJ);
       setAutorize(props.data ? true : false)
       const cnpj = empresa.attributes?.CNPJ
@@ -376,6 +379,14 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
         <Loading size="200px">Carregando...</Loading>
       </Box>
     );
+  }
+
+  const RetornoMaxpg = (maxpg: React.SetStateAction<string>) => {
+    setMaxpg(maxpg)
+  }
+
+  const RetornoFormapg = (Formapg: React.SetStateAction<string>) => {
+    setForpg(Formapg)
   }
 
   return (
@@ -964,64 +975,12 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
                               </Select>
                             </FormControl>
 
-                            <FormControl hidden={session?.user.pemission === 'Adm' ? false : true} as={GridItem} colSpan={[6, 3]}>
-                              <FormLabel
-                                htmlFor="prazo pagamento"
-                                fontSize="xs"
-                                fontWeight="md"
-                              >
-                                Máximo prazo p/ pagamento:
-                              </FormLabel>
-                              <Select
-                                focusBorderColor="#ffff"
-                                bg='#ffffff12'
-                                shadow="sm"
-                                size="xs"
-                                w="full"
-                                fontSize="xs"
-                                rounded="md"
-                                onChange={(e) => setMaxpg(e.target.value)}
-                                value={maxPg}
-                              >
-                                <option style={{ backgroundColor: "#1A202C" }}>Selecione uma tabela</option>
-                                <option style={{ backgroundColor: "#1A202C" }} selected value="0">À vista (antecipado)</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="5">5 dias</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="15">15 dias</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="28">28 Dias</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="35">28 e 35 dias</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="42">28, 35 e 42 dias</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="90">
-                                  90 dias (Casos muito excepcionais)
-                                </option>
-                              </Select>
+                            <FormControl hidden={session?.user.pemission === 'Adm' ? false : true} as={GridItem} colSpan={[6,5]}>
+                            <PrazoPg id={ID} retorno={maxPg} envio={RetornoMaxpg}/>
                             </FormControl>
 
-                            <FormControl as={GridItem} colSpan={[6, 3]}>
-                              <FormLabel
-                                htmlFor="pagamento"
-                                fontSize="xs"
-                                fontWeight="md"
-                              >
-                                Preferência de pagamento:
-                              </FormLabel>
-                              <Select
-
-                                focusBorderColor="#ffff"
-                                bg='#ffffff12'
-                                shadow="sm"
-                                size="xs"
-                                w="full"
-                                fontSize="xs"
-                                rounded="md"
-                                onChange={(e) => setForpg(e.target.value)}
-                                value={forpg}
-                              >
-                                <option style={{ backgroundColor: "#1A202C" }} >Escolha uma opção</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="Máximo prazo de pagamento">Máximo prazo de pagamento</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="Antecipado">Antecipado</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="À vista">À vista</option>
-                                <option style={{ backgroundColor: "#1A202C" }} value="A Prazo">A prazo</option>
-                              </Select>
+                            <FormControl as={GridItem} colSpan={[6]}>
+                            <FormaPg id={ID} retorno={forpg} envio={RetornoFormapg}/>
                             </FormControl>
 
                             <FormControl as={GridItem} colSpan={[6, 3]}>
