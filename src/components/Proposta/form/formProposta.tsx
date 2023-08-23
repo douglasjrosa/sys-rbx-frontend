@@ -64,6 +64,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [obs, setObs] = useState("");
   const [Id, setId] = useState("");
   const [clientePedido, setClientePedido] = useState("");
+  const [RegistroForgpg, setRegistroForgpg] = useState("");
+  const [RegistroFrete, setRegistroFrete] = useState("");
   const [ENVIO, setEMVIO] = useState("");
   const [incidentRecord, setIncidentRecord] = useState([]);
   const toast = useToast();
@@ -83,9 +85,11 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       const [PROPOSTA] = resp.attributes?.pedidos.data
       setId(PROPOSTA?.id);
       const verifiqueFrete = ENVIO === 'UPDATE'? PROPOSTA?.attributes?.frete : resp.attributes.empresa.data.attributes.frete
+      setRegistroFrete(resp.attributes.empresa.data.attributes.frete)
       setFrete(verifiqueFrete);
       setDate(PROPOSTA?.attributes?.dataPedido);
       const verifiquePrazo = ENVIO === 'UPDATE'? PROPOSTA?.attributes?.condi : resp.attributes.empresa.data.attributes.forpg
+      setRegistroForgpg(resp.attributes.empresa.data.attributes.forpg)
       setPrazo(verifiquePrazo);
       setRelatEmpresa(resp.attributes?.empresa.data);
       SetNome(resp.attributes.empresa.data.attributes.nome)
@@ -437,7 +441,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     setLoadingTable(load);
   }
 
-  function getItemFinal(itemFinal: SetStateAction<any>) {
+  function getItemFinal(itemFinal: SetStateAction<any>): void {
     const filterItens = ListItens.filter((i: any) => i.id !== itemFinal);
     setItens(filterItens);
   }
@@ -566,6 +570,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                 rounded="md"
                 onChange={(e) => setPrazo(e.target.value)}
                 value={prazo}
+                isDisabled={RegistroForgpg && session?.user.pemission !== 'Adm'? true : false}
               >
                 <option style={{ backgroundColor: "#1A202C" }} >Tipos de pagamentos</option>
                 <option style={{ backgroundColor: "#1A202C" }} value="Máximo prazo de pagamento">Máximo prazo de pagamento</option>
@@ -592,6 +597,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                 rounded="md"
                 onChange={(e) => setFrete(e.target.value)}
                 value={frete}
+                isDisabled={RegistroFrete? true : false}
               >
                 <option style={{ backgroundColor: "#1A202C" }}>Selecione um tipo de Frete</option>
                 <option style={{ backgroundColor: "#1A202C" }} value="CIF">CIF</option>

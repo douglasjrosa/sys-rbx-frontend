@@ -23,6 +23,7 @@ export default function CreateNegocio() {
   const [Status, setStatus] = useState("");
   const [Deadline, setDeadline] = useState("");
   const [DataRetorno, setDataRetorno] = useState("");
+  const [Nome, setNome] = useState("");
   const [Historia, setHistoria] = useState([]);
   const [ChatHistory, setChatHistory] = useState([]);
   const [Etapa, setEtapa] = useState<any | null>();
@@ -62,6 +63,7 @@ export default function CreateNegocio() {
           setChatHistory(res.data.attributes.incidentRecord);
           setEtapa(res.data.attributes.etapa);
           setMperca(res.data.attributes.Mperca);
+          setNome(res.data.attributes.empresa.data.attributes.nome);
           // fim do loading
           setLoadingGeral(false);
         })
@@ -172,6 +174,7 @@ export default function CreateNegocio() {
           setChatHistory(res.data.attributes.incidentRecord);
           setEtapa(res.data.attributes.etapa);
           setMperca(res.data.attributes.Mperca);
+          setNome(res.data.attributes.name);
           // fim do loading
           setLoadingGeral(false);
         })
@@ -206,6 +209,7 @@ export default function CreateNegocio() {
       <Flex w="100%" h="100vh" flexDirection={'column'} justifyContent={'space-between'} >
         <Box bg={'gray.800'} w="full" p={5} color={'white'}>
           <NegocioHeader
+            title={Nome}
             nBusiness={nBusiness}
             Approach={Approach}
             Budget={Budget}

@@ -176,7 +176,7 @@ export const BtCreate = (props: { user: any; onLoading: any }) => {
           </PopoverHeader>
           <PopoverArrow bg="blue.800" />
           <PopoverBody>
-            Preencha com as informações abaixo
+            Preencha com as informações abaixo2
             <Select
               mt={2}
               onChange={(e) => setEmpresa(e.target.value)}
@@ -195,35 +195,6 @@ export const BtCreate = (props: { user: any; onLoading: any }) => {
                 );
               })}
             </Select>
-            <Select
-              mt={2}
-              onChange={(e) => setEtapa(e.target.value)}
-              value={Etapa}
-            >
-              <option style={{ backgroundColor: "#2A4365" }} value="">Selecione a etapa do negócio</option>
-              {EtapasNegocio.map((item: any) => {
-                if (item.id === '6') {
-                  return ''
-                }
-                return (
-                  <option
-                    style={{ backgroundColor: "#2A4365" }}
-                    key={item.id}
-                    value={item.id}
-                  >
-                    {item.title}
-                  </option>
-                );
-              })}
-            </Select>
-            <InputGroup mt={2}>
-              <Input
-                type="text"
-                placeholder="Orçamento estimado"
-                value={budgets}
-                onChange={getValue}
-              />
-            </InputGroup>
           </PopoverBody>
           <PopoverFooter
             display="flex"
@@ -231,7 +202,6 @@ export const BtCreate = (props: { user: any; onLoading: any }) => {
             justifyContent="space-between"
             pb={4}
           >
-            <Box fontSize="sm"></Box>
             <ButtonGroup size="sm">
               <Button colorScheme="blue" onClick={onClose}>
                 Cancelar

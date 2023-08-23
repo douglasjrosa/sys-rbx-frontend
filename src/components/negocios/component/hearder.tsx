@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   FormLabel,
+  Heading,
   Input,
   Modal,
   ModalBody,
@@ -32,6 +33,7 @@ export const NegocioHeader = (props: {
   nBusiness: string;
   Approach: string;
   Budget: string;
+  title: string;
   Status: any;
   Deadline: string;
   historia?: any;
@@ -241,8 +243,6 @@ export const NegocioHeader = (props: {
       const nPedido = pedidos?.attributes.nPedido
       const EmpresaId = Data.attributes.empresa.data.id
       const valor = pedidos?.attributes.totalGeral
-      const vendedor = session?.user.name
-      const vendedorId = session?.user.id
       const IdNegocio = Data.id
 
       await axios({
@@ -353,24 +353,9 @@ export const NegocioHeader = (props: {
           <Flex alignItems={"center"}>
             <BtmRetorno Url="/negocios" />
           </Flex>
-          <Box>
-            <FormLabel
-              fontSize="xs"
-              fontWeight="md"
-            >
-              N° Negócio
-            </FormLabel>
-            <Input
-              type="text"
-              readOnly
-              shadow="sm"
-              size="sm"
-              rounded="md"
-              maxLength={15}
-              onChange={(e) => setBusines(e.target.value)}
-              value={props.nBusiness}
-            />
-          </Box>
+          <Flex alignItems={"center"}>
+            <Heading size={"xs"}>{props.title}</Heading>
+          </Flex>
           {Bpedido && Etapa === 6 ? null : (
             <>
               <Box>
