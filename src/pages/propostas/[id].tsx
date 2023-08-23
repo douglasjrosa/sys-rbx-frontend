@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { CardList } from "../../components/Proposta/listaItens";
 import { BsArrowLeftCircleFill } from "react-icons/bs";
 import { useState } from "react";
-import Loading from "@/components/elements/loading";
 
 export default function ListaProposta() {
   const router = useRouter();

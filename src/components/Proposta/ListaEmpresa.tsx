@@ -1,4 +1,4 @@
-import { Box, FormLabel, Input, Text } from '@chakra-ui/react';
+import { Box, FormLabel, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
 export const ListaEmpresa = (props: { onChangeValue: string }) => {

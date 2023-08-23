@@ -2,7 +2,6 @@ import { CarteiraAusente } from "@/components/empresa/component/empresas_ausente
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
 import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
 import { Box, Button, Flex, Heading, chakra, useToast } from "@chakra-ui/react";
-import { AnyCnameRecord } from "dns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";

@@ -4,10 +4,8 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Heading,
   Image,
   Input,
-  Link,
   Stack,
   useToast,
 } from '@chakra-ui/react';

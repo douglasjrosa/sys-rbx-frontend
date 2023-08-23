@@ -3,7 +3,6 @@ import { Box, Flex, Heading } from "@chakra-ui/react"
 import { useEffect, useState } from "react";
 import { FaMoneyBillAlt } from "react-icons/fa";
 import { useRouter } from "next/router";
-import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { HiChatBubbleLeftRight } from "react-icons/hi2";
 import { useSession } from "next-auth/react";
 import { parseISO, startOfDay } from "date-fns";

@@ -1,4 +1,4 @@
-import { cleanString, formatDocument, identifyDocumentType } from "@/function/hookDocument"
+import { cleanString, formatDocument } from "@/function/hookDocument"
 import { Button, Flex, FormLabel, Input } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 

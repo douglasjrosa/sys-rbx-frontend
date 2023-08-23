@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   FormLabel,
-  position,
   Select,
   useToast,
 } from '@chakra-ui/react';

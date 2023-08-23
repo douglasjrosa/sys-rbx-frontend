@@ -1,5 +1,5 @@
 // utils.ts
-import { parseISO, startOfDay, differenceInDays } from 'date-fns';
+import { parseISO, startOfDay } from 'date-fns';
 
 // Definimos o tipo para o objeto do array de dados
 type ObjetoDados = {

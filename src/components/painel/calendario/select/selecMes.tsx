@@ -1,8 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { FormLabel, Select } from '@chakra-ui/react';
-import axios from 'axios';
-import { useSession } from 'next-auth/react';
-import { memo, useEffect, useState } from 'react';
+import { useState } from 'react';
 
 
 

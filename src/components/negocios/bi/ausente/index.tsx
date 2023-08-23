@@ -1,6 +1,5 @@
 import { Td, Tr } from "@chakra-ui/react";
 import axios from "axios";
-import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
 export const Ausente = (props: { user: string }) => {

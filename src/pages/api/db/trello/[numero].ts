@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
-import { GetPedido } from "../../query/pedido/request/db/get";
 import { GetLoteProposta } from "../../lib/get_lote_nProposta";
 import { GetTrelloId } from "../../lib/get_trello_id";
 import { ErroTrello } from "../../lib/errtrello";

@@ -5,7 +5,7 @@ import {
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FormProposta } from "@/components/Proposta/form/formProposta";
 import Loading from "@/components/elements/loading";
 

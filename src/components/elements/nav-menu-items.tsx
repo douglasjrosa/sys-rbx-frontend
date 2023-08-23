@@ -1,6 +1,4 @@
-import { AiOutlineCodepen } from 'react-icons/ai';
-import { BsPeopleFill } from 'react-icons/bs';
-import { FaMoneyBillAlt, FaTasks } from 'react-icons/fa';
+import { FaMoneyBillAlt } from 'react-icons/fa';
 import { GiCube } from 'react-icons/gi';
 import { MdBusiness } from 'react-icons/md';
 import { RiDashboardFill } from 'react-icons/ri';

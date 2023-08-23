@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import Loading from './elements/loading';
 import MobileNavbar from './elements/mobile-navbar';
 import Navbar from './elements/navbar';
-import { useEffect } from 'react';
 
 function Layout({ children }: { children: React.ReactNode }): JSX.Element {
   const toast = useToast();

@@ -1,5 +1,5 @@
 
-import { Box, chakra, Flex, Link, useToast } from "@chakra-ui/react";
+import { Box, Flex, Link, useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";

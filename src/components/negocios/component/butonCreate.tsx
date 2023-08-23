@@ -1,16 +1,11 @@
 /* eslint-disable react/no-children-prop */
-import { EtapasNegocio } from "@/components/data/etapa";
-import Loading from "@/components/elements/loading";
 import { SetValue } from "@/function/currenteValor";
 import {
-  Box,
   Button,
   ButtonGroup,
   ChakraProvider,
   extendTheme,
   IconButton,
-  Input,
-  InputGroup,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -22,14 +17,11 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { GetServerSideProps, GetStaticPropsContext } from "next";
 
-import { getSession, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { MdOutlineAddCircleOutline } from "react-icons/md";
-import { BeatLoader } from "react-spinners";
-import { mask, unMask } from "remask";
 
 const activeLabelStyles = {
   transform: "scale(0.85) translateY(-24px)",

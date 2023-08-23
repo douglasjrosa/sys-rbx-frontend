@@ -2,11 +2,9 @@
 
 import {
   Box,
-  chakra,
   Flex,
   Icon,
   Link,
-  position,
   useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';

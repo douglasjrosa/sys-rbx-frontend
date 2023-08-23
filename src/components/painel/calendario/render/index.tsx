@@ -1,4 +1,3 @@
-import { SetValue } from "@/function/currenteValor";
 import { Box, Flex, chakra } from "@chakra-ui/react"
 import { useEffect, useState } from "react";
 

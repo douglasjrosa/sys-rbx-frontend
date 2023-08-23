@@ -4,11 +4,6 @@ import { useRouter } from "next/router";
 import { SiWhatsapp } from "react-icons/si";
 import { FaRegBuilding } from "react-icons/fa";
 import {
-  JSXElementConstructor,
-  Key,
-  ReactElement,
-  ReactFragment,
-  ReactPortal,
   useEffect,
   useState,
 } from "react";

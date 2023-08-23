@@ -1,15 +1,12 @@
 import {
   Box,
   Button,
-  Checkbox,
   Flex,
   FormControl,
   FormLabel,
   GridItem,
   Heading,
   Input,
-  Radio,
-  RadioGroup,
   Select,
   SimpleGrid,
   Stack,
@@ -17,13 +14,9 @@ import {
   chakra,
   useToast,
 } from "@chakra-ui/react";
-import { memo, useEffect, useMemo, useState } from "react";
-import { BtCreate } from "../../components/negocios/component/butonCreate";
-import { PowerBi } from "@/components/negocios/bi";
-import { getAllDaysOfMonth } from "@/function/Datearray";
+import { memo, useEffect, useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { mask, unMask } from "remask";
 
 
 function SetUser() {

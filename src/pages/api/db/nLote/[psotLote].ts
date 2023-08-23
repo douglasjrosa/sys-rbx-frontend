@@ -1,6 +1,5 @@
 import axios from "axios";
 import { nLote } from ".";
-import { GetPedido } from "../../query/pedido/request/db/get";
 import { NextApiRequest, NextApiResponse } from "next";
 import { PostLoteRibermmax } from "./lib/postLoteRibermax";
 

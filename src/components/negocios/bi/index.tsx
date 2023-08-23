@@ -1,10 +1,9 @@
 import { EtapasNegocio } from "@/components/data/etapa";
 import { Box, Flex, Table, TableContainer, Tbody, Td, Th, Thead, Tr, chakra } from "@chakra-ui/react"
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Ausente } from "./ausente";
 import { useRouter } from "next/router";
 import Loading from "@/components/elements/loading";
-import { getAllDaysOfMonth } from "@/function/Datearray";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { NovoCliente } from "./novo";

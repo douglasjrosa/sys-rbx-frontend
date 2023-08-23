@@ -1,4 +1,4 @@
-import { Box, FormLabel, Input, Text } from '@chakra-ui/react';
+import { Box, FormLabel, Text } from '@chakra-ui/react';
 
 export const CompBusiness = (props: { Resp: string }) => {
   return (

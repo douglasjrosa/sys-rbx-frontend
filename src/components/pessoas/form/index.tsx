@@ -12,11 +12,9 @@ import {
   SimpleGrid,
   Stack,
   Textarea,
-  Toast,
   useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { cpf } from "cpf-cnpj-validator";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";

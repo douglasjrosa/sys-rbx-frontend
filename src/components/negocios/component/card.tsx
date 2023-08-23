@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { StatusAndamento } from '@/components/data/status';
-import { Box, chakra, Flex, Link, Toast } from '@chakra-ui/react';
-import axios from 'axios';
+import { Box, chakra, Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 
 export default function CardBusiness(props: {

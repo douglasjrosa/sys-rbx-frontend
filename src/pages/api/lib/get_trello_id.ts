@@ -1,4 +1,3 @@
-import { ApiErrorResponse } from "@/types/axiosErrosPedido";
 import axios from "axios";
 
 const token = process.env.ATORIZZATION_TOKEN;

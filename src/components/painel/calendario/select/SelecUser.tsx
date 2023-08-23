@@ -1,7 +1,7 @@
 import { Box, Button, Flex, FormLabel, Heading, Select } from '@chakra-ui/react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { memo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface User {
   id: string;
