@@ -43,6 +43,7 @@ const Painel: React.FC = () => {
           // `http://localhost:3000/api/db/business/get/calendar?DataIncicio=2023-08-01T03:00:00.000Z&DataFim=2023-08-31T03:00:00.000Z&Vendedor=Virginia`
           const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${User}`);
           setData(response.data.data);
+          console.log("🚀 ~ file: index.tsx:46 ~ response.data.data:", response.data.data)
           setAndamento(response.data.em_aberto)
           setPerdido(response.data.perdido)
           setConcluido(response.data.conclusao)
@@ -143,6 +144,7 @@ const Painel: React.FC = () => {
               <Flex w={'8rem'} h={'2rem'} py={1} bg={'orange.400'} color={'white'} justifyContent={'center'} alignItems={'center'} rounded={'1rem'}>
                 {/* <chakra.span>{somaCreate.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span> */}
                 <chakra.span>{Andamento}</chakra.span>
+
               </Flex>
             </Flex>
             <Flex flexDirection={'column'} justifyContent={'center'}>

@@ -20,6 +20,7 @@ export default async function GetEmpresa(
         }
       );
 
+
       const dataRetornoResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses?filters[DataRetorno][$between]=${DataIncicio}&filters[DataRetorno][$between]=${DataFim}&filters[vendedor][username][$eq]=${Vendedor}&filters[status][$eq]=true&filters[andamento][$eq]=3&sort[0]=id%3Adesc&fields[0]=etapa&fields[1]=andamento&fields[2]=Budget&fields[3]=DataRetorno&populate[vendedor][fields][0]=username`,
         {
@@ -45,13 +46,15 @@ export default async function GetEmpresa(
       const conclusao_bruto = conclucaoResponse.data.data;
       const data = conclucaoResponse.data.data;
 
-      const em_aberto_reduce = em_aberto_bruto.reduce((cc: number, d: any) =>{
-        const budget = parseFloat(d.attributes.Budget.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.'));
-        const soma = cc + (isNaN(budget) ? 0 : budget);
-        const valor = Math.round(parseFloat(soma.toFixed(2)) * 100) / 100;
-        return valor
-      }, 0);
-      const em_aberto = em_aberto_reduce.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      const em_aberto_reduce = em_aberto_bruto.reduce((acc: number, item: any) => {
+        const budgetString = item.attributes.Budget;
+        const budget = budgetString !== null ? parseFloat(budgetString.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.')) : 0;
+        return acc + budget;
+    }, 0);
+
+    const em_aberto = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(em_aberto_reduce);
+    console.log("🚀 ~ file: index.ts:56 ~ em_aberto:", em_aberto)
+
 
       const conclusao_reduce = conclusao_bruto.reduce((cc: number, d: any) =>{
         const budget = parseFloat(d.attributes.Budget.replace(/[^0-9,]/g, '').replace('.', '').replace(',', '.'));
