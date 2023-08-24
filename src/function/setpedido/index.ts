@@ -17,6 +17,9 @@ export const pedido = async (nPedido: string, empresaId: any, ValorVenda: string
 
     console.log(response1.data);
 
+    const tackle = await axios(`/api/db/empresas/tackle?Vendedor=${Vendedor}&EMPRESAID=${empresaId}`);
+    console.log(tackle.data);
+
     await axios({
       url: `/api/db/trello/${nPedido}`,
       method: "POST",
