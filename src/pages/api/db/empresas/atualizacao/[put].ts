@@ -1,6 +1,8 @@
 /* eslint-disable no-undef */
+import { LogEmpresa } from "@/pages/api/lib/logEmpresa";
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
+
 
 export default async function GetEmpresa(
   req: NextApiRequest,
@@ -12,6 +14,8 @@ export default async function GetEmpresa(
     const data = req.body;
     const cnpj = data.data.CNPJ;
     const bodyData = data.data;
+    const { Email } = req.query;
+    const USER: any = req.query.Vendedor;
 
     await axios({
       method: "PUT",
@@ -24,6 +28,7 @@ export default async function GetEmpresa(
     })
       .then((Response) => {
         res.status(200).json(Response.data);
+
       })
       .catch((err) => {
         res.status(400).json({
@@ -32,6 +37,8 @@ export default async function GetEmpresa(
           detalhe: err.response.data.error.details,
         });
       });
+
+      await LogEmpresa(bodyData.nome, data, "PUT", USER);
 
     const DataRbx = {
       nome: bodyData.nome,
@@ -89,7 +96,7 @@ export default async function GetEmpresa(
         method: "DELET",
         url: process.env.RIBERMAX_API_URL + "/empresas",
         headers: {
-          Email: process.env.ATORIZZATION_EMAIL,
+          Email: Email,
           Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
           "Content-Type": "application/x-www-form-urlencoded",
         },
@@ -106,7 +113,7 @@ export default async function GetEmpresa(
         method: "put",
         url: process.env.RIBERMAX_API_URL + "/empresas",
         headers: {
-          Email: process.env.ATORIZZATION_EMAIL,
+          Email: Email,
           Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
           "Content-Type": "application/x-www-form-urlencoded",
         },

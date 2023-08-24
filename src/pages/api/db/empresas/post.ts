@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
+import { LogEmpresa } from "../../lib/logEmpresa";
 
 export default async function PostEmpresa(
   req: NextApiRequest,
@@ -11,6 +12,9 @@ export default async function PostEmpresa(
     const token = process.env.ATORIZZATION_TOKEN;
     const bodyData = data.data;
     const { Email } = req.query;
+    const USER: any = req.query.Vendedor;
+
+
 
     await axios({
       method: "POST",
@@ -23,6 +27,7 @@ export default async function PostEmpresa(
     })
       .then(async (Response) => {
         console.log(Response.data);
+        await LogEmpresa(bodyData.nome, data, "POST", USER);
 
         const DataRbx = {
           nome: bodyData.nome,

@@ -9,8 +9,8 @@ export default async function GetPrazo(
     try {
       const token = process.env.ATORIZZATION_TOKEN;
       const Empresa = req.query.Empresa;
-      // const url = process.env.NEXT_PUBLIC_STRAPI_API_URL
-      const url = `http://localhost:1338/api`;
+      const url = process.env.NEXT_PUBLIC_STRAPI_API_URL
+      // const url = `http://localhost:1338/api`;
 
       const Request = await axios({
         method: "GET",

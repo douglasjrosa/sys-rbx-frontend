@@ -7,6 +7,10 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'PUT') {
     const token = process.env.ATORIZZATION_TOKEN;
     const { cnpj } = req.body;
+    const { Email } = req.query;
+    const USER: any = req.query.Vendedor;
+
+
     const update = {
       data: {
         status: false,
@@ -41,7 +45,7 @@ export default async function getId(req: NextApiRequest, res: NextApiResponse) {
       method: 'delete',
       url: process.env.RIBERMAX_API_URL + '/empresas',
       headers: {
-        Email: process.env.ATORIZZATION_EMAIL,
+        Email: Email,
         Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
         'Content-Type': 'application/x-www-form-urlencoded',
       },

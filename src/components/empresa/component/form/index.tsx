@@ -306,7 +306,7 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
     };
 
     if (ENVIO === 'POST') {
-      const url = `/api/db/empresas/post?Email=${session?.user.email}`;
+      const url = `/api/db/empresas/post?Email=${session?.user.email}&Vendedor=${session?.user.name}`;
       await axios({
         method: 'POST',
         url: url,
@@ -329,7 +329,7 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
         });
     } else {
       const EMPRESAID = router.query.id;
-      const url = '/api/db/empresas/atualizacao/' + EMPRESAID;
+      const url = `/api/db/empresas/atualizacao/${EMPRESAID}?Email=${session?.user.email}&Vendedor=${session?.user.name}`;
       await axios({
         method: 'PUT',
         url: url,
