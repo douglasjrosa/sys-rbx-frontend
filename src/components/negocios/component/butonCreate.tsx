@@ -199,7 +199,6 @@ export const BtCreate = (props: { user: any; onLoading: any }) => {
                 Cancelar
               </Button>
               <Button
-                isDisabled={Empresa && budgets ? false : true}
                 colorScheme="whatsapp"
                 onClick={salve}
               >
