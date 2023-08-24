@@ -30,5 +30,9 @@ export const StatusPerca = [
   {
     id: '8',
     title: 'Cliente insatisfeito devido a ocorrências passadas',
+  },
+  {
+    id: '9',
+    title: 'Cliente Pertence a outro vendedor',
   }
 ];

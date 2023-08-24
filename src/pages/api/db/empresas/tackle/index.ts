@@ -30,7 +30,12 @@ export default async function Tackle(
       const updateUrl = `${baseUrl}/businesses/${item.id}`;
       await axios.put(
         updateUrl,
-        { data: { vendedor: null } },
+        { data: {
+          vendedor: null,
+          etapa: 6,
+          andamento: 1,
+          Mperca:9
+        } },
         {
           headers: {
             Authorization: `Bearer ${token}`,
