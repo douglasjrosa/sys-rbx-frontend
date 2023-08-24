@@ -222,7 +222,7 @@ export const NegocioHeader = (props: {
     const vendedorId = session?.user.id
     const IdNegocio = Data.id
 
-    const request = await pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
+    await pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
     // console.log("🚀 ~ file: hearder.tsx:223 ~ finalizar ~ request:", request)
     setload(false)
     onClose()

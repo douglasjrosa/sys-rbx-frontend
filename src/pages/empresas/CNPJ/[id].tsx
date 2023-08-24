@@ -367,7 +367,7 @@ export default function Infos() {
                 <tbody>
                   {Negocio.map((i: any) => {
                     console.log(i);
-                    const valor = parseFloat(i.attributes.Budget.replace('.', '').replace(',', '.'))
+                    const valor = !!i.attributes.Budget && parseFloat(i.attributes.Budget.replace('.', '').replace(',', '.'))
 
                     const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes.andamento).map((s: any) => s.title)
 

@@ -121,7 +121,7 @@ export const BtCreate = (props: { user: any; onLoading: any }) => {
       vendedor: session?.user.id,
       DataRetorno: dataAtual.toISOString(),
       incidentRecord: [MSG],
-      etapa: Etapa,
+      etapa: 2,
     };
 
     const url = "/api/db/business/post";

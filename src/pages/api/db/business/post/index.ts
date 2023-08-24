@@ -68,7 +68,7 @@ export default async function GetEmpresa(
         empresa: Number(data.empresa),
         vendedor: data.vendedor,
         andamento: 3,
-        etapa: 1,
+        etapa: 2,
       },
     };
 

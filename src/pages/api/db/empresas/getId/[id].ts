@@ -24,10 +24,11 @@ export default async function GetEmpresa(
         res.status(200).json(Response.data);
       })
       .catch((err) => {
+        console.log("🚀 ~ file: [id].ts:27 ~ err:", err)
         res.status(400).json({
-          error: err.response.data,
-          mensage: err.response.data.error,
-          detalhe: err.response.data.error.details,
+          error: err.response?.data,
+          mensage: err.response?.data.error,
+          detalhe: err.response?.data.error?.details,
         });
       });
   } else {

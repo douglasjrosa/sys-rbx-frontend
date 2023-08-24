@@ -1,9 +1,5 @@
 export const EtapasNegocio = [
   {
-    id: "1",
-    title: "Contato",
-  },
-  {
     id: "2",
     title: "Enviar proposta",
   },
