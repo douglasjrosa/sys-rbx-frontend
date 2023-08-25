@@ -224,8 +224,8 @@ export const NegocioHeader = (props: {
 
     await pedido(nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio)
     // console.log("🚀 ~ file: hearder.tsx:223 ~ finalizar ~ request:", request)
-    setload(false)
     onClose()
+    setload(false)
     props.onchat(true);
   }
 
@@ -590,7 +590,7 @@ export const NegocioHeader = (props: {
                 fontSize={'0.8rem'}
                 p={3}
                 colorScheme={"messenger"}
-                // onClick={Pedido}
+                isDisabled={load}
                 onClick={finalizar}
               >
                 Gerar Pedido
