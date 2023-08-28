@@ -35,7 +35,7 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
       data: {
         title: Titulo,
         value: Valor,
-        empresas: Id
+        empresa: Id
       }
     }
 
@@ -140,7 +140,11 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
                 <Input
                   type="text"
                   color={"black"}
-                  onChange={(e) => setValor(e.target.value)}
+                  onChange={(e) => {
+                    const valor = e.target.value;
+                    const numeros = valor.replace(/\D/g, '');
+                    setValor(numeros)
+                  }}
                   value={Valor}
                 />
               </FormControl>

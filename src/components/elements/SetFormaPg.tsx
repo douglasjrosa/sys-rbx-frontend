@@ -23,8 +23,7 @@ export const SetFormaPg = (props: { id: any; retorno: any; envio: any; Disable: 
       })()
     }
   }, [props.id, props.retorno])
-console.log(props.Disable)
-console.log(Data)
+
 
   return (
     <>

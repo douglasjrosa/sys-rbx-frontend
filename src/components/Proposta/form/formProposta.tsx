@@ -2,7 +2,7 @@
 import Loading from "@/components/elements/loading";
 import { CompBusiness } from "@/components/Proposta/business";
 import { ListaEmpresa } from "@/components/Proposta/ListaEmpresa";
-import { CompPrazo } from "@/components/Proposta/prazo";
+// import { CompPrazo } from "@/components/Proposta/prazo";
 import { ProdutiList } from "@/components/Proposta/produt";
 import { TableConteudo } from "@/components/Proposta/tabela";
 import { SetValue } from "@/function/currenteValor";
@@ -34,6 +34,7 @@ import { BsArrowLeftCircleFill, BsTrash } from "react-icons/bs";
 import { DateIso } from "../../../components/data/Date";
 import { ListFornecedor } from "../../../components/data/fornecedor";
 import { SetFormaPg } from "@/components/elements/SetFormaPg";
+import { GetPrazoPg } from "@/components/elements/getPrazopg";
 
 const tempo = DateIso;
 
@@ -506,7 +507,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                 shadow="sm"
                 type={"date"}
                 size="xs"
-                w="24"
+                w="28"
                 fontSize="xs"
                 rounded="md"
                 isDisabled
@@ -565,7 +566,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               <SetFormaPg id={RelatEnpresaId} retorno={prazo} envio={setPrazoRetorno} Disable={RegistroForgpg && session?.user.pemission !== 'Adm'? true : false} />
             </Box>
             <Box hidden={prazo === "A Prazo" ? false : true}>
-              <CompPrazo Resp={tipoprazo} onAddResp={getPrazo} oncnpj={cnpj} />
+              <GetPrazoPg envio={getPrazo} id={RelatEnpresaId} retorno={tipoprazo} />
             </Box>
             <Box>
               <FormLabel
