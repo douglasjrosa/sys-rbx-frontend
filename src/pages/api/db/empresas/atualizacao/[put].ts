@@ -18,6 +18,32 @@ export default async function GetEmpresa(
     const USER: any = req.query.Vendedor;
 
     await axios({
+      method: 'GET',
+      url:
+        process.env.NEXT_PUBLIC_STRAPI_API_URL +
+        `/empresas/${id}?&populate=%2A`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(async (Response) => {
+        // res.status(200).json(Response.data);
+        console.log(Response.data);
+        await LogEmpresa(Response.data.data.attributes.nome, Response.data.data, "PUT", USER);
+      })
+      .catch((err) => {
+        console.log("🚀 ~ file: [id].ts:27 ~ err:", err)
+        console.log({
+          error: err.response?.data,
+          mensage: err.response?.data.error,
+          detalhe: err.response?.data.error?.details,
+        });
+      });
+
+
+
+    await axios({
       method: "PUT",
       url: process.env.NEXT_PUBLIC_STRAPI_API_URL + "/empresas/" + id,
       data: data,
@@ -37,8 +63,6 @@ export default async function GetEmpresa(
           detalhe: err.response.data.error.details,
         });
       });
-
-      await LogEmpresa(bodyData.nome, data, "PUT", USER);
 
     const DataRbx = {
       nome: bodyData.nome,
@@ -130,3 +154,4 @@ export default async function GetEmpresa(
     return res.status(405).send({ message: "Only GET requests are allowed" });
   }
 }
+

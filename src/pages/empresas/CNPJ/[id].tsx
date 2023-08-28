@@ -50,8 +50,14 @@ export default function Infos() {
     (async () => {
       try {
         const request = await axios(`/api/db/empresas/getId/${ID}`);
-        const response = request.data.data;
-        setRepresentantes(response.attributes.representantes)
+        const response = request.data?.data;
+
+        const dadosEntrada: any = !response.attributes.representantes? [] : response.attributes.representantes
+        const SemVendedor: any = dadosEntrada.filter((i: any) => i.Vendedor === '' || !i.Vendedor);
+        const setVendedor: any = dadosEntrada.filter((i: any) => i.Vendedor === session?.user?.name);
+        const setAdm: any = dadosEntrada.filter((i: any) => i.Vendedor === 'Adm');
+        const DataArray: any = [...SemVendedor, ...setVendedor, ...setAdm]
+        setRepresentantes(!!response.attributes.representantes && DataArray)
         setNome(response.attributes.nome)
         setRazao(response.attributes.razao)
         setEndereço(response.attributes.endereco)
@@ -65,7 +71,7 @@ export default function Infos() {
         setEmail(response.attributes.email)
         setHistorico(response.attributes.history.slice(-3))
         setNegocio(response.attributes.businesses.data.slice(-5))
-        if(session?.user.pemission === 'Adm'){
+        if (session?.user.pemission === 'Adm') {
           const request2 = await axios(`/api/db/empresas/interacoes/get_adm?Empresa=${response.attributes.nome}`);
           const response2 = request2.data;
           setInteracoes(response2)
@@ -76,14 +82,15 @@ export default function Infos() {
         }
         setload(false)
       } catch (error: any) {
+        console.log(error)
         toast({
           title: 'Erro.',
-          description: JSON.stringify(error.response.data),
+          description: JSON.stringify(error.response?.data),
           status: 'error',
           duration: 9000,
           isClosable: true,
         })
-        setTimeout(() => router.push('/empresas'), 1000)
+        // setTimeout(() => router.push('/empresas'), 1000)
       }
     })()
   }, [ID, router, session?.user.name, session?.user.pemission, toast])
@@ -126,7 +133,7 @@ export default function Infos() {
           setObjetivo('')
           setProximo('')
           try {
-            if(session?.user.pemission === 'Adm'){
+            if (session?.user.pemission === 'Adm') {
               const request2 = await axios(`/api/db/empresas/interacoes/get_adm?Empresa=${Nome}`);
               const response2 = request2.data;
               setInteracoes(response2)
@@ -166,13 +173,13 @@ export default function Infos() {
             <Box><BtmRetorno Url="/empresas" /></Box>
             <Heading>{Nome}</Heading>
           </Flex>
-            <IconButton
-              color={'white'}
-              onClick={() => router.push(`/empresas/atualizar/${ID}`)}
-              colorScheme='messenger'
-              aria-label='Editar Empresa'
-              icon={<FiEdit3 size={'27px'} />}
-            />
+          <IconButton
+            color={'white'}
+            onClick={() => router.push(`/empresas/atualizar/${ID}`)}
+            colorScheme='messenger'
+            aria-label='Editar Empresa'
+            icon={<FiEdit3 size={'27px'} />}
+          />
         </Flex>
 
         {/* colunas */}
@@ -187,6 +194,7 @@ export default function Infos() {
 
                 {!!Representantes && Representantes.map((item: any, index: number) => {
                   const telefone = !item.whatsapp ? item.telefone : item.whatsapp
+                  console.log('pessoas', item)
 
                   return (
                     <>

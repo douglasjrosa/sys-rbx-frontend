@@ -21,6 +21,7 @@ export const LogEmpresa = async (
       dados: dados,
       tipo: tipo,
       solicitante: solicitante,
+      data: new Date().toISOString(),
     },
   };
   await STRAPI.post(`/log-empresas`, DobyData)
