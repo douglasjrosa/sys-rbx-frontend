@@ -55,9 +55,9 @@ export default function Infos() {
         if(session?.user.pemission === 'Adm'){
           (async () => {
             try {
-              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=true`);
+              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${ID}&Adm=true`);
               const dados = request.data;
-           
+
               setRepresentantes(dados)
             } catch (error) {
               console.error("Erro ao buscar dados:", error);
@@ -66,9 +66,9 @@ export default function Infos() {
         } else {
           (async () => {
             try {
-              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=false`);
+              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${ID}&Adm=false`);
               const dados = request.data;
-           
+
               setRepresentantes(dados)
             } catch (error) {
               console.error("Erro ao buscar dados:", error);
@@ -76,31 +76,31 @@ export default function Infos() {
           })()
         }
 
-        const dadosEntrada: any = !response.attributes.representantes ? [] : response.attributes.representantes
+        const dadosEntrada: any = !response.attributes?.representantes ? [] : response.attributes?.representantes
         const SemVendedor: any = dadosEntrada.filter((i: any) => i.Vendedor === '' || !i.Vendedor);
         const setVendedor: any = dadosEntrada.filter((i: any) => i.Vendedor === session?.user?.name);
         const setAdm: any = dadosEntrada.filter((i: any) => i.Vendedor === 'Adm');
         const DataArray: any = [...SemVendedor, ...setVendedor, ...setAdm]
-        setRepresentantes(!!response.attributes.representantes && DataArray)
-        setNome(response.attributes.nome)
-        setRazao(response.attributes.razao)
-        setEndereço(response.attributes.endereco)
-        setCNPJ(response.attributes.CNPJ)
-        setNumero(response.attributes.numero)
-        setBairro(response.attributes.bairro)
-        setCEP(response.attributes.cep)
-        setCidade(response.attributes.cidade)
-        setUf(response.attributes.uf)
-        setTelefone(response.attributes.fone)
-        setEmail(response.attributes.email)
-        setHistorico(response.attributes.history.slice(-3))
-        setNegocio(response.attributes.businesses.data.slice(-5))
+        setRepresentantes(!!response.attributes?.representantes && DataArray)
+        setNome(response.attributes?.nome)
+        setRazao(response.attributes?.razao)
+        setEndereço(response.attributes?.endereco)
+        setCNPJ(response.attributes?.CNPJ)
+        setNumero(response.attributes?.numero)
+        setBairro(response.attributes?.bairro)
+        setCEP(response.attributes?.cep)
+        setCidade(response.attributes?.cidade)
+        setUf(response.attributes?.uf)
+        setTelefone(response.attributes?.fone)
+        setEmail(response.attributes?.email)
+        setHistorico(response.attributes?.history.slice(-3))
+        setNegocio(response.attributes?.businesses.data.slice(-5))
         if (session?.user.pemission === 'Adm') {
-          const request2 = await axios(`/api/db/empresas/interacoes/get_adm?Empresa=${response.attributes.nome}`);
+          const request2 = await axios(`/api/db/empresas/interacoes/get_adm?Empresa=${response.attributes?.nome}`);
           const response2 = request2.data;
           setInteracoes(response2)
         } else {
-          const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${response.attributes.nome}`);
+          const request2 = await axios(`/api/db/empresas/interacoes/get?Vendedor=${session?.user.name}&Empresa=${response.attributes?.nome}`);
           const response2 = request2.data;
           setInteracoes(response2)
         }
@@ -223,27 +223,27 @@ export default function Infos() {
                   return (
                     <>
                       <Box>
-                        <Heading size={'sm'}>{item.attributes.nome}</Heading>
+                        <Heading size={'sm'}>{item.attributes?.nome}</Heading>
                         <Flex w={'100%'} p={1}>
                           <Box w={'50%'}>
                             <Flex gap={3}>
                               <chakra.p>Cargo:</chakra.p>
-                              <chakra.p>{item.attributes.Cargo}</chakra.p>
+                              <chakra.p>{item.attributes?.Cargo}</chakra.p>
                             </Flex>
                             <Flex gap={3}>
                               <chakra.p>Departamento:</chakra.p>
-                              <chakra.p>{item.attributes.departamento}</chakra.p>
+                              <chakra.p>{item.attributes?.departamento}</chakra.p>
                             </Flex>
                           </Box>
                           <Box w={'50%'}>
                             <Flex gap={3}>
                               <chakra.p>Telefone:</chakra.p>
-                              {telefone.length === 11 && (<chakra.a onClick={() => window.open(`https://wa.me//55${item.attributes.whatsapp}?text=Ola%20${item.attributes.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{ color: 'blue.500' }} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
-                              {telefone.length < 11 && (<chakra.p>{telefone.length}{formatarTelefone(telefone)}</chakra.p>)}
+                              {telefone?.length === 11 && (<chakra.a onClick={() => window.open(`https://wa.me//55${item.attributes?.whatsapp}?text=Ola%20${item.attributes?.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{ color: 'blue.500' }} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
+                              {telefone?.length < 11 && (<chakra.p>{telefone?.length}{formatarTelefone(telefone)}</chakra.p>)}
                             </Flex>
                             <Flex gap={3}>
                               <chakra.p>E-mail:</chakra.p>
-                              <Link href={`mailto:${item.attributes.email}`} _hover={{ color: 'blue.500' }} textDecor={'underline'} color={'blue.100'}>{item.attributes.email}</Link>
+                              <Link href={`mailto:${item.attributes?.email}`} _hover={{ color: 'blue.500' }} textDecor={'underline'} color={'blue.100'}>{item.attributes?.email}</Link>
                             </Flex>
                           </Box>
                         </Flex>
@@ -353,18 +353,18 @@ export default function Infos() {
               <Flex h={'70%'} overflowY={'auto'} flexDir={'column'} gap={3}>
                 {Interacoes.map((i: any) => {
                   // console.log(i)
-                  const [obj] = ObjContato.filter((o: any) => o.id == i.attributes.objetivo).map((d: any) => d.title)
-                  const [tipo] = TipoContato.filter((t: any) => t.id == i.attributes.tipo).map((d: any) => d.title)
-                  const date = new Date(parseISO(i.attributes.proxima))
+                  const [obj] = ObjContato.filter((o: any) => o.id == i.attributes?.objetivo).map((d: any) => d.title)
+                  const [tipo] = TipoContato.filter((t: any) => t.id == i.attributes?.tipo).map((d: any) => d.title)
+                  const date = new Date(parseISO(i.attributes?.proxima))
 
                   return (
                     <>
                       <Box bg={'gray.100'} rounded={10} px={5} py={2} color={'black'} fontSize={'0.7rem'}>
                         <Heading size={'sm'}>{obj}</Heading>
-                        <chakra.p fontSize={'0.8rem'}>{i.attributes.descricao}</chakra.p>
+                        <chakra.p fontSize={'0.8rem'}>{i.attributes?.descricao}</chakra.p>
                         <Flex justifyContent={'space-between'} mt={1}>
                           <chakra.span p={'0.1rem'} px={'0.3rem'} color={'white'} bg={'blue.400'}>{tipo}</chakra.span>
-                          {session?.user.pemission === 'Adm' && (<chakra.p>{i.attributes.vendedor.data.attributes.nome}</chakra.p>)}
+                          {session?.user.pemission === 'Adm' && (<chakra.p>{i.attributes?.vendedor.data.attributes?.nome}</chakra.p>)}
                           <chakra.p textDecor={'underline'}>{date.toLocaleDateString()}</chakra.p>
                         </Flex>
 
@@ -399,13 +399,13 @@ export default function Infos() {
                 <tbody>
                   {Negocio.map((i: any) => {
                     console.log(i);
-                    const valor = !!i.attributes.Budget && parseFloat(i.attributes.Budget.replace('.', '').replace(',', '.'))
+                    const valor = !!i.attributes?.Budget && parseFloat(i.attributes?.Budget.replace('.', '').replace(',', '.'))
 
-                    const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes.andamento).map((s: any) => s.title)
+                    const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes?.andamento).map((s: any) => s.title)
 
-                    const [andamento] = EtapasNegocio.filter((v: any) => v.id == i.attributes.etapa).map((v: any) => v.title)
+                    const [andamento] = EtapasNegocio.filter((v: any) => v.id == i.attributes?.etapa).map((v: any) => v.title)
 
-                    const color = i.attributes.etapa === 6 && i.attributes.andamento === 1 ? 'red' : i.attributes.etapa === 6 && i.attributes.andamento === 5 ? 'green' : 'yellow';
+                    const color = i.attributes?.etapa === 6 && i.attributes?.andamento === 1 ? 'red' : i.attributes?.etapa === 6 && i.attributes?.andamento === 5 ? 'green' : 'yellow';
 
                     return (
                       <>

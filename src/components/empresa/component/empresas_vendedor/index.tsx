@@ -37,7 +37,7 @@ export const CarteiraVendedor = (props: {filtro: any }) => {
 
 
   const filter = (empresa: string) => {
-    const interacaolist = !Interacao ? [] : Interacao.filter((f: any) => f.attributes.vendedor.data.attributes.username === session?.user.name && f.attributes.empresa.data.attributes.nome === empresa)
+    const interacaolist = !Interacao ? [] : Interacao?.filter((f: any) => f.attributes?.vendedor.data?.attributes.username === session?.user?.name && f.attributes?.empresa.data?.attributes.nome === empresa)
     return interacaolist
   }
 

@@ -1020,7 +1020,7 @@ export const FormEmpresa = (props: { data?: any, envio: string }) => {
                         <FormControl as={GridItem} colSpan={[6, 2, 4, 3]}>
                           <Flex flexDir={'row'} alignItems={'self-end'} gap={5}>
                             <CompPessoa
-                              Resp={Responsavel}
+                              Resp={router.query.id}
                               onAddResp={getResponsavel}
                             />
 

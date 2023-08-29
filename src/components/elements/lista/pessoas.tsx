@@ -16,7 +16,7 @@ interface pessoalResp {
   obs: string;
 }
 
-export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
+export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
   const [dados, setDados] = useState<any>([]);
   const [ID, setID] = useState('');
   const [Nome, setNome] = useState('');
@@ -33,12 +33,12 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
-    if(session?.user.pemission === 'Adm'){
+    if (session?.user.pemission === 'Adm') {
       (async () => {
         try {
-          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=true`);
+          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=true`);
           const dados = request.data;
-          console.log("🚀 ~ file: pessoas.tsx:40 ~ dados:", dados)
+
           setDados(dados)
         } catch (error) {
           console.error("Erro ao buscar dados:", error);
@@ -47,16 +47,16 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
     } else {
       (async () => {
         try {
-          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=false`);
+          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=false`);
           const dados = request.data;
-          console.log("🚀 ~ file: pessoas.tsx:40 ~ dados:", dados)
+
           setDados(dados)
         } catch (error) {
           console.error("Erro ao buscar dados:", error);
         }
       })()
     }
-  }, [session?.user.name, session?.user.pemission])
+  }, [props.Resp, session?.user.name, session?.user.pemission])
 
 
   const reset = () => {
@@ -82,20 +82,39 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
         cargo: Cargo,
         obs: Obs,
         user: session?.user?.id,
-        permissao: session?.user?.pemission
+        permissao: session?.user?.pemission,
+        empresa: props.Resp
       }
     }
 
     await axios(`/api/db/representantes/port`, { method: 'POST', data: Data })
       .then(async () => {
-        try {
-          const request = await fetch(`/api/db/representantes/get?Vendedor=${session?.user.name}`);
-          const dados = await request.json();
-          setDados(dados)
-          onClose()
-          reset()
-        } catch (error) {
-          console.error("Erro ao buscar dados:", error);
+        if (session?.user.pemission === 'Adm') {
+          (async () => {
+            try {
+              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=true`);
+              const dados = request.data;
+
+              setDados(dados)
+              onClose()
+              reset()
+            } catch (error) {
+              console.error("Erro ao buscar dados:", error);
+            }
+          })()
+        } else {
+          (async () => {
+            try {
+              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=false`);
+              const dados = request.data;
+
+              setDados(dados)
+              onClose()
+              reset()
+            } catch (error) {
+              console.error("Erro ao buscar dados:", error);
+            }
+          })()
         }
       })
       .catch((err) => {
@@ -110,12 +129,34 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
       try {
         const excluir = await axios.put(`/api/db/representantes/delet/${idPessoa}`);
         const darespostados = excluir.data;
-        console.log("🚀 ~ file: pessoas.tsx:97 ~ Remover ~ darespostados:", darespostados)
-        const request = await fetch(`/api/db/representantes/get?Vendedor=${session?.user.name}`);
-        const dados = await request.json();
-        setDados(dados)
-        onClose()
-        reset()
+      
+        if (session?.user.pemission === 'Adm') {
+          (async () => {
+            try {
+              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=true`);
+              const dados = request.data;
+
+              setDados(dados)
+              onClose()
+              reset()
+            } catch (error) {
+              console.error("Erro ao buscar dados:", error);
+            }
+          })()
+        } else {
+          (async () => {
+            try {
+              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=false`);
+              const dados = request.data;
+
+              setDados(dados)
+              onClose()
+              reset()
+            } catch (error) {
+              console.error("Erro ao buscar dados:", error);
+            }
+          })()
+        }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
       }
@@ -123,7 +164,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
   }
 
   function Atualizar(Respdata: any) {
-    console.log("🚀 ~ file: pessoas.tsx:113 ~ Atualizar ~ Respdata:", Respdata)
+
 
 
     setId(Respdata.id)
@@ -156,14 +197,32 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
       }
       await axios.put(`/api/db/representantes/put/${Id}`, objetoAtualizado)
         .then(async () => {
-          try {
-            const request = await fetch(`/api/db/representantes/get?Vendedor=${session?.user.name}`);
-            const dados = await request.json();
-            setDados(dados)
-            onClose()
-            reset()
-          } catch (error) {
-            console.error("Erro ao buscar dados:", error);
+          if (session?.user.pemission === 'Adm') {
+            (async () => {
+              try {
+                const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=true`);
+                const dados = request.data;
+
+                setDados(dados)
+                onClose()
+                reset()
+              } catch (error) {
+                console.error("Erro ao buscar dados:", error);
+              }
+            })()
+          } else {
+            (async () => {
+              try {
+                const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=false`);
+                const dados = request.data;
+
+                setDados(dados)
+                onClose()
+                reset()
+              } catch (error) {
+                console.error("Erro ao buscar dados:", error);
+              }
+            })()
           }
         })
         .catch((err) => {

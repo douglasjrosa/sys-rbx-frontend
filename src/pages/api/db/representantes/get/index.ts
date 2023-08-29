@@ -8,12 +8,14 @@ export default async function GetEmpresa(
 ) {
   const token = process.env.ATORIZZATION_TOKEN;
   if (req.method === "GET" && req.query.Vendedor !== "") {
+    const Vendedor = req.query.Vendedor;
+    const Empresa = req.query.Empresa;
+    
     if (req.query.Adm == "true") {
 
       try {
-        const Vendedor = req.query.Vendedor;
         const requestVendedor = await axios(
-          `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/representantes?populate[user][fields][0]=username`,
+          `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/representantes?populate[user][fields][0]=username&filters[empresa][id][$eq]=${Empresa}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const respostaVendedor = requestVendedor.data.data;
@@ -27,14 +29,15 @@ export default async function GetEmpresa(
     } else {
 
       try {
-        const Vendedor = req.query.Vendedor;
+
         const requestVendedor = await axios(
-          `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/representantes?filters[user][username][$eq]=${Vendedor}&populate[user][fields][0]=username`,
+          `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/representantes?filters[user][username][$eq]=${Vendedor}&filters[empresa][id][$eq]=${Empresa}&populate[user][fields][0]=username`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const respostaVendedor = requestVendedor.data.data;
+
         const requestAdm = await axios(
-          `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/representantes?filters[permissao][$eq]=Adm&populate[user][fields][0]=username`,
+          `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/representantes?filters[permissao][$eq]=Adm&filters[empresa][id][$eq]=${Empresa}&populate[user][fields][0]=username`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const respostaAdm = requestAdm.data.data;
