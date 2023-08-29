@@ -17,6 +17,7 @@ interface pessoalResp {
 
 export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
   const [dados, setDados] = useState<any>([]);
+  const [dadosNativos, setDadosNativos] = useState<any>([]);
   const [Nome, setNome] = useState('');
   const [Email, setEmail] = useState('');
   const [Telefone, setTelefone] = useState('');
@@ -37,7 +38,7 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
       const setVendedor = dadosEntrada.filter((i: any) => i.Vendedor === session?.user?.name);
       const setAdm = dadosEntrada.filter((i: any) => i.Vendedor === 'Adm');
       const DataArray = [...SemVendedor, ...setVendedor, ...setAdm]
-
+      setDadosNativos(dadosEntrada)
       setDados(DataArray)
     }
   }, [props.Resp, session?.user?.name])
@@ -84,8 +85,14 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
         obs: Obs,
         Vendedor: session?.user?.pemission === "Adm" ? 'Adm' : session?.user?.name
       }
-      const valor = [...dados, Data];
-      setDados(valor);
+      const valor = [...dadosNativos, Data];
+
+      const SemVendedor = valor.filter((i: any) => i.Vendedor === '' || !i.Vendedor);
+      const setVendedor = valor.filter((i: any) => i.Vendedor === session?.user?.name);
+      const setAdm = valor.filter((i: any) => i.Vendedor === 'Adm');
+      const DataArray = [...SemVendedor, ...setVendedor, ...setAdm]
+
+      setDados(DataArray);
       props.onAddResp(valor)
       onClose()
       reset()
