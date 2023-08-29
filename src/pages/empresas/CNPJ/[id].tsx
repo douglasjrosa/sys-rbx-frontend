@@ -52,7 +52,31 @@ export default function Infos() {
         const request = await axios(`/api/db/empresas/getId/${ID}`);
         const response = request.data?.data;
 
-        const dadosEntrada: any = !response.attributes.representantes? [] : response.attributes.representantes
+        if(session?.user.pemission === 'Adm'){
+          (async () => {
+            try {
+              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=true`);
+              const dados = request.data;
+              console.log("🚀 ~ file: pessoas.tsx:40 ~ dados:", dados)
+              setRepresentantes(dados)
+            } catch (error) {
+              console.error("Erro ao buscar dados:", error);
+            }
+          })()
+        } else {
+          (async () => {
+            try {
+              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=false`);
+              const dados = request.data;
+              console.log("🚀 ~ file: pessoas.tsx:40 ~ dados:", dados)
+              setRepresentantes(dados)
+            } catch (error) {
+              console.error("Erro ao buscar dados:", error);
+            }
+          })()
+        }
+
+        const dadosEntrada: any = !response.attributes.representantes ? [] : response.attributes.representantes
         const SemVendedor: any = dadosEntrada.filter((i: any) => i.Vendedor === '' || !i.Vendedor);
         const setVendedor: any = dadosEntrada.filter((i: any) => i.Vendedor === session?.user?.name);
         const setAdm: any = dadosEntrada.filter((i: any) => i.Vendedor === 'Adm');
@@ -90,7 +114,7 @@ export default function Infos() {
           duration: 9000,
           isClosable: true,
         })
-        // setTimeout(() => router.push('/empresas'), 1000)
+        setTimeout(() => router.push('/empresas'), 1000)
       }
     })()
   }, [ID, router, session?.user.name, session?.user.pemission, toast])
@@ -193,33 +217,33 @@ export default function Infos() {
               <Box px={[1, 2, 3, 5]} py={3}>
 
                 {!!Representantes && Representantes.map((item: any, index: number) => {
-                  const telefone = !item.whatsapp ? item.telefone : item.whatsapp
+                  const telefone = !item.attributes.whatsapp ? item.attributes.telefone : item.attributes.whatsapp
                   console.log('pessoas', item)
 
                   return (
                     <>
                       <Box>
-                        <Heading size={'sm'}>{item.nome}</Heading>
+                        <Heading size={'sm'}>{item.attributes.nome}</Heading>
                         <Flex w={'100%'} p={1}>
                           <Box w={'50%'}>
                             <Flex gap={3}>
                               <chakra.p>Cargo:</chakra.p>
-                              <chakra.p>{item.Cargo}</chakra.p>
+                              <chakra.p>{item.attributes.Cargo}</chakra.p>
                             </Flex>
                             <Flex gap={3}>
                               <chakra.p>Departamento:</chakra.p>
-                              <chakra.p>{item.departamento}</chakra.p>
+                              <chakra.p>{item.attributes.departamento}</chakra.p>
                             </Flex>
                           </Box>
                           <Box w={'50%'}>
                             <Flex gap={3}>
                               <chakra.p>Telefone:</chakra.p>
-                              {telefone.length === 11 && (<chakra.a onClick={() => window.open(`https://wa.me//55${item.whatsapp}?text=Ola%20${item.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{ color: 'blue.500' }} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
+                              {telefone.length === 11 && (<chakra.a onClick={() => window.open(`https://wa.me//55${item.attributes.whatsapp}?text=Ola%20${item.attributes.nome}.%20%20Tudo%20bem?!`, '_blank')} color={'blue.100'} cursor={'pointer'} _hover={{ color: 'blue.500' }} textDecor={'underline'}>{formatarTelefone(telefone)}</chakra.a>)}
                               {telefone.length < 11 && (<chakra.p>{telefone.length}{formatarTelefone(telefone)}</chakra.p>)}
                             </Flex>
                             <Flex gap={3}>
                               <chakra.p>E-mail:</chakra.p>
-                              <Link href={`mailto:${item.email}`} _hover={{ color: 'blue.500' }} textDecor={'underline'} color={'blue.100'}>{item.email}</Link>
+                              <Link href={`mailto:${item.attributes.email}`} _hover={{ color: 'blue.500' }} textDecor={'underline'} color={'blue.100'}>{item.attributes.email}</Link>
                             </Flex>
                           </Box>
                         </Flex>

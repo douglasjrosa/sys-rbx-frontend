@@ -3,6 +3,7 @@ import { Box, Button, Flex, FormControl, FormLabel, GridItem, Heading, Input, Mo
 import { useEffect, useState } from 'react';
 import { PessoasData } from './pessoasdata';
 import { useSession } from 'next-auth/react';
+import axios from 'axios';
 
 interface pessoalResp {
   id: number;
@@ -17,7 +18,7 @@ interface pessoalResp {
 
 export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
   const [dados, setDados] = useState<any>([]);
-  const [dadosNativos, setDadosNativos] = useState<any>([]);
+  const [ID, setID] = useState('');
   const [Nome, setNome] = useState('');
   const [Email, setEmail] = useState('');
   const [Telefone, setTelefone] = useState('');
@@ -32,16 +33,30 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
-    if (props.Resp) {
-      const dadosEntrada: any = props.Resp
-      const SemVendedor = dadosEntrada.filter((i: any) => i.Vendedor === '' || !i.Vendedor);
-      const setVendedor = dadosEntrada.filter((i: any) => i.Vendedor === session?.user?.name);
-      const setAdm = dadosEntrada.filter((i: any) => i.Vendedor === 'Adm');
-      const DataArray = [...SemVendedor, ...setVendedor, ...setAdm]
-      setDadosNativos(dadosEntrada)
-      setDados(DataArray)
+    if(session?.user.pemission === 'Adm'){
+      (async () => {
+        try {
+          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=true`);
+          const dados = request.data;
+          console.log("🚀 ~ file: pessoas.tsx:40 ~ dados:", dados)
+          setDados(dados)
+        } catch (error) {
+          console.error("Erro ao buscar dados:", error);
+        }
+      })()
+    } else {
+      (async () => {
+        try {
+          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=false`);
+          const dados = request.data;
+          console.log("🚀 ~ file: pessoas.tsx:40 ~ dados:", dados)
+          setDados(dados)
+        } catch (error) {
+          console.error("Erro ao buscar dados:", error);
+        }
+      })()
     }
-  }, [props.Resp, session?.user?.name])
+  }, [session?.user.name, session?.user.pemission])
 
 
   const reset = () => {
@@ -55,95 +70,107 @@ export const CompPessoa = (props: { Resp: string; onAddResp: any; }) => {
 
   }
 
-  const SaveAdd = () => {
-    if (dados.length === 0) {
-      const Data = {
-        id: 1,
+  const SaveAdd = async () => {
+
+    const Data = {
+      data: {
         nome: Nome,
         email: Email,
         telefone: Telefone,
         whatsapp: WhatApp,
         departamento: Departamento,
-        Cargo: Cargo,
+        cargo: Cargo,
         obs: Obs,
-        Vendedor: session?.user?.pemission === "Adm" ? 'Adm' : session?.user?.name
+        user: session?.user?.id,
+        permissao: session?.user?.pemission
       }
-      const valor = [Data];
-      setDados(valor);
-      props.onAddResp(valor)
-      onClose()
-      reset()
-    } else {
-      const Data = {
-        id: dados.length + 1,
-        nome: Nome,
-        email: Email,
-        telefone: Telefone,
-        whatsapp: WhatApp,
-        departamento: Departamento,
-        Cargo: Cargo,
-        obs: Obs,
-        Vendedor: session?.user?.pemission === "Adm" ? 'Adm' : session?.user?.name
-      }
-      const valor = [...dadosNativos, Data];
-
-      const SemVendedor = valor.filter((i: any) => i.Vendedor === '' || !i.Vendedor);
-      const setVendedor = valor.filter((i: any) => i.Vendedor === session?.user?.name);
-      const setAdm = valor.filter((i: any) => i.Vendedor === 'Adm');
-      const DataArray = [...SemVendedor, ...setVendedor, ...setAdm]
-
-      setDados(DataArray);
-      props.onAddResp(valor)
-      onClose()
-      reset()
     }
+
+    await axios(`/api/db/representantes/port`, { method: 'POST', data: Data })
+      .then(async () => {
+        try {
+          const request = await fetch(`/api/db/representantes/get?Vendedor=${session?.user.name}`);
+          const dados = await request.json();
+          setDados(dados)
+          onClose()
+          reset()
+        } catch (error) {
+          console.error("Erro ao buscar dados:", error);
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   }
 
-  function Remover(id: any) {
-    const filter = dados.filter((i: any) => i.id !== id)
-    setDados(filter)
-    props.onAddResp(filter)
 
+  function Remover(idExcluir: any) {
+    const idPessoa = idExcluir;
+    (async () => {
+      try {
+        const excluir = await axios.put(`/api/db/representantes/delet/${idPessoa}`);
+        const darespostados = excluir.data;
+        console.log("🚀 ~ file: pessoas.tsx:97 ~ Remover ~ darespostados:", darespostados)
+        const request = await fetch(`/api/db/representantes/get?Vendedor=${session?.user.name}`);
+        const dados = await request.json();
+        setDados(dados)
+        onClose()
+        reset()
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      }
+    })()
   }
 
-  function Atualizar(id: any) {
-    const [filter] = dados.filter((i: any) => i.id === id)
-    const result: pessoalResp = filter
-    setId(id)
-    setNome(result.nome);
-    setEmail(result.email);
-    setTelefone(result.telefone);
-    setWhatApp(result.whatsapp);
-    setDepartamento(result.departamento);
-    setCargo(result.Cargo);
-    setObs(result.obs);
+  function Atualizar(Respdata: any) {
+    console.log("🚀 ~ file: pessoas.tsx:113 ~ Atualizar ~ Respdata:", Respdata)
+
+
+    setId(Respdata.id)
+    setNome(Respdata.attributes.nome);
+    setEmail(Respdata.attributes.email);
+    setTelefone(Respdata.attributes.telefone);
+    setWhatApp(Respdata.attributes.whatsapp);
+    setDepartamento(Respdata.attributes.departamento);
+    setCargo(Respdata.attributes.Cargo);
+    setObs(Respdata.attributes.obs);
     setUPdate(true);
     onOpen()
   }
 
 
-  function Update(id: any) {
-    const objetoAtualizado = {
-      id: Id,
-      nome: Nome,
-      email: Email,
-      telefone: Telefone,
-      whatsapp: WhatApp,
-      departamento: Departamento,
-      Cargo: Cargo,
-      obs: Obs
-    }
-    // Encontra o objeto no array com o "id" correspondente
-    const objetoIndex = dados.findIndex((obj: any) => obj.id === Id);
+  function Update() {
+    (async () => {
+      const objetoAtualizado = {
+        data: {
+          nome: Nome,
+          email: Email,
+          telefone: Telefone,
+          whatsapp: WhatApp,
+          departamento: Departamento,
+          cargo: Cargo,
+          obs: Obs,
+          user: session?.user?.id,
+          permissao: session?.user?.pemission
+        }
+      }
+      await axios.put(`/api/db/representantes/put/${Id}`, objetoAtualizado)
+        .then(async () => {
+          try {
+            const request = await fetch(`/api/db/representantes/get?Vendedor=${session?.user.name}`);
+            const dados = await request.json();
+            setDados(dados)
+            onClose()
+            reset()
+          } catch (error) {
+            console.error("Erro ao buscar dados:", error);
+          }
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    })()
 
-    if (objetoIndex !== -1) {
-      const newArrayDeObjetos = [...dados]; // Cria uma cópia do array
-      newArrayDeObjetos[objetoIndex] = { ...objetoAtualizado, Id }; // Atualiza o objeto na cópia do array
-      setDados(newArrayDeObjetos); // Atualiza o estado com o novo array
-      props.onAddResp(newArrayDeObjetos)
-      onClose()
-      reset()
-    }
   }
 
 

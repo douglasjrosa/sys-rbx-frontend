@@ -8,17 +8,22 @@ import { IoMdClose } from "react-icons/io";
 export const PessoasData = (props: { data: any; respData: any; respAtualizar: any }) => {
   const { onOpen, onClose, isOpen } = useDisclosure()
   const [dados, setDados] = useState<any>([]);
+  const [ID, setID] = useState('');
 
 
   if (props.data && dados.length === 0) {
-    setDados(props.data)
+    setDados(props.data.attributes)
+    setID(props.data.id)
   }
+
+  const color =!dados.user.data? 'red.500' : 'messenger.500'
+  const colorButton =!dados.user.data? 'red' : 'messenger'
 
   return (
     <>
 
       <Box>
-        <Flex flexDir={'row'} gap={3} p={1} px={2} bg={'messenger.500'} h={8} alignItems={'center'} rounded={5}>
+        <Flex flexDir={'row'} gap={4} w={'auto'} p={1} px={2} bg={color} h={8} alignItems={'center'} rounded={5}>
           {primeiroNome(dados.nome)}
           <Popover
             isOpen={isOpen}
@@ -30,7 +35,7 @@ export const PessoasData = (props: { data: any; respData: any; respAtualizar: an
             <PopoverTrigger>
               <IconButton
                 p={0}
-                colorScheme='messenger'
+                colorScheme={colorButton}
                 aria-label='Call Sage'
                 fontSize='25px'
                 size={'xs'}
@@ -45,25 +50,25 @@ export const PessoasData = (props: { data: any; respData: any; respAtualizar: an
                 <PopoverCloseButton />
                 <PopoverBody>
                   <Box>
-                    {!!dados.email && <Text>Telefone: {dados.email},</Text>}
+                    {!!dados.email && <Text>Email: {dados.email},</Text>}
                     {!!dados.telefone && <Text>Telefone: {dados.telefone},</Text>}
                     {!!dados.whatsapp && <Text>Whatsapp: {dados.whatsapp},</Text>}
                     {!!dados.departamento && <Text>Departamento: {dados.departamento},</Text>}
-                    {!!dados.Cargo && <Text>cargo: {dados.Cargo},</Text>}
+                    {!!dados.cargo && <Text>cargo: {dados.cargo},</Text>}
                     {!!dados.obs && <Text mt={1}>Obs: {dados.obs},</Text>}
                   </Box>
                 </PopoverBody>
                 <PopoverFooter>
                   <Flex w={'full'} justifyContent={'end'} gap={5}>
                   <Button colorScheme='red' onClick={() => {
-                    props.respData(dados.id)
+                    props.respData(ID)
                     onClose()
                   }}
                   >
                     Remover
                   </Button>
                   <Button colorScheme='green' onClick={() => {
-                    props.respAtualizar(dados.id)
+                    props.respAtualizar(props.data)
                     onClose()
                   }}
                   >
