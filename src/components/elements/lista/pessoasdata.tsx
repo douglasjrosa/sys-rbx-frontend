@@ -16,8 +16,8 @@ export const PessoasData = (props: { data: any; respData: any; respAtualizar: an
     setID(props.data.id)
   }
 
-  const color =!dados.user.data? 'red.500' : 'messenger.500'
-  const colorButton =!dados.user.data? 'red' : 'messenger'
+  const color = !dados.user?.data ? 'red.500' : 'messenger.500'
+  const colorButton = !dados.user?.data ? 'red' : 'messenger'
 
   return (
     <>
@@ -60,20 +60,20 @@ export const PessoasData = (props: { data: any; respData: any; respAtualizar: an
                 </PopoverBody>
                 <PopoverFooter>
                   <Flex w={'full'} justifyContent={'end'} gap={5}>
-                  <Button colorScheme='red' onClick={() => {
-                    props.respData(ID)
-                    onClose()
-                  }}
-                  >
-                    Remover
-                  </Button>
-                  <Button colorScheme='green' onClick={() => {
-                    props.respAtualizar(props.data)
-                    onClose()
-                  }}
-                  >
-                    Atualizar
-                  </Button>
+                    <Button colorScheme='red' onClick={() => {
+                      props.respData(ID)
+                      onClose()
+                    }}
+                    >
+                      Remover
+                    </Button>
+                    <Button colorScheme='green' onClick={() => {
+                      props.respAtualizar(props.data)
+                      onClose()
+                    }}
+                    >
+                      Atualizar
+                    </Button>
                   </Flex>
                 </PopoverFooter>
               </PopoverContent>

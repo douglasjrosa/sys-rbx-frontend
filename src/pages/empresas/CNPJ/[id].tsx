@@ -57,7 +57,7 @@ export default function Infos() {
             try {
               const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=true`);
               const dados = request.data;
-              console.log("🚀 ~ file: pessoas.tsx:40 ~ dados:", dados)
+           
               setRepresentantes(dados)
             } catch (error) {
               console.error("Erro ao buscar dados:", error);
@@ -68,7 +68,7 @@ export default function Infos() {
             try {
               const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Adm=false`);
               const dados = request.data;
-              console.log("🚀 ~ file: pessoas.tsx:40 ~ dados:", dados)
+           
               setRepresentantes(dados)
             } catch (error) {
               console.error("Erro ao buscar dados:", error);
@@ -217,7 +217,7 @@ export default function Infos() {
               <Box px={[1, 2, 3, 5]} py={3}>
 
                 {!!Representantes && Representantes.map((item: any, index: number) => {
-                  const telefone = !item.attributes.whatsapp ? item.attributes.telefone : item.attributes.whatsapp
+                  const telefone = !item.attributes?.whatsapp ? item.attributes?.telefone : item.attributes?.whatsapp
                   console.log('pessoas', item)
 
                   return (
