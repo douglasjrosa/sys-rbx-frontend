@@ -6,9 +6,9 @@ export default async function GetEmpresa(
   res: NextApiResponse,
 ) {
   const id = req.query.id;
-  console.log("🚀 ~ file: [id].ts:9 ~ id:", id)
+
   const data = req.body;
-  console.log("🚀 ~ file: [id].ts:11 ~ data:", data)
+  
   if (req.method === 'PUT') {
     const token = process.env.ATORIZZATION_TOKEN;
 

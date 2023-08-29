@@ -9,7 +9,7 @@ export default async function GetEmpresa(
 
   if (req.method === 'PUT') {
     const token = process.env.ATORIZZATION_TOKEN;
-    console.log('aki')
+   
 
     await axios({
       method: 'PUT',
