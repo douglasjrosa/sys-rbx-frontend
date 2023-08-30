@@ -83,7 +83,7 @@ export const NegocioHeader = (props: {
       setNPedido(nPedido)
       setBpedido(props.onData.attributes.Bpedido)
       const ITENS = pedidos?.attributes
-      setPropostaId(props.onData.attributes.pedidos.data[0].id)
+      setPropostaId(props.onData.attributes?.pedidos?.data[0]?.id)
       setDataItens(ITENS?.itens)
       setBlocksave(props.nBusiness && parseInt(props.etapa) === 6 || parseInt(props.Status) === 1 && parseInt(props.etapa) === 6 ? true : false)
     }
@@ -472,9 +472,6 @@ export const NegocioHeader = (props: {
                   if (NPedido && DataItens.length > 0) {
                     router.push("/propostas/update/" + ID)
                   } else {
-                    
-                    console.log("🚀 ~ file: hearder.tsx:478 ~ onClick={ ~ PropostaId:", PropostaId)
-
                     if (PropostaId) {
                       await axios.delete(`/api/db/proposta/delete/${PropostaId}`)
                         .then((response: any) => {

@@ -9,7 +9,6 @@ export default async function GetEmpresa(
   if (req.method === 'DELETE') {
     const token = process.env.ATORIZZATION_TOKEN;
     const {id} = req.query
-    console.log("🚀 ~ file: [id].ts:12 ~ id:", id)
 
     await axios({
       method: 'DELETE',
