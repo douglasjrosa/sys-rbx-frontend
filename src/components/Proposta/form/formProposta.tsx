@@ -88,11 +88,11 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       console.log("🚀 ~ file: formProposta.tsx:82 ~ useEffect ~ resp:", resp)
       const [PROPOSTA] = resp.attributes?.pedidos.data
       setId(PROPOSTA?.id);
-      const verifiqueFrete = ENVIO === 'UPDATE'? PROPOSTA?.attributes?.frete : resp.attributes.empresa.data.attributes.frete
+      const verifiqueFrete = ENVIO === 'UPDATE' ? PROPOSTA?.attributes?.frete : resp.attributes.empresa.data.attributes.frete
       setRegistroFrete(resp.attributes.empresa.data.attributes.frete)
       setFrete(verifiqueFrete);
       setDate(PROPOSTA?.attributes?.dataPedido);
-      const verifiquePrazo = ENVIO === 'UPDATE'? PROPOSTA?.attributes?.condi : resp.attributes.empresa.data.attributes.forpg
+      const verifiquePrazo = ENVIO === 'UPDATE' ? PROPOSTA?.attributes?.condi : resp.attributes.empresa.data.attributes.forpg
       setRegistroForgpg(resp.attributes.empresa.data.attributes.forpg)
       setPrazo(verifiquePrazo);
       setRelatEmpresa(resp.attributes?.empresa.data);
@@ -119,55 +119,60 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const disbleProd = !prazo || !DateEntrega || !Loja || !frete ? false : true;
 
   const TotalGreal = () => {
-    if (ListItens.length === 0) return 0.00;
-    const totalItem = ListItens.reduce((acc: number, item: any) => {
-      const valorOriginal = Number(item.vFinal.replace(".", "").replace(",", "."))
-      const valor: number = valorOriginal;
-      const qtd: number = item.Qtd;
-      const mont: boolean = item.mont;
-      const expo: boolean = item.expo;
-      const acrec: number =
-        mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
-      const somaAcrescimo: number = acrec === 0
-        ? 0
-        : (valorOriginal * acrec - valorOriginal) * qtd;
-      const total1 = valor * qtd + somaAcrescimo;
-      const total = Number(total1.toFixed(2))
-      const somaTota = acc + total
-      const TotoalConvert = Number(somaTota.toFixed(2));
-      return TotoalConvert;
-    }, 0);
-    const ValorAtt = totalItem
-    return ValorAtt
+    if (ListItens.length === 0) {
+      return 0.00;
+    } else {
+      const totalItem = ListItens.reduce((acc: number, item: any) => {
+        const valorOriginal = Number(item.vFinal.replace(".", "").replace(",", "."))
+        const valor: number = valorOriginal;
+        const qtd: number = item.Qtd;
+        const mont: boolean = item.mont;
+        const expo: boolean = item.expo;
+        const acrec: number =
+          mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0;
+        const somaAcrescimo: number = acrec === 0
+          ? 0
+          : (valorOriginal * acrec - valorOriginal) * qtd;
+        const total1 = valor * qtd + somaAcrescimo;
+        const total = Number(total1.toFixed(2))
+        const somaTota = acc + total
+        const TotoalConvert = Number(somaTota.toFixed(2));
+        return TotoalConvert;
+      }, 0);
+      const ValorAtt = totalItem
+      return ValorAtt
+    }
   };
 
   const DescontoGeral = () => {
-    if (ListItens.length === 0) return 0.00;
-    const descontos = ListItens.map((i: any) => {
-      const valor = Number(i.vFinal.replace(".", "").replace(",", "."));
-      const ValorGeral =
-        Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
-      const descont = ValorGeral * 0.05;
-      const descont1 = descont * i.Qtd;
-      const somaDescontMin =
-        Math.round(parseFloat(descont1.toFixed(2)) * 100) / 100;
+    if (ListItens.length === 0) {
+      return 0.00;
+    } else {
+      const descontos = ListItens.map((i: any) => {
+        const valor = Number(i.vFinal.replace(".", "").replace(",", "."));
+        const ValorGeral =
+          Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
+        const descont = ValorGeral * 0.05;
+        const descont1 = descont * i.Qtd;
+        const somaDescontMin =
+          Math.round(parseFloat(descont1.toFixed(2)) * 100) / 100;
 
-      return somaDescontMin;
-    });
-    const total1 = prazo !== "Antecipado" ? 0.00 : descontos.reduce(
-      (acc: number, valorAtual: number) => acc + valorAtual
-    );
-    const total = total1;
-    return total
+        return somaDescontMin;
+      });
+      const total1 = prazo !== "Antecipado" ? 0.00 : descontos.reduce(
+        (acc: number, valorAtual: number) => acc + valorAtual
+      );
+      const total = total1;
+      return total
+    }
   };
 
   useEffect(() => {
 
     const valorTotal = TotalGreal()
     const ValorDesconto = DescontoGeral()
-    const freteValor = SetValueNumero(freteCif)
     const somaDecont = ValorDesconto + parseFloat(DescontoAdd)
-    const Soma =  valorTotal - somaDecont
+    const Soma = valorTotal - somaDecont
 
     setTotalGeral(Math.round(Soma * 100) / 100);
     setDesconto(somaDecont);
@@ -270,9 +275,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
         prazo: tipoprazo,
         totalGeral: totalValor,
         deconto: Desconto.toLocaleString("pt-br", {
-            style: "currency",
-            currency: "BRL",
-          }),
+          style: "currency",
+          currency: "BRL",
+        }),
         vendedor: session?.user.name,
         vendedorId: session?.user.id,
         frete: frete,
@@ -526,8 +531,8 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                 shadow="sm"
                 type={"date"}
                 color={'white'}
-                 size="xs"
-                 w="28"
+                size="xs"
+                w="28"
                 fontSize="xs"
                 rounded="md"
                 onChange={(e) => setDateEntrega(e.target.value)}
@@ -543,7 +548,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               </FormLabel>
               <Select
                 shadow="sm"
-                 size="xs"
+                size="xs"
                 w="28"
                 fontSize="xs"
                 rounded="md"
@@ -563,7 +568,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               </Select>
             </Box>
             <Box>
-              <SetFormaPg id={RelatEnpresaId} retorno={prazo} envio={setPrazoRetorno} Disable={RegistroForgpg && session?.user.pemission !== 'Adm'? true : false} />
+              <SetFormaPg id={RelatEnpresaId} retorno={prazo} envio={setPrazoRetorno} Disable={RegistroForgpg && session?.user.pemission !== 'Adm' ? true : false} />
             </Box>
             <Box hidden={prazo === "A Prazo" ? false : true}>
               <GetPrazoPg envio={getPrazo} id={RelatEnpresaId} retorno={tipoprazo} />
@@ -577,13 +582,13 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               </FormLabel>
               <Select
                 shadow="sm"
-                 size="xs"
+                size="xs"
                 w="24"
                 fontSize="xs"
                 rounded="md"
                 onChange={(e) => setFrete(e.target.value)}
                 value={frete}
-                isDisabled={RegistroFrete? true : false}
+                isDisabled={RegistroFrete ? true : false}
               >
                 <option style={{ backgroundColor: "#1A202C" }}>Selecione um tipo de Frete</option>
                 <option style={{ backgroundColor: "#1A202C" }} value="CIF">CIF</option>
@@ -600,7 +605,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
               <Input
                 type="text"
                 textAlign={"end"}
-                 size="xs"
+                size="xs"
                 w={24}
                 step={'0.01'}
                 fontSize="xs"
@@ -621,7 +626,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
                   <Input
                     type="text"
                     textAlign={"end"}
-                     size="xs"
+                    size="xs"
                     w={24}
                     fontSize="xs"
                     rounded="md"
@@ -633,7 +638,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
             )}
           </Box>
           <Box mt={4}>
-            <Heading  size="sm">Itens da proposta comercial</Heading>
+            <Heading size="sm">Itens da proposta comercial</Heading>
           </Box>
           <Box display="flex" gap={5} alignItems="center" mt={3} mx={5}>
             {!disbleProd && (<Box w={"300px"} />)}

@@ -59,6 +59,7 @@ export const NegocioHeader = (props: {
   const [Bpedido, setBpedido] = useState("");
   const [DataRetorno, setDataRetorno] = useState<any>();
   const [Data, setData] = useState<any | null>();
+  const [PropostaId, setPropostaId] = useState('');
   const [DataItens, setDataItens] = useState<any | null>();
   const [load, setload] = useState<boolean>(false);
   const [Blocksave, setBlocksave] = useState<boolean>(false);
@@ -66,6 +67,7 @@ export const NegocioHeader = (props: {
 
   useEffect(() => {
     if (props.onData) {
+      console.log("🚀 ~ file: hearder.tsx:69 ~ useEffect ~ props.onData:", props.onData)
       setData(props.onData)
       setStatus(parseInt(props.Status));
       setBudget(SetValue(props.Budget));
@@ -81,6 +83,7 @@ export const NegocioHeader = (props: {
       setNPedido(nPedido)
       setBpedido(props.onData.attributes.Bpedido)
       const ITENS = pedidos?.attributes
+      setPropostaId(props.onData.attributes.pedidos.data[0].id)
       setDataItens(ITENS?.itens)
       setBlocksave(props.nBusiness && parseInt(props.etapa) === 6 || parseInt(props.Status) === 1 && parseInt(props.etapa) === 6 ? true : false)
     }
@@ -229,115 +232,115 @@ export const NegocioHeader = (props: {
     props.onchat(true);
   }
 
-  const Pedido = async () => {
-    setload(true)
-    toast({
-      title: "Só um momento estou processando!",
-      status: "warning",
-      isClosable: true,
-      position: 'top-right',
-    });
-    if (Data) {
-      const [pedidos] = Data.attributes.pedidos.data
-      const nPedido = pedidos?.attributes.nPedido
-      const EmpresaId = Data.attributes.empresa.data.id
-      const valor = pedidos?.attributes.totalGeral
-      const IdNegocio = Data.id
+  // const Pedido = async () => {
+  //   setload(true)
+  //   toast({
+  //     title: "Só um momento estou processando!",
+  //     status: "warning",
+  //     isClosable: true,
+  //     position: 'top-right',
+  //   });
+  //   if (Data) {
+  //     const [pedidos] = Data.attributes.pedidos.data
+  //     const nPedido = pedidos?.attributes.nPedido
+  //     const EmpresaId = Data.attributes.empresa.data.id
+  //     const valor = pedidos?.attributes.totalGeral
+  //     const IdNegocio = Data.id
 
-      await axios({
-        url: `/api/db/nLote/${nPedido}`,
-        method: "POST",
-      })
-        .then(() => { })
-        .catch((error) => {
-          console.log(error)
-        });
+  //     await axios({
+  //       url: `/api/db/nLote/${nPedido}`,
+  //       method: "POST",
+  //     })
+  //       .then(() => { })
+  //       .catch((error) => {
+  //         console.log(error)
+  //       });
 
-      await axios({
-        url: "/api/query/pedido/" + nPedido,
-        method: "POST",
-      })
-        .then(async (response: any) => {
-          console.log(response.data)
+  //     await axios({
+  //       url: "/api/query/pedido/" + nPedido,
+  //       method: "POST",
+  //     })
+  //       .then(async (response: any) => {
+  //         console.log(response.data)
 
-          await axios({
-            url: `/api/db/trello/${nPedido}`,
-            method: "POST",
-          })
-            .then((response) => {
-              console.log(response.data)
-            })
-            .catch((error) => {
-              console.log(error)
-            });
+  //         await axios({
+  //           url: `/api/db/trello/${nPedido}`,
+  //           method: "POST",
+  //         })
+  //           .then((response) => {
+  //             console.log(response.data)
+  //           })
+  //           .catch((error) => {
+  //             console.log(error)
+  //           });
 
-          await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
-            .then((response) => {
-              console.log(response.data)
-            })
-            .catch((error) => {
-              console.log(error)
-            });
-          toast({
-            title: "Pedido realizado com sucesso!",
-            status: "success",
-            duration: 5000,
-            position: 'top-right',
-          });
-          onClose()
-          const requeste = await axios(`api/db/proposta/get/business/${IdNegocio}`);
-          const resp = requeste.data;
+  //         await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
+  //           .then((response) => {
+  //             console.log(response.data)
+  //           })
+  //           .catch((error) => {
+  //             console.log(error)
+  //           });
+  //         toast({
+  //           title: "Pedido realizado com sucesso!",
+  //           status: "success",
+  //           duration: 5000,
+  //           position: 'top-right',
+  //         });
+  //         onClose()
+  //         const requeste = await axios(`api/db/proposta/get/business/${IdNegocio}`);
+  //         const resp = requeste.data;
 
-          props.onchat(true);
-        })
-        .catch(async (err) => {
+  //         props.onchat(true);
+  //       })
+  //       .catch(async (err) => {
 
-          props.onchat(true);
-          console.log(err.response.data.message);
-          console.log(err);
-          if (err.response.data.message) {
-            await axios({
-              url: `/api/db/trello/${nPedido}`,
-              method: "POST",
-            })
-              .then((response) => {
-                console.log(response.data)
-              })
-              .catch((error) => {
-                console.log(error)
-              });
+  //         props.onchat(true);
+  //         console.log(err.response.data.message);
+  //         console.log(err);
+  //         if (err.response.data.message) {
+  //           await axios({
+  //             url: `/api/db/trello/${nPedido}`,
+  //             method: "POST",
+  //           })
+  //             .then((response) => {
+  //               console.log(response.data)
+  //             })
+  //             .catch((error) => {
+  //               console.log(error)
+  //             });
 
-            await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
-              .then((response) => {
-                console.log(response.data)
-                onClose()
-              })
-              .catch((error) => {
-                console.log(error)
-              });
-            toast({
-              title: "Opss.",
-              description: err.response.data.message,
-              status: "info",
-              duration: 5000,
-              position: 'top-right',
-              isClosable: true,
-            });
-          } else {
-            props.onchat(true);
-            toast({
-              title: "Opss.",
-              description: "Entre en contata com o suporte",
-              status: "error",
-              duration: 3000,
-              position: 'top-right',
-              isClosable: true,
-            });
-          }
-        });
-      setload(false)
-    }
-  }
+  //           await axios(`/api/db/empresas/EvaleuateSale?id=${EmpresaId}&vendedor=${session?.user.name}&vendedorId=${session?.user.id}&valor=${valor}`)
+  //             .then((response) => {
+  //               console.log(response.data)
+  //               onClose()
+  //             })
+  //             .catch((error) => {
+  //               console.log(error)
+  //             });
+  //           toast({
+  //             title: "Opss.",
+  //             description: err.response.data.message,
+  //             status: "info",
+  //             duration: 5000,
+  //             position: 'top-right',
+  //             isClosable: true,
+  //           });
+  //         } else {
+  //           props.onchat(true);
+  //           toast({
+  //             title: "Opss.",
+  //             description: "Entre en contata com o suporte",
+  //             status: "error",
+  //             duration: 3000,
+  //             position: 'top-right',
+  //             isClosable: true,
+  //           });
+  //         }
+  //       });
+  //     setload(false)
+  //   }
+  // }
 
   function getStatus(statusinf: SetStateAction<any>) {
     setStatus(parseInt(statusinf));
@@ -465,11 +468,25 @@ export const NegocioHeader = (props: {
             <>
               <Button
                 colorScheme={"green"}
-                onClick={() => {
-                  if (NPedido) {
+                onClick={async () => {
+                  if (NPedido && DataItens.length > 0) {
                     router.push("/propostas/update/" + ID)
                   } else {
-                    router.push(`/propostas/create/${ID}`);
+                    
+                    console.log("🚀 ~ file: hearder.tsx:478 ~ onClick={ ~ PropostaId:", PropostaId)
+
+                    if (PropostaId) {
+                      await axios.delete(`/api/db/proposta/delete/${PropostaId}`)
+                        .then((response: any) => {
+                          console.log(response.data)
+                          router.push(`/propostas/create/${ID}`);
+                        })
+                        .catch((error: any) => {
+                          console.log(error);
+                        })
+                    }else {
+                      router.push(`/propostas/create/${ID}`);
+                    }
                   }
                 }}
               >
