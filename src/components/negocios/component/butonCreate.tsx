@@ -168,7 +168,7 @@ export const BtCreate = (props: { user: any; onLoading: any }) => {
           </PopoverHeader>
           <PopoverArrow bg="blue.800" />
           <PopoverBody>
-            Preencha com as informações abaixo2
+            Preencha com as informações abaixo
             <Select
               mt={2}
               onChange={(e) => setEmpresa(e.target.value)}
