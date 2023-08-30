@@ -228,7 +228,7 @@ export default function Infos() {
                           <Box w={'50%'}>
                             <Flex gap={3}>
                               <chakra.p>Cargo:</chakra.p>
-                              <chakra.p>{item.attributes?.Cargo}</chakra.p>
+                              <chakra.p>{item.attributes?.cargo}</chakra.p>
                             </Flex>
                             <Flex gap={3}>
                               <chakra.p>Departamento:</chakra.p>
