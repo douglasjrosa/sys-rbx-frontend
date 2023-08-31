@@ -56,6 +56,7 @@ export const CarteiraVendedor = (props: {filtro: any }) => {
 
     const interacaolist = filter(empresa)
     const interacao = encontrarObjetoMaisProximoComCor(interacaolist)
+    
 
     return (
       <>

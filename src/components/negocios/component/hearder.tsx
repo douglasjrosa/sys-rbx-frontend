@@ -67,7 +67,6 @@ export const NegocioHeader = (props: {
 
   useEffect(() => {
     if (props.onData) {
-      console.log("🚀 ~ file: hearder.tsx:69 ~ useEffect ~ props.onData:", props.onData)
       setData(props.onData)
       setStatus(parseInt(props.Status));
       setBudget(SetValue(props.Budget));

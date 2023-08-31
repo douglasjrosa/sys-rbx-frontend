@@ -8,7 +8,8 @@ export default async function GetEmpresa(
   const token = process.env.ATORIZZATION_TOKEN;
   if (req.method === "GET" && req.query.Empresa !== "") {
     const Empresa = req.query.Empresa;
-    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes?filters[empresa][nome][$eq]=${Empresa}&populate=*`;
+    console.log("🚀 ~ file: index.ts:11 ~ Empresa:", Empresa)
+    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/interacoes?filters[empresa][nome][$containsi]=${Empresa}&populate=*`;
 
     await axios(url, {
       headers: {
@@ -18,6 +19,7 @@ export default async function GetEmpresa(
     })
       .then((RequestEnpresa) => {
         res.status(200).json(RequestEnpresa.data.data);
+        console.log("🚀 ~ file: index.ts:21 ~ .then ~ RequestEnpresa.data.data:", RequestEnpresa.data.data)
       })
       .catch((error) => {
         console.log(error);

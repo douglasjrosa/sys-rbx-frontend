@@ -352,7 +352,7 @@ export default function Infos() {
               </Flex>
               <Flex h={'70%'} overflowY={'auto'} flexDir={'column'} gap={3}>
                 {Interacoes.map((i: any) => {
-                  // console.log(i)
+                  console.log(i)
                   const [obj] = ObjContato.filter((o: any) => o.id == i.attributes?.objetivo).map((d: any) => d.title)
                   const [tipo] = TipoContato.filter((t: any) => t.id == i.attributes?.tipo).map((d: any) => d.title)
                   const date = new Date(parseISO(i.attributes?.proxima))
@@ -398,7 +398,7 @@ export default function Infos() {
                 </thead>
                 <tbody>
                   {Negocio.map((i: any) => {
-                    console.log(i);
+                    // console.log(i);
                     const valor = !!i.attributes?.Budget && parseFloat(i.attributes?.Budget.replace('.', '').replace(',', '.'))
 
                     const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes?.andamento).map((s: any) => s.title)
