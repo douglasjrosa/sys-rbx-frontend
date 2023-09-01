@@ -23,6 +23,7 @@ export const CompPrazo = (props: { Resp: string; onAddResp: any; oncnpj: string 
     }
   }, [props.Resp, valor, dados]);
 
+
   const listEmpr = [
     { nome: 'Alliage', cnpj: '55979736001460' },
     { nome: 'Dentemed', cnpj: '07897039000100' },
