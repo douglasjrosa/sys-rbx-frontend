@@ -2,19 +2,26 @@ import { CarteiraAusente } from "@/components/empresa/component/empresas_ausente
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor";
 import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa";
 import { Box, Button, Flex, Heading, chakra, useToast } from "@chakra-ui/react";
+import { AnyCnameRecord } from "dns";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+/**
+ * This function filters the list of empresas based on the given SearchEmpr parameter.
+ *
+ * @param {React.SetStateAction<any>} SearchEmpr - The value to filter the empresas list.
+ * @return {AnyCnameRecord} This function does not return anything.
+ */
 
-function Empresas() {
+function Empresas(): any {
   const router = useRouter();
   const { data: session } = useSession();
   const [DataSearch, setDataSearch] = useState<any | null>({ status: 0, data: [] });
   const [DataSearchUser, setDataSearchUser] = useState<any | null>({ status: 0, data: [] });
   const toast = useToast()
 
-  function filterEmpresa(SearchEmpr: React.SetStateAction<any>) {
+  function filterEmpresa(SearchEmpr: React.SetStateAction<any>): any {
     (async () => {
       const filtro = SearchEmpr.toLowerCase();
       const resultadouser: any = [];
@@ -43,7 +50,7 @@ function Empresas() {
               if (filtro) {
                 if (session?.user.pemission !== "Adm") {
                   return toast({
-                    render: () => (
+                    render: (): any => (
                       <Box color='white' py={1} px={3} bg='yellow.600' textAlign={'center'} rounded={8}>
                         <chakra.p>{item.attributes.nome}</chakra.p>
                         <chakra.p>CNPJ: {item.attributes.CNPJ}</chakra.p>
