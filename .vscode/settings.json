@@ -8,6 +8,10 @@
     "arraycliente",
     "ATORIZZATION",
     "Atras",
+<<<<<<< HEAD
+=======
+    "atualizacao",
+>>>>>>> 6b89f07af0ce40e9d3a52f5c642d9df8c229d2ab
     "Basse",
     "Blocksave",
     "bolditalics",
@@ -19,6 +23,7 @@
     "calendario",
     "captalize",
     "cerrenponde",
+<<<<<<< HEAD
     "Clinet",
     "codig",
     "codigo",
@@ -26,6 +31,20 @@
     "conclucao",
     "Concluido",
     "Conclusao",
+=======
+    "Chao",
+    "Clinet",
+    "Clinete",
+    "codig",
+    "codigo",
+    "codpais",
+    "comcluida",
+    "conclucao",
+    "Concluido",
+    "conclusao",
+    "Conclusao",
+    "confg",
+>>>>>>> 6b89f07af0ce40e9d3a52f5c642d9df8c229d2ab
     "constget",
     "containsi",
     "Creat",
@@ -44,6 +63,10 @@
     "docname",
     "efect",
     "Empr",
+<<<<<<< HEAD
+=======
+    "EMPRESAID",
+>>>>>>> 6b89f07af0ce40e9d3a52f5c642d9df8c229d2ab
     "Empresamin",
     "EMVIO",
     "endereco",
@@ -57,8 +80,15 @@
     "fitro",
     "Fornec",
     "forpg",
+<<<<<<< HEAD
     "funcionario",
     "getclinete",
+=======
+    "Fragil",
+    "funcionario",
+    "getclinete",
+    "getcnpj",
+>>>>>>> 6b89f07af0ce40e9d3a52f5c642d9df8c229d2ab
     "getfornecdor",
     "getinf",
     "Gezb",
@@ -67,7 +97,14 @@
     "Hysn",
     "icone",
     "identfi",
+<<<<<<< HEAD
     "Incicio",
+=======
+    "inativ",
+    "Incicio",
+    "inscricao",
+    "inscricoes",
+>>>>>>> 6b89f07af0ce40e9d3a52f5c642d9df8c229d2ab
     "interacao",
     "interacaolist",
     "interacaos",
@@ -97,6 +134,10 @@
     "pdfmake",
     "Pdido",
     "pedidonomero",
+<<<<<<< HEAD
+=======
+    "penultima",
+>>>>>>> 6b89f07af0ce40e9d3a52f5c642d9df8c229d2ab
     "Pesqisa",
     "pessoasdata",
     "pgto",
@@ -112,7 +153,14 @@
     "Relaod",
     "Relat",
     "requet",
+<<<<<<< HEAD
     "resphtml",
+=======
+    "Resi",
+    "resphtml",
+    "respons",
+    "Responsavel",
+>>>>>>> 6b89f07af0ce40e9d3a52f5c642d9df8c229d2ab
     "Respose",
     "resultadouser",
     "retono",
@@ -132,6 +180,10 @@
     "susseso",
     "tablecalc",
     "Tablecalc",
+<<<<<<< HEAD
+=======
+    "teset",
+>>>>>>> 6b89f07af0ce40e9d3a52f5c642d9df8c229d2ab
     "Tota",
     "totoal",
     "tranparent",
