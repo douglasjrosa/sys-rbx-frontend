@@ -67,6 +67,7 @@ export default async function GetEmpresa(
         incidentRecord: data.incidentRecord,
         empresa: Number(data.empresa),
         vendedor: data.vendedor,
+        vendedor_name: data.vendedor_name,
         andamento: 3,
         etapa: 2,
       },

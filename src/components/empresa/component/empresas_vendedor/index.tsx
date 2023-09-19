@@ -1,5 +1,4 @@
 import Loading from "@/components/elements/loading";
-import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { Box, Flex, Heading } from "@chakra-ui/react"
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -10,54 +9,31 @@ import { FaMoneyBillAlt } from "react-icons/fa";
 
 export const CarteiraVendedor = (props: {filtro: any }) => {
   const [Data, setData] = useState<any | null>(null);
-  const [Interacao, setInteracao] = useState<any | null>(null);
   const { data: session } = useSession()
   const router = useRouter()
-  
 
 
   useEffect(() => {
-    if (props.filtro.status === 1) {
-      setData(props.filtro.data)
-    } else {
-      (async () => {
-        try {
-          const request = await fetch(`/api/db/empresas/getEmpresamin/vendedor?EMPRESAS=true&Vendedor=${session?.user.name}`);
-          const dados = await request.json();
-          setData(dados)
-          const requestInt = await fetch(`/api/db/empresas/interacoes`);
-          const dadosInt = await requestInt.json();
-          setInteracao(dadosInt)
-        } catch (error) {
-          console.error("Erro ao buscar dados:", error);
-        }
-      })()
+    if (props.filtro.length > 0) {
+      setData(props.filtro)
     }
-  }, [props.filtro, session?.user.name])
+  }, [props.filtro])
 
-
-
-  const filter = (empresa: string) => {
-    const interacaolist = !Interacao ? [] : Interacao?.filter((f: any) => f.attributes?.vendedor.data?.attributes.username === session?.user?.name && f.attributes?.empresa.data?.attributes.nome === empresa)
-    return interacaolist
-  }
 
   const BodyTabela = !!Data && Data.map((i: any) => {
-    const empresa = i.attributes.nome
 
     const negocio = i.attributes.businesses.data.length > 0 ? i.attributes.businesses.data : []
 
     const iconeTest = negocio.filter((n: any) => {
-      if (n.attributes.andamento === 3 && n.attributes.etapa !== 6) {
+      if (n.attributes.andamento === 3 && n.attributes.etapa !== 6 && n.attributes.vendedor_name == session?.user?.name) {
         return true
       } else {
         return false
       }
     });
 
-    const interacaolist = filter(empresa)
-    const interacao = encontrarObjetoMaisProximoComCor(interacaolist)
-    
+    const interacao = i.attributes.interacaos.data
+
 
     return (
       <>
@@ -67,7 +43,7 @@ export const CarteiraVendedor = (props: {filtro: any }) => {
           <td style={{ padding: '0.3rem 1.2rem' }}>{i.attributes.nome}</td>
           <td style={{ padding: '0.3rem 1.2rem' }}>{!!interacao && (
             <Flex w={'100%'} justifyContent={'center'}>
-              {i.attributes.interacaos.data.length === 0 ? null : (<HiChatBubbleLeftRight color={interacao.cor} fontSize={'1.5rem'} />)}
+              {interacao.length === 0 ? null : (<HiChatBubbleLeftRight color={interacao.cor} fontSize={'1.5rem'} />)}
             </Flex>
           )}</td>
           <td style={{ padding: '0.3rem 1.2rem' }}>{iconeTest.length > 0 && (
@@ -116,4 +92,3 @@ export const CarteiraVendedor = (props: {filtro: any }) => {
     </>
   )
 }
-

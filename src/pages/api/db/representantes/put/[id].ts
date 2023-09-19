@@ -6,9 +6,10 @@ export default async function GetEmpresa(
   res: NextApiResponse,
 ) {
   const id = req.query.id;
-
+  const cnpj: any = req.query.cnpj;
+  const USER: any = req.query.USER;
   const data = req.body;
-  
+
   if (req.method === 'PUT') {
     const token = process.env.ATORIZZATION_TOKEN;
 
@@ -33,6 +34,9 @@ export default async function GetEmpresa(
           detalhe: err.response.data.error.details,
         });
       });
+
+
+
   } else {
     return res.status(405).send({ message: 'Only PUT requests are allowed' });
   }

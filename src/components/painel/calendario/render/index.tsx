@@ -13,7 +13,7 @@ export const RenderCalendar = (props: { data: any }) => {
       {calendarData.map((part: any, index: number) => {
 
         return (
-        <Flex key={index} bg={'gray.700'} direction="column" w={part.length === 8? '58rem': part.length === 7? '51rem': part.length === 5? '37rem':part.length === 9? '65rem':part.length === 6? '44rem':'50rem'} alignItems={'center'} pt='3' pb='3'>
+        <Flex key={index} bg={'gray.700'} direction="column" w={part.length === 4? '30rem': part.length === 8? '58rem': part.length === 7? '51rem': part.length === 5? '37rem':part.length === 9? '65rem':part.length === 6? '44rem':'50rem'} alignItems={'center'} pt='3' pb='3'>
           <Box>
             <chakra.span fontSize={'16px'} fontWeight={'medium'} color={'white'}>{index === 0 ? 'Vendas do 1° Decêndio' : index === 1 ? 'Vendas do 2° Decêndio' : 'Vendas do 3° Decêndio'}</chakra.span>
           </Box>

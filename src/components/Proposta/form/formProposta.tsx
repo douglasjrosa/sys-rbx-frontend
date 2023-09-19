@@ -68,7 +68,7 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
   const [Id, setId] = useState("");
   const [clientePedido, setClientePedido] = useState("");
   const [RegistroForgpg, setRegistroForgpg] = useState("");
-  console.log("🚀 ~ file: formProposta.tsx:70 ~ FormProposta ~ RegistroForgpg:", RegistroForgpg)
+  console.log("🚀 ~ file: formProposta.tsx:71 ~ FormProposta ~ RegistroForgpg:", RegistroForgpg)
   const [RegistroFrete, setRegistroFrete] = useState("");
   const [ENVIO, setEMVIO] = useState("");
   const [incidentRecord, setIncidentRecord] = useState([]);
@@ -82,10 +82,11 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
     setEMVIO(props.envio);
   }
 
+  console.log("🚀 ~ file: formProposta.tsx:87 ~ useEffect ~ props.ondata:", props.ondata)
   useEffect(() => {
     if (props.ondata) {
       const resp = props.ondata
-      console.log("🚀 ~ file: formProposta.tsx:82 ~ useEffect ~ resp:", resp)
+
       const [PROPOSTA] = resp.attributes?.pedidos.data
       setId(PROPOSTA?.id);
       const verifiqueFrete = ENVIO === 'UPDATE' ? PROPOSTA?.attributes?.frete : resp.attributes.empresa.data.attributes.frete
@@ -105,7 +106,9 @@ export const FormProposta = (props: { ondata: any | null; produtos: any; ITENS: 
       setHistory(resp.attributes.history);
       setMSG(resp.attributes.incidentRecord)
       setClientePedido(PROPOSTA?.attributes?.cliente_pedido)
-      setTipoPrazo(PROPOSTA?.attributes?.prazo)
+
+      setTipoPrazo(resp.attributes.empresa.data.attributes.maxPg)
+      
       setDateEntrega(PROPOSTA?.attributes?.dataEntrega)
       setHistory(resp.attributes.history);
       setCnpj(resp.attributes.empresa.data.attributes.CNPJ)

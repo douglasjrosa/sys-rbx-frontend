@@ -1,9 +1,10 @@
 import { capitalizeWords } from '@/function/captalize';
-import { Box, Button, Flex, FormControl, FormLabel, GridItem, Heading, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, SimpleGrid, Textarea, useDisclosure } from '@chakra-ui/react';
+import { Box, Button, Flex, FormControl, FormLabel, GridItem, Heading, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Select, SimpleGrid, Textarea, useDisclosure, useToast } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { PessoasData } from './pessoasdata';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
+
 
 interface pessoalResp {
   id: number;
@@ -16,8 +17,10 @@ interface pessoalResp {
   obs: string;
 }
 
-export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
+export const CompPessoa = (props: { Resp: any; onAddResp: any; cnpj: any }) => {
   const [dados, setDados] = useState<any>([]);
+  const [Vendedores, setVendedores] = useState<any>([]);
+  const [VendedorId, setVendedorId] = useState<any>('');
   const [ID, setID] = useState('');
   const [Nome, setNome] = useState('');
   const [Email, setEmail] = useState('');
@@ -29,10 +32,22 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
   const [Id, setId] = useState<number>();
   const [UPdate, setUPdate] = useState(false);
   const { data: session } = useSession();
+  const [Bloq, setBloq] = useState(false);
+  const toast = useToast()
+
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
+    (async () => {
+      try {
+        const Response = await axios.get('/api/db/user/getGeral');
+        const dataVendedor = Response.data;
+        setVendedores(dataVendedor);
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      }
+    })()
     if (session?.user.pemission === 'Adm') {
       (async () => {
         try {
@@ -71,7 +86,7 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
   }
 
   const SaveAdd = async () => {
-
+    setBloq(true)
     const Data = {
       data: {
         nome: Nome,
@@ -87,7 +102,7 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
       }
     }
 
-    await axios(`/api/db/representantes/port`, { method: 'POST', data: Data })
+    await axios(`/api/db/representantes/port?USER=${session?.user.name}&cnpj=${props.cnpj}`, { method: 'POST', data: Data })
       .then(async () => {
         if (session?.user.pemission === 'Adm') {
           (async () => {
@@ -98,8 +113,10 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
               setDados(dados)
               onClose()
               reset()
+              setBloq(false)
             } catch (error) {
               console.error("Erro ao buscar dados:", error);
+              setBloq(false)
             }
           })()
         } else {
@@ -111,14 +128,17 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
               setDados(dados)
               onClose()
               reset()
+              setBloq(false)
             } catch (error) {
               console.error("Erro ao buscar dados:", error);
+              setBloq(false)
             }
           })()
         }
       })
       .catch((err) => {
         console.error(err)
+        setBloq(false)
       })
   }
 
@@ -126,47 +146,53 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
   function Remover(idExcluir: any) {
     const idPessoa = idExcluir;
     (async () => {
+      setBloq(true)
       try {
-        const excluir = await axios.put(`/api/db/representantes/delet/${idPessoa}`);
+        const excluir = await axios.put(`/api/db/representantes/delet/${idPessoa}?USER=${session?.user.name}&cnpj=${props.cnpj}`);
         const darespostados = excluir.data;
-      
+        console.log(darespostados)
+
+        toast({
+          title: 'Pessoa removida com sucesso',
+          status: 'success',
+          duration: 9000,
+          isClosable: true,
+          position: 'top-right',
+        })
+
         if (session?.user.pemission === 'Adm') {
-          (async () => {
-            try {
-              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=true`);
-              const dados = request.data;
+          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=true`);
+          const dados = request.data;
+          console.log("🚀 ~ file: pessoas.tsx:166 ~ dados:", dados)
+          setDados(dados)
 
-              setDados(dados)
-              onClose()
-              reset()
-            } catch (error) {
-              console.error("Erro ao buscar dados:", error);
-            }
-          })()
+          console.log('adm')
+          onClose()
+          reset()
+          setBloq(false)
+
+
         } else {
-          (async () => {
-            try {
-              const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=false`);
-              const dados = request.data;
+          console.log('user')
 
-              setDados(dados)
-              onClose()
-              reset()
-            } catch (error) {
-              console.error("Erro ao buscar dados:", error);
-            }
-          })()
+          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=false`);
+          const dados = request.data;
+
+          setDados(dados)
+          onClose()
+          reset()
+          setBloq(false)
+
         }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
+        setBloq(false)
       }
     })()
   }
 
   function Atualizar(Respdata: any) {
-
-
-
+    setVendedorId(Respdata.attributes.user?.data?.id)
     setId(Respdata.id)
     setNome(Respdata.attributes.nome);
     setEmail(Respdata.attributes.email);
@@ -182,6 +208,7 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
 
   function Update() {
     (async () => {
+      setBloq(true)
       const objetoAtualizado = {
         data: {
           nome: Nome,
@@ -191,11 +218,11 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
           departamento: Departamento,
           cargo: Cargo,
           obs: Obs,
-          user: session?.user?.id,
-          permissao: session?.user?.pemission
+          user: VendedorId,
+          permissao: VendedorId == session?.user?.id ? 'User' : 'Adm',
         }
       }
-      await axios.put(`/api/db/representantes/put/${Id}`, objetoAtualizado)
+      await axios.put(`/api/db/representantes/put/${Id}?USER=${session?.user.name}&cnpj=${props.cnpj}`, objetoAtualizado)
         .then(async () => {
           if (session?.user.pemission === 'Adm') {
             (async () => {
@@ -206,8 +233,10 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
                 setDados(dados)
                 onClose()
                 reset()
+                setBloq(false)
               } catch (error) {
                 console.error("Erro ao buscar dados:", error);
+                setBloq(false)
               }
             })()
           } else {
@@ -219,17 +248,52 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
                 setDados(dados)
                 onClose()
                 reset()
+                setBloq(false)
               } catch (error) {
                 console.error("Erro ao buscar dados:", error);
+                setBloq(false)
               }
             })()
           }
         })
         .catch((err) => {
           console.error(err)
+          setBloq(false)
         })
     })()
 
+  }
+
+  async function handlereload() {
+    if (session?.user.pemission === 'Adm') {
+      (async () => {
+        try {
+          const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=true`);
+          const dados = request.data;
+
+          setDados(dados)
+          onClose()
+          reset()
+          setBloq(false)
+        } catch (error) {
+          console.error("Erro ao buscar dados:", error);
+          setBloq(false)
+        }
+      })()
+    } else {
+      try {
+        const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${props.Resp}&Adm=false`);
+        const dados = request.data;
+
+        setDados(dados)
+        onClose()
+        reset()
+        setBloq(false)
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+        setBloq(false)
+      }
+    }
   }
 
 
@@ -245,7 +309,7 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
           + Nova Pessoa
         </Button>
 
-        {dados.map((i: any) => <PessoasData key={i.id} data={i} respData={Remover} respAtualizar={Atualizar} />)}
+        {dados.map((i: any) => <PessoasData key={i.id} data={i} respData={Remover} respAtualizar={Atualizar} reload={handlereload} />)}
 
       </Flex>
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -380,6 +444,45 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
                     value={Cargo}
                   />
                 </FormControl>
+                {session?.user.pemission === 'Adm' && <FormControl as={GridItem} colSpan={9}>
+                  <FormLabel
+                    fontSize="xs"
+                    fontWeight="md"
+                  >
+                    Vendedor
+                  </FormLabel>
+                  <Select
+                    focusBorderColor="white"
+                    bg={'#ffffff12'}
+                    shadow="sm"
+                    size="xs"
+                    w="full"
+                    rounded="md"
+                    onChange={(e) => setVendedorId(e.target.value)}
+                    value={VendedorId}
+
+                  >
+                    <option
+                      style={{ backgroundColor: '#515151', color: 'white' }}
+                      value=''
+                    ></option>
+                    {Vendedores.map((i: any) => {
+                      return (
+                        <option
+                          key={i.id}
+                          // bg={'gray.600'}
+                          style={{ backgroundColor: '#515151', color: 'white' }}
+                          value={i.id}
+                        >
+                          {i.username}
+                        </option>
+                      );
+                    })}
+
+                  </Select>
+
+                </FormControl>
+                }
 
               </SimpleGrid>
 
@@ -405,8 +508,8 @@ export const CompPessoa = (props: { Resp: any; onAddResp: any; }) => {
 
           </ModalBody>
           <ModalFooter>
-            {!UPdate && <Button colorScheme='blue' mr={3} onClick={SaveAdd}>Adicionar</Button>}
-            {!!UPdate && <Button colorScheme='blue' mr={3} onClick={Update}>Atualizar</Button>}
+            {!UPdate && <Button colorScheme='blue' mr={3} isDisabled={Bloq} onClick={SaveAdd}>Adicionar</Button>}
+            {!!UPdate && <Button colorScheme='blue' mr={3} isDisabled={Bloq} onClick={Update}>Atualizar</Button>}
 
           </ModalFooter>
         </ModalContent>

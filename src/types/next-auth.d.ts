@@ -51,7 +51,7 @@ declare module 'next-auth' {
   interface User {
     confirmed?: boolean;
     blocked?: boolean;
-    permission?: string;
+    pemission?: string;
     primeiro_acesso?: boolean;
   }
 }

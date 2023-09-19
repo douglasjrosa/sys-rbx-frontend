@@ -26,6 +26,20 @@ function formatarTelefone(telefone: any) {
   }
 }
 
+function verificarString(str: any) {
+  // Check if the string contains the words with different variations of uppercase/lowercase
+  const wordRegex = /\b(?:Dias|dias|Dia|dia)\b/;
+  const hasWord = wordRegex.test(str);
+
+  // If the word is found, return the original string
+  if (hasWord) {
+    return str;
+  }
+
+  // If the word is not found, append " Dias" to the string
+  return str + " Dias";
+}
+
 export default async function GetEmpresa(
   req: NextApiRequest,
   res: NextApiResponse
@@ -85,6 +99,8 @@ export default async function GetEmpresa(
     );
     const imageContent = fs.readFileSync(imagePath).toString("base64");
     const dataUrl = `data:image/jpeg;base64,${imageContent}`;
+
+
 
     const date = new Date().toLocaleDateString("pt-BR");
     const fonts = {
@@ -533,7 +549,7 @@ export default async function GetEmpresa(
                                 {
                                   margin: [0, 5, 0, 0],
                                   border: [false, false, false, false],
-                                  text: infos.condi === 'Antecipado' || infos.condi === 'Antecipado' ? null: infos.prazo,
+                                  text: infos.condi === 'Antecipado' || infos.condi === 'Antecipado' ? null: verificarString(infos.prazo),
                                   style: "clienteFornecedor",
                                 },
                               ],

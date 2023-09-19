@@ -9,20 +9,24 @@ export const PostPedido = async (dados: any) => {
   const apiKeyRenato: any = process.env.ATORIZZATION_TOKEN_BLING_RENATO;
 
   const DaDos = await dados.attributes;
-  console.log("🚀 ~ file: index.ts:12 ~ PostPedido ~ DaDos:", DaDos)
+  console.log("🚀 ~ file: index.ts:12 ~ PostPedido ~ DaDos:", DaDos);
 
   const empresa = DaDos.empresa.data.attributes;
   const empresaId = DaDos.empresa.data.id;
   const empresaUlt = DaDos.empresa.data.attributes.ultima_compra;
   const Produto = await DaDos.itens;
 
-  const CnpjFornecedor = DaDos.fornecedorId.data.attributes.CNPJ
-  const numeroClinete = DaDos.cliente_pedido
+  const CnpjFornecedor = DaDos.fornecedorId.data.attributes.CNPJ;
+  const numeroClinete = DaDos.cliente_pedido;
 
-  const apiKey = CnpjFornecedor == 17757153000180 ? apiKeyMax : CnpjFornecedor == '04586593000170' ? apiKeyBragheto : apiKeyRenato
+  const apiKey =
+    CnpjFornecedor == 17757153000180
+      ? apiKeyMax
+      : CnpjFornecedor == "04586593000170"
+      ? apiKeyBragheto
+      : apiKeyRenato;
   // console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", apiKey)
   // console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", CnpjFornecedor)
-
 
   const Produtos = Produto.map((i: any) => {
     const valorOriginal = Number(i.vFinal.replace(".", "").replace(",", "."));
@@ -39,7 +43,6 @@ export const PostPedido = async (dados: any) => {
       acrec === 0 ? 0 : valorOriginal * acrec - valorOriginal;
     const valor: number = somaAcrescimo + valorOriginal;
     const valorUnit = Math.round(parseFloat(valor.toFixed(2)) * 100) / 100;
-
 
     const setItens = `
     <item>
@@ -67,8 +70,8 @@ export const PostPedido = async (dados: any) => {
   });
 
   const xmlprodutos = Array.isArray(Produtos)
-  ? Produtos.reduce((acc: any, cur: any) => acc + cur)
-  : Produtos;
+    ? Produtos.reduce((acc: any, cur: any) => acc + cur)
+    : Produtos;
 
   const prazo1 = !DaDos.prazo || DaDos.prazo === "" ? "5 Dias" : DaDos.prazo;
   const Valor = DaDos.totalGeral
@@ -105,7 +108,6 @@ export const PostPedido = async (dados: any) => {
     return templateParcela;
   });
 
-
   const parcela = () => {
     const prazo1 = "5 Dias";
     const prazo = prazo1.replace("Dias", "");
@@ -141,19 +143,20 @@ export const PostPedido = async (dados: any) => {
   };
 
   const [xmlParcelas] =
-  DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
-  ? parcela()
-  : datasParcelas;
+    DaDos.condi === "Antecipado" || DaDos.condi === "À vista"
+      ? parcela()
+      : datasParcelas;
 
-
-  const desconto = parseFloat(DaDos.desconto.replace("R$", "").replace(".", "").replace(",", "."));
+  const desconto = parseFloat(
+    DaDos.desconto.replace("R$", "").replace(".", "").replace(",", ".")
+  );
   // console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", DaDos.desconto)
   // console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", desconto)
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
      <cliente>
-        <nome>${empresa.nome}</nome>
+        <nome>${empresa.razao}</nome>
         <tipoPessoa>J</tipoPessoa>
         <endereco>${empresa.endereco}</endereco>
         <cpf_cnpj>${empresa.CNPJ}</cpf_cnpj>
@@ -171,11 +174,24 @@ export const PostPedido = async (dados: any) => {
      <itens>${xmlprodutos}</itens>
      <parcelas>${xmlParcelas}</parcelas>
      <nf_produtor_rural_referenciada />
-     <vlr_frete>${DaDos.frete !== 'CIF'? '' : !DaDos.valorFrete? 0.00 : parseFloat(DaDos.valorFrete.replace("R$", "").replace(".", "").replace(",", "."))}</vlr_frete>
+     <vlr_frete>${
+       DaDos.frete !== "CIF"
+         ? ""
+         : !DaDos.valorFrete
+         ? 0.0
+         : parseFloat(
+             DaDos.valorFrete
+               .replace("R$", "")
+               .replace(".", "")
+               .replace(",", ".")
+           )
+     }</vlr_frete>
      <vlr_desconto>${desconto}</vlr_desconto>
-     <obs>${DaDos.obs}${!numeroClinete? '' : `N° pedido cliente: ${numeroClinete}`}</obs>
+     <obs>${DaDos.obs}${
+    !numeroClinete ? "" : `N° pedido cliente: ${numeroClinete}`
+  }</obs>
   </pedido>`;
-  console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml)
+  console.log("🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml);
 
   try {
     const formData = new FormData();
@@ -186,13 +202,13 @@ export const PostPedido = async (dados: any) => {
       method: "POST",
       body: formData,
     };
-      // console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
+    // console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
 
     const requet = await fetch(url + "/pedido/json/", requestOptions);
     const response = await requet.json();
 
     const { pedidos, erros } = response.retorno;
-    console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ erros:", erros)
+    console.log("🚀 ~ file: index.ts:193 ~ PostPedido ~ erros:", erros);
 
     const txt =
       "Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)";
@@ -230,11 +246,11 @@ export const PostPedido = async (dados: any) => {
 
     return resposta;
   } catch (error: any) {
-    console.log("🚀 ~ file: index.ts:230 ~ PostPedido ~ error:", error)
+    console.log("🚀 ~ file: index.ts:230 ~ PostPedido ~ error:", error);
     const errorResponse: ApiErrorResponse = {
       message: error.message ?? `Solicitação inválida`,
-      status:  400,
-      erro: '',
+      status: 400,
+      erro: "",
       detalhes: error.detalhes ?? "",
     };
     throw errorResponse;

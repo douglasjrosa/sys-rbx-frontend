@@ -11,6 +11,7 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
   const [Id, setId] = useState("");
   const [Data, setData] = useState<any>([]);
   const { onOpen, onClose, isOpen } = useDisclosure()
+  const [Block, setBlock] = useState(false)
   const firstFieldRef = useRef(null)
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
   }, [props.id, props.retorno])
 
   const salvar = async () => {
+    setBlock(true)
     const Dados = {
       data: {
         title: Titulo,
@@ -40,6 +42,7 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
     }
 
     await axios({
+
       method: "POST",
       url: `/api/db/empresas/setMaxPrazoPg`,
       data: Dados
@@ -54,12 +57,16 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
           setValor('')
           setTitulo('')
           onClose()
+          setBlock(false)
         } catch (error) {
           console.log(error)
+          setBlock(false)
         }
 
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err)
+        setBlock(false)});
   }
 
 
@@ -92,7 +99,7 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
               Selecione uma tabela
             </option>
             {Data.map((i: any) => {
-              console.log(i)
+
               return (
                 <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.attributes.value}>
                   {i.attributes.title}
@@ -153,7 +160,7 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
                 <Button variant='outline' onClick={onClose}>
                   Cancel
                 </Button>
-                <Button isDisabled={!Valor || !Titulo} colorScheme='teal' onClick={salvar}>
+                <Button isDisabled={Block} colorScheme='teal' onClick={salvar}>
                   Salvar
                 </Button>
               </ButtonGroup>

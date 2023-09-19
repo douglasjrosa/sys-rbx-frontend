@@ -5,12 +5,14 @@ import { useState, useEffect, useRef } from "react";
 
 
 export const FormaPg = (props: { id: any; retorno: any; envio: any }) => {
-  const [maxPg, setMaxpg] = useState("0");
+  const [maxPg, setMaxpg] = useState("Antecipado");
+  console.log("🚀 ~ file: FomaPg.tsx:9 ~ FormaPg ~ maxPg:", maxPg)
   const [Titulo, setTitulo] = useState("");
   const [Valor, setValor] = useState("");
   const [Id, setId] = useState("");
   const [Data, setData] = useState<any>([]);
   const { onOpen, onClose, isOpen } = useDisclosure()
+  const [Block, setBlock] = useState(false)
   const firstFieldRef = useRef(null)
 
   useEffect(() => {
@@ -31,6 +33,7 @@ export const FormaPg = (props: { id: any; retorno: any; envio: any }) => {
   }, [props.id, props.retorno])
 
   const salvar = async () => {
+    setBlock(true)
     const Dados = {
       data: {
         title: Titulo,
@@ -54,11 +57,16 @@ export const FormaPg = (props: { id: any; retorno: any; envio: any }) => {
           setValor('')
           setTitulo('')
           onClose()
+          setBlock(false)
         } catch (error) {
           console.log(error)
+          setBlock(false)
         }
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err)
+        setBlock(false)
+      });
   }
 
 
@@ -87,7 +95,7 @@ export const FormaPg = (props: { id: any; retorno: any; envio: any }) => {
             Selecione uma condição de pagamento
           </option>
           {Data.map((i: any) => {
-            console.log(i)
+
             return (
               <option style={{ backgroundColor: "#1A202C" }} key={i.id} value={i.attributes.value}>
                 {i.attributes.title}
@@ -133,7 +141,7 @@ export const FormaPg = (props: { id: any; retorno: any; envio: any }) => {
                 <Button variant='outline' onClick={onClose}>
                   Cancel
                 </Button>
-                <Button isDisabled={!Valor || !Titulo} colorScheme='teal' onClick={salvar}>
+                <Button isDisabled={Block} colorScheme='teal' onClick={salvar}>
                   Salvar
                 </Button>
               </ButtonGroup>

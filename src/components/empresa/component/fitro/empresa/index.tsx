@@ -25,6 +25,13 @@ export const FiltroEmpresa = (props: { empresa: any }) => {
           rounded="md"
           onChange={(e) => setSearchEmpr(e.target.value)}
           value={SearchEmpr}
+          onBlur={(e) => {
+            const value = e.target.value
+            if(value.length == 0){
+              setSearchEmpr('')
+              Pesqisa()
+            }
+          }}
         />
         <Button px={8} size={'sm'} onClick={Pesqisa} colorScheme="green">Filtro</Button>
       </Flex>

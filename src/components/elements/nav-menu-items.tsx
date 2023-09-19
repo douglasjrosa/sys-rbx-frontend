@@ -1,3 +1,4 @@
+import { BsPeopleFill } from 'react-icons/bs';
 import { FaMoneyBillAlt } from 'react-icons/fa';
 import { GiCube } from 'react-icons/gi';
 import { MdBusiness } from 'react-icons/md';
@@ -20,45 +21,29 @@ const NavMenuItems = [
     iconComponent: <FaMoneyBillAlt />,
     permission: 'User',
   },
-  // {
-  //   id: '3',
-  //   url: '/tarefas',
-  //   text: 'Tarefas',
-  //   icon: FaTasks,
-  //   iconComponent: <FaTasks />,
-  //   permission: 'Adm',
-  // },
-  // {
-  //   id: '4',
-  //   url: '/Propostas/adm',
-  //   text: 'Propostas',
-  //   icon: AiOutlineCodepen,
-  //   iconComponent: <AiOutlineCodepen />,
-  //   permission: 'Adm',
-  // },
   {
-    id: '5',
+    id: '3',
     url: '/empresas',
     text: 'Empresas',
     icon: MdBusiness,
     iconComponent: <MdBusiness />,
     permission: 'User',
   },
-  // {
-  //   id: '6',
-  //   url: '/pessoas/ativate',
-  //   text: 'Pessoas',
-  //   icon: BsPeopleFill,
-  //   iconComponent: <BsPeopleFill />,
-  //   permission: 'Adm',
-  // },
   {
-    id: '7',
+    id: '4',
     url: '/produtos',
     text: 'Produtos',
     icon: GiCube,
     iconComponent: <GiCube />,
     permission: 'User',
+  },
+  {
+    id: '5',
+    url: '/vendedor',
+    text: 'Vendedores',
+    icon: BsPeopleFill,
+    iconComponent: <BsPeopleFill />,
+    permission: 'Adm',
   },
 ];
 

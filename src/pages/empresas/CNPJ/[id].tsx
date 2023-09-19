@@ -9,7 +9,7 @@ import { MaskCnpj } from "@/function/Mask/cnpj";
 import { formatarTelefone } from "@/function/Mask/telefone-whatsapp";
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso";
 import { capitalizeWords } from "@/function/captalize";
-import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Link } from "@chakra-ui/react";
+import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Link, Switch } from "@chakra-ui/react";
 import axios from "axios";
 import { parseISO } from "date-fns";
 import { useSession } from "next-auth/react";
@@ -40,6 +40,9 @@ export default function Infos() {
   const [Historico, setHistorico] = useState([])
   const [Negocio, setNegocio] = useState([])
   const [Interacoes, setInteracoes] = useState([])
+  const [isHovered, setIsHovered] = useState(false);
+  const [StatusAt, setStatusAt] = useState(true);
+  const [ItenIndex, setItenIndex] = useState('');
 
   const [load, setload] = useState(true)
   const toast = useToast()
@@ -52,7 +55,7 @@ export default function Infos() {
         const request = await axios(`/api/db/empresas/getId/${ID}`);
         const response = request.data?.data;
 
-        if(session?.user.pemission === 'Adm'){
+        if (session?.user.pemission === 'Adm') {
           (async () => {
             try {
               const request = await axios(`/api/db/representantes/get?Vendedor=${session?.user.name}&Empresa=${ID}&Adm=true`);
@@ -134,13 +137,15 @@ export default function Infos() {
       const dados = {
         data: {
           "vendedor": session?.user.id,
+          "vendedor_name": session?.user.name,
           "empresa": ID,
           "descricao": Descricao,
           "tipo": parseInt(Tipo),
           "objetivo": parseInt(Objetivo),
           "proxima": Proximo,
           "pontual": true,
-          "CNPJ": CNPJ
+          "CNPJ": CNPJ,
+          "status_atendimento": StatusAt
         }
       }
 
@@ -185,8 +190,20 @@ export default function Infos() {
     }
   }
 
-  const Alert = encontrarObjetoMaisProximoComCor(Interacoes)
+  const vendedor: any = session?.user.name
+
+  const Alert = encontrarObjetoMaisProximoComCor(Interacoes, vendedor)
   const letra = Alert?.cor === 'yellow' ? 'black' : 'white'
+
+  const handleMouseEnter = (i: any) => {
+    setIsHovered(true);
+    setItenIndex(i)
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setItenIndex('')
+  };
 
 
   return (
@@ -352,7 +369,7 @@ export default function Infos() {
               </Flex>
               <Flex h={'70%'} overflowY={'auto'} flexDir={'column'} gap={3}>
                 {Interacoes.map((i: any) => {
-                  console.log(i)
+
                   const [obj] = ObjContato.filter((o: any) => o.id == i.attributes?.objetivo).map((d: any) => d.title)
                   const [tipo] = TipoContato.filter((t: any) => t.id == i.attributes?.tipo).map((d: any) => d.title)
                   const date = new Date(parseISO(i.attributes?.proxima))
@@ -387,18 +404,19 @@ export default function Infos() {
 
             {/* últimos negocios */}
             <Box w={'100%'} bg={'#2d3748'} rounded={16} p={5}>
-              <Box><Heading size={'md'} mb={3}>Últimas Negocios</Heading></Box>
+              <Box><Heading size={'md'} mb={3}>Últimos Negocios</Heading></Box>
               <table style={{ width: '100%' }}>
                 <thead>
                   <tr>
+                    <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}></th>
                     <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Etapa</th>
                     <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Status</th>
                     <th style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>Valor</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {Negocio.map((i: any) => {
-                    // console.log(i);
+                  {Negocio.map((i: any, index: number) => {
+                    console.log(i.id);
                     const valor = !!i.attributes?.Budget && parseFloat(i.attributes?.Budget.replace('.', '').replace(',', '.'))
 
                     const [Status] = StatusAndamento.filter((s: any) => s.id == i.attributes?.andamento).map((s: any) => s.title)
@@ -407,12 +425,15 @@ export default function Infos() {
 
                     const color = i.attributes?.etapa === 6 && i.attributes?.andamento === 1 ? 'red' : i.attributes?.etapa === 6 && i.attributes?.andamento === 5 ? 'green' : 'yellow';
 
+                    const IndexLista = `${index}`
+
                     return (
                       <>
-                        <tr>
+                        <tr key={i.id} style={{ backgroundColor: isHovered && ItenIndex == IndexLista ? '#ffffff40' : 'transparent', cursor: 'pointer', transition: 'background-color 0.2s' }} onMouseEnter={() => handleMouseEnter(index)} onMouseLeave={handleMouseLeave} onClick={() => router.push(`/negocios/${i.id}`)}>
+                          <td style={{ textAlign: 'center', color: color }}>{index + 1}</td>
                           <td style={{ textAlign: 'center', color: color }}>{andamento}</td>
                           <td style={{ textAlign: 'center', color: color }}>{Status}</td>
-                          <td style={{ textAlign: 'center', color: color }}>{valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                          <td style={{ textAlign: 'center', color: color }}>{!! valor && valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                         </tr>
                       </>
                     )
@@ -558,6 +579,21 @@ export default function Infos() {
                     />
                   </Box>
                 </FormControl>
+
+                <FormControl as={GridItem} colSpan={12}>
+                  <Heading as={GridItem} colSpan={12} size="sd">
+                    Status de Contato
+                  </Heading>
+                  <Box as={GridItem} colSpan={12} >
+                    <Switch
+                      colorScheme='red'
+                      size='sm'
+                      isChecked={StatusAt}
+                      onChange={(e) => setStatusAt(e.target.checked)}
+                    />
+                  </Box>
+                </FormControl>
+
                 <FormControl as={GridItem} colSpan={12}>
                   <Flex w={'100%'} alignItems={'flex-end'} justifyContent={'space-between'}>
                     <Box>

@@ -8,6 +8,7 @@ export const GetPrazoPg = (props: { id: any; retorno: any; envio: any }) => {
   const [maxPg, setMaxpg] = useState("0");
   const [Data, setData] = useState<any>([]);
 
+  console.log("🚀 ~ file: getPrazopg.tsx:13 ~ useEffect ~ props.retorno:", props.retorno)
   useEffect(() => {
     if (props.retorno) {
       setMaxpg(props.retorno)

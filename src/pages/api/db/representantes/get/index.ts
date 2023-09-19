@@ -7,10 +7,11 @@ export default async function GetEmpresa(
   res: NextApiResponse
 ) {
   const token = process.env.ATORIZZATION_TOKEN;
-  if (req.method === "GET" && req.query.Vendedor !== "") {
+  if (req.method === "GET" ) {
     const Vendedor = req.query.Vendedor;
     const Empresa = req.query.Empresa;
-    
+  
+
     if (req.query.Adm == "true") {
 
       try {
