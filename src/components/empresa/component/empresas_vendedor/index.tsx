@@ -13,6 +13,7 @@ export const CarteiraVendedor = (props: {filtro: any }) => {
   const [Interacao, setInteracao] = useState<any | null>(null);
   const { data: session } = useSession()
   const router = useRouter()
+  
 
 
   useEffect(() => {
