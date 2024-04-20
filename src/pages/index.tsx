@@ -43,7 +43,6 @@ const Painel: React.FC = () => {
           // `http://localhost:3000/api/db/business/get/calendar?DataIncicio=2023-08-01T03:00:00.000Z&DataFim=2023-08-31T03:00:00.000Z&Vendedor=Virginia`
           const response = await axios.get(`/api/db/business/get/calendar?DataIncicio=${daysOfMonth.DataInicio}&DataFim=${daysOfMonth.DataFim}&Vendedor=${User}`);
           setData(response.data.data);
-          console.log("🚀 ~ file: index.tsx:46 ~ response.data.data:", response.data.data)
           setAndamento(response.data.em_aberto)
           setPerdido(response.data.perdido)
           setConcluido(response.data.conclusao)

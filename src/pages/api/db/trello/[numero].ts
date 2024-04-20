@@ -76,8 +76,6 @@ export default async function PostTrello(
     //Membros
     const trelloMembers: string[] = [
       "5fd10678fbc6b504679737d4" /*Daniela*/,
-      "62a736038685171186013ba4" /*Expedição*/,
-      "5ff74138721978652e0293bb" /*Jesuila*/,
       "63e13cb526cca27c0d30f648" /*Edna*/,
       "63e13887ef5b25eea224493e" /*Luciana*/,
       "5d7bbf629972e80b374829bb" /*Fábrica*/,
