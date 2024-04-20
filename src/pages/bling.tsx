@@ -100,7 +100,6 @@ const Bling: React.FC = () => {
 					<FormControl>
 						<FormLabel>Bling account:</FormLabel>
 						<Input
-							value="Daniela"
 							type="text"
 							name="account"
 							focusBorderColor="#ffff"
@@ -115,7 +114,6 @@ const Bling: React.FC = () => {
 					<FormControl>
 						<FormLabel>Client id:</FormLabel>
 						<Input
-							value="ba810d4636a9eae931e879f450f9d3d4dfad3a5b"
 							type="text"
 							name="client_id"
 							focusBorderColor="#ffff"
@@ -130,7 +128,6 @@ const Bling: React.FC = () => {
 					<FormControl>
 						<FormLabel>Client secret:</FormLabel>
 						<Input
-							value="584f2bce80f9c5706367a22c63ab122eb47ec8fe7753cbeb02e6213dd193"
 							type="text"
 							name="client_secret"
 							focusBorderColor="#ffff"

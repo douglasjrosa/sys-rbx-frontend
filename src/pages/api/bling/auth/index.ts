@@ -1,16 +1,16 @@
 import { refreshToken, updateToken } from "@/function/update-bling-token"
 import { NextApiRequest, NextApiResponse } from "next"
 
-function isExpired ( expires_in: string, createdAt: string ) {
+function isExpired ( expires_in: string, updatedAt: string ) {
 
-	const dateCreated = new Date( createdAt )
+	const dateCreated = new Date( updatedAt )
 	const timeCreated = dateCreated.getTime()
 
 	const timeExpires = timeCreated + (parseInt( expires_in ) * 1000) - 1200 // 20 minutos antes de expirar
 
 	const now = new Date()
 	const timeNow = now.getTime()
-
+	
 	return timeNow > timeExpires
 }
 
@@ -42,11 +42,11 @@ export default async function getToken (
 
 			const {
 				expires_in,
-				createdAt,
+				updatedAt,
 				access_token,
 			} = current_token.data[ 0 ].attributes
 
-			if ( isExpired( expires_in, createdAt ) ) {
+			if ( isExpired( expires_in, updatedAt ) ) {
 				const {
 					refresh_token,
 					client_id,
@@ -62,7 +62,7 @@ export default async function getToken (
 					newToken.expires_in,
 					newToken.refresh_token
 				)
-				console.log({validToken})
+				
 				res.status( 200 ).json( validToken )
 			}
 			else
