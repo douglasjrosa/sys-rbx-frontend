@@ -59,7 +59,7 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
           onClose()
           setBlock(false)
         } catch (error) {
-          console.log(error)
+          console.error( error )
           setBlock(false)
         }
 

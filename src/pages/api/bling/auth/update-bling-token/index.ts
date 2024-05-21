@@ -1,10 +1,12 @@
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+
 export async function refreshToken (
 	client_id: string,
 	client_secret: string,
 	refresh_token: string
 ) {
-	const newToken = await fetch( "https://localhost:3000/api/bling/auth/refresh", {
+	const newToken = await fetch( `${ baseUrl }/api/bling/auth/refresh`, {
 		method: "POST",
 		body: JSON.stringify( { client_id, client_secret, refresh_token } )
 	} ).then( r => r.json() )
@@ -23,7 +25,7 @@ export async function updateToken (
 	refresh_token: string
 ) {
 
-	await fetch( "https://localhost:3000/api/db/tokens/bling/update", {
+	await fetch( `${ baseUrl }/api/db/tokens/bling/update`, {
 		method: "PUT",
 		body: JSON.stringify( { id, access_token, expires_in, refresh_token } )
 	} ).then( r => r.json() )
@@ -32,11 +34,5 @@ export async function updateToken (
 }
 
 export async function getBlingToken ( account: string ) {
-	return await fetch( `/api/bling/auth?account=${ account }` ).then( r => r.json() ).then( ( access_token: string | any ) => {
-		if ( typeof access_token !== "string" ) {
-			console.error( { access_token } )
-			throw new Error( "Erro ao tentar obter o access_token" )
-		}
-		return access_token
-	} )
+	return await fetch( `${ baseUrl }/api/bling/auth?account=${ account }` ).then( r => r.json() )
 }

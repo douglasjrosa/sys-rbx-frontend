@@ -32,14 +32,14 @@ export  const PostLoteRibermmax =async (nPedido:string) => {
     formData.append("qtde", i.attributes.qtde);
 
     const promessa = PHP.post("/lotes", formData)
-      .then(async (response) => {
+      .then( (response) => {
 
         return {
-          msg: await response.data.message,
-          lote: await response.data.lotes,
+          msg: response.data.message,
+          lote: response.data.lotes,
         };
       })
-      .catch(async(error: any) => {
+      .catch( async (error: any) => {
         const data = {
           log: {
             "cliente[CNPJ]": i.attributes.CNPJClinet,

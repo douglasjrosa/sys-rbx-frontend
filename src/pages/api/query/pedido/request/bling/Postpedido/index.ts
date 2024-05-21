@@ -1,6 +1,6 @@
 import { RegCompraFim } from "@/pages/api/db/lib/empresa_reg_final"
 import { ApiErrorResponse } from "../../../../../../../types/axiosErrosPedido"
-import { SaveRespose } from "../../db/post/SaveRespose"
+import { SaveRespose } from "../../db/post/SaveResponse"
 
 export const PostPedido = async ( dados: any ) => {
 	const url = process.env.BLING_API_URL
@@ -10,7 +10,6 @@ export const PostPedido = async ( dados: any ) => {
 	const apiKeyDaniela: any = process.env.ATORIZZATION_TOKEN_BLING_DANIELA
 
 	const DaDos = await dados.attributes
-	console.log( "🚀 ~ file: index.ts:12 ~ PostPedido ~ DaDos:", DaDos )
 
 	const empresa = DaDos.empresa.data.attributes
 	const empresaId = DaDos.empresa.data.id
@@ -25,9 +24,9 @@ export const PostPedido = async ( dados: any ) => {
 			? apiKeyMax : CnpjFornecedor == "04586593000170"
 				? apiKeyBragheto : CnpjFornecedor == "45683129000180"
 					? apiKeyDaniela : apiKeyRenato
-	
-	// console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", apiKey)
-	// console.log("🚀 ~ file: index.ts:19 ~ PostPedido ~ apiKey:", CnpjFornecedor)
+
+
+
 
 	const Produtos = Produto.map( ( i: any ) => {
 		const valorOriginal = Number( i.vFinal.replace( ".", "" ).replace( ",", "." ) )
@@ -91,11 +90,11 @@ export const PostPedido = async ( dados: any ) => {
 		dataParcela.setDate( dataParcela.getDate() + pp )
 		const valorParcela = ValorTotal / ParcelasMult
 
-		// Verifica se a data cai em sábado ou domingo
+
 		if ( dataParcela.getDay() === 6 ) {
-			dataParcela.setDate( dataParcela.getDate() + 2 ) // Adiciona dois dias para cair na segunda-feira
+			dataParcela.setDate( dataParcela.getDate() + 2 )
 		} else if ( dataParcela.getDay() === 0 ) {
-			dataParcela.setDate( dataParcela.getDate() + 1 ) // Adiciona um dia para cair na segunda-feira
+			dataParcela.setDate( dataParcela.getDate() + 1 )
 		}
 
 		const obs = x === 0 ? "Entrada" : `Parcela N°:${ x + 1 }`
@@ -121,9 +120,9 @@ export const PostPedido = async ( dados: any ) => {
 		const ValorTotal = parseFloat( Valor )
 
 		if ( dataParcela.getDay() === 6 ) {
-			dataParcela.setDate( dataParcela.getDate() + 2 ) // Adiciona dois dias para cair na segunda-feira
+			dataParcela.setDate( dataParcela.getDate() + 2 )
 		} else if ( dataParcela.getDay() === 0 ) {
-			dataParcela.setDate( dataParcela.getDate() + 1 ) // Adiciona um dia para cair na segunda-feira
+			dataParcela.setDate( dataParcela.getDate() + 1 )
 		}
 		const obs =
 			DaDos.condi === "Antecipado"
@@ -150,8 +149,8 @@ export const PostPedido = async ( dados: any ) => {
 	const desconto = parseFloat(
 		DaDos.desconto.replace( "R$", "" ).replace( ".", "" ).replace( ",", "." )
 	)
-	// console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", DaDos.desconto)
-	// console.log("🚀 ~ file: index.ts:150 ~ PostPedido ~ DaDos.desconto:", desconto)
+
+
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
   <pedido>
@@ -189,7 +188,6 @@ export const PostPedido = async ( dados: any ) => {
      <obs>${ DaDos.obs }${ !numeroClinete ? "" : `N° pedido cliente: ${ numeroClinete }`
 		}</obs>
   </pedido>`
-	console.log( "🚀 ~ file: index.ts:172 ~ PostPedido ~ xml:", xml )
 
 	try {
 		const formData = new FormData()
@@ -200,13 +198,12 @@ export const PostPedido = async ( dados: any ) => {
 			method: "POST",
 			body: formData,
 		}
-		// console.log("🚀 ~ file: index.ts:173 ~ PostPedido ~ formData:", formData)
+
 
 		const requet = await fetch( url + "/pedido/json/", requestOptions )
 		const response = await requet.json()
 
 		const { pedidos, erros } = response.retorno
-		console.log( "🚀 ~ file: index.ts:193 ~ PostPedido ~ erros:", erros )
 
 		const txt =
 			"Pedido ja cadastrado no sistema - Um pedido com o mesmo hash ja encontra-se cadastrado (25)"
@@ -244,7 +241,6 @@ export const PostPedido = async ( dados: any ) => {
 
 		return resposta
 	} catch ( error: any ) {
-		console.log( "🚀 ~ file: index.ts:230 ~ PostPedido ~ error:", error )
 		const errorResponse: ApiErrorResponse = {
 			message: error.message ?? `Solicitação inválida`,
 			status: 400,

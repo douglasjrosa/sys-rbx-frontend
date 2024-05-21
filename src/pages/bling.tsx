@@ -33,7 +33,7 @@ const Bling: React.FC = () => {
 	const [ fail, setFail ] = useState( "" )
 
 
-	const registerBlingApiToken: ( accountToken: AccountToken ) => Promise<boolean> = async ( accountToken ) => {
+	const registerBlingApiToken = async ( accountToken: AccountToken ): Promise<boolean> => {
 		try {
 
 			const register = await fetch( "/api/db/tokens/bling/register", {

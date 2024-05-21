@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { PostPedido } from "./request/bling/Postpedido"
 import axios from "axios"
 
 export default async function PedidoBling (
@@ -20,8 +19,7 @@ export default async function PedidoBling (
 			const [ data ]: any = infos
 			const negocio = data.attributes.business.data.attributes
 			if ( negocio.andamento === 5 && negocio.etapa === 6 ) {
-				const getPedido = await PostPedido( data )
-				res.status( 200 ).send( getPedido )
+				res.status( 200 ).send( data )
 			} else {
 				res.status( 500 ).json( { message: "esse negocio nao esta Concluido" } )
 			}
