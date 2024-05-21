@@ -37,16 +37,16 @@ export const TabelaVendasVendedor = ( props: { id: any, update: any } ) => {
 				status: 'success',
 				duration: 9000,
 				isClosable: true
-			} )
-				( async () => {
-					try {
-						const request = await axios( `/api/db/config/getid/${ IDVendedor }` )
-						const retorno = request.data
-						setData( retorno )
-					} catch ( error ) {
-						console.error( error )
-					}
-				} )()
+			} );
+			( async () => {
+				try {
+					const request = await axios( `/api/db/config/getid/${ IDVendedor }` )
+					const retorno = request.data
+					setData( retorno )
+				} catch ( error ) {
+					console.error( error )
+				}
+			} )()
 		} catch ( error: any ) {
 			console.error( error )
 			toast( {
