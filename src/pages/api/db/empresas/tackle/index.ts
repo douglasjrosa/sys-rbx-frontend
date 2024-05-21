@@ -11,7 +11,7 @@ export default async function Tackle (
 
 	try {
 		const token = process.env.ATORIZZATION_TOKEN
-		const baseUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL
+		const baseUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL as string || `https://${ process.env.NEXT_PUBLIC_VERCEL_URL }`
 		const vendedor = req.query.Vendedor
 		const empresaId = req.query.EMPRESAID
 

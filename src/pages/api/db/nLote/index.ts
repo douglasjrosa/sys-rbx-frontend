@@ -4,7 +4,7 @@ import axios from "axios"
 const NloteEnvi: any = process.env.LOTE_INICIAL
 const token = process.env.ATORIZZATION_TOKEN
 const baseUrl = axios.create( {
-	baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
+	baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL as string || `https://${ process.env.NEXT_PUBLIC_VERCEL_URL }`,
 	headers: {
 		Authorization: `Bearer ${ token }`,
 		"Content-Type": "application/json",

@@ -1,5 +1,5 @@
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string || `https://${ process.env.NEXT_PUBLIC_VERCEL_URL }`
 
 export async function refreshToken (
 	client_id: string,

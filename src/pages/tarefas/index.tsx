@@ -6,7 +6,7 @@ import React from 'react'
 
 
 export const getServerSideProps: GetServerSideProps<{ dataRetorno: any }> = async ( context ) => {
-	const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string
+	const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string || `https://${ process.env.NEXT_PUBLIC_VERCEL_URL }`
 	const res = await fetch( `${ baseUrl }/api/db/empresas/empresalist` )
 	const repo = await res.json()
 	const session = await getSession( { req: context.req } )

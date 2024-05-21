@@ -34,7 +34,7 @@ export default async function PostTrello (
 ) {
 	if ( req.method === "POST" ) {
 		const { numero } = req.query
-		const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string
+		const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string || `https://${ process.env.NEXT_PUBLIC_VERCEL_URL }`
 
 		const requestPedido = await axios( {
 			url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos?populate=*&filters[nPedido][$eq]=${ numero }`,
