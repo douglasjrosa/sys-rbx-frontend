@@ -1,15 +1,21 @@
 {
-  "extends": "next/core-web-vitals",
-  "plugins": ["unused-imports"],
-  "rules": {
-    "unused-imports/no-unused-imports-ts": "error"
-  },
-  "overrides": [
-    {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
-        "unused-imports/no-unused-imports-ts": ["error"]
-      }
-    }
-  ]
+	"extends": [
+		"next",
+		"next/core-web-vitals"
+	],
+	"plugins": [
+		"unused-imports"
+	],
+	"rules": {
+		"unused-imports/no-unused-imports": "error",
+		"unused-imports/no-unused-vars": [
+			"warn",
+			{
+				"vars": "all",
+				"varsIgnorePattern": "^_",
+				"args": "after-used",
+				"argsIgnorePattern": "^_"
+			}
+		]
+	}
 }

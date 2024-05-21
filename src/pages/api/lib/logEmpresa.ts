@@ -40,11 +40,9 @@ export const LogEmpresa = async (
 
 		const response = await STRAPI.post( `/log-empresas`, DobyData )
 		return "Empresa alterada com sucesso"
-	} catch ( err: any ) {
-		"registro erro de log alteração de empresas",
-			err.response.data
-		)
-return err.response.data
+	} catch ( error: any ) {
+		console.error( error )
+		return error
 	}
 };
 
