@@ -25,7 +25,7 @@ interface AccountToken {
 
 const Bling: React.FC = () => {
 
-	const { query: { code } } = useRouter()
+	const { query: { code, cnpj, client_id, client_secret } } = useRouter()
 
 	const [ formData, setFormData ] = useState<any>( {} )
 	const [ registered, setRegistered ] = useState( false )
@@ -40,7 +40,7 @@ const Bling: React.FC = () => {
 				method: "POST",
 				body: JSON.stringify( { data: accountToken } )
 			} ).then( ( r ) => r.json() )
-			
+			console.log(register)
 			return register.data.attributes.hasOwnProperty( "access_token" )
 
 		} catch ( error ) {
@@ -65,6 +65,7 @@ const Bling: React.FC = () => {
 					const { code, ...restFormData } = formData
 					const { scope, token_type, ...restResponseData } = responseData
 					const accountToken = {
+						mainAccount: false,
 						...restFormData,
 						...restResponseData
 					}
@@ -121,8 +122,8 @@ const Bling: React.FC = () => {
 							size="md"
 							w="full"
 							rounded="md"
-							isDisabled={ disabled }
-							required
+							readOnly
+							value={ client_id }
 						/>
 					</FormControl>
 					<FormControl>
@@ -135,8 +136,36 @@ const Bling: React.FC = () => {
 							size="md"
 							w="full"
 							rounded="md"
-							isDisabled={ disabled }
-							required
+							readOnly
+							value={ client_secret }
+						/>
+					</FormControl>
+					<FormControl>
+						<FormLabel>Code:</FormLabel>
+						<Input
+							type="text"
+							name="code"
+							focusBorderColor="#ffff"
+							bg='#ffffff12'
+							size="md"
+							w="full"
+							rounded="md"
+							readOnly
+							value={ code }
+						/>
+					</FormControl>
+					<FormControl>
+						<FormLabel>CNPJ:</FormLabel>
+						<Input
+							type="text"
+							name="cnpj"
+							focusBorderColor="#ffff"
+							bg='#ffffff12'
+							size="md"
+							w="full"
+							rounded="md"
+							readOnly
+							value={ cnpj }
 						/>
 					</FormControl>
 				</Stack>
@@ -152,7 +181,6 @@ const Bling: React.FC = () => {
 						Registrar Token
 					</Button>
 				</Flex>
-				<Input type="hidden" name="code" value={ code } />
 			</chakra.form>
 			{ registered &&
 				<Box my={ 50 } p={ 20 } bg={ 'green.600' } rounded="xl">

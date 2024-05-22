@@ -3,8 +3,8 @@ import { NextApiRequest, NextApiResponse } from "next"
 const strapiToken = process.env.ATORIZZATION_TOKEN
 const strapiEndpoint = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/tokens`
 
-const accountExists = async ( account: string ): Promise<boolean> => {
-	const filters = `/filters[account][$eq]=${ account }`
+const accountExists = async ( cnpj: string ): Promise<number> => {
+	const filters = `/?filters[cnpj][$eq]=${ cnpj }`
 	const response = await fetch( strapiEndpoint + filters, {
 		method: "GET",
 		headers: {
@@ -12,13 +12,13 @@ const accountExists = async ( account: string ): Promise<boolean> => {
 			Authorization: `Bearer ${ strapiToken }`,
 		},
 	} )
-
+	
 	if ( !response.ok ) {
 		throw new Error( `Erro ao fazer a requisição. Status: ${ response.status }` )
 	}
-
+	
 	const searchAccount = await response.json()
-	return searchAccount.data.length > 0
+	return searchAccount.data?.length > 0 ? searchAccount.data[0].id : 0
 }
 
 export default async function POST ( req: NextApiRequest, res: NextApiResponse ) {
@@ -26,12 +26,15 @@ export default async function POST ( req: NextApiRequest, res: NextApiResponse )
 		res.status( 405 ).json( { error: "Método não permitido. Apenas POST é permitido." } )
 		return
 	}
-
+	
 	try {
 		const data = JSON.parse( req.body )
-		const method = await accountExists( data.data.account ) ? "PUT" : "POST"
+		const accountId = await accountExists( data.data.cnpj )
 
-		const response = await fetch( strapiEndpoint, {
+		const method = accountId ? "PUT" : "POST"
+		const strapiEndpointComplement = accountId ? `/${ accountId }` : ""
+		
+		const response = await fetch( strapiEndpoint + strapiEndpointComplement, {
 			method,
 			headers: {
 				"Content-Type": "application/json",
