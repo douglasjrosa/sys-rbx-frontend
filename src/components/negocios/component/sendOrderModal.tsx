@@ -1,12 +1,6 @@
 import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, saveNewClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
 import { Button, Modal, Text, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
-import { useCallback, useEffect, useState } from "react"
-
-	// to do: Particionar as reqs do Bling
-
-	// to do: ajeitar a data de emissão dos pedidos no Bling
-
-	// to do: Nfe em produção em Daniela
+import { useCallback, useState } from "react"
 
 
 const SendOrderButton = ( props: any ) => {
