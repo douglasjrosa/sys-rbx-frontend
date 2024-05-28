@@ -40,7 +40,6 @@ const Bling: React.FC = () => {
 				method: "POST",
 				body: JSON.stringify( { data: accountToken } )
 			} ).then( ( r ) => r.json() )
-			console.log(register)
 			return register.data.attributes.hasOwnProperty( "access_token" )
 
 		} catch ( error ) {

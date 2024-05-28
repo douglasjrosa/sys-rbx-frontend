@@ -484,7 +484,12 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 	}
 
 	const fetchAccounts = useCallback( async () => {
-		const accounts = await fetch( '/api/strapi/tokens' ).then( r => r.json() )
+		const response = await fetch( '/api/strapi/tokens' )
+		
+		if( !response.ok ) console.error( response )
+
+		const accounts = await response.json()
+		
 		setBlingAccounts( accounts.data )
 		const mainAccount = accounts.data.filter(
 			( account: any ) => account.attributes.mainAccount

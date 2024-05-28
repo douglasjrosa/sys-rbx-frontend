@@ -5,14 +5,7 @@ import {
 	FormLabel,
 	Heading,
 	Input,
-	Modal,
-	ModalBody,
-	ModalContent,
-	ModalFooter,
-	ModalHeader,
-	ModalOverlay,
 	Select,
-	Text,
 	useDisclosure,
 	useToast,
 } from "@chakra-ui/react"
@@ -25,8 +18,8 @@ import { StatusPerca } from "@/components/data/perca"
 import { EtapasNegocio } from "@/components/data/etapa"
 import { BtmRetorno } from "@/components/elements/btmRetorno"
 import { SetValue } from "@/function/currenteValor"
-import { pedido } from "@/function/setpedido"
 import formatarDataParaSaoPaulo from "@/function/formatHora"
+import SendOrderModal from "./sendOrderModal"
 
 export const NegocioHeader = ( props: {
 	nBusiness: string
@@ -44,6 +37,8 @@ export const NegocioHeader = ( props: {
 	onchat: any
 	onData: any
 } ) => {
+
+	const { isOpen, onOpen, onClose } = useDisclosure()
 	const router = useRouter()
 	const ID = router.query.id
 	const toast = useToast()
@@ -55,19 +50,19 @@ export const NegocioHeader = ( props: {
 	const [ Approach, setApproach ] = useState( "" )
 	const [ Budget, setBudget ] = useState<any>()
 	const [ Deadline, setDeadline ] = useState( "" )
-	const [ NPedido, setNPedido ] = useState( "" )
+	const [ nPedido, setNPedido ] = useState<string>( "" )
 	const [ Bpedido, setBpedido ] = useState( "" )
 	const [ DataRetorno, setDataRetorno ] = useState<any>()
-	const [ Data, setData ] = useState<any | null>()
 	const [ PropostaId, setPropostaId ] = useState( '' )
 	const [ DataItens, setDataItens ] = useState<any | null>()
-	const [ load, setload ] = useState<boolean>( false )
 	const [ Blocksave, setBlocksave ] = useState<boolean>( false )
-	const { isOpen, onOpen, onClose } = useDisclosure()
+
+	const [ pedido, setPedido ] = useState<any>( { attributes: {}} )
+	const [ orderData, setOrderData ] = useState<any | null>()
+
 
 	useEffect( () => {
 		if ( props.onData ) {
-			setData( props.onData )
 			setStatus( parseInt( props.Status ) )
 			setBudget( SetValue( props.Budget ) )
 			setDeadline( props.Deadline )
@@ -77,16 +72,21 @@ export const NegocioHeader = ( props: {
 			setMperca( props.Mperca )
 			setEtapa( parseInt( props.etapa ) )
 			props.onLoad( false )
-			const [ pedidos ] = props.onData.attributes.pedidos.data
-			const nPedido = pedidos?.attributes.nPedido
-			setNPedido( nPedido )
+			setPedido( props.onData.attributes.pedidos?.data?.[ 0 ] )
+			setNPedido( props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes?.nPedido )
 			setBpedido( props.onData.attributes.Bpedido )
-			const ITENS = pedidos?.attributes
-			setPropostaId( props.onData.attributes?.pedidos?.data[ 0 ]?.id )
-			setDataItens( ITENS?.itens )
+			setPropostaId( props.onData.attributes.pedidos?.data?.[ 0 ]?.id )
+			setDataItens( props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes )
 			setBlocksave( props.nBusiness && parseInt( props.etapa ) === 6 || parseInt( props.Status ) === 1 && parseInt( props.etapa ) === 6 ? true : false )
+			setOrderData( {
+				nPedido: props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes?.nPedido,
+				orderValue: props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes?.totalGeral,
+				vendedor: String( session?.user.name ),
+				vendedorId: String( session?.user.id ),
+				businessId: props.onData.id
+			} )
 		}
-	}, [ props ] )
+	}, [ props, session ] )
 	const DataAtual = formatarDataParaSaoPaulo( new Date( Date.now() ) )
 
 	const historicomsg = {
@@ -118,7 +118,7 @@ export const NegocioHeader = ( props: {
 				isClosable: true,
 				position: 'top-right'
 			} )
-		} else if ( !NPedido && Etapa === 6 && Status === 5 && DataItens.length < 0 ) {
+		} else if ( !nPedido && Etapa === 6 && Status === 5 && !DataItens?.length ) {
 			toast( {
 				title: "Esse Negócio não pode ser finalizado",
 				description: "para finalizar um negócio, a proposta deve ser gerada e autorizada",
@@ -166,7 +166,7 @@ export const NegocioHeader = ( props: {
 				data: data,
 			} )
 				.then( ( res ) => {
-					if ( NPedido && Etapa === 6 && Status === 5 ) {
+					if ( nPedido && Etapa === 6 && Status === 5 ) {
 						onOpen()
 						setBlocksave( true )
 					} else if ( Etapa === 6 && Status === 1 ) {
@@ -205,55 +205,6 @@ export const NegocioHeader = ( props: {
 		} else {
 			setBudget( valorformat )
 		}
-	}
-
-	const finalizar = async () => {
-		toast( {
-			title: "Aguarde. Enviando pedido...",
-			status: "info",
-			isClosable: true,
-			position: 'bottom',
-		} )
-		setload( true )
-		const [ pedidos ] = Data.attributes.pedidos.data
-		const nPedido = pedidos?.attributes.nPedido
-		const EmpresaId = Data.attributes.empresa.data.id
-		const valor = pedidos?.attributes.totalGeral
-		const vendedor = String( session?.user.name )
-		const vendedorId = String( session?.user.id )
-		const IdNegocio = Data.id
-
-		const respPedido = await pedido( nPedido, EmpresaId, valor, vendedor, vendedorId, IdNegocio )
-
-		const { title } = respPedido
-
-		const description = <Box>
-			<p>{ respPedido.description }</p>
-			{ respPedido.fields?.length &&
-				<ol>
-					{ respPedido.fields.map( ( field: any, index: number ) => (
-						<li key={ index } >{ field }</li>
-					) ) }
-				</ol>
-			}
-		</Box>
-
-		const status = respPedido.status === "error" ? "error" : (
-			respPedido.status === "success" ? "success" : "warning"
-		)
-
-		toast( {
-			title,
-			description,
-			status,
-			isClosable: true,
-			duration: 30000,
-			position: "bottom",
-		} )
-
-		onClose()
-		setload( false )
-		props.onchat( true )
 	}
 
 	function getStatus ( statusinf: SetStateAction<any> ) {
@@ -335,7 +286,7 @@ export const NegocioHeader = ( props: {
 							{ Etapa === 6 && (
 								<>
 									<Box>
-										<BtnStatus Resp={ props.Status } onAddResp={ getStatus } omPedidos={ Data.attributes.pedidos.data } />
+										<BtnStatus Resp={ props.Status } onAddResp={ getStatus } omPedidos={ [ pedido ] } />
 									</Box>
 								</>
 							) }
@@ -381,7 +332,7 @@ export const NegocioHeader = ( props: {
 							<Button
 								colorScheme={ "green" }
 								onClick={ async () => {
-									if ( NPedido && DataItens.length > 0 ) {
+									if ( nPedido && DataItens.length > 0 ) {
 										router.push( "/propostas/update/" + ID )
 									} else {
 										if ( PropostaId ) {
@@ -403,7 +354,7 @@ export const NegocioHeader = ( props: {
 
 						</>
 					) }
-					{ NPedido && !Bpedido && Status === 5 && Etapa === 6 ? (
+					{ nPedido && !Bpedido && Status === 5 && Etapa === 6 ? (
 						<>
 							<Button
 								colorScheme={ "whatsapp" }
@@ -411,7 +362,7 @@ export const NegocioHeader = ( props: {
 								onClick={ () => {
 
 									window.open(
-										`/api/db/proposta/pdf/${ NPedido }`,
+										`/api/db/proposta/pdf/${ nPedido }`,
 										"_blank"
 									)
 								} }
@@ -422,13 +373,13 @@ export const NegocioHeader = ( props: {
 						</>
 					) : null }
 
-					{ NPedido && !Bpedido && Status === 3 && Etapa !== 6 ? (
+					{ nPedido && !Bpedido && Status === 3 && Etapa !== 6 ? (
 						<>
 							<Button
 								colorScheme={ "teal" }
 								variant={ 'solid' }
 								onClick={ () => window.open(
-									`/api/db/proposta/pdf/${ NPedido }`,
+									`/api/db/proposta/pdf/${ nPedido }`,
 									"_blank"
 								) }
 							>
@@ -442,7 +393,7 @@ export const NegocioHeader = ( props: {
 								colorScheme={ "teal" }
 								variant={ 'solid' }
 								onClick={ () => window.open(
-									`/api/db/proposta/pdf/${ NPedido }`,
+									`/api/db/proposta/pdf/${ nPedido }`,
 									"_blank"
 								) }
 							>
@@ -450,7 +401,7 @@ export const NegocioHeader = ( props: {
 							</Button>
 						</>
 					) : null }
-					{ NPedido && Status === 1 && Etapa === 6 ? (
+					{ nPedido && Status === 1 && Etapa === 6 ? (
 						<>
 
 							<Button variant={ 'outline' } colorScheme={ "whatsapp" } onClick={ Salve }>
@@ -461,7 +412,7 @@ export const NegocioHeader = ( props: {
 								colorScheme={ "red" }
 								variant={ 'outline' }
 								onClick={ () => window.open(
-									`/api/db/proposta/pdf/${ NPedido }`,
+									`/api/db/proposta/pdf/${ nPedido }`,
 									"_blank"
 								) }
 							>
@@ -472,7 +423,7 @@ export const NegocioHeader = ( props: {
 					) : null }
 					{ session?.user.pemission === 'Adm' && (
 						<>
-							<Button isDisabled={ !NPedido } colorScheme={ "linkedin" } onClick={ () => onOpen() }>
+							<Button isDisabled={ !nPedido } colorScheme={ "linkedin" } onClick={ () => onOpen() }>
 								Reenviar Pedido
 							</Button>
 							<Button
@@ -499,30 +450,12 @@ export const NegocioHeader = ( props: {
 						</>
 					) }
 				</Flex>
-				<Modal isCentered closeOnOverlayClick={ false } isOpen={ isOpen } onClose={ onClose }>
-					<ModalOverlay
-						bg='blackAlpha.300'
-						backdropFilter='blur(10px) hue-rotate(90deg)'
-					/>
-					<ModalContent bg={ 'gray.600' }>
-						<ModalHeader>Negócio Concluido</ModalHeader>
-						{/* <ModalCloseButton /> */ }
-						<ModalBody>
-							<Text>Para finalizar é necessário gerar um pedido para produção!</Text>
-						</ModalBody>
-						<ModalFooter>
-							<Button
-								fontSize={ '0.8rem' }
-								p={ 3 }
-								colorScheme={ "messenger" }
-								isDisabled={ load }
-								onClick={ finalizar }
-							>
-								Gerar Pedido
-							</Button>
-						</ModalFooter>
-					</ModalContent>
-				</Modal>
+				{ orderData && <SendOrderModal
+					isOpen={ isOpen }
+					onClose={ onClose }
+					onchat={ props.onchat }
+					orderData={ orderData }
+				/> }
 			</Flex >
 		</>
 	)

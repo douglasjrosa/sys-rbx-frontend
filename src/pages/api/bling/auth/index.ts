@@ -1,4 +1,4 @@
-import { refreshToken, updateToken } from "@/pages/api/bling/auth/update-bling-token"
+import { refreshToken, updateToken } from "@/pages/api/bling"
 import { NextApiRequest, NextApiResponse } from "next"
 
 function isExpired ( expires_in: string, updatedAt: string ): boolean {

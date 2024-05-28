@@ -1,0 +1,445 @@
+
+export type BlingOrderDataType = {
+	numero: number
+	data: string
+	dataSaida: string
+	dataPrevista: string
+	contato: { id: number }
+	itens: {
+		descricao: string
+		valor: number
+		codigo: string | number | undefined
+		unidade: string
+		quantidade: number
+		produto: { id: number }
+	}[]
+	parcelas: {
+		dataVencimento: string
+		formaPagamento: { id: number }
+		valor: number
+	}[]
+}
+
+export type InstallmentsType = {
+	dataVencimento: string
+	formaPagamento: { id: number }
+	valor: number
+}
+
+export type OrderStatusType = {
+	blingClientExists: boolean
+	blingProductsExist: boolean
+	blingOrderCreated: boolean
+	strapiBusinessUpdated: boolean
+	strapiLastOrderUpdated: boolean
+	strapiLoteUpdated: boolean
+	trelloCardsCreated: boolean
+	strapiOrderUpdated: boolean
+}
+
+export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string ): Promise<number | undefined> => {
+	try {
+		const response = await fetch( `/api/bling/${ blingAccountCnpj }/contatos?pesquisa=${ clientCnpj }` )
+
+		if ( !response.ok ) {
+			throw new Error( `Error fetching client: ${ response.statusText }` )
+		}
+
+		const searchClient = await response.json()
+
+		if ( searchClient.data && searchClient.data.length > 0 ) {
+			return searchClient.data[ 0 ].id
+		}
+
+		return undefined
+	} catch ( error ) {
+		console.error( "Error:", error )
+		return undefined
+	}
+}
+
+export const saveNewClient = async ( orderData: any ): Promise<number> => {
+
+	const clientData = orderData.empresa.data.attributes
+	const clientStrapiId = orderData.empresa.data.id
+	const blingAccountCnpj = orderData.attributes.fornecedorId.data.attributes.CNPJ
+
+
+	// Taking the types of contact of "Vendedor" and "Cliente" to save in the company data later in Bling
+	const typesOfContactsResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos/tipos` )
+
+	if ( !typesOfContactsResponse.ok ) {
+		throw new Error( `Error fetching client: ${ typesOfContactsResponse.statusText }` )
+	}
+	const typesOfContacts = await typesOfContactsResponse.json()
+
+	const typeOfContactClienteId = typesOfContacts.data.find( ( type: any ) => type.descricao === 'Cliente' ).id
+
+
+	// Taking the financial category to save in the company data later in Bling
+	const financialCategoriesResponse = await fetch( `/api/bling/${ blingAccountCnpj }/categorias/receitas-despesas` )
+
+	if ( !financialCategoriesResponse.ok ) {
+		throw new Error( `Error fetching client: ${ financialCategoriesResponse.statusText }` )
+	}
+	const financialCategories = await financialCategoriesResponse.json()
+
+	const financialCategoryId = financialCategories.data.find( ( category: any ) => category.descricao === "Vendas de produtos" ).id
+
+	const newClientData = {
+		"nome": clientData.nome,
+		"codigo": clientStrapiId,
+		"situacao": "A",
+		"numeroDocumento": clientData.CNPJ,
+		"telefone": clientData.fone,
+		"fantasia": clientData.nome,
+		"tipo": "J",
+		"indicadorIe": 1,
+		"ie": clientData.Ie,
+		"email": clientData.emailNfe,
+		"endereco": {
+			"geral": {
+				"endereco": clientData.endereco,
+				"cep": clientData.cep,
+				"bairro": clientData.bairro,
+				"municipio": clientData.cidade,
+				"uf": clientData.uf,
+				"numero": clientData.numero,
+				"complemento": clientData.complemento
+			},
+			"cobranca": {
+				"endereco": clientData.endereco,
+				"cep": clientData.cep,
+				"bairro": clientData.bairro,
+				"municipio": clientData.cidade,
+				"uf": clientData.uf,
+				"numero": clientData.numero,
+				"complemento": clientData.complemento
+			}
+		},
+		"financeiro": {
+			"limiteCredito": 10000000,
+			"condicaoPagamento": "28 35 42",
+			"categoria": {
+				"id": financialCategoryId
+			}
+		},
+		"pais": {
+			"nome": "BRASIL"
+		},
+		"tiposContato": [
+			{
+				"id": typeOfContactClienteId,
+				"descricao": "Cliente"
+			}
+		]
+	}
+
+	const saveNewClientResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos`, {
+		method: 'POST',
+		body: JSON.stringify( newClientData )
+	} )
+
+	if ( !saveNewClientResponse.ok ) {
+		throw new Error( `Error fetching client: ${ saveNewClientResponse.statusText }` )
+	}
+	const saveNewClientData = await saveNewClientResponse.json()
+
+	return saveNewClientData.data?.id ?? 0
+}
+
+export const postNLote = async ( nPedido: string ) => {
+	const response = await fetch( `/api/db/nLote/${ nPedido }`, { method: 'POST' } )
+	if ( !response.ok ) throw new Error( `Error fetching order: ${ response.statusText }` )
+	return await response.json()
+}
+
+export const fetchOrderData = async ( nPedido: string ) => {
+	const response = await fetch( `/api/strapi/pedidos?populate=*&filters[nPedido][$eq]=${ nPedido }` )
+	if ( !response.ok ) throw new Error( `Error fetching order: ${ response.statusText }` )
+	return await response.json()
+}
+
+export const sendCardsToTrello = async ( nPedido: string ) => {
+	const response = await fetch( `/api/db/trello/${ nPedido }`, { method: 'POST' } )
+	if ( !response.ok ) throw new Error( `Error fetching order: ${ response.statusText }` )
+	return await response.json()
+}
+
+export const getBlingProductByCodigo = async ( blingAccountCnpj: string, prodCodigo: string ): Promise<any> => {
+	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos?codigo=${ prodCodigo }` )
+
+	if ( !response.ok ) throw new Error( `Error fetching product: ${ response.statusText }` )
+	const product = await response.json()
+
+	return product.data?.[ 0 ] ?? {}
+}
+
+export const updateBlingProduct = async (
+	blingAccountCnpj: string,
+	blingProdId: number,
+	productData: Record<string, string | number | any>,
+	delay: number = 0
+): Promise<number | null> => {
+
+	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos/${ blingProdId }`, {
+		method: 'PUT',
+		body: JSON.stringify( productData )
+	} )
+	if ( !response.ok ) throw new Error( `Error fetching product: ${ response.statusText }` )
+	const product = await response.json()
+
+	if ( !product.data?.id ) {
+		if ( delay === 3000 ) return null
+		if ( delay ) await new Promise( resolve => setTimeout( resolve, delay ) )
+		return await updateBlingProduct( blingAccountCnpj, blingProdId, productData, delay + 1000 )
+	}
+	return product.data.id
+}
+
+export const createBlingProduct = async (
+	blingAccountCnpj: string,
+	productData: Record<string, string | number | any>,
+	delay: number = 0
+): Promise<number | null> => {
+
+	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos`, {
+		method: 'POST',
+		body: JSON.stringify( productData )
+	} )
+
+	if ( !response.ok ) throw new Error( `Error fetching product: ${ response.statusText }` )
+
+	const product = await response.json()
+
+	if ( !product.data?.id ) {
+		if ( delay === 3000 ) return null
+		if ( delay ) await new Promise( resolve => setTimeout( resolve, delay ) )
+		return await createBlingProduct( blingAccountCnpj, productData, delay + 1000 )
+	}
+	return product.data.id
+}
+
+export const handleItems = async ( blingAccountCnpj: string, items: any[] ): Promise<any> => {
+
+	let totalOrderValue: number = 0
+	let respItems: any[] = []
+	for ( const item of items ) {
+
+		// first of all, check if the product is already registered in Bling
+		const { prodId, nomeProd, ncm, expo, mont, vFinal, Qtd } = item
+		const itemCodigo = item.codigo
+
+		const descricao = nomeProd + ( expo ? " -EXP" : "" ) + ( mont ? " -MONTADA" : "" )
+
+		let preco: number = parseFloat( vFinal.replace( /[^0-9,]/g, "" ).replace( ",", "." ) )
+		const acrescimo = 1 + ( expo ? 0.1 : 0 ) + ( mont ? 0.1 : 0 )
+		preco = +( preco * acrescimo ).toFixed( 2 )
+
+		const prodCodigo = prodId + ( expo ? "-EXP" : "" ) + ( mont ? "-MONT" : "" )
+
+		const productData = {
+			codigo: prodCodigo,
+			nome: descricao,
+			tipo: "P",
+			situacao: "A",
+			formato: "S",
+			unidade: "Un",
+			preco,
+			tributacao: { ncm }
+		}
+
+		const getBlingProd = await getBlingProductByCodigo( blingAccountCnpj, prodCodigo )
+		if ( getBlingProd.hasOwnProperty( "id" ) ) {
+			if ( getBlingProd.preco !== preco ) {
+				await updateBlingProduct( blingAccountCnpj, getBlingProd.id, productData )
+			}
+		}
+
+		const blingProdId = getBlingProd.hasOwnProperty( "id" )
+			? getBlingProd.id
+			: await createBlingProduct( blingAccountCnpj, productData )
+
+
+		const quantidade: number = +Qtd
+		totalOrderValue += preco * quantidade
+
+		respItems.push( {
+			descricao,
+			valor: preco,
+			codigo: itemCodigo,
+			unidade: "Un",
+			quantidade,
+			produto: {
+				id: blingProdId
+			}
+		} )
+
+	}
+
+	return { blingItems: respItems, totalOrderValue }
+}
+
+export const fetchFormaPagamentoId = async ( blingAccountCnpj: string, prazo: string ): Promise<number> => {
+	const response = await fetch( `/api/bling/${ blingAccountCnpj }/formas-pagamentos?descricao=${ prazo } dias` )
+
+	if ( !response.ok ) throw new Error( `Error fetching 'Formas de pagamento': ${ response.statusText }` )
+	const formaPagamento = await response.json()
+
+	return formaPagamento.data?.[ 0 ]?.id ?? 0
+}
+
+export const getFormattedDate = ( srcDate?: Date ): string => {
+	const date = srcDate ? srcDate : new Date()
+	const year = date.getFullYear()
+	const month = String( date.getMonth() + 1 ).padStart( 2, "0" )
+	const day = String( date.getDate() ).padStart( 2, "0" )
+	const formattedDate = `${ year }-${ month }-${ day }`
+	return formattedDate
+}
+
+export const handleInstallments = async ( blingAccountCnpj: string, dataEntrega: string, prazo: string, totalOrderValue: number ): Promise<InstallmentsType[]> => {
+
+	const dueDays = prazo.split( "/" )
+	const countInstallments = dueDays.length
+
+
+	// Calcular o valor base arredondado para duas casas decimais
+	const baseInstallment = Math.floor( ( totalOrderValue / countInstallments ) * 100 ) / 100
+
+	// Criar um array de parcelas com o valor base
+	let installmentValues = Array( countInstallments ).fill( baseInstallment )
+
+	// Calcular o valor total base e o valor restante
+	const totalBase = baseInstallment * countInstallments
+	const remainingValue = totalOrderValue - totalBase
+
+	// Ajustar a última parcela para compensar o valor restante
+	installmentValues[ installmentValues.length - 1 ] = ( baseInstallment + remainingValue )
+
+	// Garantir que todas as parcelas sejam números com duas casas decimais
+	installmentValues = installmentValues.map( inst => Number( inst.toFixed( 2 ) ) )
+
+	const installments = []
+	for ( const [ key, dueDay ] of Object.entries( dueDays ) ) {
+		
+		const deliverDate = new Date( dataEntrega )
+		const dueDate = new Date( deliverDate.getTime() + +dueDay * 24 * 60 * 60 * 1000 )
+		const formaPagamentoId = await fetchFormaPagamentoId( blingAccountCnpj, prazo )
+		
+		installments.push( {
+			dataVencimento: getFormattedDate( dueDate ),
+			formaPagamento: {
+				id: formaPagamentoId
+			},
+			valor: installmentValues[ +key ]
+		} )
+	}
+
+	return installments
+}
+
+export const blingOrderExists = async ( blingAccountCnpj: string, orderNumber: string ): Promise<number> => {
+	const response = await fetch( `/api/bling/${ blingAccountCnpj }/pedidos/vendas?numero=${ orderNumber }` )
+
+	const responseData = await response.json()
+
+	if ( !response.ok ) {
+		console.error( responseData )
+		throw new Error( `Error fetching Bling to send order: ${ response.statusText }` )
+	}
+	return responseData.data?.[0]?.id ?? 0
+}
+
+export const sendBlingOrder = async ( blingAccountCnpj: string, orderData: any ) => {
+
+	const orderId = await blingOrderExists( blingAccountCnpj, String(orderData.numero) )
+
+	const method = orderId ? "PUT" : "POST"
+	const putEndpoint = orderId ? `/${ orderId }` : ""
+
+	const response = await fetch( `/api/bling/${ blingAccountCnpj }/pedidos/vendas${ putEndpoint }`, {
+		method,
+		body: JSON.stringify( orderData )
+	} )
+	
+	const responseData = await response.json()
+	
+	if ( !response.ok ) {
+		console.error( responseData )
+		throw new Error( `Error fetching Bling to send order: ${ response.statusText }` )
+	}
+	return responseData
+}
+
+export const updateOrderInStrapi = async ( blingOrderId: string, orderId: number, orderStatus: OrderStatusType ) => {
+	orderStatus.strapiOrderUpdated = true
+	const response = await fetch( `/api/strapi/pedidos/${ orderId }`, {
+		method: 'PUT',
+		body: JSON.stringify( {
+			data: {
+				Bpedido: blingOrderId,
+				stausPedido: true,
+				orderStatus: JSON.stringify( orderStatus )
+			}
+		} )
+	} )
+
+	const responseData = await response.json()
+	if ( !response.ok ) {
+		console.error( responseData )
+		throw new Error( `Error fetching order: ${ response.statusText }` )
+	}
+	return responseData
+}
+
+export const updateBusinessInStrapi = async ( negocioId: string, blingOrderId: string ) => {
+	const response = await fetch( `/api/strapi/businesses/${ negocioId }`, {
+		method: 'PUT',
+		body: JSON.stringify( {
+			data: {
+				Bpedido: blingOrderId,
+				stausPedido: true
+			}
+		} )
+	} )
+	if ( !response.ok ) throw new Error( `Error fetching order in Strapi: ${ response.statusText }` )
+	return await response.json()
+}
+
+export const fetchStrapiClientId = async ( clientCNPJ: string ): Promise<number | null> => {
+	const response = await fetch( `/api/strapi/empresas?filters[CNPJ]=${ clientCNPJ }` )
+	const responseData = await response.json()
+
+	if ( !response.ok ) {
+		console.error( responseData )
+		throw new Error( `Error fetching client by CNPJ in Strapi: ${ response.statusText }` )
+	}
+	return responseData.data?.[ 0 ]?.id ?? null
+}
+
+export const updateLastOrderInStrapi = async ( clientCNPJ: string, orderValue: string, vendedor: string, vendedorId: string ) => {
+	const DateNow = new Date()
+	
+	const clientId = await fetchStrapiClientId( clientCNPJ )
+
+	const response = await fetch( `/api/strapi/empresas/${ clientId }`, {
+		method: 'PUT',
+		body: JSON.stringify( {
+			data: {
+				ultima_compra: DateNow.toISOString().slice( 0, 10 ),
+				valor_ultima_compra: orderValue,
+				vendedor,
+				vendedorId
+			}
+		} )
+	} )
+
+	const responseData = await response.json()
+
+	if ( !response.ok ) {
+		console.error( responseData )
+		throw new Error( `Error fetching last order in Strapi: ${ response.statusText }` )
+	}
+	return responseData
+}

@@ -1,4 +1,4 @@
-import { getBlingToken } from "@/pages/api/bling/auth/update-bling-token"
+import { getBlingToken } from "@/pages/api/bling"
 import { useEffect, useState, useCallback } from "react"
 
 function Perfil () {
