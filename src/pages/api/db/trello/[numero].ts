@@ -44,11 +44,12 @@ export default async function PostTrello (
 			},
 		} )
 		const pedido = requestPedido.data.data
+		console.log(pedido)
 
 		const Bpedido = pedido.attributes.Bpedido
 		const account = pedido.attributes.fornecedorId.data.attributes.CNPJ
 
-		const blingOrder = await fetch( `${ baseUrl }/api/bling/pedidos/vendas/${ Bpedido }?account=${ account }` ).then( r => r.json() )
+		const blingOrder = await fetch( `${ baseUrl }/api/bling/${ account }/pedidos/vendas/${ Bpedido }` ).then( r => r.json() )
 		const blingOrderNumber = blingOrder.data?.numero ?? ""
 
 		const lote = await GetLoteProposta( numero )
