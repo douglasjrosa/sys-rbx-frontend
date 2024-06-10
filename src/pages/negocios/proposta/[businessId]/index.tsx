@@ -10,30 +10,17 @@ import { LabelEmpresa } from "@/components/labelEmpresa"
 import ProductsSelect from "@/components/productsSelect"
 import TableItems from "@/components/tableItems"
 import { customDateIso } from "@/utils/customDateFunctions"
-import { Box, Button, Flex, FormLabel, Heading, Icon, IconButton, Input, Select, Table, TableContainer, Textarea, Th, Thead, Tr, chakra, useToast } from "@chakra-ui/react"
+import { Box, Button, Flex, FormLabel, Heading, IconButton, Input, Textarea, chakra, useToast } from "@chakra-ui/react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
-import { use, useCallback, useEffect, useState } from "react"
-import { BsArrowLeftCircleFill, BsTrash } from "react-icons/bs"
+import { useCallback, useEffect, useState } from "react"
+import { BsArrowLeftCircleFill } from "react-icons/bs"
 import { formatCurrency, parseCurrency } from "@/utils/customNumberFormats"
 
 const Proposta = () => {
 	const router = useRouter()
 	const { data: session, status } = useSession()
 	const [ user, setUser ] = useState<any>()
-
-	useEffect( () => {
-		if ( status === 'unauthenticated' ) {
-			router.push( '/auth/signin' )
-		}
-	}, [] )
-
-	if ( status === 'loading' ) {
-		return <div>Loading...</div>
-	}
-	if ( status === 'authenticated' && !user ) {
-		setUser( session.user )
-	}
 
 	const toast = useToast()
 	const [ loading, setLoading ] = useState( false )
@@ -67,6 +54,16 @@ const Proposta = () => {
 
 	const [ orderTotalValue, setOrderTotalValue ] = useState( "0,00" )
 	const [ orderSaveData, setOrderSaveData ] = useState<any>()
+
+	useEffect( () => {
+		if ( status === 'unauthenticated' ) {
+			router.push( '/auth/signin' )
+		}
+	}, [] )
+
+	if ( status === 'authenticated' && !user ) {
+		setUser( session.user )
+	}
 
 	const fetchBusiness = useCallback( async () => {
 		const response = await fetch( `/api/strapi/businesses/${ businessId }?populate=*` )
