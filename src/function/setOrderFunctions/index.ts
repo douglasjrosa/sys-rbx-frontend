@@ -228,9 +228,12 @@ export const createBlingProduct = async (
 		body: JSON.stringify( productData )
 	} )
 
-	if ( !response.ok ) throw new Error( `Error fetching product: ${ response.statusText }` )
-
 	const product = await response.json()
+	
+	if ( !response.ok ) {
+		console.error( product )
+		throw new Error( `Error fetching product: ${ response.statusText }` )
+	}
 
 	if ( !product.data?.id ) {
 		if ( delay === 3000 ) return null

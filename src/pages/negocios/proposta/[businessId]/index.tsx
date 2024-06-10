@@ -234,6 +234,13 @@ const Proposta = () => {
 		}
 
 		setLoading( true )
+
+
+		fetch( `/api/strapi/businesses/${ businessId }`, {
+			method: 'PUT',
+			body: JSON.stringify( { data: { Budget: orderTotalValue } } )
+		} )
+
 		const method = !orderData ? "POST" : "PUT"
 		const strapiEndPoint = !orderData ? "/api/strapi/pedidos" : `/api/strapi/pedidos/${ orderData.id }`
 		
@@ -318,8 +325,6 @@ const Proposta = () => {
 							/>
 						</Box>
 
-
-
 						{ user && user.pemission === 'Adm' && (
 							<>
 								<Box>
@@ -401,7 +406,6 @@ const Proposta = () => {
 					</Box>
 					<Box mt={ 8 } w={ "100%" } mb={ 5 } bg={ 'gray.800' }>
 						<Box>
-
 							<TableItems
 								itemsList={ itemsList }
 								setItemsListOnChange={ setItemsList }

@@ -44,7 +44,6 @@ export default async function PostTrello (
 			},
 		} )
 		const pedido = requestPedido.data.data
-		console.log(pedido)
 
 		const Bpedido = pedido.attributes.Bpedido
 		const account = pedido.attributes.fornecedorId.data.attributes.CNPJ
