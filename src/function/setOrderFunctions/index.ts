@@ -345,8 +345,6 @@ export const handleInstallments = async ( blingAccountCnpj: string, dataEntrega:
 		} )
 	}
 
-	console.log( { totalOrderValue, installments } )
-
 	return installments
 }
 

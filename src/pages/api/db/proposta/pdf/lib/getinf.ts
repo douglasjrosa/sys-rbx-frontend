@@ -77,10 +77,7 @@ export const getData = async ( proposta: any ) => {
 				? ""
 				: inf.business.data.id
 
-
 		const cliente_pedido = inf.cliente_pedido
-
-		console.log(inf)
 
 		const data = {
 			custoAdicional,

@@ -221,7 +221,7 @@ const SendOrderModal = ( props: any ) => {
 				return false
 			}
 			else orderStatus.strapiLastOrderUpdated = true
-			console.log(propostaId)
+			
 			// Handling lote info
 			toast( {
 				title: "STRAPI:",
