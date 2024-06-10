@@ -2,16 +2,16 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler ( req: NextApiRequest, res: NextApiResponse ) {
 	try {
-		const { routes, ...params } = req.query
+		const { email, routes, ...params } = req.query
 
 		if ( !Array.isArray( routes ) ) {
 			res.status( 400 ).json( { error: 'Invalid "routes" parameter' } )
 			return
 		}
 
-		const strapiApiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL as string
-		const strapiToken = process.env.ATORIZZATION_TOKEN
-	
+		const rbxApiUrl = process.env.RIBERMAX_API_URL as string
+		const rbxApiToken = process.env.RIBERMAX_API_TOKEN as string
+
 		const queryParams = new URLSearchParams()
 		for ( const [ key, value ] of Object.entries( params ) ) {
 			if ( value !== undefined ) {
@@ -24,7 +24,7 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		}
 
 		const queryString = queryParams.toString()
-		const externalUrl = `${ strapiApiUrl }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
+		const externalUrl = `${ rbxApiUrl }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
 
 		let bodyData
 		if ( [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ) {
@@ -41,8 +41,9 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		const response = await fetch( externalUrl, {
 			method: req.method as string,
 			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${ strapiToken }`,
+				Email: String(email),
+				Token: rbxApiToken,
+				'Content-Type': 'application/json'
 			},
 			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
 		} )

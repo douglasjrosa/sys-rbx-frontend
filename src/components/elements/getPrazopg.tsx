@@ -5,29 +5,27 @@ import { useState, useEffect } from "react"
 
 
 export const GetPrazoPg = ( props: { id: any; retorno: any; envio: any } ) => {
-	const [ maxPg, setMaxpg ] = useState( "0" )
+	const [ maxPg, setMaxPg ] = useState( "0" )
 	const [ Data, setData ] = useState<any>( [] )
-
+	const { id, retorno, envio } = props
 
 	useEffect( () => {
-		if ( props.retorno ) {
-			setMaxpg( props.retorno )
+		
+		setMaxPg( retorno ?? "" )
 
-		}
-		if ( props.id ) {
+		
+		if ( id ) {
 			( async () => {
 				await axios( {
 					method: "GET",
-					url: `/api/db/empresas/getMaxPrazoPg?Empresa=${ props.id }`,
+					url: `/api/db/empresas/getMaxPrazoPg?Empresa=${ id }`,
 				} )
 					.then( ( res ) => setData( res.data ) )
 					.catch( ( err ) => console.error( err ) )
 			} )()
 		}
-	}, [ props.id, props.retorno ] )
-
-
-
+	}, [ id, retorno ] )
+	
 	return (
 		<>
 			<Flex gap={ 3 } alignItems={ 'self-end' }>
@@ -49,7 +47,11 @@ export const GetPrazoPg = ( props: { id: any; retorno: any; envio: any } ) => {
 						w="full"
 						fontSize="xs"
 						rounded="md"
-						onChange={ ( e ) => props.envio( e.target.value ) }
+						onChange={ ( e ) => {
+							setMaxPg( e.target.value )
+							envio( e.target.value )
+						}
+						}
 						value={ maxPg }
 					>
 						{/* Default option */ }

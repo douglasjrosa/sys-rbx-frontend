@@ -1,9 +1,10 @@
 import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, saveNewClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
+import { parseCurrency } from "@/utils/customNumberFormats"
 import { Button, Modal, Text, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
 import { useCallback, useState } from "react"
 
 
-const SendOrderButton = ( props: any ) => {
+const SendOrderModal = ( props: any ) => {
 
 	const { isOpen, onClose, onchat, orderData } = props
 
@@ -21,21 +22,24 @@ const SendOrderButton = ( props: any ) => {
 				position: 'bottom',
 			} )
 
-			const { nPedido, orderValue, vendedor, vendedorId, businessId } = orderData
+			const { propostaId, orderValue, vendedor, vendedorId, businessId } = orderData
 
-			const order = await fetchOrderData( nPedido )
-			const [ data ] = order.data
-			const orderStatus: OrderStatusType = data.attributes?.orderStatus ?? {
-				blingClientExists: false,
-				blingProductsExist: false,
-				blingOrderCreated: false,
-				strapiBusinessUpdated: false,
-				strapiLastOrderUpdated: false,
-				strapiLoteUpdated: false,
-				trelloCardsCreated: false,
-				strapiOrderUpdated: false
-			}
-			const orderId = data.id
+			const order = await fetchOrderData( propostaId )
+			const fullOrderData = order.data
+			
+			const orderStatus: OrderStatusType = fullOrderData.attributes?.orderStatus
+				? JSON.parse( fullOrderData.attributes.orderStatus )
+				: {
+					blingClientExists: false,
+					blingProductsExist: false,
+					blingOrderCreated: false,
+					strapiBusinessUpdated: false,
+					strapiLastOrderUpdated: false,
+					strapiLoteUpdated: false,
+					trelloCardsCreated: false,
+					strapiOrderUpdated: false
+				}
+			const orderId = fullOrderData.id
 
 			// Handling clients in Bling
 			toast( {
@@ -46,15 +50,13 @@ const SendOrderButton = ( props: any ) => {
 				duration: 3000,
 				position: "bottom",
 			} )
-			const blingAccountCnpj = data.attributes.fornecedorId.data.attributes.CNPJ
-			const clientCNPJ = data.attributes.empresa.data.attributes.CNPJ
+
+			const blingAccountCnpj = fullOrderData.attributes.fornecedorId.data.attributes.CNPJ
+			const clientCNPJ = fullOrderData.attributes.empresa.data.attributes.CNPJ
 
 			const checkIfClientExists = await clientExists( blingAccountCnpj, clientCNPJ )
-
-			const clientId = checkIfClientExists
-				? checkIfClientExists
-				: await saveNewClient( clientCNPJ )
-
+			const clientId = checkIfClientExists ?? await saveNewClient( fullOrderData )
+			
 			if ( !clientId ) {
 				toast( {
 					title: "BLING: Não foi possível salvar um novo cliente no Bling.",
@@ -77,11 +79,11 @@ const SendOrderButton = ( props: any ) => {
 				description: "Verificando se todos os produtos já estão cadastrados no Bling.",
 				status: "success",
 				isClosable: true,
-				duration: 30000,
+				duration: 7000,
 				position: "bottom",
 			} )
-			const { dataEntrega, prazo, itens } = data.attributes
-			const { blingItems, totalOrderValue } = await handleItems( blingAccountCnpj, itens )
+			const { dataEntrega, prazo, itens } = fullOrderData.attributes
+			const blingItems = await handleItems( blingAccountCnpj, itens )
 			if ( blingItems.length !== itens.length ) {
 				toast( {
 					title: "BLING: Ooops, tivemos um pequeno problema...",
@@ -107,16 +109,27 @@ const SendOrderButton = ( props: any ) => {
 				duration: 3000,
 				position: "bottom",
 			} )
+
+			const totalOrderValue = parseCurrency( fullOrderData.attributes.totalGeral )
 			const installments = await handleInstallments( blingAccountCnpj, dataEntrega, prazo, totalOrderValue )
 
 			const blingOrderData: BlingOrderDataType = {
-				numero: +nPedido,
+				numero: +propostaId,
 				data: getFormattedDate(),
 				dataSaida: dataEntrega,
 				dataPrevista: dataEntrega,
 				contato: { id: clientId },
 				itens: blingItems,
-				parcelas: installments
+				parcelas: installments,
+				numeroPedidoCompra: fullOrderData.attributes.cliente_pedido,
+				outrasDespesas: parseCurrency( fullOrderData.attributes.custoAdicional ),
+				desconto: {
+					valor: parseCurrency( fullOrderData.attributes.descontoTotal )
+				},
+				transporte: {
+					fretePorConta: fullOrderData.attributes.frete === "CIF" ? 0 : 1, // 0 = CIF, 1 = FOB
+					frete: parseCurrency( fullOrderData.attributes.valorFrete )
+				}
 			}
 			const blingOrder = await sendBlingOrder( blingAccountCnpj, blingOrderData )
 			if ( !blingOrder.data?.id && blingOrder.error ) {
@@ -208,7 +221,7 @@ const SendOrderButton = ( props: any ) => {
 				return false
 			}
 			else orderStatus.strapiLastOrderUpdated = true
-
+			console.log(propostaId)
 			// Handling lote info
 			toast( {
 				title: "STRAPI:",
@@ -218,7 +231,7 @@ const SendOrderButton = ( props: any ) => {
 				duration: 3000,
 				position: "bottom",
 			} )
-			const nLoteUpdate = await postNLote( nPedido )
+			const nLoteUpdate = await postNLote( propostaId )
 			if ( !Array.isArray( nLoteUpdate ) || !nLoteUpdate.length ) {
 
 				toast( {
@@ -244,7 +257,7 @@ const SendOrderButton = ( props: any ) => {
 				duration: 3000,
 				position: "bottom",
 			} )
-			const sendToTrello = await sendCardsToTrello( nPedido )
+			const sendToTrello = await sendCardsToTrello( propostaId )
 			if ( !sendToTrello.length ) {
 
 				toast( {
@@ -320,7 +333,7 @@ const SendOrderButton = ( props: any ) => {
 					description: "Pedido enviado com sucesso.",
 					status: "success",
 					isClosable: true,
-					duration: 30000,
+					duration: 5000,
 					position: "bottom",
 				} )
 			}
@@ -369,4 +382,4 @@ const SendOrderButton = ( props: any ) => {
 		</Modal>
 	)
 }
-export default SendOrderButton
+export default SendOrderModal

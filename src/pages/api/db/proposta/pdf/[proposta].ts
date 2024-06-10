@@ -31,13 +31,11 @@ function verificarString ( str: any ) {
 	const wordRegex = /\b(?:Dias|dias|Dia|dia)\b/
 	const hasWord = wordRegex.test( str )
 
-
 	if ( hasWord ) {
 		return str
 	}
 
-
-	return str + " Dias"
+	return str + " dias"
 }
 
 export default async function GetEmpresa (
@@ -48,11 +46,6 @@ export default async function GetEmpresa (
 		const { proposta } = req.query
 
 		const infos = await getData( proposta )
-
-
-		const resto = infos.dataEntrega
-
-
 
 		const somarValores = ( valor1: any, valor2: any ) => {
 			if ( infos.frete === "FOB" ) return valor1
@@ -100,8 +93,6 @@ export default async function GetEmpresa (
 		const imageContent = fs.readFileSync( imagePath ).toString( "base64" )
 		const dataUrl = `data:image/jpeg;base64,${ imageContent }`
 
-
-
 		const date = new Date().toLocaleDateString( "pt-BR" )
 		const fonts = {
 			Helvetica: {
@@ -137,22 +128,17 @@ export default async function GetEmpresa (
 				currency: "BRL",
 			} )
 
+			let measures = i.comprimento || ""
+			measures += i.largura ? " x " + i.largura : ""
+			measures += i.altura ? " x " + i.altura + "cm(alt.)" : "cm(larg.)"
+			measures = i.comprimento ? measures : ""
+
 			return [
 				{ text: x, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
 				{ text: i.nomeProd, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: i.codg, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
+				{ text: i.codigo, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
 				{ text: i.Qtd, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: !i.altura ? 0 : i.altura, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{
-					text: !i.largura ? 0 : i.largura,
-					margin: [ 0, 10, 0, 8 ],
-					fontSize: 7,
-				},
-				{
-					text: !i.comprimento ? 0 : i.comprimento,
-					margin: [ 0, 10, 0, 8 ],
-					fontSize: 7,
-				},
+				{ text: measures, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
 				{ text: !!i.mont ? "SIM" : "NÃO", margin: [ 0, 10, 0, 8 ], fontSize: 7 },
 				{ text: !!i.expo ? "SIM" : "NÃO", margin: [ 0, 10, 0, 8 ], fontSize: 7 },
 				{ text: preco, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
@@ -160,29 +146,62 @@ export default async function GetEmpresa (
 			]
 		} )
 
+		const comAcrescimo = [
+			{
+				margin: [ 0, 10, 0, 0 ],
+				border: [ false, false, false, false ],
+				text: "Custos extras:",
+				bold: "true",
+				fontSize: 8
+			},
+			{
+				margin: [ 0, 10, 0, 0 ],
+				border: [ false, false, false, false ],
+				text: `R$ ${ infos.custoAdicional }`,
+				fontSize: 8
+			},
+		]
+
+		const semAcrescimo = [
+			{
+				margin: [ 0, 5, 0, 0 ],
+				border: [ false, false, false, false ],
+				text: "",
+			},
+			{
+				margin: [ 0, 5, 0, 0 ],
+				border: [ false, false, false, false ],
+				text: "",
+			},
+		]
+
+		const custoAdicional = infos.custoAdicional !== '0,00' ? comAcrescimo : semAcrescimo
 
 		const comDesc = [
 			{
-				margin: [ 0, 45, 0, 0 ],
+				margin: [ 0, 10, 0, 0 ],
 				border: [ false, false, false, false ],
 				text: "Desconto :",
 				bold: "true",
+				fontSize: 10
 			},
 			{
-				margin: [ 0, 45, 0, 0 ],
+				margin: [ 0, 10, 0, 0 ],
 				border: [ false, false, false, false ],
-				text: infos.Desconto,
+				text: `- R$ ${ infos.Desconto }`,
+				bold: "true",
+				fontSize: 10
 			},
 		]
 
 		const semDesc = [
 			{
-				margin: [ 0, 49, 0, 0 ],
+				margin: [ 0, 5, 0, 0 ],
 				border: [ false, false, false, false ],
 				text: "",
 			},
 			{
-				margin: [ 0, 49, 0, 0 ],
+				margin: [ 0, 5, 0, 0 ],
 				border: [ false, false, false, false ],
 				text: "",
 			},
@@ -195,6 +214,27 @@ export default async function GetEmpresa (
 
 		const descontoNumber = Number( infos.Desconto.replace( 'R$', '' ).replace( '.', '' ).replace( ',', '.' ) )
 		const desconto = descontoNumber === 0 ? semDesc : comDesc
+
+		const observations = infos.obs ? [
+			[
+				{
+					margin: [ 0, 5, 0, 0 ],
+					border: [ false, false, false, false ],
+					text: "OBS.:"
+
+				},
+			],
+			[
+				{
+					margin: [ 5, 5, 5, 5 ],
+					border: [ false, false, false, false ],
+					text: infos.obs,
+					fillColor: '#4dff00',
+					style: "clienteFornecedor",
+					fontSize: 10,
+				},
+			] ] : []
+
 
 		const logo =
 			infos.fornecedor.data.cnpj === "04.586.593/0001-70" ? dataUrl : dataUrl2
@@ -211,7 +251,7 @@ export default async function GetEmpresa (
 									border: [ false, false, false, false ],
 									fillColor: "#1a562e",
 									text: " ",
-									margin: [ 0, 20, 0, 0 ],
+									margin: [ 0, 1, 0, 0 ],
 								},
 							],
 						],
@@ -236,7 +276,7 @@ export default async function GetEmpresa (
 										widths: [ 55, "*" ],
 										body: [
 											[ "Data:", date ],
-											[ "Proposta N°:", infos.nPedido ],
+											[ "Proposta N°:", proposta ],
 											[ "Vendedor:", infos.Vendedor ],
 											[ "Pedido N°:", infos.cliente_pedido ],
 										],
@@ -268,14 +308,14 @@ export default async function GetEmpresa (
 																{
 																	text: "Fornecedor",
 																	bold: "true",
-																	fillColor: "#979797",
-																	color: "#ffff",
+																	fillColor: "#1a562e",
+																	color: "#ffffff",
 																	fontSize: 10,
 																	border: [ false, false, false, false ],
 																},
 																{
 																	text: "",
-																	fillColor: "#979797",
+																	fillColor: "#1a992e",
 																	border: [ false, false, false, false ],
 																},
 															],
@@ -357,13 +397,13 @@ export default async function GetEmpresa (
 																	text: "Cliente",
 																	bold: "true",
 																	fontSize: 9,
-																	fillColor: "#979797",
-																	color: "#ffff",
+																	fillColor: "#1a562e",
+																	color: "#ffffff",
 																	border: [ false, false, false, false ],
 																},
 																{
 																	text: "",
-																	fillColor: "#979797",
+																	fillColor: "#1a992e",
 																	border: [ false, false, false, false ],
 																},
 															],
@@ -458,6 +498,55 @@ export default async function GetEmpresa (
 					},
 				},
 				{
+					style: "tableConteudo",
+					margin: [ 0, 10, 0, 0 ],
+					table: {
+						widths: [
+							"2%",
+							"25%",
+							"8%",
+							"4%",
+							"18%",
+							"8%",
+							"8%",
+							"12%",
+							"15%",
+						],
+						headerRows: 1,
+						heights: 4,
+						body: [
+							[
+								{ text: "x", style: "tableTitle" },
+								{ text: "Produto", style: "tableTitle" },
+								{ text: "Cód.", style: "tableTitle" },
+								{ text: "Qtd", style: "tableTitle" },
+								{ text: "Medidas internas (CxLxA)", style: "tableTitle" },
+								{ text: "MONT.       (+ 10%)", style: "tableTitle" },
+								{ text: "EXP.        (+ 10%)", style: "tableTitle" },
+								{ text: "Valor Un.", style: "tableTitle" },
+								{ text: "Total", style: "tableTitle" },
+							],
+							...products,
+						],
+					},
+					layout: "lightHorizontalLines",
+				},
+
+				{
+					table: {
+						widths: [ "*" ],
+						body: [
+							[
+								{
+									border: [ false, false, false, true ],
+									text: "",
+								},
+							],
+						],
+					},
+				},
+
+				{
 					table: {
 						widths: [ "*", "30%" ],
 						body: [
@@ -476,7 +565,7 @@ export default async function GetEmpresa (
 												{
 													margin: [ 0, 5, 0, 0 ],
 													border: [ false, false, false, false ],
-													text: "As embalagens são enviadas desmontadas.",
+													text: "As embalagens, por padrão, são enviadas desmontadas.",
 													style: "clienteFornecedor",
 												},
 											],
@@ -489,27 +578,13 @@ export default async function GetEmpresa (
 											],
 											[
 												{
+													margin: [ 0, 6, 0, 8 ],
 													border: [ false, false, false, false ],
 													text: "A montagem deve ser solicitada no momento da cotação.",
 													style: "clienteFornecedor",
 												},
 											],
-											[
-												{
-													margin: [ 0, 8, 0, 0 ],
-													border: [ false, false, false, false ],
-													text: "OBS.",
-
-												},
-											],
-											[
-												{
-													margin: [ 0, 5, 0, 0 ],
-													border: [ false, false, false, false ],
-													text: infos.obs,
-													style: "clienteFornecedor",
-												},
-											],
+											...observations,
 										],
 									},
 								},
@@ -595,25 +670,23 @@ export default async function GetEmpresa (
 																{
 																	margin: [ 0, 5, 0, 0 ],
 																	border: [ false, false, false, false ],
-																	text: infos.frete === 'FOB' ? '' : FretValo,
+																	text: FretValo,
 																	style: "clienteFornecedor",
 																},
 															],
+															custoAdicional,
 															desconto,
 															[
 																{
-																	margin: [ 8, 5, 0, 0 ],
+																	margin: [ 0, 5, 0, 0 ],
 																	border: [ false, false, false, false ],
-																	text: "Total :",
+																	text: "Total:",
 																	bold: "true",
 																},
 																{
 																	margin: [ 0, 5, 0, 0 ],
 																	border: [ false, false, false, false ],
-																	text: somarValores(
-																		infos.totoalGeral,
-																		infos.Valfrete
-																	),
+																	text: infos.totoalGeral
 																},
 															],
 														],
@@ -634,51 +707,32 @@ export default async function GetEmpresa (
 						body: [
 							[
 								{
-									border: [ false, false, false, true ],
-									text: "",
+									border: [ false, false, false, false ],
+									fillColor: "#ffffff",
+									text: " ",
+									margin: [ 0, 1, 0, 0 ],
 								},
 							],
 						],
 					},
 				},
+
 				{
-					style: "tableConteudo",
-					margin: [ 0, 10, 0, 0 ],
 					table: {
-						widths: [
-							"2%",
-							"24%",
-							"6%",
-							"4%",
-							"6%",
-							"7%",
-							"7%",
-							"8%",
-							"8%",
-							"12%",
-							"15%",
-						],
-						headerRows: 1,
-						heights: 4,
+						widths: [ "*" ],
 						body: [
 							[
-								{ text: "x", style: "tableTitle" },
-								{ text: "Produto", style: "tableTitle" },
-								{ text: "Cód.", style: "tableTitle" },
-								{ text: "Qtd", style: "tableTitle" },
-								{ text: "Alt.", style: "tableTitle" },
-								{ text: "Larg.", style: "tableTitle" },
-								{ text: "Comp.", style: "tableTitle" },
-								{ text: "MONT.(+ 10%)", style: "tableTitle" },
-								{ text: "EXP.    (+ 10%)", style: "tableTitle" },
-								{ text: "Valor Un.", style: "tableTitle" },
-								{ text: "Total", style: "tableTitle" },
+								{
+									border: [ false, false, false, false ],
+									fillColor: "#1a992e",
+									text: " ",
+									margin: [ 0, 1, 0, 0 ],
+								},
 							],
-							...products,
 						],
 					},
-					layout: "lightHorizontalLines",
 				},
+
 			],
 			pageSize: "A4",
 			pageMargins: [ 25, 60, 25, 10 ],
@@ -722,7 +776,7 @@ export default async function GetEmpresa (
 
 		const filename =
 			"Proposta comercial -" +
-			infos.nPedido +
+			proposta +
 			" - " +
 			name +
 			"-" +
@@ -734,7 +788,8 @@ export default async function GetEmpresa (
 			res.setHeader( "Content-Type", "application/pdf" )
 			res.end( pdf )
 		} )
-	} else {
+	}
+	else {
 		return res.status( 405 ).send( { message: "Only GET requests are allowed" } )
 	}
 }

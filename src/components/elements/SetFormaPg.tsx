@@ -4,25 +4,23 @@ import { useState, useEffect } from "react"
 
 
 export const SetFormaPg = ( props: { id: any; retorno: any; envio: any; Disable: boolean } ) => {
-	const [ maxPg, setMaxpg ] = useState( "" )
+	const [ maxPg, setMaxPg ] = useState( "" )
 	const [ Data, setData ] = useState<any>( [] )
-
-
+	const { id, retorno, envio, Disable } = props
+	
 	useEffect( () => {
-		if ( props.retorno ) {
-			setMaxpg( props.retorno )
-		}
-		if ( props.id ) {
+		setMaxPg( retorno ?? "" )
+		if ( id ) {
 			( async () => {
 				await axios( {
 					method: "GET",
-					url: `/api/db/empresas/getFormaPg?Empresa=${ props.id }`,
+					url: `/api/db/empresas/getFormaPg?Empresa=${ id }`,
 				} )
 					.then( ( res ) => setData( res.data ) )
 					.catch( ( err ) => console.error( err ) )
 			} )()
 		}
-	}, [ props.id, props.retorno ] )
+	}, [ id, retorno ] )
 
 
 	return (
@@ -40,9 +38,12 @@ export const SetFormaPg = ( props: { id: any; retorno: any; envio: any; Disable:
 					w="36"
 					fontSize="xs"
 					rounded="md"
-					onChange={ ( e ) => props.envio( e.target.value ) }
+					onChange={ ( e ) => {
+						setMaxPg( e.target.value )
+						envio( e.target.value )
+					}}
 					value={ maxPg }
-					isDisabled={ props.Disable }
+					isDisabled={ Disable }
 				>
 					<option style={ { backgroundColor: "#1A202C" } }>
 						Selecione uma tabela

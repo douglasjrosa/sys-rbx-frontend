@@ -20,6 +20,7 @@ import { BtmRetorno } from "@/components/elements/btmRetorno"
 import { SetValue } from "@/function/currenteValor"
 import formatarDataParaSaoPaulo from "@/function/formatHora"
 import SendOrderModal from "./sendOrderModal"
+import Link from "next/link"
 
 export const NegocioHeader = ( props: {
 	nBusiness: string
@@ -50,10 +51,9 @@ export const NegocioHeader = ( props: {
 	const [ Approach, setApproach ] = useState( "" )
 	const [ Budget, setBudget ] = useState<any>()
 	const [ Deadline, setDeadline ] = useState( "" )
-	const [ nPedido, setNPedido ] = useState<string>( "" )
 	const [ Bpedido, setBpedido ] = useState( "" )
 	const [ DataRetorno, setDataRetorno ] = useState<any>()
-	const [ PropostaId, setPropostaId ] = useState( '' )
+	const [ propostaId, setPropostaId ] = useState( '' )
 	const [ DataItens, setDataItens ] = useState<any | null>()
 	const [ Blocksave, setBlocksave ] = useState<boolean>( false )
 
@@ -73,13 +73,19 @@ export const NegocioHeader = ( props: {
 			setEtapa( parseInt( props.etapa ) )
 			props.onLoad( false )
 			setPedido( props.onData.attributes.pedidos?.data?.[ 0 ] )
-			setNPedido( props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes?.nPedido )
 			setBpedido( props.onData.attributes.Bpedido )
 			setPropostaId( props.onData.attributes.pedidos?.data?.[ 0 ]?.id )
-			setDataItens( props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes )
-			setBlocksave( props.nBusiness && parseInt( props.etapa ) === 6 || parseInt( props.Status ) === 1 && parseInt( props.etapa ) === 6 ? true : false )
+			setDataItens( props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes.itens )
+
+			if (
+				props.nBusiness && parseInt( props.etapa ) === 6
+				|| parseInt( props.Status ) === 1
+				&& parseInt( props.etapa ) === 6
+			) setBlocksave( true )
+			if ( session?.user.pemission === 'Adm' ) setBlocksave( false )
+			
 			setOrderData( {
-				nPedido: props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes?.nPedido,
+				propostaId: props.onData.attributes.pedidos?.data?.[ 0 ]?.id,
 				orderValue: props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes?.totalGeral,
 				vendedor: String( session?.user.name ),
 				vendedorId: String( session?.user.id ),
@@ -118,7 +124,7 @@ export const NegocioHeader = ( props: {
 				isClosable: true,
 				position: 'top-right'
 			} )
-		} else if ( !nPedido && Etapa === 6 && Status === 5 && !DataItens?.length ) {
+		} else if ( !propostaId && Etapa === 6 && Status === 5 && !DataItens?.length ) {
 			toast( {
 				title: "Esse Negócio não pode ser finalizado",
 				description: "para finalizar um negócio, a proposta deve ser gerada e autorizada",
@@ -166,7 +172,7 @@ export const NegocioHeader = ( props: {
 				data: data,
 			} )
 				.then( ( res ) => {
-					if ( nPedido && Etapa === 6 && Status === 5 ) {
+					if ( propostaId && Etapa === 6 && Status === 5 ) {
 						onOpen()
 						setBlocksave( true )
 					} else if ( Etapa === 6 && Status === 1 ) {
@@ -328,33 +334,11 @@ export const NegocioHeader = ( props: {
 						</>
 					) }
 					{ Bpedido && Etapa === 6 || Blocksave ? null : (
-						<>
-							<Button
-								colorScheme={ "green" }
-								onClick={ async () => {
-									if ( nPedido && DataItens.length > 0 ) {
-										router.push( "/propostas/update/" + ID )
-									} else {
-										if ( PropostaId ) {
-											await axios.delete( `/api/db/proposta/delete/${ PropostaId }` )
-												.then( ( response: any ) => {
-													router.push( `/propostas/create/${ ID }` )
-												} )
-												.catch( ( error: any ) => {
-													console.error( error )
-												} )
-										} else {
-											router.push( `/propostas/create/${ ID }` )
-										}
-									}
-								} }
-							>
-								Proposta
-							</Button>
-
-						</>
+						<Link href={ `/negocios/proposta/${ ID }` }>
+							<Button colorScheme={ "green" } >Proposta</Button>
+						</Link>
 					) }
-					{ nPedido && !Bpedido && Status === 5 && Etapa === 6 ? (
+					{ propostaId && !Bpedido && Status === 5 && Etapa === 6 ? (
 						<>
 							<Button
 								colorScheme={ "whatsapp" }
@@ -362,7 +346,7 @@ export const NegocioHeader = ( props: {
 								onClick={ () => {
 
 									window.open(
-										`/api/db/proposta/pdf/${ nPedido }`,
+										`/api/db/proposta/pdf/${ propostaId }`,
 										"_blank"
 									)
 								} }
@@ -373,13 +357,13 @@ export const NegocioHeader = ( props: {
 						</>
 					) : null }
 
-					{ nPedido && !Bpedido && Status === 3 && Etapa !== 6 ? (
+					{ propostaId && !Bpedido && Status === 3 && Etapa !== 6 ? (
 						<>
 							<Button
 								colorScheme={ "teal" }
 								variant={ 'solid' }
 								onClick={ () => window.open(
-									`/api/db/proposta/pdf/${ nPedido }`,
+									`/api/db/proposta/pdf/${ propostaId }`,
 									"_blank"
 								) }
 							>
@@ -393,7 +377,7 @@ export const NegocioHeader = ( props: {
 								colorScheme={ "teal" }
 								variant={ 'solid' }
 								onClick={ () => window.open(
-									`/api/db/proposta/pdf/${ nPedido }`,
+									`/api/db/proposta/pdf/${ propostaId }`,
 									"_blank"
 								) }
 							>
@@ -401,7 +385,7 @@ export const NegocioHeader = ( props: {
 							</Button>
 						</>
 					) : null }
-					{ nPedido && Status === 1 && Etapa === 6 ? (
+					{ propostaId && Status === 1 && Etapa === 6 ? (
 						<>
 
 							<Button variant={ 'outline' } colorScheme={ "whatsapp" } onClick={ Salve }>
@@ -412,7 +396,7 @@ export const NegocioHeader = ( props: {
 								colorScheme={ "red" }
 								variant={ 'outline' }
 								onClick={ () => window.open(
-									`/api/db/proposta/pdf/${ nPedido }`,
+									`/api/db/proposta/pdf/${ propostaId }`,
 									"_blank"
 								) }
 							>
@@ -423,7 +407,7 @@ export const NegocioHeader = ( props: {
 					) : null }
 					{ session?.user.pemission === 'Adm' && (
 						<>
-							<Button isDisabled={ !nPedido } colorScheme={ "linkedin" } onClick={ () => onOpen() }>
+							<Button isDisabled={ !propostaId } colorScheme={ "linkedin" } onClick={ () => onOpen() }>
 								Reenviar Pedido
 							</Button>
 							<Button

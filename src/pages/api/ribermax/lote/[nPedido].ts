@@ -19,7 +19,7 @@ export default async function postLotePHP (
 		const { nPedido } = req.query
 
 		const loteRequest = await axios( {
-			url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos?populate=*&filters[nPedido][$eq]=${ nPedido }`,
+			url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ nPedido }?populate=*`,
 			headers: {
 				Authorization: `Bearer ${ process.env.ATORIZZATION_TOKEN }`,
 				"Content-Type": "application/json",
@@ -28,7 +28,7 @@ export default async function postLotePHP (
 
 		const lote = loteRequest.data.data
 
-		const items = lote
+		const items = [lote]
 		const promessas = []
 
 		for ( const i of items ) {

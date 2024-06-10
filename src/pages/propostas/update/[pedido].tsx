@@ -1,4 +1,4 @@
-import {
+/* import {
 	Flex,
 	useToast,
 } from "@chakra-ui/react"
@@ -15,9 +15,9 @@ export default function Proposta () {
 	const Email = session?.user.email
 	const PEDIDO = router.query.pedido
 	const [ loadingGeral, setLoadingGeral ] = useState<boolean>( false )
-	const [ Data, setData ] = useState<any | null>( null )
+	const [ businessDataAttrs, setBusinessDataAttrs ] = useState<any | null>( null )
 	const [ Bling, setBling ] = useState<string | null>( null )
-	const [ Produtos, setProdutos ] = useState<any | null>( null )
+	const [ prodList, setProdList ] = useState<any | null>( null )
 	const [ Itens, setItens ] = useState<any | null>( null )
 
 
@@ -28,18 +28,19 @@ export default function Proposta () {
 		( async () => {
 			setLoadingGeral( true )
 			try {
-				const request = await axios( `/api/db/business/get/id/${ PEDIDO }` )
-				const response = request.data
-				const CNPJ = response.attributes.empresa.data.attributes.CNPJ
+				const requestBusiness = await axios( `/api/db/business/get/id/${ PEDIDO }` )
+				const businessDataAttrs = requestBusiness.data.attributes
+				setBusinessDataAttrs( businessDataAttrs )
+				
+				const CNPJ = businessDataAttrs.empresa.data.attributes.CNPJ
 				const getProdutos = await axios( `/api/query/get/produto/cnpj/${ CNPJ }`, { method: "POST", data: Email } )
 				const RespProduto = getProdutos.data
-				setData( response )
-				const [ pedido ] = response.attributes.pedidos.data
+				const [ pedido ] = businessDataAttrs.pedidos.data
 				const ItensList = pedido.attributes.itens
 				setItens( ItensList )
-				setBling( response.attributes.Bpedido )
+				setBling( businessDataAttrs.Bpedido )
 				if ( RespProduto.length > 0 ) {
-					setProdutos( RespProduto )
+					setProdList( RespProduto )
 				} else {
 					toast( {
 						title: "ops.",
@@ -75,8 +76,11 @@ export default function Proposta () {
 	return (
 		<>
 			<Flex h="100vh" w="100%">
-				<FormProposta ondata={ Data } produtos={ Produtos } ITENS={ Itens } envio={ "UPDATE" } />
+				<FormProposta businessDataAttrs={ businessDataAttrs } prodList={ prodList } ITENS={ Itens } />
 			</Flex>
 		</>
 	)
 }
+ */
+
+export default function Proposta () { return <></> }

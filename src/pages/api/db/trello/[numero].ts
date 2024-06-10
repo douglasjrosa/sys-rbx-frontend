@@ -37,13 +37,13 @@ export default async function PostTrello (
 		const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string || `https://${ process.env.NEXT_PUBLIC_VERCEL_URL }`
 
 		const requestPedido = await axios( {
-			url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos?populate=*&filters[nPedido][$eq]=${ numero }`,
+			url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ numero }?populate=*`,
 			headers: {
 				Authorization: `Bearer ${ process.env.ATORIZZATION_TOKEN }`,
 				"Content-Type": "application/json",
 			},
 		} )
-		const pedido = requestPedido.data.data[ 0 ]
+		const pedido = requestPedido.data.data
 
 		const Bpedido = pedido.attributes.Bpedido
 		const account = pedido.attributes.fornecedorId.data.attributes.CNPJ

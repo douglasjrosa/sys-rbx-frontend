@@ -9,14 +9,14 @@ export default async function PedidoBling (
 		const { nPedido } = req.query
 		try {
 			const request = await axios( {
-				url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos?populate=*&filters[nPedido][$eq]=${ nPedido }`,
+				url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ nPedido }?populate=*`,
 				headers: {
 					Authorization: `Bearer ${ process.env.ATORIZZATION_TOKEN }`,
 					"Content-Type": "application/json",
 				},
 			} )
 			const infos = request.data.data
-			const [ data ]: any = infos
+			const data: any = infos
 			const negocio = data.attributes.business.data.attributes
 			if ( negocio.andamento === 5 && negocio.etapa === 6 ) {
 				res.status( 200 ).send( data )

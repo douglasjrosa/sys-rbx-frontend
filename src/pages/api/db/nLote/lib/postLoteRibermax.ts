@@ -9,9 +9,9 @@ const PHP = axios.create({
   },
 });
 
-export  const PostLoteRibermmax =async (nPedido:string) => {
+export  const PostLoteRibermmax =async (propostaId: string) => {
   const loteRequest  = await axios({
-    url: `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/pedidos?populate=*&filters[nPedido][$eq]=${nPedido}`,
+	  url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ propostaId }?populate=*`,
     headers: {
       Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
       "Content-Type": "application/json",
@@ -20,7 +20,7 @@ export  const PostLoteRibermmax =async (nPedido:string) => {
 
   const lote = loteRequest.data.data;
 
-  const items = lote;
+  const items = [lote];
   const promessas = [];
 
   for (const i of items) {
@@ -47,7 +47,7 @@ export  const PostLoteRibermmax =async (nPedido:string) => {
             idProduto: i.attributes.produtosId,
             nLote: i.attributes.lote,
             qtde: i.attributes.qtde,
-            pedido: nPedido,
+            pedido: propostaId,
             error: error,
           },
         };

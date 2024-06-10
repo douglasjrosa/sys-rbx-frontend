@@ -19,9 +19,8 @@ export default async function GetEmpresa (
 	if ( req.method === "POST" ) {
 		const numero: any = req.query.psotLote
 
-		const request = await STRAPI.get( `/pedidos?populate=*&filters[nPedido][$eq]=${ numero }` )
-
-		const [ pedido ] = request.data.data
+		const request = await STRAPI.get( `/pedidos/${ numero }?populate=*` )
+		const pedido = request.data.data
 		const items = pedido.attributes.itens
 		const empresa = pedido.attributes.empresaId
 		const empresaCNPJ = pedido.attributes.empresa.data.attributes.CNPJ

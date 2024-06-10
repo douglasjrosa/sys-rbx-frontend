@@ -1,8 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import Loading from "@/components/elements/loading"
-import { CompBusiness } from "@/components/Proposta/business"
-import { ListaEmpresa } from "@/components/Proposta/ListaEmpresa"
-// import { CompPrazo } from "@/components/Proposta/prazo";
+import { LabelEmpresa } from "@/components/labelEmpresa"
 import { ProdutiList } from "@/components/Proposta/produt"
 import { TableConteudo } from "@/components/Proposta/tabela"
 import { SetValue } from "@/function/currenteValor"
@@ -31,154 +28,89 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { SetStateAction, useCallback, useEffect, useState } from "react"
 import { BsArrowLeftCircleFill, BsTrash } from "react-icons/bs"
-import { DateIso } from "../../../components/data/Date"
-import { SetFormaPg } from "@/components/elements/SetFormaPg"
-import { GetPrazoPg } from "@/components/elements/getPrazopg"
+import { customDateIso } from "@/utils/customDateFunctions"
 
-const tempo = DateIso
+export const FormProposta = ( props: { businessDataAttrs: any | null; prodList: any; ITENS: any } ) => {
 
-export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS: any; envio: string } ) => {
 	const router = useRouter()
+	const { businessDataAttrs, prodList, ITENS } = props
+
+	const today = customDateIso()
+
 	const PEDIDO = router.query.pedido
 	const NNegocio = router.query.negocio
 	const { data: session } = useSession()
 	const [ loadingTable, setLoadingTable ] = useState<boolean>( false )
 	const [ loadingGeral, setLoadingGeral ] = useState<boolean>( false )
-	const [ RelatEnpresa, setRelatEmpresa ] = useState( [] )
-	const [ RelatEnpresaId, setRelatEmpresaId ] = useState( "" )
-	const [ Nome, SetNome ] = useState( '' )
+	const [ companyName, setCompanyName ] = useState( '' )
 	const [ ListItens, setItens ] = useState<any>( [] )
-	const [ date, setDate ] = useState( tempo )
-	const [ DateEntrega, setDateEntrega ] = useState( "" )
+	const [ orderDate, setOrderDate ] = useState( today )
+	const [ deliverDate, setDeliverDate ] = useState( "" )
 	const [ cnpj, setCnpj ] = useState( "" )
-	const [ EmpresaId, setEmpresaId ] = useState( "" )
 	const [ frete, setFrete ] = useState( "" )
 	const [ freteCif, setFreteCif ] = useState<any>( '0.00' )
-	const [ Loja, setLoja ] = useState( "" )
-	const [ prazo, setPrazo ] = useState( "" )
-	const [ tipoprazo, setTipoPrazo ] = useState( "" )
-	const [ totalGeral, setTotalGeral ] = useState<any>( "" )
-	const [ Desconto, setDesconto ] = useState<any>( "" )
-	const [ DescontoAdd, setDescontoAdd ] = useState( '' )
+	const [ emitente, setEmitente ] = useState( "" )
+	const [ DescontoAdd, setDescontoAdd ] = useState( "" )
 	const [ saveNegocio, setSaveNegocio ] = useState( "" )
 	const [ hirtori, setHistory ] = useState( [] )
 	const [ MSG, setMSG ] = useState( [] )
 	const [ obs, setObs ] = useState( "" )
 	const [ Id, setId ] = useState( "" )
 	const [ clientePedido, setClientePedido ] = useState( "" )
-	const [ RegistroForgpg, setRegistroForgpg ] = useState( "" )
 	const [ ENVIO, setEMVIO ] = useState( "" )
-	const [ incidentRecord, setIncidentRecord ] = useState( [] )
 	const toast = useToast()
 
-	const [ blingAccounts, setBlingAccounts ] = useState( [] )
-	const [ selectedAccount, setSelectedAccount ] = useState( "" )
+	const [ blingAccounts, setBlingAccounts ] = useState<any[]>()
 
 
 	if ( props.ITENS && ListItens.length === 0 ) {
 		setItens( props.ITENS )
 	}
-	if ( props.envio && !ENVIO ) {
-		setEMVIO( props.envio )
-	}
-
 
 	useEffect( () => {
-		if ( props.ondata ) {
-			const resp = props.ondata
+		if ( businessDataAttrs ) {
+			const { empresa } = businessDataAttrs
+			const empresaDataAttrs = empresa.data.attributes
+			const [ proposta ] = businessDataAttrs.pedidos.data
+			if ( proposta ) {
+				const {
+					id,
+					dataPedido,
+					dataEntrega,
+					frete: propostaFrete,
+					valorFrete,
+					fornecedor,
+					obs,
+					cliente_pedido,
+					descontoAdd
+				} = proposta.attributes
 
-			const [ PROPOSTA ] = resp.attributes?.pedidos.data
-			setId( PROPOSTA?.id )
-			const verifiqueFrete = ENVIO === 'UPDATE' ? PROPOSTA?.attributes?.frete : resp.attributes.empresa.data.attributes.frete
-			setFrete( verifiqueFrete )
-			setDate( PROPOSTA?.attributes?.dataPedido ? PROPOSTA.attributes.dataPedido : "" )
-			const verifiquePrazo = ENVIO === 'UPDATE' ? PROPOSTA?.attributes?.condi : resp.attributes.empresa.data.attributes.forpg
-			setRegistroForgpg( resp.attributes.empresa.data.attributes.forpg )
-			setPrazo( verifiquePrazo )
-			setRelatEmpresa( resp.attributes?.empresa.data )
-			SetNome( resp.attributes.empresa.data.attributes.nome )
-			setRelatEmpresaId( resp.attributes?.empresa.data.id )
-			setFreteCif( PROPOSTA?.attributes?.valorFrete )
-			setLoja( PROPOSTA?.attributes?.fornecedor )
-			setObs( PROPOSTA?.attributes?.obs )
-			setSaveNegocio( resp.attributes.nBusiness )
-			setHistory( resp.attributes.history )
-			setMSG( resp.attributes.incidentRecord )
-			setClientePedido( PROPOSTA?.attributes?.cliente_pedido )
+				const verifiqueFrete = ENVIO === 'UPDATE' ? propostaFrete : empresaDataAttrs.frete
 
-			setTipoPrazo( resp.attributes.empresa.data.attributes.maxPg )
-
-			setDateEntrega( PROPOSTA?.attributes?.dataEntrega )
-			setHistory( resp.attributes.history )
-			setCnpj( resp.attributes.empresa.data.attributes.CNPJ )
-			setIncidentRecord( resp.attributes.incidentRecord )
-			const descontodb = PROPOSTA?.attributes.descontoAdd
-			setDescontoAdd( !descontodb ? 0.00 : descontodb.replace( ".", "" ).replace( ",", "." ) )
+				setId( id )
+				setFrete( verifiqueFrete )
+				setOrderDate( dataPedido || today )
+				setCompanyName( empresaDataAttrs.nome )
+				setFreteCif( valorFrete )
+				setEmitente( fornecedor )
+				setObs( obs )
+				setSaveNegocio( businessDataAttrs.nBusiness )
+				setHistory( businessDataAttrs.history )
+				setMSG( businessDataAttrs.incidentRecord )
+				setClientePedido( cliente_pedido )
+				setDeliverDate( dataEntrega )
+				setCnpj( empresaDataAttrs.CNPJ )
+				setDescontoAdd( descontoAdd ?? '0.00' )
+			}
 		}
-	}, [] )
+	}, [ businessDataAttrs ] )
 
 
-	const disbleProd = !prazo || !DateEntrega || !Loja || !frete ? false : true
 
-	const TotalGreal = () => {
-		if ( ListItens.length === 0 ) {
-			return 0.00
-		} else {
-			const totalItem = ListItens.reduce( ( acc: number, item: any ) => {
-				const valorOriginal = Number( item.vFinal.replace( ".", "" ).replace( ",", "." ) )
-				const valor: number = valorOriginal
-				const qtd: number = item.Qtd
-				const mont: boolean = item.mont
-				const expo: boolean = item.expo
-				const acrec: number =
-					mont && expo ? 1.2 : expo && !mont ? 1.1 : !expo && mont ? 1.1 : 0
-				const somaAcrescimo: number = acrec === 0
-					? 0
-					: ( valorOriginal * acrec - valorOriginal ) * qtd
-				const total1 = valor * qtd + somaAcrescimo
-				const total = Number( total1.toFixed( 2 ) )
-				const somaTota = acc + total
-				const TotoalConvert = Number( somaTota.toFixed( 2 ) )
-				return TotoalConvert
-			}, 0 )
-			const ValorAtt = totalItem
-			return ValorAtt
-		}
-	}
+	const disbleProd = !deliverDate || !emitente || !frete ? false : true
 
-	const DescontoGeral = () => {
-		if ( ListItens.length === 0 ) {
-			return 0.00
-		} else {
-			const descontos = ListItens.map( ( i: any ) => {
-				const valor = Number( i.vFinal.replace( ".", "" ).replace( ",", "." ) )
-				const ValorGeral =
-					Math.round( parseFloat( valor.toFixed( 2 ) ) * 100 ) / 100
-				const descont = ValorGeral * 0.05
-				const descont1 = descont * i.Qtd
-				const somaDescontMin =
-					Math.round( parseFloat( descont1.toFixed( 2 ) ) * 100 ) / 100
 
-				return somaDescontMin
-			} )
-			const total1 = prazo !== "Antecipado" ? 0.00 : descontos.reduce(
-				( acc: number, valorAtual: number ) => acc + valorAtual
-			)
-			const total = total1
-			return total
-		}
-	}
 
-	useEffect( () => {
-
-		const valorTotal = TotalGreal()
-		const ValorDesconto = DescontoGeral()
-		const somaDecont = ValorDesconto + parseFloat( DescontoAdd )
-		const Soma = valorTotal - somaDecont
-
-		setTotalGeral( Math.round( Soma * 100 ) / 100 )
-		setDesconto( somaDecont )
-	}, [ DescontoGeral, ListItens, TotalGreal ] )
 
 	useEffect( () => {
 		setItens(
@@ -192,7 +124,7 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 				return data
 			} )
 		)
-	}, [ prazo ] )
+	}, [] )
 
 
 	const SalvarProdutos = async () => {
@@ -207,7 +139,7 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 				duration: 3000,
 				isClosable: true,
 			} )
-		} else if ( !DateEntrega ) {
+		} else if ( !deliverDate ) {
 			setLoadingGeral( false )
 			toast( {
 				title: "Esta Faltando informação",
@@ -257,29 +189,22 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 				}
 			} )
 
-			const totalValor = totalGeral.toLocaleString( "pt-br", {
-				style: "currency",
-				currency: "BRL",
-			} )
 
 			const data: any = {
 				nPedido: router.query.pedido,
-				matriz: Loja,
+				matriz: emitente,
 				cliente: cnpj,
-				clienteId: RelatEnpresaId,
+				clienteId: '????????',
 				itens: ProdutosItems,
-				empresa: Loja,
-				dataPedido: tempo,
-				dataEntrega: new Date( DateEntrega ).toISOString(),
+				empresa: emitente,
+				dataPedido: orderDate,
+				dataEntrega: new Date( deliverDate ).toISOString(),
 				vencPedido: VencDate,
 				vencPrint: VencDatePrint,
-				condi: prazo,
-				prazo: tipoprazo,
-				totalGeral: totalValor,
-				deconto: Desconto.toLocaleString( "pt-br", {
-					style: "currency",
-					currency: "BRL",
-				} ),
+				condi: '????????',
+				prazo: '????????',
+				totalGeral: '????????',
+				deconto: '????????',
 				vendedor: session?.user.name,
 				vendedorId: session?.user.id,
 				frete: frete,
@@ -381,7 +306,7 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 							data: {
 								history: record,
 								incidentRecord: record2,
-								Budget: totalValor
+								Budget: 'totalValor' // ????????
 							},
 						}
 
@@ -408,10 +333,6 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 			}
 
 		}
-	}
-
-	function getPrazo ( prazo: SetStateAction<string> ) {
-		setTipoPrazo( prazo )
 	}
 
 
@@ -460,7 +381,6 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 
 	const setFreteSave = ( e: any ) => {
 		const Valor = e.target.value
-		const sinal = Valor.split( "" )
 		const valorLinpo = SetValue( Valor )
 		setFreteCif( !valorLinpo ? '0,00' : valorLinpo )
 	}
@@ -479,29 +399,22 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 		}
 	}
 
-	function setPrazoRetorno ( prazo: SetStateAction<string> ) {
-		setPrazo( prazo )
-	}
 
 	const fetchAccounts = useCallback( async () => {
 		const response = await fetch( '/api/strapi/tokens' )
-		
-		if( !response.ok ) console.error( response )
+
+		if ( !response.ok ) console.error( response )
 
 		const accounts = await response.json()
-		
-		setBlingAccounts( accounts.data )
-		const mainAccount = accounts.data.filter(
-			( account: any ) => account.attributes.mainAccount
-		)[ 0 ].attributes.cnpj
 
-		setSelectedAccount( mainAccount )
-		setLoja( mainAccount )
-	}, [ setBlingAccounts, setSelectedAccount, setLoja ] )
+		const options = [ { attributes: { cnpj: '', account: 'Selecione um emitente' } }, ...accounts.data ]
+
+		setBlingAccounts( options )
+	}, [ setBlingAccounts ] )
 
 
 	useEffect( () => {
-		if ( blingAccounts.length === 0 ) fetchAccounts()
+		if ( !blingAccounts ) fetchAccounts()
 	}, [ blingAccounts ] )
 
 	return (
@@ -514,10 +427,7 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 					</Flex>
 					<Box display="flex" flexWrap={ 'wrap' } gap={ 5 } alignItems="center" mt={ 3 } mx={ 5 }>
 						<Box me={ 2 }>
-							<ListaEmpresa onChangeValue={ Nome } />
-						</Box>
-						<Box me={ 2 }>
-							<CompBusiness Resp={ saveNegocio } />
+							<LabelEmpresa companyName={ companyName } />
 						</Box>
 						<Box>
 							<FormLabel
@@ -533,9 +443,9 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 								w="28"
 								fontSize="xs"
 								rounded="md"
-								isDisabled
-								onChange={ ( e ) => setDate( e.target.value ) }
-								value={ date }
+								readOnly={ true }
+								onChange={ ( e ) => setOrderDate( e.target.value ) }
+								value={ orderDate }
 							/>
 						</Box>
 						<Box>
@@ -553,8 +463,8 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 								w="28"
 								fontSize="xs"
 								rounded="md"
-								onChange={ ( e ) => setDateEntrega( e.target.value ) }
-								value={ DateEntrega }
+								onChange={ ( e ) => setDeliverDate( e.target.value ) }
+								value={ deliverDate }
 							/>
 						</Box>
 						<Box>
@@ -562,34 +472,43 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 								fontSize="xs"
 								fontWeight="md"
 							>
-								Fornecedor
+								Emitente
 							</FormLabel>
-							<Select
-								shadow="sm"
-								size="xs"
-								w="28"
-								fontSize="xs"
-								rounded="md"
-								onChange={ ( e ) => setLoja( e.target.value ) }
-								defaultValue={ selectedAccount }
-							>
-								{ blingAccounts.map( ( blingAccount: any, key ) => (
-									<option
-										key={ `blingAccount${ key }` }
-										style={ { backgroundColor: "#1A202C" } }
-										value={ blingAccount.attributes.cnpj }
-									>
-										{ blingAccount.attributes.account }
-									</option>
-								) ) }
-							</Select>
+							{ blingAccounts &&
+								<Select
+									shadow="sm"
+									size="xs"
+									w="28"
+									fontSize="xs"
+									rounded="md"
+									onChange={ ( e ) => setEmitente( e.target.value ) }
+									value={ emitente }
+									defaultValue=''
+								>
+									{ blingAccounts.map( ( blingAccount: any, key ) => (
+										<option
+											key={ `blingAccount${ key }` }
+											style={ { backgroundColor: "#1A202C" } }
+											value={ blingAccount.attributes.cnpj }
+										>
+											{ blingAccount.attributes.account }
+										</option>
+									) ) }
+								</Select>
+							}
 						</Box>
-						<Box>
-							<SetFormaPg id={ RelatEnpresaId } retorno={ prazo } envio={ setPrazoRetorno } Disable={ RegistroForgpg && session?.user.pemission !== 'Adm' ? true : false } />
-						</Box>
-						<Box hidden={ prazo === "A Prazo" ? false : true }>
-							<GetPrazoPg envio={ getPrazo } id={ RelatEnpresaId } retorno={ tipoprazo } />
-						</Box>
+						{
+							/*
+								<Box>
+									<SetFormaPg id={ empresa.data.id } retorno={ prazo } envio={ setPrazoRetorno } Disable={ RegistroForgpg && session?.user.pemission !== 'Adm' ? true : false } />
+								</Box>
+							}
+							{ prazo === "A Prazo" && getPrazo && empresa.data.id && tipoprazo &&
+								<Box>
+									<GetPrazoPg envio={ getPrazo } id={ empresa.data.id } retorno={ tipoprazo } />
+								</Box>
+							*/
+						}
 						<Box>
 							<FormLabel
 								fontSize="xs"
@@ -659,7 +578,7 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 						{ !disbleProd && ( <Box w={ "300px" } /> ) }
 						{ !!disbleProd && (
 							<Box w={ "300px" } alignItems="center" >
-								<ProdutiList Lista={ props.produtos } Retorno={ getIten } Reload={ getLoading }
+								<ProdutiList Lista={ prodList } Retorno={ getIten } Reload={ getLoading }
 								/>
 							</Box>
 						) }
@@ -764,14 +683,8 @@ export const FormProposta = ( props: { ondata: any | null; produtos: any; ITENS:
 								currency: "BRL",
 							} ) }
 						</chakra.p>
-						<chakra.p>Desconto: { Desconto.toLocaleString( "pt-br", {
-							style: "currency",
-							currency: "BRL",
-						} ) }</chakra.p>
-						<chakra.p>Valor Total: { ( SetValueNumero( freteCif ) + totalGeral ).toLocaleString( "pt-br", {
-							style: "currency",
-							currency: "BRL",
-						} ) }</chakra.p>
+						<chakra.p>Desconto: { '????????' }</chakra.p>
+						<chakra.p>Valor Total: { '????????' }</chakra.p>
 					</Flex>
 					<Button colorScheme={ "whatsapp" } onClick={ SalvarProdutos } isDisabled={ loadingTable }>
 						Salvar Proposta

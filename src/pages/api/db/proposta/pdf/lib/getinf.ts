@@ -2,7 +2,7 @@ import axios from "axios"
 
 export const getData = async ( proposta: any ) => {
 	const token = process.env.ATORIZZATION_TOKEN
-	const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos?populate=*&filters[nPedido][$eq]=${ proposta }`
+	const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ proposta }?populate=*`
 
 	const config = {
 		method: "GET",
@@ -33,7 +33,7 @@ export const getData = async ( proposta: any ) => {
 
 	try {
 		const response = await axios( config )
-		const result = response.data?.data?.[ 0 ]
+		const result = response.data?.data
 		const inf = result.attributes
 		const Vendedor = inf.user.data.attributes.username
 		const empresaFornec = inf.fornecedorId.data.attributes
@@ -55,7 +55,7 @@ export const getData = async ( proposta: any ) => {
 				email: empresaFornec?.email,
 			},
 		}
-		const nPedido = inf.nPedido
+		const custoAdicional = inf.custoAdicional
 		const frete = inf.frete
 		const Valfrete = inf.valorFrete
 		const datePop = inf.dataPedido
@@ -77,14 +77,13 @@ export const getData = async ( proposta: any ) => {
 				? ""
 				: inf.business.data.id
 
-		const pagina = Math.ceil( itens.length / 6 )
-
-
 
 		const cliente_pedido = inf.cliente_pedido
 
+		console.log(inf)
+
 		const data = {
-			nPedido,
+			custoAdicional,
 			frete,
 			Valfrete,
 			datePop,
