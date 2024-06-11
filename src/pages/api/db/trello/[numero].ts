@@ -45,12 +45,6 @@ export default async function PostTrello (
 		} )
 		const pedido = requestPedido.data.data
 
-		const Bpedido = pedido.attributes.Bpedido
-		const account = pedido.attributes.fornecedorId.data.attributes.CNPJ
-
-		const blingOrder = await fetch( `${ baseUrl }/api/bling/${ account }/pedidos/vendas/${ Bpedido }` ).then( r => r.json() )
-		const blingOrderNumber = blingOrder.data?.numero ?? ""
-
 		const lote = await GetLoteProposta( numero )
 
 		const items = pedido.attributes.itens
@@ -118,8 +112,7 @@ export default async function PostTrello (
         Vendedor(a): ${ VendedorName },
         Empresa: ${ fornecedorName },
         Tipo de frete: ${ frete },
-        Bling ID: Nº. ${ Bpedido },
-        Bling Pedido: Nº. ${ blingOrderNumber },
+        Bling Pedido: Nº. ${ numero },
         Negocio Id: Nº. ${ negocioId },
         Pedido: Nº. ${ pedidoCliente === null ? '' : pedidoCliente },
         Lote: Nº. ${ nlote },
@@ -175,7 +168,6 @@ export default async function PostTrello (
 								Vendedor: VendedorName,
 								Empresa: fornecedorName,
 								Tipo_de_frete: frete,
-								Bling: Bpedido,
 								Lote: nlote,
 								Forma_de_pagamento: pgto,
 								Modelo: i.titulo,

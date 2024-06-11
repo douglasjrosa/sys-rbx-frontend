@@ -168,7 +168,6 @@ const SendOrderModal = ( props: any ) => {
 			}
 			else orderStatus.blingOrderCreated = true
 
-
 			// Handling business update in Strapi
 			toast( {
 				title: "STRAPI:",
@@ -180,6 +179,7 @@ const SendOrderModal = ( props: any ) => {
 			} )
 			const blingOrderId = String( blingOrder.data.id )
 			const updateNegocio = await updateBusinessInStrapi( businessId, blingOrderId )
+			
 			if ( !updateNegocio.data?.id ) {
 
 				toast( {
