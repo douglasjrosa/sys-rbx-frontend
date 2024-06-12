@@ -6,27 +6,6 @@ import { GetTrelloId } from "../../lib/get_trello_id"
 import { ErroTrello } from "../../lib/errtrello"
 import { IncidentRecord } from "../lib/businesses"
 
-interface TrelloCard {
-	key: string
-	token: string
-	idList: string
-	boardId: string
-	name: string
-	desc: string
-	idMembers: string[]
-	due: string
-	dueReminder: number
-	pos: string
-}
-
-const token = process.env.ATORIZZATION_TOKEN
-const STRAPI = axios.create( {
-	baseURL: process.env.NEXT_PUBLIC_STRAPI_API_URL,
-	headers: {
-		Authorization: `Bearer ${ token }`,
-		"Content-Type": "application/json",
-	},
-} )
 
 export default async function PostTrello (
 	req: NextApiRequest,
@@ -34,7 +13,6 @@ export default async function PostTrello (
 ) {
 	if ( req.method === "POST" ) {
 		const { numero } = req.query
-		const baseUrl = process.env.NEXT_PUBLIC_BASE_URL as string || `https://${ process.env.NEXT_PUBLIC_VERCEL_URL }`
 
 		const requestPedido = await axios( {
 			url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ numero }?populate=*`,
@@ -108,17 +86,15 @@ export default async function PostTrello (
 					boardId: Bord,
 					name: nomeCard,
 					desc: `Negocio: Nº. ${ negocio },
-        Proposta: Nº. ${ numero },
+        Proposta / Pedido: Nº. ${ numero },
+        Bling Pedido: Nº. ${ numero },
         Vendedor(a): ${ VendedorName },
         Empresa: ${ fornecedorName },
         Tipo de frete: ${ frete },
-        Bling Pedido: Nº. ${ numero },
         Negocio Id: Nº. ${ negocioId },
-        Pedido: Nº. ${ pedidoCliente === null ? '' : pedidoCliente },
+        Pedido do cliente: Nº. ${ pedidoCliente === null ? '' : pedidoCliente },
         Lote: Nº. ${ nlote },
-        Forma de pagamento: ${ pgto },
-        ${ pgto === 'A Prazo' && ( `Prazo de pagamento: ${ Prazo }` ) }
-        Modelo: ${ i.modelo }`,
+        Modelo: ${ i.titulo }`,
 					idMembers: trelloMembers,
 					due: estrega + 'T16:00:00.000Z',
 					dueReminder: 2880,
@@ -169,7 +145,6 @@ export default async function PostTrello (
 								Empresa: fornecedorName,
 								Tipo_de_frete: frete,
 								Lote: nlote,
-								Forma_de_pagamento: pgto,
 								Modelo: i.titulo,
 								erro_status: err.response.status,
 								erro_message: err.response.data,
