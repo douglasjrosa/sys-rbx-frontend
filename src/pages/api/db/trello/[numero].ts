@@ -68,16 +68,21 @@ export default async function PostTrello (
 					.map( ( p: any ) => p.attributes.lote )
 				const nlote = Prenlote[ 0 ]
 
-				const type =
-					i.mont === true && i.expo === false
-						? "MONT"
-						: i.mont === false && i.expo === true
-							? "EXP"
-							: i.mont === false && i.expo === false
-								? ""
-								: "EXP - MONT"
+				const trimmedClientName = cliente.replace( /(\w+\s\w+)\s.*/, '$1' )
+				const qtde = ` - ${ i.Qtd }`
+				const trimmedProdName = " - " + i.nomeProd.replace( / - \d+ x \d+ x \d+cm\(alt.\)/g, "" )
 
-				const nomeCard = `${ cliente } - ${ i.Qtd } - ${ i.nomeProd } - Medidas ${ i.comprimento } x ${ i.largura } x ${ i.altura } - peso ${ i.pesoCx }(kg) - ${ type } - Lote Nº ${ nlote }`
+				let measures = `- Medidas: ${ i.comprimento } x ${ i.largura } x ${ i.altura ? i.altura + "cm(alt.) " : "cm(larg.) " } `
+				measures = i.comprimento ? measures : ""
+				
+				const expo = i.expo ? " - EXP" : ""
+				const mont = i.mont ? " - MONT" : ""
+
+				const weight = i.pesoCx ? ` - Peso: ${ i.pesoCx }kg` : ""
+
+				const lot = ` - Lote: ${ nlote }`
+
+				const nomeCard = trimmedClientName + qtde + trimmedProdName + measures + expo + mont + weight + lot
 
 				const dataBoard = JSON.stringify( {
 					key: userKey,
@@ -85,16 +90,16 @@ export default async function PostTrello (
 					idList: list,
 					boardId: Bord,
 					name: nomeCard,
-					desc: `Negocio: Nº. ${ negocio },
-        Proposta / Pedido: Nº. ${ numero },
-        Bling Pedido: Nº. ${ numero },
-        Vendedor(a): ${ VendedorName },
-        Empresa: ${ fornecedorName },
-        Tipo de frete: ${ frete },
-        Negocio Id: Nº. ${ negocioId },
-        Pedido do cliente: Nº. ${ pedidoCliente === null ? '' : pedidoCliente },
-        Lote: Nº. ${ nlote },
-        Modelo: ${ i.titulo }`,
+					desc: `Negocio: Nº.${ negocio },
+				Proposta / Pedido: Nº.${ numero },
+				Bling Pedido: Nº.${ numero },
+				Vendedor( a ): ${ VendedorName },
+				Empresa: ${ fornecedorName },
+				Tipo de frete: ${ frete },
+				Negocio Id: Nº.${ negocioId },
+				Pedido do cliente: Nº.${ pedidoCliente === null ? '' : pedidoCliente },
+		Lote: Nº.${ nlote },
+		Modelo: ${ i.titulo } `,
 					idMembers: trelloMembers,
 					due: estrega + 'T16:00:00.000Z',
 					dueReminder: 2880,
@@ -121,7 +126,7 @@ export default async function PostTrello (
 				return await axios
 					.request( config )
 					.then( async ( res: any ) => {
-						const resposta = `card id: ${ res.data.id } pode ser acessado pelo link: ${ res.data.shortUrl }`
+						const resposta = `card id: ${ res.data.id } pode ser acessado pelo link: ${ res.data.shortUrl } `
 						const text = {
 							msg: resposta,
 							date: new Date().toISOString(),

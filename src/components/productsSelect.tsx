@@ -42,7 +42,7 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, value, cnpj,
 				fontSize="xs"
 				fontWeight="md"
 			>
-				Emitente
+				Lista de produtos
 			</FormLabel>
 			{
 				!!productList &&

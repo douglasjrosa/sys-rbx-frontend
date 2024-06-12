@@ -185,12 +185,28 @@ export const sendCardsToTrello = async ( propostaId: string ) => {
 	return await response.json()
 }
 
+export const getBlingProductByCodigo = async ( blingAccountCnpj: string, codigo: string ): Promise<any> => {
+
+	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos?codigo=${ codigo }` )
+	const product = await response.json()
+
+	if ( !response.ok ) {
+		console.error( product )
+		throw new Error( `Error fetching product: ${ response.statusText }` )
+	}
+
+	return product.data?.[ 0 ] ?? {}
+}
+
 export const getBlingProductByName = async ( blingAccountCnpj: string, nomeProd: string ): Promise<any> => {
 
 	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos?nome=${ nomeProd }` )
-
-	if ( !response.ok ) throw new Error( `Error fetching product: ${ response.statusText }` )
 	const product = await response.json()
+
+	if ( !response.ok ) {
+		console.error( product )
+		throw new Error( `Error fetching product: ${ response.statusText }` )
+	}
 
 	return product.data?.[ 0 ] ?? {}
 }
@@ -229,7 +245,7 @@ export const createBlingProduct = async (
 	} )
 
 	const product = await response.json()
-	
+
 	if ( !response.ok ) {
 		console.error( product )
 		throw new Error( `Error fetching product: ${ response.statusText }` )
@@ -266,16 +282,22 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[] ): Pro
 			tributacao: { ncm }
 		}
 
-		const getBlingProd = await getBlingProductByName( blingAccountCnpj, nomeProd )
-		if ( getBlingProd.hasOwnProperty( "id" ) ) {
-			if ( getBlingProd.preco !== preco ) {
-				await updateBlingProduct( blingAccountCnpj, getBlingProd.id, productData )
-			}
-		}
+		let getBlingProd = await getBlingProductByCodigo( blingAccountCnpj, codigo )
 
-		const blingProdId = getBlingProd.hasOwnProperty( "id" )
-			? getBlingProd.id
-			: await createBlingProduct( blingAccountCnpj, productData )
+		if ( !getBlingProd.id )
+			getBlingProd = await getBlingProductByName( blingAccountCnpj, nomeProd )
+			
+		let blingProdId = getBlingProd.id
+
+		if ( !!blingProdId && getBlingProd.nome !== nomeProd )
+			blingProdId = await updateBlingProduct( blingAccountCnpj, getBlingProd.id, productData )
+
+		blingProdId = blingProdId || await createBlingProduct( blingAccountCnpj, productData )
+
+		if ( !blingProdId ) {
+			console.error( { getBlingProd, blingProdId } )
+			throw new Error( `Error creating product: in handleItems() function.` )
+		}
 
 		respItems.push( {
 			descricao: nomeProd,
@@ -283,11 +305,8 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[] ): Pro
 			codigo,
 			unidade: "Un",
 			quantidade: +Qtd,
-			produto: {
-				id: blingProdId
-			}
+			produto: { id: blingProdId }
 		} )
-
 	}
 
 	return respItems
