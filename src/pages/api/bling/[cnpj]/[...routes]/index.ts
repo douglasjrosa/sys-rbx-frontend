@@ -47,17 +47,24 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
 		} )
 
-		const responseData = await response.json()
+		const responseData = !!response.body ? await response.json() : null
 
-		if ( !response.ok ) {
+		if ( !!responseData && !response.ok ) {
 			res.status( response.status ).json( {
 				errorMessage: `Request failed: ${ response.statusText }`,
 				responseError: responseData
 			} )
 			return
 		}
+/* 
+		if ( !responseData ) {
+			console.log( "##########################" )
+			res.status( response.status ).end()
+			return
+		} */
 
 		res.status( response.status ).json( responseData )
+
 	} catch ( error: any ) {
 		console.error( 'Error in handler:', error )
 		res.status( 500 ).json( { error: error.message || 'Internal Server Error' } )

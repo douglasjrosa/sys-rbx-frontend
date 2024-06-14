@@ -52,7 +52,7 @@ export type OrderStatusType = {
 	strapiOrderUpdated: boolean
 }
 
-export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string ): Promise<number | undefined> => {
+export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string ): Promise<any> => {
 	try {
 		const response = await fetch( `/api/bling/${ blingAccountCnpj }/contatos?pesquisa=${ clientCnpj }` )
 
@@ -63,17 +63,17 @@ export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string
 		const searchClient = await response.json()
 
 		if ( searchClient.data && searchClient.data.length > 0 ) {
-			return searchClient.data[ 0 ].id
+			return searchClient.data[ 0 ]
 		}
 
-		return undefined
+		return {}
 	} catch ( error ) {
 		console.error( "Error:", error )
-		return undefined
+		return {}
 	}
 }
 
-export const saveNewClient = async ( orderData: any ): Promise<number> => {
+export const saveClient = async ( orderData: any, blingClientId?: number ): Promise<number> => {
 
 	const clientData = orderData.attributes.empresa.data.attributes
 	const clientStrapiId = orderData.attributes.empresa.data.id
@@ -102,65 +102,73 @@ export const saveNewClient = async ( orderData: any ): Promise<number> => {
 	const financialCategoryId = financialCategories.data.find( ( category: any ) => category.descricao === "Vendas de produtos" ).id
 
 	const newClientData = {
-		"nome": clientData.nome,
-		"codigo": clientStrapiId,
-		"situacao": "A",
-		"numeroDocumento": clientData.CNPJ,
-		"telefone": clientData.fone,
-		"fantasia": clientData.nome,
-		"tipo": "J",
-		"indicadorIe": 1,
-		"ie": clientData.Ie,
-		"email": clientData.emailNfe,
-		"endereco": {
-			"geral": {
-				"endereco": clientData.endereco,
-				"cep": clientData.cep,
-				"bairro": clientData.bairro,
-				"municipio": clientData.cidade,
-				"uf": clientData.uf,
-				"numero": clientData.numero,
-				"complemento": clientData.complemento
+			"nome": clientData.razao,
+			"codigo": clientStrapiId,
+			"situacao": "A",
+			"numeroDocumento": clientData.CNPJ,
+			"telefone": clientData.fone,
+			"fantasia": clientData.nome,
+			"tipo": "J",
+			"indicadorIe": 1,
+			"ie": clientData.Ie,
+			"email": clientData.emailNfe,
+			"endereco": {
+				"geral": {
+					"endereco": clientData.endereco,
+					"cep": clientData.cep,
+					"bairro": clientData.bairro,
+					"municipio": clientData.cidade,
+					"uf": clientData.uf,
+					"numero": clientData.numero,
+					"complemento": clientData.complemento
+				},
+				"cobranca": {
+					"endereco": clientData.endereco,
+					"cep": clientData.cep,
+					"bairro": clientData.bairro,
+					"municipio": clientData.cidade,
+					"uf": clientData.uf,
+					"numero": clientData.numero,
+					"complemento": clientData.complemento
+				}
 			},
-			"cobranca": {
-				"endereco": clientData.endereco,
-				"cep": clientData.cep,
-				"bairro": clientData.bairro,
-				"municipio": clientData.cidade,
-				"uf": clientData.uf,
-				"numero": clientData.numero,
-				"complemento": clientData.complemento
-			}
-		},
-		"financeiro": {
-			"limiteCredito": 10000000,
-			"condicaoPagamento": "28 35 42",
-			"categoria": {
-				"id": financialCategoryId
-			}
-		},
-		"pais": {
-			"nome": "BRASIL"
-		},
-		"tiposContato": [
-			{
-				"id": typeOfContactClienteId,
-				"descricao": "Cliente"
-			}
-		]
-	}
+			"financeiro": {
+				"limiteCredito": 10000000,
+				"condicaoPagamento": "28 35 42",
+				"categoria": {
+					"id": financialCategoryId
+				}
+			},
+			"pais": {
+				"nome": "BRASIL"
+			},
+			"tiposContato": [
+				{
+					"id": typeOfContactClienteId,
+					"descricao": "Cliente"
+				}
+			]
+		}
 
-	const saveNewClientResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos`, {
-		method: 'POST',
+	const method = blingClientId ? "PUT" : "POST"
+	const updateString = blingClientId ? `/${ blingClientId }` : ""
+
+	const saveClientResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos${ updateString }`, {
+		method,
 		body: JSON.stringify( newClientData )
 	} )
+	
+	const saveClientData = saveClientResponse.statusText !== "No Content"
+		? await saveClientResponse.json()
+		: {}
 
-	if ( !saveNewClientResponse.ok ) {
-		throw new Error( `Error fetching client: ${ saveNewClientResponse.statusText }` )
+	
+	if ( !blingClientId && !saveClientResponse.ok ) {
+		console.error( saveClientResponse )
+		throw new Error( `Error fetching client: ${ saveClientResponse.statusText }` )
 	}
-	const saveNewClientData = await saveNewClientResponse.json()
 
-	return saveNewClientData.data?.id ?? 0
+	return blingClientId || saveClientData.data?.id || 0
 }
 
 export const postNLote = async ( propostaId: string ) => {
@@ -286,7 +294,7 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[] ): Pro
 
 		if ( !getBlingProd.id )
 			getBlingProd = await getBlingProductByName( blingAccountCnpj, nomeProd )
-			
+
 		let blingProdId = getBlingProd.id
 
 		if ( !!blingProdId && getBlingProd.nome !== nomeProd )

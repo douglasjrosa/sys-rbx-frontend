@@ -1,4 +1,4 @@
-import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, saveNewClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
+import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
 import { parseCurrency } from "@/utils/customNumberFormats"
 import { Button, Modal, Text, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
 import { useCallback, useState } from "react"
@@ -55,7 +55,15 @@ const SendOrderModal = ( props: any ) => {
 			const clientCNPJ = fullOrderData.attributes.empresa.data.attributes.CNPJ
 
 			const checkIfClientExists = await clientExists( blingAccountCnpj, clientCNPJ )
-			const clientId = checkIfClientExists ?? await saveNewClient( fullOrderData )
+			const blingClientId = checkIfClientExists?.id
+
+			if (
+				blingClientId
+				&& checkIfClientExists?.nome !== fullOrderData.attributes.empresa.data.attributes.razao
+			) await saveClient( fullOrderData, blingClientId )
+
+
+			const clientId = blingClientId ?? await saveClient( fullOrderData )
 			
 			if ( !clientId ) {
 				toast( {
@@ -309,7 +317,7 @@ const SendOrderModal = ( props: any ) => {
 			useToast,
 			fetchOrderData,
 			clientExists,
-			saveNewClient,
+			saveClient,
 			handleItems,
 			sendBlingOrder,
 			updateBusinessInStrapi,
