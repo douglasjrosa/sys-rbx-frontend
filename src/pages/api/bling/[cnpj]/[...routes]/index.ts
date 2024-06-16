@@ -56,12 +56,6 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			} )
 			return
 		}
-/* 
-		if ( !responseData ) {
-			console.log( "##########################" )
-			res.status( response.status ).end()
-			return
-		} */
 
 		res.status( response.status ).json( responseData )
 

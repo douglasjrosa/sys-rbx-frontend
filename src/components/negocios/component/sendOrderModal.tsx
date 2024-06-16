@@ -90,7 +90,7 @@ const SendOrderModal = ( props: any ) => {
 				duration: 7000,
 				position: "bottom",
 			} )
-			const { dataEntrega, prazo, itens } = fullOrderData.attributes
+			const { itens } = fullOrderData.attributes
 			const blingItems = await handleItems( blingAccountCnpj, itens )
 			if ( blingItems.length !== itens.length ) {
 				toast( {
@@ -118,7 +118,9 @@ const SendOrderModal = ( props: any ) => {
 				position: "bottom",
 			} )
 
-			const totalOrderValue = parseCurrency( fullOrderData.attributes.totalGeral )
+
+			const { dataEntrega, prazo, totalGeral } = fullOrderData.attributes
+			const totalOrderValue = parseCurrency( totalGeral )
 			const installments = await handleInstallments( blingAccountCnpj, dataEntrega, prazo, totalOrderValue )
 
 			const blingOrderData: BlingOrderDataType = {

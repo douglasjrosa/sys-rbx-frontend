@@ -1,46 +1,56 @@
-import { getBlingToken } from "@/pages/api/bling"
+import EmitenteSelect from "@/components/emitenteSelect"
 import { useEffect, useState, useCallback } from "react"
 
 function Perfil () {
 
 	const [ vai, setVai ] = useState( false )
+	const [ emitenteCnpj, setEmitenteCnpj ] = useState( "" )
+	const [ accountsData, setAccountsData ] = useState<any[]>()
 
-	const accessToken = useCallback( async () => {
-		const account = "45683129000180"
-		const access_token = await getBlingToken( account )
+
+	const fetchAccounts = useCallback( async () => {
+		const response = await fetch( '/api/strapi/tokens' )
+
+		if ( !response.ok ) console.error( response )
+
+		const accounts = await response.json()
+		const accountsData = [ { attributes: { cnpj: '', account: 'Selecione um emitente' } }, ...accounts.data ]
+
+		setAccountsData( accountsData )
+	}, [] )
+
+	const runFetch = useCallback( async () => {
+
+		const resp = await fetch( `/api/bling/${ emitenteCnpj }/produtos?codigo=` ).then( r => r.json() )
+		console.log( resp )
 		setVai( false )
-	}, [ setVai ] )
 
-	const getContatos = useCallback( async () => {
-
-		const account = "45683129000180"
-		const access_token = await getBlingToken( account )
-		console.log( access_token )
-
-		const url = "api/bling/contatos"
-		const contatos = await fetch( url, {
-			method: "GET",
-			headers: {
-				authorization: `Bearer ${ access_token }`
-			}
-		} ).then( r => r.json() )
-		setVai( false )
-	}, [ setVai ] )
+	}, [] )
 
 	useEffect( () => {
+		fetchAccounts()
 		if ( vai ) {
-			//accessToken()
-			getContatos()
+			runFetch()
 		}
-	}, [ vai, getContatos ] )
+	}, [ vai ] )
 
 	return (
 		<div>
 			<h1>Perfil</h1>
-			<button onClick={ () => setVai( true ) }>Vai</button>
+			{ accountsData &&
+				<>
+					<EmitenteSelect
+						accountsData={ accountsData }
+						emitenteCnpj={ emitenteCnpj }
+						setEmitenteCnpjOnChange={ setEmitenteCnpj }
+					/>
+					<button onClick={ () => setVai( true ) }>Vai</button>
+				</>
+			}
 		</div>
 	)
 
 }
 
 export default Perfil
+

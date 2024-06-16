@@ -102,53 +102,53 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 	const financialCategoryId = financialCategories.data.find( ( category: any ) => category.descricao === "Vendas de produtos" ).id
 
 	const newClientData = {
-			"nome": clientData.razao,
-			"codigo": clientStrapiId,
-			"situacao": "A",
-			"numeroDocumento": clientData.CNPJ,
-			"telefone": clientData.fone,
-			"fantasia": clientData.nome,
-			"tipo": "J",
-			"indicadorIe": 1,
-			"ie": clientData.Ie,
-			"email": clientData.emailNfe,
-			"endereco": {
-				"geral": {
-					"endereco": clientData.endereco,
-					"cep": clientData.cep,
-					"bairro": clientData.bairro,
-					"municipio": clientData.cidade,
-					"uf": clientData.uf,
-					"numero": clientData.numero,
-					"complemento": clientData.complemento
-				},
-				"cobranca": {
-					"endereco": clientData.endereco,
-					"cep": clientData.cep,
-					"bairro": clientData.bairro,
-					"municipio": clientData.cidade,
-					"uf": clientData.uf,
-					"numero": clientData.numero,
-					"complemento": clientData.complemento
-				}
+		"nome": clientData.razao,
+		"codigo": clientStrapiId,
+		"situacao": "A",
+		"numeroDocumento": clientData.CNPJ,
+		"telefone": clientData.fone,
+		"fantasia": clientData.nome,
+		"tipo": "J",
+		"indicadorIe": 1,
+		"ie": clientData.Ie,
+		"email": clientData.emailNfe,
+		"endereco": {
+			"geral": {
+				"endereco": clientData.endereco,
+				"cep": clientData.cep,
+				"bairro": clientData.bairro,
+				"municipio": clientData.cidade,
+				"uf": clientData.uf,
+				"numero": clientData.numero,
+				"complemento": clientData.complemento
 			},
-			"financeiro": {
-				"limiteCredito": 10000000,
-				"condicaoPagamento": "28 35 42",
-				"categoria": {
-					"id": financialCategoryId
-				}
-			},
-			"pais": {
-				"nome": "BRASIL"
-			},
-			"tiposContato": [
-				{
-					"id": typeOfContactClienteId,
-					"descricao": "Cliente"
-				}
-			]
-		}
+			"cobranca": {
+				"endereco": clientData.endereco,
+				"cep": clientData.cep,
+				"bairro": clientData.bairro,
+				"municipio": clientData.cidade,
+				"uf": clientData.uf,
+				"numero": clientData.numero,
+				"complemento": clientData.complemento
+			}
+		},
+		"financeiro": {
+			"limiteCredito": 10000000,
+			"condicaoPagamento": "28 35 42",
+			"categoria": {
+				"id": financialCategoryId
+			}
+		},
+		"pais": {
+			"nome": "BRASIL"
+		},
+		"tiposContato": [
+			{
+				"id": typeOfContactClienteId,
+				"descricao": "Cliente"
+			}
+		]
+	}
 
 	const method = blingClientId ? "PUT" : "POST"
 	const updateString = blingClientId ? `/${ blingClientId }` : ""
@@ -157,12 +157,12 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 		method,
 		body: JSON.stringify( newClientData )
 	} )
-	
+
 	const saveClientData = saveClientResponse.statusText !== "No Content"
 		? await saveClientResponse.json()
 		: {}
 
-	
+
 	if ( !blingClientId && !saveClientResponse.ok ) {
 		console.error( saveClientResponse )
 		throw new Error( `Error fetching client: ${ saveClientResponse.statusText }` )
@@ -290,15 +290,17 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[] ): Pro
 			tributacao: { ncm }
 		}
 
-		let getBlingProd = await getBlingProductByCodigo( blingAccountCnpj, codigo )
+		let getBlingProd
 
-		if ( !getBlingProd.id )
+		if ( !!codigo ) getBlingProd = await getBlingProductByCodigo( blingAccountCnpj, codigo )
+
+		if ( !getBlingProd?.id )
 			getBlingProd = await getBlingProductByName( blingAccountCnpj, nomeProd )
 
-		let blingProdId = getBlingProd.id
+		let blingProdId = getBlingProd?.id
 
 		if ( !!blingProdId && getBlingProd.nome !== nomeProd )
-			blingProdId = await updateBlingProduct( blingAccountCnpj, getBlingProd.id, productData )
+			blingProdId = await updateBlingProduct( blingAccountCnpj, blingProdId, productData )
 
 		blingProdId = blingProdId || await createBlingProduct( blingAccountCnpj, productData )
 
