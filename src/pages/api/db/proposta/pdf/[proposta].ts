@@ -106,6 +106,9 @@ export default async function GetEmpresa (
 			]
 		} )
 
+		const paymentTerms = infos.prazo === "0" ? "À vista (antecipado)"
+			: ( infos.prazo === "1" ? "Antecipado c/ desconto"  : `${ infos.prazo.replace("/", " / ") } dias.` )			
+
 		const comAcrescimo = [
 			{
 				margin: [ 0, 5, 0, 0 ],
@@ -240,14 +243,14 @@ export default async function GetEmpresa (
 								{
 									border: [ false, false, false, false ],
 									table: {
-										widths: [ "*", "*" ],
+										widths: [ "50%", "*" ],
 										body: [
 											[
 												{
 													border: [ false, false, false, false ],
 													style: "clienteFornecedor",
 													table: {
-														widths: [ "24%", "*" ],
+														widths: [ "25%", "*" ],
 														body: [
 															[
 																{
@@ -334,13 +337,13 @@ export default async function GetEmpresa (
 													border: [ false, false, false, false ],
 													style: "clienteFornecedor",
 													table: {
-														widths: [ "23%", "*" ],
+														widths: [ "25%", "*" ],
 														body: [
 															[
 																{
 																	text: "Cliente",
 																	bold: "true",
-																	fontSize: 9,
+																	fontSize: 10,
 																	fillColor: "#1a562e",
 																	color: "#ffffff",
 																	border: [ false, false, false, false ],
@@ -429,13 +432,13 @@ export default async function GetEmpresa (
 					},
 				},
 				{
-					margin: [ 0, 10, 0, 10 ],
+					margin: [ 0, 0, 0, 10 ],
 					table: {
 						widths: [ "*", "40%" ],
 						body: [
 							[
-								{ text: "", fillColor: "#1a992e", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
-								{ text: "", fillColor: "#1a562e", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
+								{ text: "", fillColor: "#1a992e", border: [ false, false, false, false ], margin: [ 0, 5 ] },
+								{ text: "", fillColor: "#1a562e", border: [ false, false, false, false ], margin: [ 0, 5 ] },
 							],
 							[
 								{ text: "", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
@@ -516,7 +519,7 @@ export default async function GetEmpresa (
 																	margin: [ 0, 5, 0, 0 ],
 																	border: [ false, false, false, false ],
 																	fontSize: 10,
-																	text: infos.condi,
+																	text: paymentTerms,
 																},
 															],
 															[
@@ -622,6 +625,7 @@ export default async function GetEmpresa (
 				clienteFornecedor: {
 					fontSize: 9,
 					alignment: "left",
+					lineHeight: 1.3
 				},
 				tableTitle: {
 					fontSize: 9,

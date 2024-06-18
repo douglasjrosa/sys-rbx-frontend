@@ -35,7 +35,7 @@ export const getData = async ( proposta: any ) => {
 		const response = await axios( config )
 		const result = response.data?.data
 		const inf = result.attributes
-		console.log(inf)
+		console.log({inf})
 		const Vendedor = inf.user.data.attributes.username
 		const emailVendedor = inf.user.data.attributes.email
 		const empresaFornec = inf.fornecedorId.data.attributes
@@ -57,19 +57,21 @@ export const getData = async ( proposta: any ) => {
 				email: emailVendedor,
 			},
 		}
+
+
 		const custoAdicional = inf.custoAdicional
 		const frete = inf.frete
 		const Valfrete = inf.valorFrete
 		const datePop = inf.dataPedido
 		const fornecedor = dadosFornecedor
-		const cliente = inf.empresa.data.attributes
 		const condi = inf.condi
+		const cliente = inf.empresa.data.attributes
 		const Desconto_Converte = !inf.desconto ? null : inf.desconto
 		const Desconto = !Desconto_Converte ? 0 : Desconto_Converte
 		const DescontoAdd_Converte = !inf.descontoAdd ? null : parseFloat( inf.descontoAdd )
 		const DescontoAdd = !DescontoAdd_Converte ? 0 : DescontoAdd_Converte
 		const itens = inf.itens
-		const prazo = inf.prazo === null ? "" : inf.prazo
+		const prazo = inf.prazo === null ? "0" : inf.prazo
 		const venc = inf.vencPrint
 		const totoalGeral = inf.totalGeral
 		const obs = inf.obs === null ? "" : inf.obs
