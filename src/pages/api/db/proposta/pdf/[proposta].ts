@@ -106,15 +106,15 @@ export default async function GetEmpresa (
 			measures = i.comprimento ? measures : ""
 
 			return [
-				{ text: x, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: i.nomeProd, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: i.codigo, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: i.Qtd, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: measures, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: !!i.mont ? "SIM" : "NÃO", margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: !!i.expo ? "SIM" : "NÃO", margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: preco, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
-				{ text: total, margin: [ 0, 10, 0, 8 ], fontSize: 7 },
+				{ text: x, style: "prodCells" },
+				{ text: i.nomeProd, style: "prodCells" },
+				{ text: i.codigo, style: "prodCells" },
+				{ text: i.Qtd, style: "prodCells" },
+				{ text: measures, style: "prodCells" },
+				{ text: !!i.mont ? "SIM" : "NÃO", style: "prodCells" },
+				{ text: !!i.expo ? "SIM" : "NÃO", style: "prodCells" },
+				{ text: preco, style: "prodCells" },
+				{ text: total, style: "prodCells" }
 			]
 		} )
 
@@ -213,6 +213,36 @@ export default async function GetEmpresa (
 
 		const docDefinitions: TDocumentDefinitions = {
 			defaultStyle: { font: "Helvetica" },
+			header: {
+				style: "header",
+				table: {
+					widths: [ 300, 245 ],
+					body: [
+						[
+							{
+								border: [ false, false, false, false ],
+								image: logo,
+								fit: [ 140, 140 ],
+								margin: [ 25, 15, 0, 0 ]
+							},
+							{
+								border: [ false, false, false, false ],
+								margin: [ 0, 28, 0, 0 ],
+								table: {
+									widths: [ 55, "*" ],
+									heights: 12,
+									body: [
+										[ { text: "Data:", margin: [ 3, 2, 0, 2 ] }, { text: date, margin: [ 3, 2, 0, 2 ] } ],
+										[ { text: "Proposta N°:", margin: [ 3, 2, 0, 2 ] }, { text: proposta, margin: [ 3, 2, 0, 2 ] } ],
+										[ { text: "Vendedor:", margin: [ 3, 2, 0, 2 ] }, { text: infos.Vendedor, margin: [ 3, 2, 0, 2 ] } ],
+										[ { text: "Pedido N°:", margin: [ 3, 2, 0, 2 ] }, { text: infos.cliente_pedido, margin: [ 3, 2, 0, 2 ] } ]
+									],
+								},
+							},
+						],
+					],
+				},
+			},
 			content: [
 				{
 					table: {
@@ -221,50 +251,6 @@ export default async function GetEmpresa (
 							[
 								{
 									border: [ false, false, false, false ],
-									fillColor: "#1a562e",
-									text: " ",
-									margin: [ 0, 1, 0, 0 ],
-								},
-							],
-						],
-					},
-				},
-				{
-					style: "header",
-					table: {
-						widths: [ 310, "*" ],
-						body: [
-							[
-								{
-									border: [ false, false, false, false ],
-									image: logo,
-									fit: [ 80, 80 ],
-									margin: [ 30, 3, 30, 3 ],
-								},
-								{
-									border: [ false, false, false, false ],
-									margin: [ 0, 5, 0, 5 ],
-									table: {
-										widths: [ 55, "*" ],
-										body: [
-											[ "Data:", date ],
-											[ "Proposta N°:", proposta ],
-											[ "Vendedor:", infos.Vendedor ],
-											[ "Pedido N°:", infos.cliente_pedido ],
-										],
-									},
-								},
-							],
-						],
-					},
-				},
-				{
-					table: {
-						widths: [ "*" ],
-						body: [
-							[
-								{
-									border: [ false, true, false, false ],
 									table: {
 										widths: [ "*", "*" ],
 										body: [
@@ -457,38 +443,24 @@ export default async function GetEmpresa (
 					},
 				},
 				{
-					table: {
-						widths: [ "*" ],
-						body: [
-							[
-								{
-									border: [ false, true, false, false ],
-									text: "",
-								},
-							],
-						],
-					},
-				},
-				{
-					style: "tableConteudo",
-					margin: [ 0, 10, 0, 0 ],
+					margin: [ 0, 15, 0, 15 ],
 					table: {
 						widths: [
-							"2%",
+							"4%",
 							"25%",
 							"8%",
-							"4%",
-							"18%",
+							"5%",
+							"16%",
 							"8%",
 							"8%",
-							"12%",
+							"11%",
 							"15%",
 						],
 						headerRows: 1,
-						heights: 4,
+						heights: 20,
 						body: [
 							[
-								{ text: "x", style: "tableTitle" },
+								{ text: "Item", style: "tableTitle" },
 								{ text: "Produto", style: "tableTitle" },
 								{ text: "Cód.", style: "tableTitle" },
 								{ text: "Qtd", style: "tableTitle" },
@@ -500,231 +472,196 @@ export default async function GetEmpresa (
 							],
 							...products,
 						],
-					},
-					layout: "lightHorizontalLines",
+					}
 				},
-
-				{
-					table: {
-						widths: [ "*" ],
-						body: [
-							[
-								{
-									border: [ false, false, false, true ],
-									text: "",
-								},
-							],
-						],
-					},
-				},
-
-				{
-					table: {
-						widths: [ "*", "30%" ],
-						body: [
-							[
-								{
-									table: {
-										widths: [ "*" ],
-										body: [
-											[
-												{
-													border: [ false, false, false, false ],
-													text: "Avisos",
-												},
-											],
-											[
-												{
-													margin: [ 0, 5, 0, 0 ],
-													border: [ false, false, false, false ],
-													text: "As embalagens, por padrão, são enviadas desmontadas.",
-													style: "clienteFornecedor",
-												},
-											],
-											[
-												{
-													border: [ false, false, false, false ],
-													text: "Para o envio das embalagens montadas, há um acréscimo de 10%.",
-													style: "clienteFornecedor",
-												},
-											],
-											[
-												{
-													margin: [ 0, 6, 0, 8 ],
-													border: [ false, false, false, false ],
-													text: "A montagem deve ser solicitada no momento da cotação.",
-													style: "clienteFornecedor",
-												},
-											],
-											...observations,
-										],
-									},
-								},
-								{
-									table: {
-										widths: [ "*" ],
-										body: [
-											[
-												{
-													border: [ false, false, false, false ],
-													table: {
-														widths: [ "49%", "*" ],
-														body: [
-															[
-																{
-																	border: [ false, false, false, false ],
-																	text: "Condição de pagamento:",
-																	bold: "true",
-																	fontSize: 8,
-																},
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: infos.condi,
-																	style: "clienteFornecedor",
-																},
-															],
-
-															[
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: "Prazo:",
-																	bold: "true",
-																	style: "clienteFornecedor",
-																},
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: infos.condi === 'Antecipado' || infos.condi === 'Antecipado' ? null : verificarString( infos.prazo ),
-																	style: "clienteFornecedor",
-																},
-															],
-
-															[
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: "Tipo de frete:",
-																	bold: "true",
-																	fontSize: 8,
-																},
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: infos.frete,
-																	style: "clienteFornecedor",
-																},
-															],
-															[
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: "Prazo de produção:",
-																	bold: "true",
-																	fontSize: 8,
-																},
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: infos.dataEntrega,
-																	style: "clienteFornecedor",
-																},
-															],
-															[
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: "Valor do frete:",
-																	bold: "true",
-																	fontSize: 8,
-																},
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: FretValo,
-																	style: "clienteFornecedor",
-																},
-															],
-															custoAdicional,
-															desconto,
-															[
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: "Total:",
-																	bold: "true",
-																},
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: infos.totoalGeral
-																},
-															],
-														],
-													},
-												},
-											],
-										],
-									},
-								},
-							],
-						],
-					},
-				},
-
-				{
-					table: {
-						widths: [ "*" ],
-						body: [
-							[
-								{
-									border: [ false, false, false, false ],
-									fillColor: "#ffffff",
-									text: " ",
-									margin: [ 0, 1, 0, 0 ],
-								},
-							],
-						],
-					},
-				},
-
-				{
-					table: {
-						widths: [ "*" ],
-						body: [
-							[
-								{
-									border: [ false, false, false, false ],
-									fillColor: "#1a992e",
-									text: " ",
-									margin: [ 0, 1, 0, 0 ],
-								},
-							],
-						],
-					},
-				},
-
 			],
+			footer: {
+				margin: [ 25, 10, 25, 0 ],
+				table: {
+					widths: [ "*", "30%" ],
+					body: [
+						[
+							{ text: "", fillColor: "#1a992e", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
+							{ text: "", fillColor: "#1a562e", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
+						],
+						[
+							{ text: "", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
+							{ text: "", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
+						],
+						[
+							{
+								table: {
+									widths: [ "*" ],
+									body: [
+										[
+											{
+												border: [ false, false, false, false ],
+												text: "Avisos",
+											},
+										],
+										[
+											{
+												margin: [ 0, 5, 0, 0 ],
+												border: [ false, false, false, false ],
+												text: "As embalagens, por padrão, são enviadas desmontadas.",
+												style: "clienteFornecedor",
+											},
+										],
+										[
+											{
+												border: [ false, false, false, false ],
+												text: "Para o envio das embalagens montadas, há um acréscimo de 10%.",
+												style: "clienteFornecedor",
+											},
+										],
+										[
+											{
+												margin: [ 0, 6, 0, 8 ],
+												border: [ false, false, false, false ],
+												text: "A montagem deve ser solicitada no momento da cotação.",
+												style: "clienteFornecedor",
+											},
+										],
+										...observations,
+									],
+								},
+							},
+							{
+								table: {
+									widths: [ "*" ],
+									body: [
+										[
+											{
+												border: [ false, false, false, false ],
+												table: {
+													widths: [ "49%", "*" ],
+													body: [
+														[
+															{
+																border: [ false, false, false, false ],
+																text: "Condição de pagamento:",
+																bold: "true",
+																fontSize: 8,
+															},
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: infos.condi,
+																style: "clienteFornecedor",
+															},
+														],
+
+														[
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: "Prazo:",
+																bold: "true",
+																style: "clienteFornecedor",
+															},
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: infos.condi === 'Antecipado' || infos.condi === 'Antecipado' ? null : verificarString( infos.prazo ),
+																style: "clienteFornecedor",
+															},
+														],
+
+														[
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: "Tipo de frete:",
+																bold: "true",
+																fontSize: 8,
+															},
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: infos.frete,
+																style: "clienteFornecedor",
+															},
+														],
+														[
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: "Prazo de produção:",
+																bold: "true",
+																fontSize: 8,
+															},
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: infos.dataEntrega,
+																style: "clienteFornecedor",
+															},
+														],
+														[
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: "Valor do frete:",
+																bold: "true",
+																fontSize: 8,
+															},
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: FretValo,
+																style: "clienteFornecedor",
+															},
+														],
+														custoAdicional,
+														desconto,
+														[
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: "Total:",
+																bold: "true",
+															},
+															{
+																margin: [ 0, 5, 0, 0 ],
+																border: [ false, false, false, false ],
+																text: infos.totoalGeral
+															},
+														],
+													],
+												},
+											},
+										],
+									],
+								},
+							},
+						]
+					],
+				},
+			},
 			pageSize: "A4",
-			pageMargins: [ 25, 60, 25, 10 ],
+			pageMargins: [ 25, 120, 25, 250 ],
 			styles: {
 				header: {
 					fontSize: 9,
-					alignment: "justify",
+					alignment: "justify"
 				},
 				clienteFornecedor: {
 					fontSize: 8,
 					alignment: "justify",
 				},
 				tableTitle: {
-					fontSize: 8,
-					alignment: "center",
-				},
-				tableConteudo: {
 					fontSize: 9,
 					alignment: "center",
+					fillColor: "#1a562e",
+					color: "#ffffff",
+					bold: true,
+					margin: [ 0, 5, 0, 3 ]
 				},
+				prodCells: {
+					margin: [ 0, 10, 0, 8 ],
+					alignment: "center",
+					fontSize: 9
+				}
 			},
 		}
 
