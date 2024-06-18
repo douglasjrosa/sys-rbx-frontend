@@ -316,7 +316,7 @@ export default async function GetEmpresa (
 																	border: [ false, false, false, false ],
 																},
 																{
-																	text: infos.fornecedor.data.tel,
+																	text: formatarTelefone( infos.fornecedor.data.tel ),
 																	border: [ false, false, false, false ],
 																},
 															],
