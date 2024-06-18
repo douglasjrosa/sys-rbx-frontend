@@ -22,7 +22,7 @@ function Perfil () {
 	const runFetch = useCallback( async () => {
 
 		const resp = await fetch( `/api/bling/${ emitenteCnpj }/produtos?codigo=` ).then( r => r.json() )
-		console.log( resp )
+		//console.log( resp )
 		setVai( false )
 
 	}, [] )
