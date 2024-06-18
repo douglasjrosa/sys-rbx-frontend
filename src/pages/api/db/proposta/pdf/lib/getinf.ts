@@ -35,6 +35,7 @@ export const getData = async ( proposta: any ) => {
 		const response = await axios( config )
 		const result = response.data?.data
 		const inf = result.attributes
+		console.log(inf)
 		const Vendedor = inf.user.data.attributes.username
 		const emailVendedor = inf.user.data.attributes.email
 		const empresaFornec = inf.fornecedorId.data.attributes

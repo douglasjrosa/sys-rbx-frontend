@@ -91,16 +91,18 @@ const Proposta = () => {
 
 	useEffect( () => {
 
-		const subTotal = itemsList
+		const subtotal = parseCurrency( itemsList
 			.map( i => parseCurrency( i.total ) )
 			.reduce( ( acc, curr ) => acc + curr, 0 )
+		)
+		setSubtotal( subtotal )
 
-		const totalValue = parseCurrency( subTotal )
+		const totalValue = subtotal
 			+ parseCurrency( aditionalCosts )
 			- parseCurrency( aditionalDiscount )
 			+ parseCurrency( freightCost )
-		
-		setSubtotal( parseCurrency( subTotal ) )
+
+
 		setOrderTotalValue( formatCurrency( totalValue ) )
 
 	}, [ itemsList, freightCost, aditionalDiscount, aditionalCosts ] )
@@ -134,8 +136,15 @@ const Proposta = () => {
 		}
 	}, [ emitenteCnpj ] )
 
-	useEffect( () => { fetchEmitenteId() }, [ fetchEmitenteId ])
+	useEffect( () => { fetchEmitenteId() }, [ fetchEmitenteId ] )
 
+	useEffect( () => { 
+
+		const isPaymentwithDiscount = paymentTerms === "1"
+		const discount = subtotal * ( isPaymentwithDiscount ? 0.05 : 0 )
+		setAditionalDiscount( discount )
+		
+	}, [ paymentTerms, subtotal ] )
 
 	useEffect( () => { // First loading data from db
 		if ( orderData ) {
@@ -178,8 +187,8 @@ const Proposta = () => {
 				CNPJClinet: companyData.attributes.CNPJ,
 				dataPedido: customDateIso(),
 				dataEntrega: deliverDate,
-				prazo: paymentTerms,
-				condi: paymentTerms === "1" ? "À vista (antecipado)" : "A prazo",
+				prazo: paymentTerms === "0" ? "1" : paymentTerms,
+				condi: paymentTerms === "0" ? "À vista (antecipado)" : ( paymentTerms === "1" ? "Antecipado c/ desconto" : "A prazo" ),
 				frete: freightType,
 				valorFrete: formatCurrency( freightCost ),
 				descontoTotal: formatCurrency( aditionalDiscount ),
@@ -243,12 +252,12 @@ const Proposta = () => {
 
 		const method = !orderData ? "POST" : "PUT"
 		const strapiEndPoint = !orderData ? "/api/strapi/pedidos" : `/api/strapi/pedidos/${ orderData.id }`
-		
+
 		const response = await fetch( strapiEndPoint, {
 			method,
 			body: JSON.stringify( {
 				data: orderSaveData
-			})
+			} )
 		} )
 		const save = await response.json()
 
@@ -268,13 +277,13 @@ const Proposta = () => {
 				status: "success",
 				duration: 6000,
 				isClosable: true
-			})
+			} )
 			router.back()
 			setLoading( false )
 		}
-		
+
 	}, [ orderSaveData ] )
-	
+
 	return (
 		<Flex h="100vh" w="100%">
 			<Flex h="100vh" w="100%" flexDir={ "column" } px={ '5' } py={ 1 } bg={ 'gray.800' } color={ 'white' } justifyContent={ 'space-between' } >
@@ -417,7 +426,7 @@ const Proposta = () => {
 
 					<Flex gap={ 20 } alignContent={ "center" }>
 						<chakra.p>
-							Subtotal:<br />R$ { formatCurrency( subtotal ) }
+							subtotal:<br />R$ { formatCurrency( subtotal ) }
 						</chakra.p>
 						<chakra.p>
 							Frete:<br />R$ { formatCurrency( freightCost ) }

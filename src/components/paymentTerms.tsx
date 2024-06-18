@@ -15,7 +15,8 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 
 		if ( !options && maxPrazoPagto ) {
 			const formasPagto = [
-				{ maxPg: 0, value: '1', title: 'À vista (antecipado)' },
+				{ maxPg: 0, value: '0', title: 'À vista (antecipado)' },
+				{ maxPg: 1, value: '1', title: 'Antecipado (c/ desconto)' },
 				{ maxPg: 10, value: '10', title: '10 dias' },
 				{ maxPg: 15, value: '15', title: '15 dias' },
 				{ maxPg: 28, value: '28', title: '28 dias' },
@@ -25,9 +26,10 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 				{ maxPg: 90, value: '90', title: '90 dias' },
 			]
 
-			const latestDueDate = Math.max( ...maxPrazoPagto.split( '/' ).map( Number ) )
+			const latestDueDate = Math.max( ...maxPrazoPagto.split( '/' ).map( Number ), 1 )
 		
 			const options = formasPagto.filter( formaPagto => formaPagto.maxPg <= latestDueDate )
+				console.log({options})
 			setOptions( options )
 		}
 	}, [ maxPrazoPagto, paymentTerms ])
@@ -44,7 +46,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 				<Select
 					shadow="sm"
 					size="xs"
-					w="36"
+					w="45"
 					fontSize="xs"
 					rounded="md"
 					onChange={ ( e ) => {
