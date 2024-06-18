@@ -47,34 +47,6 @@ export default async function GetEmpresa (
 
 		const infos = await getData( proposta )
 
-		const somarValores = ( valor1: any, valor2: any ) => {
-			if ( infos.frete === "FOB" ) return valor1
-
-			const numero1 = valor1
-				? parseFloat(
-					valor1.replace( "R$", "" ).replace( ".", "" ).replace( ",", "." )
-				)
-				: 0
-			const numero2 = valor2
-				? parseFloat(
-					valor2.replace( "R$", "" ).replace( ".", "" ).replace( ",", "." )
-				)
-				: 0
-			const soma = numero1 + numero2
-
-			if ( !numero2 ) {
-				return numero1.toLocaleString( "pt-br", {
-					style: "currency",
-					currency: "BRL",
-				} )
-			}
-
-			return soma.toLocaleString( "pt-br", {
-				style: "currency",
-				currency: "BRL",
-			} )
-		}
-
 		const imagePath2 = path.join(
 			process.cwd(),
 			"public",

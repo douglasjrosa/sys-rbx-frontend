@@ -36,6 +36,7 @@ export const getData = async ( proposta: any ) => {
 		const result = response.data?.data
 		const inf = result.attributes
 		const Vendedor = inf.user.data.attributes.username
+		const emailVendedor = inf.user.data.attributes.email
 		const empresaFornec = inf.fornecedorId.data.attributes
 		const dataEntrega1 = !inf.dataEntrega ? '' : inf.dataEntrega
 		const dataEntrega = converterData( dataEntrega1 )
@@ -52,7 +53,7 @@ export const getData = async ( proposta: any ) => {
 				cidade: "Riberão Preto",
 				uf: "Sp",
 				tel: "(16) 9 9765-5543",
-				email: empresaFornec?.email,
+				email: emailVendedor,
 			},
 		}
 		const custoAdicional = inf.custoAdicional
