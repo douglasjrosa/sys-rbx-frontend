@@ -5,19 +5,19 @@ import PDFPrinter from "pdfmake"
 import { TDocumentDefinitions } from "pdfmake/interfaces"
 import { getData } from "./lib/getinf"
 
-function formatarTelefone ( telefone: any ) {
+function formatarTelefone ( telefone: string ) {
 
-	const números = telefone.replace( /\D/g, "" )
+	const numeros = telefone.replace( /\D/g, "" )
 
-	if ( números.length === 11 ) {
+	if ( numeros.length === 11 ) {
 
-		return `(${ números.slice( 0, 2 ) }) ${ números.slice( 2, 3 ) } ${ números.slice(
+		return `(${ numeros.slice( 0, 2 ) }) ${ numeros.slice( 2, 3 ) } ${ numeros.slice(
 			3,
 			7
-		) }-${ números.slice( 7 ) }`
-	} else if ( números.length === 10 ) {
+		) }-${ numeros.slice( 7 ) }`
+	} else if ( numeros.length === 10 ) {
 
-		return `(${ números.slice( 0, 2 ) }) ${ números.slice( 2, 6 ) }-${ números.slice(
+		return `(${ numeros.slice( 0, 2 ) }) ${ numeros.slice( 2, 6 ) }-${ numeros.slice(
 			6
 		) }`
 	} else {
@@ -316,7 +316,7 @@ export default async function GetEmpresa (
 																	border: [ false, false, false, false ],
 																},
 																{
-																	text: formatarTelefone( infos.fornecedor.data.tel ),
+																	text: formatarTelefone( String(infos.fornecedor.data.tel) ),
 																	border: [ false, false, false, false ],
 																},
 															],
