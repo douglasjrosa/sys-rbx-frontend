@@ -13,7 +13,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 	
 	useEffect( () => {
 
-		if ( !options ) {
+		if ( !options && maxPrazoPagto ) {
 			const formasPagto = [
 				{ maxPg: 0, value: '0', title: 'À vista (antecipado)' },
 				{ maxPg: 1, value: '1', title: 'Antecipado (c/ desconto)' },
@@ -32,8 +32,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 			
 			setOptions( options )
 		}
-	}, [])
-
+	}, [ maxPrazoPagto ])
 	return (
 		<>
 			<Box>
