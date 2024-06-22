@@ -1,10 +1,12 @@
 import EmitenteSelect from "@/components/emitenteSelect"
 import { useEffect, useState, useCallback } from "react"
+import { getBlingToken } from "./api/bling"
 
 function Perfil () {
 
 	const [ vai, setVai ] = useState( false )
 	const [ emitenteCnpj, setEmitenteCnpj ] = useState( "" )
+	const [ access, setAccess ] = useState( "" )
 	const [ accountsData, setAccountsData ] = useState<any[]>()
 
 
@@ -21,8 +23,8 @@ function Perfil () {
 
 	const runFetch = useCallback( async () => {
 
-		const resp = await fetch( `/api/bling/${ emitenteCnpj }/produtos?codigo=` ).then( r => r.json() )
-		//console.log( resp )
+		const resp = await getBlingToken( emitenteCnpj )
+		setAccess( resp )
 		setVai( false )
 
 	}, [] )
@@ -47,6 +49,7 @@ function Perfil () {
 					<button onClick={ () => setVai( true ) }>Vai</button>
 				</>
 			}
+			<p>{ access }</p>
 		</div>
 	)
 

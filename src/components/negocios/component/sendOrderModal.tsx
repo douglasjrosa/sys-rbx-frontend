@@ -91,7 +91,7 @@ const SendOrderModal = ( props: any ) => {
 				position: "bottom",
 			} )
 			const { itens } = fullOrderData.attributes
-			const blingItems = await handleItems( blingAccountCnpj, itens )
+			const blingItems = await handleItems( blingAccountCnpj, itens, toast )
 			if ( blingItems.length !== itens.length ) {
 				toast( {
 					title: "BLING: Ooops, tivemos um pequeno problema...",
@@ -118,16 +118,17 @@ const SendOrderModal = ( props: any ) => {
 				position: "bottom",
 			} )
 
-
 			const { dataEntrega, prazo, totalGeral } = fullOrderData.attributes
+			const dataPrevista = dataEntrega
 			const totalOrderValue = parseCurrency( totalGeral )
-			const installments = await handleInstallments( blingAccountCnpj, dataEntrega, prazo, totalOrderValue )
+			const today = getFormattedDate()
+			const installments = await handleInstallments( blingAccountCnpj, dataPrevista, prazo, totalOrderValue )
 
 			const blingOrderData: BlingOrderDataType = {
 				numero: +propostaId,
-				data: getFormattedDate(),
+				data: today,
 				dataSaida: dataEntrega,
-				dataPrevista: dataEntrega,
+				dataPrevista,
 				contato: { id: clientId },
 				itens: blingItems,
 				parcelas: installments,

@@ -267,13 +267,24 @@ export const createBlingProduct = async (
 	return product.data.id
 }
 
-export const handleItems = async ( blingAccountCnpj: string, items: any[] ): Promise<any> => {
+export const handleItems = async ( blingAccountCnpj: string, items: any[], toast: any ): Promise<any> => {
 
 	let respItems: any[] = []
+	let index = 0
 	for ( const item of items ) {
+		index++
 
 		// first of all, check if the product is already registered in Bling
 		const { nomeProd, ncm, expo, mont, vFinal, Qtd, codigo } = item
+
+		toast( {
+			title: `Checando item ${ index }`,
+			description: nomeProd,
+			status: "success",
+			isClosable: true,
+			duration: 7000,
+			position: "bottom",
+		} )
 
 		let preco: number = parseCurrency( vFinal )
 		const acrescimo = 1 + ( expo ? 0.1 : 0 ) + ( mont ? 0.1 : 0 )
@@ -340,7 +351,7 @@ export const getFormattedDate = ( srcDate?: Date ): string => {
 	return formattedDate
 }
 
-export const handleInstallments = async ( blingAccountCnpj: string, dataEntrega: string, prazo: string, totalOrderValue: number ): Promise<InstallmentsType[]> => {
+export const handleInstallments = async ( blingAccountCnpj: string, dataPrevista: string, prazo: string, totalOrderValue: number ): Promise<InstallmentsType[]> => {
 
 	const dueDays = prazo.split( "/" )
 	const countInstallments = dueDays.length
@@ -364,8 +375,9 @@ export const handleInstallments = async ( blingAccountCnpj: string, dataEntrega:
 	const installments = []
 	for ( const [ key, dueDay ] of Object.entries( dueDays ) ) {
 
-		const deliverDate = new Date( dataEntrega )
-		const dueDate = new Date( deliverDate.getTime() + +dueDay * 24 * 60 * 60 * 1000 )
+		const deliverDate = new Date( dataPrevista )
+		const daysToAdd = ( +dueDay + 1 ) * 24 * 60 * 60 * 1000
+		const dueDate = new Date( deliverDate.getTime() + daysToAdd )
 		const formaPagamentoId = await fetchFormaPagamentoId( blingAccountCnpj, prazo )
 
 		installments.push( {
