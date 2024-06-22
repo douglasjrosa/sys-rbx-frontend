@@ -3,7 +3,7 @@ import axios from "axios"
 export const getData = async ( proposta: any ) => {
 	const token = process.env.ATORIZZATION_TOKEN
 	const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ proposta }?populate=*`
-	console.log({proposta})
+	
 	const config = {
 		method: "GET",
 		url,
