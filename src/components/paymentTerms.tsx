@@ -15,15 +15,18 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 
 		if ( !options && maxPrazoPagto ) {
 			const formasPagto = [
-				{ maxPg: 0, value: '0', title: 'À vista (antecipado)' },
-				{ maxPg: 1, value: '1', title: 'Antecipado (c/ desconto)' },
-				{ maxPg: 10, value: '10', title: '10 dias' },
-				{ maxPg: 15, value: '15', title: '15 dias' },
-				{ maxPg: 28, value: '28', title: '28 dias' },
-				{ maxPg: 35, value: '28/35', title: '28 / 35 dias' },
-				{ maxPg: 42, value: '28/35/42', title: '28 / 35 / 42 dias' },
-				{ maxPg: 65, value: '45/55/65', title: '45 / 55 / 65 dias' },
-				{ maxPg: 90, value: '90', title: '90 dias' },
+				{ maxPg: 0, title: 'À vista (antecipado)' },
+				{ maxPg: 1, title: 'Antecipado (c/ desconto)' },
+				{ maxPg: 7, title: '7 dias' },
+				{ maxPg: 10, title: '10 dias' },
+				{ maxPg: 15, title: '15 dias' },
+				{ maxPg: 28, title: '28 dias' },
+				{ maxPg: 30, title: '15 / 30 dias' },
+				{ maxPg: 35, title: '28 / 35 dias' },
+				{ maxPg: 42, title: '28 / 35 / 42 dias' },
+				{ maxPg: 45, title: '15 / 30 / 45 dias' },
+				{ maxPg: 65, title: '45 / 55 / 65 dias' },
+				{ maxPg: 90, title: '90 dias' }
 			]
 
 			const latestDueDate = Math.max( ...maxPrazoPagto.split( '/' ).map( Number ), 1 )
@@ -57,7 +60,6 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 						return (
 							<option style={ { backgroundColor: "#1A202C" } }
 								key={ `formaPagto-${key}` }
-								value={ option.value }
 							>
 								{ option.title }
 							</option>

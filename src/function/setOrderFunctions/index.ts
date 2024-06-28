@@ -351,9 +351,9 @@ export const getFormattedDate = ( srcDate?: Date ): string => {
 	return formattedDate
 }
 
-export const handleInstallments = async ( blingAccountCnpj: string, dataPrevista: string, prazo: string, totalOrderValue: number ): Promise<InstallmentsType[]> => {
+export const handleInstallments = async ( blingAccountCnpj: string, dataSaida: string, prazo: string, totalOrderValue: number ): Promise<InstallmentsType[]> => {
 
-	const dueDays = prazo.split( "/" )
+	const dueDays = prazo.replace(/[ A-z]/g, "").split( "/" )
 	const countInstallments = dueDays.length
 
 	// Calcular o valor base arredondado para duas casas decimais
@@ -375,7 +375,7 @@ export const handleInstallments = async ( blingAccountCnpj: string, dataPrevista
 	const installments = []
 	for ( const [ key, dueDay ] of Object.entries( dueDays ) ) {
 
-		const deliverDate = new Date( dataPrevista )
+		const deliverDate = new Date( dataSaida )
 		const daysToAdd = ( +dueDay + 1 ) * 24 * 60 * 60 * 1000
 		const dueDate = new Date( deliverDate.getTime() + daysToAdd )
 		const formaPagamentoId = await fetchFormaPagamentoId( blingAccountCnpj, prazo )

@@ -36,9 +36,16 @@ const AddItemButton: React.FC<AddItemButtonProps> = ( {
 		const response = await fetch( `/api/rbx/${ user.email }/produtos?prodId=${ currentProductSelected }` )
 		const product = await response.json()
 
+
+		const codigo = product.codigo || `rbx-${ product.prodId }`;
+		const nomeProd = codigo.substr( 0, 3 ) === "rbx"
+			? product.nomeProd
+			: `${ product.nomeProd } | ref: rbx-${ product.prodId }`
+
 		const item = {
 			id: itemsList.length + 1,
-			nomeProd: `${ product.nomeProd } | ref: rbx-${ product.prodId }`,
+			nomeProd,
+			codigo,
 			Qtd: "1",
 			ncm: product.ncm,
 			codg: product.prodId,
@@ -50,7 +57,6 @@ const AddItemButton: React.FC<AddItemButtonProps> = ( {
 			ativo: "1",
 			preco: product.preco,
 			total: product.vFinal,
-			codigo: product.codigo,
 			modelo: product.modelo,
 			pesoCx: product.pesoCx,
 			prodId: product.prodId,

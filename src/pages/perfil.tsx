@@ -27,7 +27,7 @@ function Perfil () {
 		setAccess( resp )
 		setVai( false )
 
-	}, [] )
+	}, [ emitenteCnpj ] )
 
 	useEffect( () => {
 		fetchAccounts()
