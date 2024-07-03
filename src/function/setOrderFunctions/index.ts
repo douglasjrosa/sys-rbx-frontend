@@ -481,6 +481,7 @@ export const updateLastOrderInStrapi = async ( clientCNPJ: string, orderValue: s
 			data: {
 				ultima_compra: DateNow.toISOString().slice( 0, 10 ),
 				valor_ultima_compra: orderValue,
+				user: vendedorId,
 				vendedor,
 				vendedorId
 			}
