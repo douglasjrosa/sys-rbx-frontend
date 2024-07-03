@@ -139,8 +139,7 @@ const Proposta = () => {
 	useEffect( () => { fetchEmitenteId() }, [ fetchEmitenteId ] )
 
 	useEffect( () => { 
-
-		const isPaymentwithDiscount = paymentTerms === "1"
+		const isPaymentwithDiscount = paymentTerms === "Antecipado (c/ desconto)"
 		const discount = subtotal * ( isPaymentwithDiscount ? 0.05 : 0 )
 		setAditionalDiscount( discount )
 		

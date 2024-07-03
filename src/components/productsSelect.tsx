@@ -9,7 +9,7 @@ interface ProductsSelectProps extends Omit<InputProps, 'onChange' | 'value'> {
 	email: string
 }
 
-const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, value, cnpj, email } ) => {
+const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email } ) => {
 
 	const handleChange = useCallback(
 		( e: React.ChangeEvent<HTMLSelectElement> ) => onChange && onChange( e ), []
@@ -21,9 +21,8 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, value, cnpj,
 	const fetchProductsFromRbxApi = useCallback( async () => {
 		const response = await fetch( `/api/rbx/${ email }/produtos?CNPJ=${ cnpj }` )
 		const products = await response.json()
-
+		
 		setProductList( products )
-
 	}, [] )
 
 
