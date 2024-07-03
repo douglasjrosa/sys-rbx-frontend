@@ -10,14 +10,14 @@ export default async function GetEmpresa(
     const {Pesqisa, Vendedor, Empresa} = req.query
 
     const Url = Pesqisa === 'EM ANDAMENTO'
-    ? `/businesses?populate=*&filters[andamento][$eq]=3&filters[vendedor][username][$eq]=${Vendedor}&sort[0]=id%3Adesc&pagination[limit]=8000`
+    ? `/businesses?populate=*&filters[andamento][$eq]=3&filters[vendedor][username][$eq]=${Vendedor}&sort[0]=id%3Adesc&pagination[limit]=50`
     :Pesqisa === 'PERDIDO'
-    ? `/businesses?populate=*&filters[andamento][$eq]=1&filters[vendedor][username][$eq]=${Vendedor}&sort[0]=id%3Adesc&pagination[limit]=8000`
+    ? `/businesses?populate=*&filters[andamento][$eq]=1&filters[vendedor][username][$eq]=${Vendedor}&sort[0]=id%3Adesc&pagination[limit]=50`
     : Pesqisa === 'CONCLUÍDOS'
-    ? `/businesses?populate=*&filters[andamento][$eq]=5&filters[vendedor][username][$eq]=${Vendedor}&sort[0]=id%3Adesc&pagination[limit]=8000`
+    ? `/businesses?populate=*&filters[andamento][$eq]=5&filters[vendedor][username][$eq]=${Vendedor}&sort[0]=id%3Adesc&pagination[limit]=50`
     : Pesqisa === 'TODOS OS NEGÓCIOS'
-    ? `/businesses?populate=*&filters[vendedor][username][$eq]=${Vendedor}&sort[0]=id%3Adesc&pagination[limit]=8000`
-    : `/businesses?populate=*&filters[empresa][id][$eq]=${Empresa}&sort[0]=id%3Adesc&pagination[limit]=8000`
+    ? `/businesses?populate=*&filters[vendedor][username][$eq]=${Vendedor}&sort[0]=id%3Adesc&pagination[limit]=50`
+    : `/businesses?populate=*&filters[empresa][id][$eq]=${Empresa}&sort[0]=id%3Adesc&pagination[limit]=50`
 
     await axios({
       method: "GET",
