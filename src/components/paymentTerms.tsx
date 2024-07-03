@@ -1,4 +1,4 @@
-import { Box, FormLabel, Select } from "@chakra-ui/react"
+import { Box, FormLabel, Select, Skeleton } from "@chakra-ui/react"
 import { Dispatch, SetStateAction, useEffect, useState } from "react"
 
 interface PaymentTermsProps {
@@ -10,7 +10,7 @@ interface PaymentTermsProps {
 const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerms, setPaymentTermsOnChange } ) => {
 
 	const [ options, setOptions ] = useState<any[]>()
-	
+
 	useEffect( () => {
 
 		if ( !options && maxPrazoPagto ) {
@@ -30,12 +30,12 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 			]
 
 			const latestDueDate = Math.max( ...maxPrazoPagto.split( '/' ).map( Number ), 1 )
-		
+
 			const options = formasPagto.filter( formaPagto => formaPagto.maxPg <= latestDueDate )
-			
+
 			setOptions( options )
 		}
-	}, [ maxPrazoPagto ])
+	}, [ maxPrazoPagto ] )
 	return (
 		<>
 			<Box>
@@ -45,27 +45,31 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 				>
 					Prazo p/ pagamento
 				</FormLabel>
-				<Select
-					shadow="sm"
-					size="xs"
-					w="45"
-					fontSize="xs"
-					rounded="md"
-					onChange={ ( e ) => {
-						setPaymentTermsOnChange( e.target.value )
-					} }
-					value={ paymentTerms }
-				>
-					{ options && options.map( ( option: any, key ) => {
-						return (
-							<option style={ { backgroundColor: "#1A202C" } }
-								key={ `formaPagto-${key}` }
-							>
-								{ option.title }
-							</option>
-						)
-					} ) }
-				</Select>
+				{ options &&
+					<Select
+						shadow="sm"
+						size="xs"
+						w="178px"
+						fontSize="xs"
+						rounded="md"
+						onChange={ ( e ) => {
+							setPaymentTermsOnChange( e.target.value )
+						} }
+						value={ paymentTerms }
+					>
+						{ options.map( ( option: any, key ) => {
+							return (
+								<option style={ { backgroundColor: "#1A202C" } }
+									key={ `formaPagto-${ key }` }
+								>
+									{ option.title }
+								</option>
+							)
+						} ) }
+					</Select>
+					||
+					<Skeleton height='28px' startColor='gray.600' endColor='gray.700' rounded={ "md" } w="178px" />
+				}
 			</Box>
 		</>
 	)
