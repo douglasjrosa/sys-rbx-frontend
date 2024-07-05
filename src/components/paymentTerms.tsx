@@ -31,13 +31,13 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 
 			allowedOptions = formasPagto.filter( formaPagto => formaPagto.maxPg <= latestDueDate )
 
-		}
 			setOptions( [
 
 				{ maxPg: 0, title: 'À vista (antecipado)' },
 				{ maxPg: 1, title: 'Antecipado (c/ desconto)' },
 				...allowedOptions
 			] )
+		}
 	}, [ maxPrazoPagto ] )
 
 	return (
