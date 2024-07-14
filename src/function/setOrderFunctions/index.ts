@@ -83,10 +83,12 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 	// Taking the types of contact of "Vendedor" and "Cliente" to save in the company data later in Bling
 	const typesOfContactsResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos/tipos` )
 
+	const typesOfContacts = await typesOfContactsResponse.json()
+	
 	if ( !typesOfContactsResponse.ok ) {
+		console.error({ typesOfContacts })
 		throw new Error( `Error fetching client: ${ typesOfContactsResponse.statusText }` )
 	}
-	const typesOfContacts = await typesOfContactsResponse.json()
 
 	const typeOfContactClienteId = typesOfContacts.data.find( ( type: any ) => type.descricao === 'Cliente' ).id
 

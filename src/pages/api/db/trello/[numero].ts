@@ -31,40 +31,28 @@ export default async function PostTrello (
 		const negocioId = pedido.attributes.business.data.id
 		const frete =
 			pedido.attributes.frete === "" ? "Fob" : pedido.attributes.frete
-		const pgto = pedido.attributes.condi
-		const Prazo = pedido.attributes.prazo
 		const estrega = pedido.attributes.dataEntrega
 		const VendedorName = pedido.attributes.user.data.attributes.username
 		const fornecedorName = pedido.attributes.fornecedorId.data.attributes.nome
-		const userKey = "7f3afdbb72cb272f2ef99089cd9066c8"
-		const userToken =
-			"ad565886cde4f9d1466040864b94a879d2281ec2f83c43d9cf0d74dbd752509d"
 		const pedidoCliente = pedido.attributes.cliente_pedido
 
 		const Prefuncionario = await GetTrelloId()
 		const funcionario = Prefuncionario.filter( ( f: string ) => f !== null )
 
 
-		const list = "6438073ecc85f294325f74ac" //teste
+		const apiKey = process.env.TRELLO_API_KEY
+		const apiToken = process.env.TRELLO_API_TOKEN
+		const idBoard = process.env.TRELLO_BOARD_ID
+		const idList = process.env.TRELLO_LIST_ID
 
-		const Bord = "5fac445b3c5274707a309d61"
-
-		//Membros
-		const trelloMembers: string[] = [
-			"5fd10678fbc6b504679737d4" /*Daniela*/,
-			"63e13cb526cca27c0d30f648" /*Edna*/,
-			"63e13887ef5b25eea224493e" /*Luciana*/,
-			"5d7bbf629972e80b374829bb" /*Fábrica*/,
-		]
 		try {
-			const promises = items.map( async ( i: any, index: number ) => {
-				const Prenlote = lote
-					.filter(
-						( f: any ) =>
-							f.attributes.produtosId == i.prodId &&
-							f.attributes.qtde == i.Qtd &&
-							f.attributes.item_id == i.id
-					)
+			const cardsSent = []
+			for ( const i of items ) {
+				const Prenlote = lote.filter( ( f: any ) => (
+					f.attributes.produtosId == i.prodId &&
+					f.attributes.qtde == i.Qtd &&
+					f.attributes.item_id == i.id
+				) )
 					.map( ( p: any ) => p.attributes.lote )
 				const nlote = Prenlote[ 0 ]
 
@@ -74,7 +62,7 @@ export default async function PostTrello (
 
 				let measures = `- Medidas: ${ i.comprimento } x ${ i.largura } x ${ i.altura ? i.altura + "cm(alt.) " : "cm(larg.) " } `
 				measures = i.comprimento ? measures : ""
-				
+
 				const expo = i.expo ? " - EXP" : ""
 				const mont = i.mont ? " - MONT" : ""
 
@@ -85,22 +73,19 @@ export default async function PostTrello (
 				const nomeCard = trimmedClientName + qtde + trimmedProdName + measures + expo + mont + weight + lot
 
 				const dataBoard = JSON.stringify( {
-					key: userKey,
-					token: userToken,
-					idList: list,
-					boardId: Bord,
+					idList,
+					boardId: idBoard,
 					name: nomeCard,
 					desc: `Negocio: Nº.${ negocio },
-				Proposta / Pedido: Nº.${ numero },
-				Bling Pedido: Nº.${ numero },
-				Vendedor( a ): ${ VendedorName },
-				Empresa: ${ fornecedorName },
-				Tipo de frete: ${ frete },
-				Negocio Id: Nº.${ negocioId },
-				Pedido do cliente: Nº.${ pedidoCliente === null ? '' : pedidoCliente },
-		Lote: Nº.${ nlote },
-		Modelo: ${ i.titulo } `,
-					idMembers: trelloMembers,
+						Proposta / Pedido: Nº.${ numero },
+						Bling Pedido: Nº.${ numero },
+						Vendedor( a ): ${ VendedorName },
+						Empresa: ${ fornecedorName },
+						Tipo de frete: ${ frete },
+						Negocio Id: Nº.${ negocioId },
+						Pedido do cliente: Nº.${ pedidoCliente === null ? '' : pedidoCliente },
+						Lote: Nº.${ nlote },
+						Modelo: ${ i.titulo } `,
 					due: estrega + 'T16:00:00.000Z',
 					dueReminder: 2880,
 					pos: "top",
@@ -109,58 +94,49 @@ export default async function PostTrello (
 				let config = {
 					method: "post",
 					maxBodyLength: Infinity,
-					url: "https://api.trello.com/1/cards",
+					url: `https://api.trello.com/1/cards?idList=${ idList }&key=${ apiKey }&token=${ apiToken }`,
 					headers: {
-						"Content-Type": "application/json",
-						Cookie:
-							"preAuthProps=s%3A5d7b946bb2d92e57d8d07e4d%3AisEnterpriseAdmin%3Dfalse.xktum%2BounyUl8SGrzLx%2BKGezb8C94Hysn%2FNSdI77YcY",
+						"Content-Type": "application/json"
 					},
 					data: dataBoard,
 				}
 
+				const cardSent = await axios.request( config ).then( async ( res: any ) => {
+					const resposta = `card id: ${ res.data.id } pode ser acessado pelo link: ${ res.data.shortUrl } `
+					const text = {
+						msg: resposta,
+						date: new Date().toISOString(),
+						user: "Sistema",
+					}
+					await IncidentRecord( text, negocioId )
+					return resposta
+				} ).catch( async ( err: any ) => {
+					const data = {
+						log: {
+							key: apiKey,
+							token: apiToken,
+							idList,
+							boardId: idBoard,
+							name: nomeCard,
+							lista_de_menbros: funcionario,
+							negocio: negocio,
+							Proposta: numero,
+							Vendedor: VendedorName,
+							Empresa: fornecedorName,
+							Tipo_de_frete: frete,
+							Lote: nlote,
+							Modelo: i.titulo,
+							erro_status: err.response.status,
+							erro_message: err.response.data,
+						},
+					}
+					return await ErroTrello( data )
+				} )
 
-				const delay = ( ms: number ) =>
-					new Promise( ( resolve ) => setTimeout( resolve, ms ) )
-				await delay( 400 * index )
-
-				return await axios
-					.request( config )
-					.then( async ( res: any ) => {
-						const resposta = `card id: ${ res.data.id } pode ser acessado pelo link: ${ res.data.shortUrl } `
-						const text = {
-							msg: resposta,
-							date: new Date().toISOString(),
-							user: "Sistema",
-						}
-						await IncidentRecord( text, negocioId )
-						return resposta
-					} )
-					.catch( async ( err: any ) => {
-						const data = {
-							log: {
-								key: userKey,
-								token: userToken,
-								idList: list,
-								boardId: Bord,
-								name: nomeCard,
-								lista_de_menbros: funcionario,
-								negocio: negocio,
-								Proposta: numero,
-								Vendedor: VendedorName,
-								Empresa: fornecedorName,
-								Tipo_de_frete: frete,
-								Lote: nlote,
-								Modelo: i.titulo,
-								erro_status: err.response.status,
-								erro_message: err.response.data,
-							},
-						}
-						return await ErroTrello( data )
-					} )
-			} )
-
-			const result = await Promise.all( promises )
-			res.status( 201 ).json( result )
+				cardsSent.push( cardSent )
+			}
+			
+			res.status( 201 ).json( cardsSent )
 		} catch ( error: any ) {
 			res.status( error.status || 400 ).json( error )
 		}
