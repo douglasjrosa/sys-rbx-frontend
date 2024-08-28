@@ -21,7 +21,7 @@ const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChang
 				const validMont = mont !== undefined ? mont : item.mont
 				const validExp = expo !== undefined ? expo : item.expo
 				let price = Number( item.vFinal.replace( /\D/g, '' ) / 100 )
-				const aditionalService = price * 0.1
+				const aditionalService = Math.round( price * 10 ) / 100
 
 				price += validMont ? aditionalService : 0
 				price += validExp ? aditionalService : 0

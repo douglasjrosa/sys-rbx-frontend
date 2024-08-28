@@ -1,5 +1,6 @@
 import { parseCurrency } from "@/utils/customNumberFormats"
 
+
 export type BlingOrderDataType = {
 	numero: number
 	data: string
@@ -52,6 +53,10 @@ export type OrderStatusType = {
 	strapiOrderUpdated: boolean
 }
 
+export function delay ( ms: number ) {
+	return new Promise( resolve => setTimeout( resolve, ms ) )
+}
+	
 export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string ): Promise<any> => {
 	try {
 		const response = await fetch( `/api/bling/${ blingAccountCnpj }/contatos?pesquisa=${ clientCnpj }` )
@@ -61,7 +66,7 @@ export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string
 		}
 
 		const searchClient = await response.json()
-
+		
 		if ( searchClient.data && searchClient.data.length > 0 ) {
 			return searchClient.data[ 0 ]
 		}
@@ -159,11 +164,12 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 		method,
 		body: JSON.stringify( newClientData )
 	} )
-
+	console.log({saveClientResponse})
+	
 	const saveClientData = saveClientResponse.statusText !== "No Content"
-		? await saveClientResponse.json()
-		: {}
-
+	? await saveClientResponse.json()
+	: {}
+	console.log( { saveClientData })
 
 	if ( !blingClientId && !saveClientResponse.ok ) {
 		console.error( saveClientResponse )
@@ -198,6 +204,7 @@ export const sendCardsToTrello = async ( propostaId: string ) => {
 export const getBlingProductByCodigo = async ( blingAccountCnpj: string, codigo: string ): Promise<any> => {
 
 	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos?codigo=${ codigo }` )
+	await delay(500)
 	const product = await response.json()
 
 	if ( !response.ok ) {
@@ -306,6 +313,7 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[], toast
 		let getBlingProd
 
 		if ( !!codigo ) getBlingProd = await getBlingProductByCodigo( blingAccountCnpj, codigo )
+		
 
 		if ( !getBlingProd?.id )
 			getBlingProd = await getBlingProductByName( blingAccountCnpj, nomeProd )
@@ -416,11 +424,11 @@ export const sendBlingOrder = async ( blingAccountCnpj: string, orderData: any )
 		method,
 		body: JSON.stringify( orderData )
 	} )
-
+	await delay(500)
 	const responseData = await response.json()
 
 	if ( !response.ok ) {
-		console.error( responseData )
+		console.error( responseData, orderData )
 		throw new Error( `Error fetching Bling to send order: ${ response.statusText }` )
 	}
 	return responseData

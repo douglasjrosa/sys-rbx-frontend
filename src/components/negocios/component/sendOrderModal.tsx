@@ -143,6 +143,7 @@ const SendOrderModal = ( props: any ) => {
 				}
 			}
 			const blingOrder = await sendBlingOrder( blingAccountCnpj, blingOrderData )
+			console.log( { blingOrder, sendBlingOrder, totalOrderValue } )
 			if ( !blingOrder.data?.id && blingOrder.error ) {
 
 				const fields: string[] = []
