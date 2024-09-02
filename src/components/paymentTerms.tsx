@@ -40,6 +40,12 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 				...allowedOptions
 			] )
 		}
+		else {
+			setOptions( [
+				{ maxPg: 0, title: 'À vista (antecipado)' },
+				{ maxPg: 1, title: 'Antecipado (c/ desconto)' }
+			] )
+		}
 	}, [ maxPrazoPagto ] )
 
 	return (
