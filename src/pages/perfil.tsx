@@ -1,6 +1,7 @@
 import EmitenteSelect from "@/components/emitenteSelect"
 import { useEffect, useState, useCallback } from "react"
 import { getBlingToken } from "./api/bling"
+import { PostLoteRibermmax } from "./api/db/nLote/lib/postLoteRibermax"
 
 function Perfil () {
 
@@ -22,14 +23,19 @@ function Perfil () {
 	}, [] )
 
 	const runFetch = useCallback( async () => {
-
+		
+		const rbx = await PostLoteRibermmax( "2106" )
+		console.log( { rbx } )
+		
 		const resp = await getBlingToken( emitenteCnpj )
+		
 		setAccess( resp )
 		setVai( false )
 
 	}, [ emitenteCnpj ] )
 
 	useEffect( () => {
+
 		fetchAccounts()
 		if ( vai ) {
 			runFetch()
