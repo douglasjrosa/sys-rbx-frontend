@@ -58,8 +58,8 @@ export default async function GetEmpresa (
 				const res = await STRAPI.post( "/lotes", postLote )
 				result.push( res.data.data )
 			}
-			res.status( 201 ).json( result )
 			await PostLoteRibermmax( numero )
+			res.status( 201 ).json( result )
 		} catch ( error: any ) {
 			console.error( error )
 			res.status( 400 ).json( error )
