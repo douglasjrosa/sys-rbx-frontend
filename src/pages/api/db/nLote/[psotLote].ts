@@ -1,7 +1,7 @@
 import axios from "axios"
 import { nLote } from "."
 import { NextApiRequest, NextApiResponse } from "next"
-import { PostLoteRibermmax } from "./lib/postLoteRibermax"
+import { ErroPHP } from "../../lib/erroPHP"
 
 const token = process.env.ATORIZZATION_TOKEN
 const STRAPI = axios.create( {
@@ -9,6 +9,14 @@ const STRAPI = axios.create( {
 	headers: {
 		Authorization: `Bearer ${ token }`,
 		"Content-Type": "application/json",
+	},
+} )
+
+const PHP = axios.create( {
+	baseURL: process.env.RIBERMAX_API_URL,
+	headers: {
+		Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
+		Email: process.env.ATORIZZATION_EMAIL,
 	},
 } )
 
@@ -24,22 +32,23 @@ export default async function GetEmpresa (
 		const items = pedido.attributes.itens
 		const empresa = pedido.attributes.empresaId
 		const empresaCNPJ = pedido.attributes.empresa.data.attributes.CNPJ
-		const negocio = pedido.attributes.business.data.id
+		const negocioId = pedido.attributes.business.data.id
 		const fornecedor = pedido.attributes.fornecedorId
 		const fornecedorCNPJ = pedido.attributes.fornecedorId.data.attributes.CNPJ
 		const vendedor = pedido.attributes.user.data.id
 		try {
-			const result = []
+			const lotes = []
+			const php = []
 
 			for ( const i of items ) {
 				const NLote = await nLote()
 				const idCliente = `${ i.id }`
-				const postLote = {
+				const strapiLote = {
 					data: {
 						lote: NLote,
 						empresa: empresa,
 						empresaId: empresa,
-						business: negocio,
+						business: negocioId,
 						produtosId: i.prodId,
 						emitente: fornecedor.data.attributes.titulo,
 						emitenteId: fornecedor.data.id,
@@ -55,11 +64,44 @@ export default async function GetEmpresa (
 						item_id: idCliente
 					},
 				}
-				const res = await STRAPI.post( "/lotes", postLote )
-				result.push( res.data.data )
+				const res = await STRAPI.post( "/lotes", strapiLote )
+				lotes.push( res.data.data )
+
+				const formData = new FormData()
+				formData.append( "cliente[CNPJ]", empresaCNPJ )
+				formData.append( "emitente[CNPJ]", fornecedorCNPJ )
+				formData.append( "idProduto", i.prodId )
+				formData.append( "negocioId", negocioId )
+				formData.append( "nLote", String( NLote ) )
+				formData.append( "qtde", i.Qtd )
+
+				php.push( PHP.post( "/lotes", formData )
+					.then( ( response ) => {
+
+						return {
+							msg: response.data.message,
+							lote: response.data.lotes,
+						}
+					} )
+					.catch( async ( error: any ) => {
+						const data = {
+							log: {
+								"cliente[CNPJ]": pedido.attributes.CNPJClinet,
+								"emitente[CNPJ]": pedido.attributes.CNPJEmitente,
+								idProduto: pedido.attributes.produtosId,
+								nLote: pedido.attributes.lote,
+								qtde: pedido.attributes.qtde,
+								pedido: numero,
+								error: error,
+							},
+						}
+						return await ErroPHP( data )
+					} )
+				)
 			}
-			await PostLoteRibermmax( numero )
-			res.status( 201 ).json( result )
+
+			res.status( 201 ).json( { lotes, php } )
+
 		} catch ( error: any ) {
 			console.error( error )
 			res.status( 400 ).json( error )

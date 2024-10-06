@@ -1,7 +1,6 @@
 import EmitenteSelect from "@/components/emitenteSelect"
 import { useEffect, useState, useCallback } from "react"
 import { getBlingToken } from "./api/bling"
-import { PostLoteRibermmax } from "./api/db/nLote/lib/postLoteRibermax"
 
 function Perfil () {
 
@@ -23,12 +22,21 @@ function Perfil () {
 	}, [] )
 
 	const runFetch = useCallback( async () => {
-		
-		const rbx = await PostLoteRibermmax( "2106" )
-		console.log( { rbx } )
-		
+/* 
+		const userEmail = localStorage.getItem("email")
+		const response = await fetch( "/api/testrbx",
+			{
+				method: "post",
+				body: JSON.stringify( { pedidoId: "1574", userEmail } )
+			}
+		)
+		if ( !response.ok ) console.error( response )
+
+		const rbx = await response.json()
+		console.log( { rbx, userEmail } ) */
+
 		const resp = await getBlingToken( emitenteCnpj )
-		
+
 		setAccess( resp )
 		setVai( false )
 
