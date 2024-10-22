@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { nLote } from "./db/nLote"
 
 const token = process.env.ATORIZZATION_TOKEN
 
