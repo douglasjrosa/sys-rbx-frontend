@@ -28,6 +28,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 				{ maxPg: 45, title: '15 / 30 / 45 dias' },
 				{ maxPg: 60, title: '30 / 60 dias' },
 				{ maxPg: 65, title: '45 / 55 / 65 dias' },
+				{ maxPg: 65, title: '65 dias' },
 				{ maxPg: 90, title: '30 / 60 / 90 dias' },
 				{ maxPg: 90, title: '90 dias' }
 			]
