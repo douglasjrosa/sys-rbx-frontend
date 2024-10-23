@@ -28,6 +28,7 @@ export default async function GetEmpresa (
 		const numero: any = req.query.psotLote
 
 		const request = await STRAPI.get( `/pedidos/${ numero }?populate=*` )
+		
 		const pedido = request.data.data
 		const items = pedido.attributes.itens
 		const empresa = pedido.attributes.empresaId
@@ -65,6 +66,7 @@ export default async function GetEmpresa (
 					},
 				}
 				const res = await STRAPI.post( "/lotes", strapiLote )
+
 				lotes.push( res.data.data )
 
 				const formData = new FormData()

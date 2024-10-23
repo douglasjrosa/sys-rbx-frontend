@@ -143,7 +143,7 @@ const SendOrderModal = ( props: any ) => {
 				}
 			}
 			const blingOrder = await sendBlingOrder( blingAccountCnpj, blingOrderData )
-			console.log( { blingOrder, sendBlingOrder, totalOrderValue } )
+			
 			if ( !blingOrder.data?.id && blingOrder.error ) {
 
 				const fields: string[] = []
@@ -244,7 +244,8 @@ const SendOrderModal = ( props: any ) => {
 				position: "bottom",
 			} )
 			const nLoteUpdate = await postNLote( propostaId )
-			if ( !Array.isArray( nLoteUpdate ) || !nLoteUpdate.length ) {
+
+			if ( !nLoteUpdate?.lotes?.length ) {
 
 				toast( {
 					title: "STRAPI: Ooops, tivemos um pequeno problema...",
