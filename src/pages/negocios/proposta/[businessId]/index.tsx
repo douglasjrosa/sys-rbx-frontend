@@ -222,6 +222,7 @@ const Proposta = () => {
 		orderObservations,
 		orderTotalValue,
 		user,
+		companyData
 	] )
 
 	const handleSaveOrder = useCallback( async () => {
