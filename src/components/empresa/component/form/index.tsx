@@ -91,8 +91,6 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	const [ Block, setBlock ] = useState( false )
 	const [ load, setload ] = useState( false )
 	const [ History, setHistory ] = useState( [] )
-	const [ emailNfeWarning, setEmailNfeWarning ] = useState( false )
-	const [ loadStarted, setLoadStarted ] = useState( false )
 	const toast = useToast()
 
 	if ( props.envio && !ENVIO ) {
@@ -453,18 +451,6 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 				<Loading size="200px">Carregando...</Loading>
 			</Box>
 		)
-	}
-	else {
-		if ( loadStarted && !emailNfe && !emailNfeWarning ) {
-			setEmailNfeWarning( true )
-			toast( {
-				title: 'Cadastro incompleto!',
-				description: "O campo E-mail NFe não pode estar vazio",
-				status: 'warning',
-				duration: 9000,
-				isClosable: true,
-			} )
-		}
 	}
 
 	const RetornoMaxpg = ( maxpg: React.SetStateAction<string> ) => {

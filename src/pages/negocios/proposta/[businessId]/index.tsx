@@ -138,11 +138,11 @@ const Proposta = () => {
 
 	useEffect( () => { fetchEmitenteId() }, [ fetchEmitenteId ] )
 
-	useEffect( () => { 
+	useEffect( () => {
 		const isPaymentwithDiscount = paymentTerms === "Antecipado (c/ desconto)"
 		const discount = subtotal * ( isPaymentwithDiscount ? 0.05 : 0 )
 		setAditionalDiscount( discount )
-		
+
 	}, [ paymentTerms, subtotal ] )
 
 	useEffect( () => { // First loading data from db
@@ -176,8 +176,17 @@ const Proposta = () => {
 
 	useEffect( () => { // Updating data object to save later
 		if ( companyData ) {
-			if ( companyData.attributes.emailNfe === "") {
-				router.push( `/empresas/atualizar/${ companyData.id }` )	
+			if ( companyData.attributes.emailNfe === "" ) {
+
+				toast( {
+					title: 'Cadastro incompleto!',
+					description: "O campo E-mail NFe não pode estar vazio",
+					status: 'warning',
+					duration: 9000,
+					isClosable: true,
+				} )
+				
+				router.push( `/empresas/atualizar/${ companyData.id }` )
 			}
 
 			const saveData = {
