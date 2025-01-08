@@ -98,6 +98,18 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	}
 
 	useEffect( () => {
+		if ( emailNfe === "" ) {
+			toast( {
+				title: 'ATENÇÃO!',
+				description: "Preencher o campo E-mail NF-e é OBRIGATÓRIO.",
+				status: 'warning',
+				duration: 9000,
+				isClosable: true,
+			} )
+		}
+	}, [emailNfe])
+
+	useEffect( () => {
 		localStorage.removeItem( 'idRetorno' )
 		if ( props.data ) {
 			setload( true )

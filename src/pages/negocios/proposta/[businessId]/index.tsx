@@ -177,15 +177,6 @@ const Proposta = () => {
 	useEffect( () => { // Updating data object to save later
 		if ( companyData ) {
 			if ( companyData.attributes.emailNfe === "" ) {
-
-				toast( {
-					title: 'Cadastro incompleto!',
-					description: "O campo E-mail NFe não pode estar vazio",
-					status: 'warning',
-					duration: 9000,
-					isClosable: true,
-				} )
-				
 				router.push( `/empresas/atualizar/${ companyData.id }` )
 			}
 
