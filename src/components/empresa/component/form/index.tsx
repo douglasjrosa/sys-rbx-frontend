@@ -92,6 +92,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	const [ load, setload ] = useState( false )
 	const [ History, setHistory ] = useState( [] )
 	const [ emailNfeWarning, setEmailNfeWarning ] = useState( false )
+	const [ loadStarted, setLoadStarted ] = useState( false )
 	const toast = useToast()
 
 	if ( props.envio && !ENVIO ) {
@@ -446,6 +447,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	}
 
 	if ( load ) {
+		setLoadStarted(true)
 		return (
 			<Box w={ '100%' } h={ '100%' } bg="gray.800">
 				<Loading size="200px">Carregando...</Loading>
@@ -453,7 +455,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 		)
 	}
 	else {
-		if ( !emailNfe && !emailNfeWarning ) {
+		if ( loadStarted && !emailNfe && !emailNfeWarning ) {
 			setEmailNfeWarning( true )
 			toast( {
 				title: 'Cadastro incompleto!',
