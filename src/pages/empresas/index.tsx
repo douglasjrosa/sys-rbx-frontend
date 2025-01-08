@@ -27,7 +27,8 @@ function Empresas ( { dataRetorno }: any ) {
 
 		( async () => {
 			try {
-				const res = await axios( '/api/db/empresas/empresalist' )
+				const userId = session?.user.id 
+				const res = await axios( `/api/db/empresas/empresalist?userId=${ userId }` )
 				const repo = res.data
 
 				setDados( repo )
@@ -45,7 +46,7 @@ function Empresas ( { dataRetorno }: any ) {
 
 		} )()
 
-	}, [ session?.user.name, toast ] )
+	}, [ session?.user.id, toast ] )
 
 	useEffect( () => {
 		const calcularDiferencaEmDias = ( data1: Date, data2: Date ): number => {
@@ -55,6 +56,7 @@ function Empresas ( { dataRetorno }: any ) {
 			return Math.floor( ( data2UTC - data1UTC ) / umDiaEmMilissegundos )
 		}
 
+		console.log( { calcularDiferencaEmDias } )
 
 		const processarVendedorInteracoes = ( dataAtual: Date, Dados: any ) => {
 			const filtroVendedor = Dados.filter( ( f: any ) => f.attributes.user.data?.attributes.username === session?.user.name )
@@ -200,12 +202,14 @@ function Empresas ( { dataRetorno }: any ) {
 
 			const DataVendedorSemVendedor: any = [ ...SemVendedorInteracaoMap, ...mergedArray ]
 
-			return DataVendedorSemVendedor
-		};
 
+			return DataVendedorSemVendedor
+		}
+		
+		
 		( async () => {
 			const dataAtual = startOfDay( new Date() )
-
+			
 			const DataVendedor = processarVendedorInteracoes( dataAtual, Dados )
 			const DataVendedorSemVendedor = processarSemVendedorInteracoes( dataAtual, Dados )
 

@@ -256,7 +256,7 @@ const SendOrderModal = ( props: any ) => {
 					position: "bottom",
 				} )
 				orderStatus.strapiLoteUpdated = false
-				console.error( { orderStatus } )
+				console.error( { orderStatus, nLoteUpdate } )
 				return false
 			}
 			else orderStatus.strapiLoteUpdated = true

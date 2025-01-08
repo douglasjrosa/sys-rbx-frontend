@@ -1,7 +1,6 @@
 import axios from "axios"
 import { nLote } from "."
 import { NextApiRequest, NextApiResponse } from "next"
-import { ErroPHP } from "../../lib/erroPHP"
 
 const token = process.env.ATORIZZATION_TOKEN
 const STRAPI = axios.create( {
@@ -9,14 +8,6 @@ const STRAPI = axios.create( {
 	headers: {
 		Authorization: `Bearer ${ token }`,
 		"Content-Type": "application/json",
-	},
-} )
-
-const PHP = axios.create( {
-	baseURL: process.env.RIBERMAX_API_URL,
-	headers: {
-		Token: process.env.ATORIZZATION_TOKEN_RIBERMAX,
-		Email: process.env.ATORIZZATION_EMAIL,
 	},
 } )
 
@@ -39,7 +30,6 @@ export default async function GetEmpresa (
 		const vendedor = pedido.attributes.user.data.id
 		try {
 			const lotes = []
-			const php = []
 
 			for ( const i of items ) {
 				const NLote = await nLote()
@@ -68,41 +58,9 @@ export default async function GetEmpresa (
 				const res = await STRAPI.post( "/lotes", strapiLote )
 
 				lotes.push( res.data.data )
-
-				const formData = new FormData()
-				formData.append( "cliente[CNPJ]", empresaCNPJ )
-				formData.append( "emitente[CNPJ]", fornecedorCNPJ )
-				formData.append( "idProduto", i.prodId )
-				formData.append( "negocioId", negocioId )
-				formData.append( "nLote", String( NLote ) )
-				formData.append( "qtde", i.Qtd )
-
-				php.push( PHP.post( "/lotes", formData )
-					.then( ( response ) => {
-
-						return {
-							msg: response.data.message,
-							lote: response.data.lotes,
-						}
-					} )
-					.catch( async ( error: any ) => {
-						const data = {
-							log: {
-								"cliente[CNPJ]": pedido.attributes.CNPJClinet,
-								"emitente[CNPJ]": pedido.attributes.CNPJEmitente,
-								idProduto: pedido.attributes.produtosId,
-								nLote: pedido.attributes.lote,
-								qtde: pedido.attributes.qtde,
-								pedido: numero,
-								error: error,
-							},
-						}
-						return await ErroPHP( data )
-					} )
-				)
 			}
 
-			res.status( 201 ).json( { lotes, php } )
+			res.status( 201 ).json( { lotes } )
 
 		} catch ( error: any ) {
 			console.error( error )
