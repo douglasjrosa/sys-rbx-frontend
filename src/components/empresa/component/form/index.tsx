@@ -445,7 +445,6 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	}
 
 	if ( load ) {
-		setLoadStarted(true)
 		return (
 			<Box w={ '100%' } h={ '100%' } bg="gray.800">
 				<Loading size="200px">Carregando...</Loading>
