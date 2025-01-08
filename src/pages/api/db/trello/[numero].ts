@@ -28,6 +28,7 @@ export default async function PostTrello (
 		const items = pedido.attributes.itens
 		const cliente = pedido.attributes.empresa.data.attributes.nome
 		const emailNfe = pedido.attributes.empresa.data.attributes.emailNfe
+		const email = pedido.attributes.empresa.data.attributes.email
 		const negocio = pedido.attributes.business.data.attributes.nBusiness
 		const negocioId = pedido.attributes.business.data.id
 		const frete =
@@ -86,6 +87,7 @@ export default async function PostTrello (
 						Pedido do cliente: Nº.${ pedidoCliente === null ? '' : pedidoCliente },
 						Lote: Nº.${ nlote },
 						Modelo: ${ i.titulo },
+						E-mail: ${ email },
 						E-mail NFe: ${ emailNfe }.`,
 					due: estrega + 'T16:00:00.000Z',
 					dueReminder: 2880,
