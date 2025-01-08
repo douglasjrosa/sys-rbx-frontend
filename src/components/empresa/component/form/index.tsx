@@ -91,6 +91,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	const [ Block, setBlock ] = useState( false )
 	const [ load, setload ] = useState( false )
 	const [ History, setHistory ] = useState( [] )
+	const [ emailNfeWarning, setEmailNfeWarning ] = useState( false )
 	const toast = useToast()
 
 	if ( props.envio && !ENVIO ) {
@@ -233,8 +234,16 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	const save = async () => {
 		if ( nome === "" ) {
 			toast( {
-				title: 'Opss.',
+				title: 'Ooopss!',
 				description: "Nome da empresa não pode estar vazio",
+				status: 'warning',
+				duration: 9000,
+				isClosable: true,
+			} )
+		} else if ( emailNfe === "" ) {
+			toast( {
+				title: 'Ooopss!',
+				description: "O campo E-mail NFe não pode estar vazio",
 				status: 'warning',
 				duration: 9000,
 				isClosable: true,
@@ -444,7 +453,8 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 		)
 	}
 	else {
-		if ( !emailNfe ) {
+		if ( !emailNfe && !emailNfeWarning ) {
+			setEmailNfeWarning( true )
 			toast( {
 				title: 'Cadastro incompleto!',
 				description: "O campo E-mail NFe não pode estar vazio",
@@ -964,7 +974,6 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														rounded="md"
 														onChange={ ( e ) => setEmailNfe( e.target.value ) }
 														value={ emailNfe }
-														required={true}
 													/>
 												</FormControl>
 												<FormControl as={ GridItem } colSpan={ [ 6, 4, null, 3 ] }>

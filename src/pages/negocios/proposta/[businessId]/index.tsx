@@ -176,7 +176,7 @@ const Proposta = () => {
 
 	useEffect( () => { // Updating data object to save later
 		if ( companyData ) {
-			if ( !companyData.attributes.emailNfe ) {
+			if ( companyData.attributes.emailNfe === "") {
 				router.push( `/empresas/atualizar/${ companyData.id }` )	
 			}
 
