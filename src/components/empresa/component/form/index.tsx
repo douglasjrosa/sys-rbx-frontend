@@ -443,6 +443,17 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 			</Box>
 		)
 	}
+	else {
+		if ( !emailNfe ) {
+			toast( {
+				title: 'Cadastro incompleto!',
+				description: "O campo E-mail NFe não pode estar vazio",
+				status: 'warning',
+				duration: 9000,
+				isClosable: true,
+			} )
+		}
+	}
 
 	const RetornoMaxpg = ( maxpg: React.SetStateAction<string> ) => {
 		setMaxpg( maxpg )
@@ -953,6 +964,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														rounded="md"
 														onChange={ ( e ) => setEmailNfe( e.target.value ) }
 														value={ emailNfe }
+														required={true}
 													/>
 												</FormControl>
 												<FormControl as={ GridItem } colSpan={ [ 6, 4, null, 3 ] }>
