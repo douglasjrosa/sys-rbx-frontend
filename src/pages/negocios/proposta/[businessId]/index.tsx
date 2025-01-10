@@ -16,6 +16,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import { BsArrowLeftCircleFill } from "react-icons/bs"
 import { formatCurrency, parseCurrency } from "@/utils/customNumberFormats"
+import { emitentes } from "@/components/data/emitentes"
 
 const Proposta = () => {
 	const router = useRouter()
@@ -128,13 +129,20 @@ const Proposta = () => {
 
 
 	const fetchEmitenteId = useCallback( async () => {
-		if ( emitenteCnpj ) {
-			const response = await fetch( `/api/strapi/empresas?filters[CNPJ]=${ emitenteCnpj }` )
-			const emitente = await response.json()
-			const [ emitenteData ] = emitente.data
-			setEmitenteId( emitenteData.id )
+		if ( !!companyData ) {
+			if ( !orderData && !emitenteCnpj && companyData.attributes.CNPJ !== "" ) {
+				const clientCnpj = companyData.attributes.CNPJ ?? "default"
+				setEmitenteCnpj( emitentes[ clientCnpj ].emitente )
+			}
+			
+			if(!!emitenteCnpj){
+				const response = await fetch( `/api/strapi/empresas?filters[CNPJ]=${ emitenteCnpj }` )
+				const emitente = await response.json()
+				const [ emitenteData ] = emitente.data
+				setEmitenteId( emitenteData.id )
+			}
 		}
-	}, [ emitenteCnpj ] )
+	}, [ companyData, orderData, emitenteCnpj ] )
 
 	useEffect( () => { fetchEmitenteId() }, [ fetchEmitenteId ] )
 
