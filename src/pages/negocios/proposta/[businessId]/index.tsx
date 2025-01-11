@@ -130,12 +130,15 @@ const Proposta = () => {
 
 	const fetchEmitenteId = useCallback( async () => {
 		if ( !!companyData ) {
-			if ( !orderData && !emitenteCnpj && companyData.attributes.CNPJ !== "" ) {
-				const clientCnpj = companyData.attributes.CNPJ ?? "default"
-				setEmitenteCnpj( emitentes[ clientCnpj ].emitente )
+			if ( !orderData && !emitenteCnpj && !!companyData?.attributes?.CNPJ ) {
+				const clientCnpj = companyData.attributes.CNPJ
+				const emitenteCnpj = emitentes[ clientCnpj ]?.emitente ?? emitentes.default.emitente
+
+				if(emitenteCnpj)
+					setEmitenteCnpj( emitenteCnpj )
 			}
-			
-			if(!!emitenteCnpj){
+
+			if ( !!emitenteCnpj ) {
 				const response = await fetch( `/api/strapi/empresas?filters[CNPJ]=${ emitenteCnpj }` )
 				const emitente = await response.json()
 				const [ emitenteData ] = emitente.data
