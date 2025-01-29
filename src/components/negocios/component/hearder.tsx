@@ -405,7 +405,7 @@ export const NegocioHeader = ( props: {
 
 						</>
 					) : null }
-					{ session?.user.pemission === 'Adm' || 1 && (
+					{ session?.user.pemission === 'Adm' && (
 						<>
 							<Button isDisabled={ !propostaId } colorScheme={ "linkedin" } onClick={ () => onOpen() }>
 								Reenviar Pedido
