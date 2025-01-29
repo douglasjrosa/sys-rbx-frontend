@@ -14,7 +14,7 @@ const SendOrderModal = ( props: any ) => {
 	const makeOrder: () => Promise<boolean> = useCallback(
 		async () => {
 			setload( true )
-			
+
 			toast( {
 				title: "Aguarde. Enviando pedido...",
 				status: "info",
@@ -26,7 +26,7 @@ const SendOrderModal = ( props: any ) => {
 
 			const order = await fetchOrderData( propostaId )
 			const fullOrderData = order.data
-			
+
 			const orderStatus: OrderStatusType = fullOrderData.attributes?.orderStatus
 				? JSON.parse( fullOrderData.attributes.orderStatus )
 				: {
@@ -57,18 +57,28 @@ const SendOrderModal = ( props: any ) => {
 			const checkIfClientExists = await clientExists( blingAccountCnpj, clientCNPJ )
 			const blingClientId = checkIfClientExists?.id
 
+			let saved
 			if (
 				blingClientId
 				&& checkIfClientExists?.nome !== fullOrderData.attributes.empresa.data.attributes.razao
-			) await saveClient( fullOrderData, blingClientId )
+			) {
+				saved = await saveClient( fullOrderData, blingClientId )
+			}
+			else {
+				saved = await saveClient( fullOrderData )
+			}
 
-
-			const clientId = blingClientId ?? await saveClient( fullOrderData )
-			
-			if ( !clientId ) {
+			if ( typeof saved === "object" && !!saved.error ) {
+				const fields = <ol>
+					{
+						saved.error.fields.map( ( field: any ) => {
+							return <li>{ field.msg }</li>
+						} )
+					}
+				</ol>
 				toast( {
-					title: "BLING: Não foi possível salvar um novo cliente no Bling.",
-					description: `Erro na conta Bling de CNPJ: ${ blingAccountCnpj }`,
+					title: `BLING: Problemas com o cadastro do cliente.`,
+					description: fields,
 					status: "error",
 					isClosable: true,
 					duration: 30000,
@@ -79,6 +89,9 @@ const SendOrderModal = ( props: any ) => {
 				return false
 			}
 			else orderStatus.blingClientExists = true
+
+
+			const clientId = blingClientId
 
 
 			// Handling products in Bling
@@ -143,7 +156,7 @@ const SendOrderModal = ( props: any ) => {
 				}
 			}
 			const blingOrder = await sendBlingOrder( blingAccountCnpj, blingOrderData )
-			
+
 			if ( !blingOrder.data?.id && blingOrder.error ) {
 
 				const fields: string[] = []
@@ -191,7 +204,7 @@ const SendOrderModal = ( props: any ) => {
 			} )
 			const blingOrderId = String( blingOrder.data.id )
 			const updateNegocio = await updateBusinessInStrapi( businessId, blingOrderId )
-			
+
 			if ( !updateNegocio.data?.id ) {
 
 				toast( {
@@ -233,7 +246,7 @@ const SendOrderModal = ( props: any ) => {
 				return false
 			}
 			else orderStatus.strapiLastOrderUpdated = true
-			
+
 			// Handling lote info
 			toast( {
 				title: "STRAPI:",
@@ -299,7 +312,7 @@ const SendOrderModal = ( props: any ) => {
 			} )
 			orderStatus.strapiOrderUpdated = true
 			const orderUpdate = await updateOrderInStrapi( blingOrderId, orderId, orderStatus )
-			
+
 			if ( !orderUpdate.data?.id ) {
 
 				toast( {
@@ -316,7 +329,7 @@ const SendOrderModal = ( props: any ) => {
 			}
 			return true
 		},
-		[ 
+		[
 			orderData,
 			setload,
 			useToast,
@@ -331,7 +344,7 @@ const SendOrderModal = ( props: any ) => {
 			sendCardsToTrello,
 			updateOrderInStrapi,
 			getFormattedDate
-		 ]
+		]
 	)
 
 
@@ -368,7 +381,7 @@ const SendOrderModal = ( props: any ) => {
 		[ makeOrder, toast, onClose, setload, onchat ]
 	)
 
-	
+
 	return (
 		<Modal isCentered closeOnOverlayClick={ false } isOpen={ isOpen } onClose={ onClose }>
 			<ModalOverlay

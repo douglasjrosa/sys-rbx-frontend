@@ -1,4 +1,5 @@
 import { parseCurrency } from "@/utils/customNumberFormats"
+import { useToast } from "@chakra-ui/react"
 
 
 export type BlingOrderDataType = {
@@ -56,7 +57,7 @@ export type OrderStatusType = {
 export function delay ( ms: number ) {
 	return new Promise( resolve => setTimeout( resolve, ms ) )
 }
-	
+
 export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string ): Promise<any> => {
 	try {
 		const response = await fetch( `/api/bling/${ blingAccountCnpj }/contatos?pesquisa=${ clientCnpj }` )
@@ -66,7 +67,7 @@ export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string
 		}
 
 		const searchClient = await response.json()
-		
+
 		if ( searchClient.data && searchClient.data.length > 0 ) {
 			return searchClient.data[ 0 ]
 		}
@@ -78,7 +79,7 @@ export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string
 	}
 }
 
-export const saveClient = async ( orderData: any, blingClientId?: number ): Promise<number> => {
+export const saveClient = async ( orderData: any, blingClientId?: number ): Promise<number | { error: any }> => {
 
 	const clientData = orderData.attributes.empresa.data.attributes
 	const clientStrapiId = orderData.attributes.empresa.data.id
@@ -89,9 +90,9 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 	const typesOfContactsResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos/tipos` )
 
 	const typesOfContacts = await typesOfContactsResponse.json()
-	
+
 	if ( !typesOfContactsResponse.ok ) {
-		console.error({ typesOfContacts })
+		console.error( { typesOfContacts } )
 		throw new Error( `Error fetching client: ${ typesOfContactsResponse.statusText }` )
 	}
 
@@ -164,18 +165,19 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 		method,
 		body: JSON.stringify( newClientData )
 	} )
-	console.log({saveClientResponse})
-	
+	console.log( { saveClientResponse } )
+
 	const saveClientData = saveClientResponse.statusText !== "No Content"
-	? await saveClientResponse.json()
-	: {}
-	console.log( { saveClientData })
+		? await saveClientResponse.json()
+		: {}
+	console.log( { saveClientData } )
 
-	if ( !blingClientId && !saveClientResponse.ok ) {
+	let error
+	if ( !blingClientId && !saveClientResponse.ok && !saveClientData.data?.id ) {
+		error = saveClientData.responseError?.error
 		console.error( saveClientResponse )
-		throw new Error( `Error fetching client: ${ saveClientResponse.statusText }` )
+		return { error }
 	}
-
 	return blingClientId || saveClientData.data?.id || 0
 }
 
@@ -204,7 +206,7 @@ export const sendCardsToTrello = async ( propostaId: string ) => {
 export const getBlingProductByCodigo = async ( blingAccountCnpj: string, codigo: string ): Promise<any> => {
 
 	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos?codigo=${ codigo }` )
-	await delay(500)
+	await delay( 500 )
 	const product = await response.json()
 
 	if ( !response.ok ) {
@@ -313,7 +315,7 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[], toast
 		let getBlingProd
 
 		if ( !!codigo ) getBlingProd = await getBlingProductByCodigo( blingAccountCnpj, codigo )
-		
+
 
 		if ( !getBlingProd?.id )
 			getBlingProd = await getBlingProductByName( blingAccountCnpj, nomeProd )
@@ -363,7 +365,7 @@ export const getFormattedDate = ( srcDate?: Date ): string => {
 
 export const handleInstallments = async ( blingAccountCnpj: string, dataSaida: string, prazo: string, totalOrderValue: number ): Promise<InstallmentsType[]> => {
 
-	const dueDays = prazo.replace(/[^\d/]/g, "").split( "/" ).filter( v => !!v )
+	const dueDays = prazo.replace( /[^\d/]/g, "" ).split( "/" ).filter( v => !!v )
 	const countInstallments = dueDays.length
 
 	// Calcular o valor base arredondado para duas casas decimais
@@ -424,7 +426,7 @@ export const sendBlingOrder = async ( blingAccountCnpj: string, orderData: any )
 		method,
 		body: JSON.stringify( orderData )
 	} )
-	await delay(500)
+	await delay( 500 )
 	const responseData = await response.json()
 
 	if ( !response.ok ) {

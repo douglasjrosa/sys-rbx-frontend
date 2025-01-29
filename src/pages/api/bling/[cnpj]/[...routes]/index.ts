@@ -25,7 +25,6 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 
 		const queryString = queryParams.toString()
 		const externalUrl = `${ blingApiEndpoint }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
-
 		let bodyData
 		if ( [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ) {
 			if ( req.body ) {
@@ -37,7 +36,7 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 				}
 			}
 		}
-
+		
 		const response = await fetch( externalUrl, {
 			method: req.method as string,
 			headers: {
@@ -46,8 +45,9 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			},
 			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
 		} )
-
+		
 		const responseData = !!response.body ? await response.json() : null
+		// console.log({externalUrl, method: req.method, bodyData, responseData, errors: responseData.error?.fields})
 
 		if ( !!responseData && !response.ok ) {
 			res.status( response.status ).json( {
