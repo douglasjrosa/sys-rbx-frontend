@@ -1,4 +1,4 @@
-import { Box, FormLabel, Heading, Link, } from "@chakra-ui/react"
+import { Box, Heading, Link, } from "@chakra-ui/react"
 
 const linkRenato = "https://www.bling.com.br/Api/v3/oauth/authorize?response_type=code&client_id=3b20ab6c097ade43a1de570f3c846e1beac1eaf8&state=11cf6c1c1dd83b24997a26a44ce78e28"
 const linkMax = "https://www.bling.com.br/Api/v3/oauth/authorize?response_type=code&client_id=050b7facd85b3eab7df48c932fa41c3cf6033eb9&state=a2725db1edbd2a8248cebfc0493fe970"
