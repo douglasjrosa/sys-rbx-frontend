@@ -71,8 +71,8 @@ const SendOrderModal = ( props: any ) => {
 			if ( typeof saved === "object" && !!saved.error ) {
 				const fields = <ol>
 					{
-						saved.error.fields.map( ( field: any ) => {
-							return <li>{ field.msg }</li>
+						saved.error.fields.map( ( field: any, index: number ) => {
+							return <li key={ index }>{ field.msg }</li>
 						} )
 					}
 				</ol>
