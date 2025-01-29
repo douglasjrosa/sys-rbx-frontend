@@ -30,7 +30,7 @@
 		"**/*.tsx",
 		"src/pages/api/db/trello/[numero]ts",
 		"node_modules/@types",
-		"src/pages/bling/[cnpj]/[client_id]/[client_secret]/index.tsx"
+		"src/pages/bling/[cnpj]/[client_id]/[client_secret]/[emitente]/index.tsx"
 	],
 	"exclude": [
 		"node_modules"

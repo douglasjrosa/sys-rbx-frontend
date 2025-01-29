@@ -25,7 +25,7 @@ interface AccountToken {
 
 const Bling: React.FC = () => {
 
-	const { query: { code, cnpj, client_id, client_secret } } = useRouter()
+	const { query: { code, cnpj, client_id, client_secret, emitente } } = useRouter()
 
 	const [ formData, setFormData ] = useState<any>( {} )
 	const [ registered, setRegistered ] = useState( false )
@@ -108,6 +108,7 @@ const Bling: React.FC = () => {
 							w="full"
 							rounded="md"
 							isDisabled={ disabled }
+							value={ emitente }
 							required
 						/>
 					</FormControl>
