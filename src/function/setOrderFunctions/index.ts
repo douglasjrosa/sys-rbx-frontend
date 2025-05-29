@@ -84,7 +84,6 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 	const clientStrapiId = orderData.attributes.empresa.data.id
 	const blingAccountCnpj = orderData.attributes.fornecedorId.data.attributes.CNPJ
 
-
 	// Taking the types of contact of "Vendedor" and "Cliente" to save in the company data later in Bling
 	const typesOfContactsResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos/tipos` )
 

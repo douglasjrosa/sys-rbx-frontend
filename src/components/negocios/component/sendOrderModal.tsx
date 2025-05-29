@@ -57,16 +57,7 @@ const SendOrderModal = ( props: any ) => {
 			const checkIfClientExists = await clientExists( blingAccountCnpj, clientCNPJ )
 			const blingClientId = checkIfClientExists?.id
 
-			let saved
-			if (
-				blingClientId
-				&& checkIfClientExists?.nome !== fullOrderData.attributes.empresa.data.attributes.razao
-			) {
-				saved = await saveClient( fullOrderData, blingClientId )
-			}
-			else {
-				saved = await saveClient( fullOrderData )
-			}
+			let saved = await saveClient( fullOrderData, blingClientId )
 
 			if ( typeof saved === "object" && !!saved.error ) {
 				const fields = <ol>
