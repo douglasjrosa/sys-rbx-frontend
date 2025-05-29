@@ -1,4 +1,4 @@
-import { Box, FormLabel, InputProps, Select, Skeleton } from "@chakra-ui/react"
+import { Box, Button, Flex, FormLabel, InputProps, Select, Skeleton, useToast } from "@chakra-ui/react"
 import { useCallback, useEffect, useState } from "react"
 
 
@@ -10,6 +10,7 @@ interface ProductsSelectProps extends Omit<InputProps, 'onChange' | 'value'> {
 }
 
 const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email } ) => {
+	const toast = useToast()
 
 	const handleChange = useCallback(
 		( e: React.ChangeEvent<HTMLSelectElement> ) => onChange && onChange( e ), []
@@ -17,14 +18,38 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email 
 
 	const [ enableFetches, setEnableFetches ] = useState<string>( "not yet allowed" )
 	const [ productList, setProductList ] = useState<any[]>()
+	const [ offset, setOffset ] = useState<number>( 0 )
+	const [ nextOffsetExists, setNextOffsetExists ] = useState<boolean>( false )
+	const [ isLoading, setIsLoading ] = useState<boolean>( false )
+	const LIMIT = 10
 
 	const fetchProductsFromRbxApi = useCallback( async () => {
-		const response = await fetch( `/api/rbx/${ email }/produtos?CNPJ=${ cnpj }` )
-		const products = await response.json()
-		
-		setProductList( products )
-	}, [] )
+		setIsLoading( true )
+		const response = await fetch( `/api/rbx/${ email }/produtos?CNPJ=${ cnpj }&limit=${ LIMIT + 1 }&offset=${ offset }` )
+		if ( response.ok ) {
+			const products = await response.json()
+			setNextOffsetExists( products.length > LIMIT )
+			const productList = products.slice( 0, LIMIT )
+			setProductList( productList )
+		}
+		else {
+			console.error( "Error fetching products from RBX API", { response } )
+			const responeData = await response.json()
+			console.error( { responeData } )
+			toast( {
+				title: "Erro ao buscar produtos",
+				description: "Por favor, tente novamente.",
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+			} )
+		}
+		setIsLoading( false )
+	}, [ offset ] )
 
+	useEffect( () => {
+		fetchProductsFromRbxApi()
+	}, [ fetchProductsFromRbxApi ] )
 
 
 	useEffect( () => {
@@ -37,14 +62,56 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email 
 
 	return (
 		<Box>
-			<FormLabel
+			<Flex
 				fontSize="xs"
 				fontWeight="md"
+				justifyContent="space-between"
 			>
-				Lista de produtos
-			</FormLabel>
+				<Flex
+					justifyContent="space-between"
+					w="full"
+					mb={ 2 }
+				>
+					<span>Lista de produtos</span>
+					<Flex>
+						<Button
+							roundedLeft="md"
+							roundedRight="0"
+							h="20px"
+							size="xs"
+							onClick={ () => setOffset( offset - LIMIT ) }
+							isDisabled={ offset === 0 || isLoading }
+						>
+							-
+						</Button>
+						<Flex
+							fontSize="xs"
+							fontWeight="md"
+							bg="gray.700"
+							textAlign="center"
+							alignItems="center"
+							justifyContent="center"
+							w="40px"
+							h="20px"
+							color={ offset === 0 && !nextOffsetExists && !isLoading ? "gray.400" : "white" }
+						>
+							{ Math.floor( offset / LIMIT ) + 1 }
+						</Flex>
+						<Button
+							roundedLeft="0"
+							roundedRight="md"
+							h="20px"
+							size="xs"
+							onClick={ () => setOffset( offset + LIMIT ) }
+							isDisabled={ !nextOffsetExists || isLoading }
+						>
+							+
+						</Button>
+					</Flex>
+				</Flex>
+			</Flex>
 			{
-				!!productList &&
+				!!productList && !isLoading &&
 				<Select
 					shadow="sm"
 					size="sm"
