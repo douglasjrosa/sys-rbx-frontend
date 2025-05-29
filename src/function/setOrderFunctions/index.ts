@@ -165,7 +165,7 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 	} )
 	console.log( { saveClientResponse } )
 
-	const saveClientData = saveClientResponse.statusText !== "No Content"
+	const saveClientData = saveClientResponse.status !== 204
 		? await saveClientResponse.json()
 		: {}
 	console.log( { saveClientData } )
