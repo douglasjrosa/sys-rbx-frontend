@@ -1,5 +1,5 @@
 import axios from "axios"
-import NextAuth, { DefaultUser, JWT } from "next-auth"
+import NextAuth, { DefaultUser, JWT, NextAuthOptions } from "next-auth"
 import { Session } from "next-auth/core/types"
 import CredentialsProvider from "next-auth/providers/credentials"
 
@@ -10,7 +10,7 @@ type ExtendedDefaultUser = DefaultUser & {
 	pemission: string
 }
 
-export default NextAuth( {
+export const authOptions: NextAuthOptions = {
 	jwt: {
 		secret: process.env.JWT_SIGNING_PRIVATE_KEY,
 	},
@@ -68,10 +68,7 @@ export default NextAuth( {
 	],
 	pages: {
 		signIn: "/auth/signin",
-
-
 		verifyRequest: '/auth/verify-request',
-
 	},
 
 	callbacks: {
@@ -127,4 +124,6 @@ export default NextAuth( {
 			return session
 		},
 	},
-} )
+}
+
+export default NextAuth( authOptions )

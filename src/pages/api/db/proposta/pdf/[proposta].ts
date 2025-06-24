@@ -5,6 +5,33 @@ import PDFPrinter from "pdfmake"
 import { TDocumentDefinitions } from "pdfmake/interfaces"
 import { getData } from "./lib/getinf"
 
+function normalizarValorMonetario ( valor: string ) {
+	// Remove espaços em branco
+	valor = valor.trim()
+
+	// Se contém ponto e vírgula (ex: 1.234,56)
+	if ( valor.includes( '.' ) && valor.includes( ',' ) ) {
+		valor = valor.replace( /\./g, '' ) // remove pontos de milhar
+		valor = valor.replace( ',', '.' ) // vírgula vira decimal
+	}
+	// Se contém só vírgula (ex: 1234,56)
+	else if ( valor.includes( ',' ) ) {
+		valor = valor.replace( ',', '.' ) // vírgula vira decimal
+	}
+	// Se contém só ponto (ex: 1.234 ou 1234.56)
+	else if ( valor.includes( '.' ) ) {
+		let partes = valor.split( '.' )
+		// Se o ponto está separando milhar (ex: 1.234)
+		if ( partes[ partes.length - 1 ].length !== 2 ) {
+			valor = valor.replace( /\./g, '' ) // remove pontos de milhar
+		}
+		// senão, assume-se que já é decimal corretamente formatado
+	}
+
+	return parseFloat( valor )
+}
+
+
 function formatarTelefone ( telefone: string ) {
 
 	const numeros = telefone.replace( /\D/g, "" )
@@ -66,11 +93,8 @@ export default async function GetEmpresa (
 
 		const Product = infos.itens
 		const products = Product.map( ( i: any, x: number ) => {
-			const preco = parseFloat(
-				i.vFinal.replace( ".", "" ).replace( ",", "." )
-			).toLocaleString( "pt-br", { style: "currency", currency: "BRL" } )
-
-			const ValorOriginal = i.vFinal.replace( ".", "" ).replace( ",", "." )
+			const preco = normalizarValorMonetario( i.vFinal ).toLocaleString( "pt-br", { style: "currency", currency: "BRL" } )
+			const ValorOriginal = normalizarValorMonetario( i.vFinal )
 			const acrec =
 				i.mont === true && i.expo === true
 					? 1.2

@@ -31,7 +31,7 @@ const NavMenuItems = [
   },
   {
     id: '4',
-    url: '/produtos',
+    url: 'https://ribermax.com?page=login',
     text: 'Produtos',
     icon: GiCube,
     iconComponent: <GiCube />,

@@ -63,6 +63,7 @@ function Navbar () {
 												? 'lime'
 												: 'whiteAlpha.800'
 										}
+										target={ navItem.url.includes( 'https' ) ? '_blank' : '_self' }
 									>
 										{ navItem.text }
 									</Link>
