@@ -1,5 +1,5 @@
 import { Box, Button, Flex, InputProps, Select, Skeleton, useToast } from "@chakra-ui/react"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, useRef } from "react"
 
 
 interface ProductsSelectProps extends Omit<InputProps, 'onChange' | 'value'> {
@@ -11,12 +11,12 @@ interface ProductsSelectProps extends Omit<InputProps, 'onChange' | 'value'> {
 
 const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email } ) => {
 	const toast = useToast()
+	const initialFetchDone = useRef( false )
 
 	const handleChange = useCallback(
-		( e: React.ChangeEvent<HTMLSelectElement> ) => onChange && onChange( e ), []
+		( e: React.ChangeEvent<HTMLSelectElement> ) => onChange && onChange( e ), [ onChange ]
 	)
 
-	const [ enableFetches, setEnableFetches ] = useState<string>( "not yet allowed" )
 	const [ productList, setProductList ] = useState<any[]>()
 	const [ offset, setOffset ] = useState<number>( 0 )
 	const [ nextOffsetExists, setNextOffsetExists ] = useState<boolean>( false )
@@ -24,18 +24,33 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email 
 	const LIMIT = 10
 
 	const fetchProductsFromRbxApi = useCallback( async () => {
+		if ( !cnpj || !email ) return
+
 		setIsLoading( true )
-		const response = await fetch( `/api/rbx/${ email }/produtos?CNPJ=${ cnpj }&limit=${ LIMIT + 1 }&offset=${ offset }` )
-		if ( response.ok ) {
-			const products = await response.json()
-			setNextOffsetExists( products.length > LIMIT )
-			const productList = products.slice( 0, LIMIT )
-			setProductList( productList )
+		try {
+			const response = await fetch( `/api/rbx/${ email }/produtos?CNPJ=${ cnpj }&limit=${ LIMIT + 1 }&offset=${ offset }` )
+			if ( response.ok ) {
+				const products = await response.json()
+				console.log( { products } )
+				setNextOffsetExists( products.length > LIMIT )
+				const productList = products.slice( 0, LIMIT )
+				setProductList( productList )
+			}
+			else {
+				console.error( "Error fetching products from RBX API", { response } )
+				const responeData = await response.json()
+				console.error( { responeData } )
+				toast( {
+					title: "Erro ao buscar produtos",
+					description: "Por favor, tente novamente.",
+					status: "error",
+					duration: 3000,
+					isClosable: true,
+				} )
+			}
 		}
-		else {
-			console.error( "Error fetching products from RBX API", { response } )
-			const responeData = await response.json()
-			console.error( { responeData } )
+		catch ( error ) {
+			console.error( "Error fetching products:", error )
 			toast( {
 				title: "Erro ao buscar produtos",
 				description: "Por favor, tente novamente.",
@@ -44,21 +59,22 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email 
 				isClosable: true,
 			} )
 		}
-		setIsLoading( false )
-	}, [ offset ] )
-
-	useEffect( () => {
-		fetchProductsFromRbxApi()
-	}, [ fetchProductsFromRbxApi ] )
-
-
-	useEffect( () => {
-		if ( enableFetches === "not yet allowed" ) setEnableFetches( "allow" )
-		if ( enableFetches === "allow" ) {
-			fetchProductsFromRbxApi()
-			setEnableFetches( "disallow" )
+		finally {
+			setIsLoading( false )
 		}
-	}, [ enableFetches ] )
+	}, [ offset, cnpj, email, toast ] )
+
+	// Único useEffect para controlar a busca de produtos
+	useEffect( () => {
+		if ( !initialFetchDone.current ) {
+			fetchProductsFromRbxApi()
+			initialFetchDone.current = true
+		}
+		else if ( offset !== 0 ) {
+			// Só busca novamente quando o offset mudar (paginação)
+			fetchProductsFromRbxApi()
+		}
+	}, [ fetchProductsFromRbxApi, offset ] )
 
 	return (
 		<Box>
