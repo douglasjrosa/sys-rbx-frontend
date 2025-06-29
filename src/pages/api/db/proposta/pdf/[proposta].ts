@@ -2,7 +2,7 @@ import fs from "fs"
 import { NextApiRequest, NextApiResponse } from "next"
 import path from "path"
 import PDFPrinter from "pdfmake"
-import { TDocumentDefinitions } from "pdfmake/interfaces"
+import { TDocumentDefinitions, Content, Column } from "pdfmake/interfaces"
 import { getData } from "./lib/getinf"
 
 function normalizarValorMonetario ( valor: string ) {
@@ -31,24 +31,19 @@ function normalizarValorMonetario ( valor: string ) {
 	return parseFloat( valor )
 }
 
-
 function formatarTelefone ( telefone: string ) {
-
 	const numeros = telefone.replace( /\D/g, "" )
 
 	if ( numeros.length === 11 ) {
-
 		return `(${ numeros.slice( 0, 2 ) }) ${ numeros.slice( 2, 3 ) } ${ numeros.slice(
 			3,
 			7
 		) }-${ numeros.slice( 7 ) }`
 	} else if ( numeros.length === 10 ) {
-
 		return `(${ numeros.slice( 0, 2 ) }) ${ numeros.slice( 2, 6 ) }-${ numeros.slice(
 			6
 		) }`
 	} else {
-
 		return ""
 	}
 }
@@ -91,578 +86,626 @@ export default async function GetEmpresa (
 		}
 		const printer = new PDFPrinter( fonts )
 
+
+		const paymentTerms = infos.prazo
+		const valorFrete = normalizarValorMonetario( infos.Valfrete )
+		let valorSubTotal = 0
+		const valorDesconto = normalizarValorMonetario( infos.Desconto )
+		const valorCustoAdicional = normalizarValorMonetario( infos.custoAdicional )
+
+		const logo = infos.fornecedor.data.cnpj === "04.586.593/0001-70" ? dataUrl : dataUrl2
+
 		const Product = infos.itens
-		const products = Product.map( ( i: any, x: number ) => {
-			const preco = normalizarValorMonetario( i.vFinal ).toLocaleString( "pt-br", { style: "currency", currency: "BRL" } )
+		const products = Product.map( ( i: any ) => {
+
 			const ValorOriginal = normalizarValorMonetario( i.vFinal )
-			const acrec =
-				i.mont === true && i.expo === true
-					? 1.2
-					: i.expo === true && i.mont === false
-						? 1.1
-						: i.expo === false && i.mont === true
-							? 1.1
-							: 0
-			const somaAcrescimo =
-				acrec === 0 ? ValorOriginal * i.Qtd : ValorOriginal * acrec * i.Qtd
-			const TotalItem = somaAcrescimo
-			const result = Math.round( parseFloat( TotalItem.toFixed( 2 ) ) * 100 ) / 100
-			const total = result.toLocaleString( "pt-br", {
-				style: "currency",
-				currency: "BRL",
-			} )
+			const valorMontagem = i.mont ? ValorOriginal * 0.1 : 0
+			const valorExportacao = i.expo ? ValorOriginal * 0.1 : 0
+			const valorUnitario = ValorOriginal + valorMontagem + valorExportacao
+			const valorTotal = valorUnitario * i.Qtd
+
+			valorSubTotal += valorTotal
 
 			let measures = i.comprimento || ""
 			measures += i.largura ? " x " + i.largura : ""
-			measures += i.altura ? " x " + i.altura + "cm(alt.)" : "cm(larg.)"
+			measures += i.altura ? " x " + i.altura + "cm(alt.)" : "cm(largura)"
 			measures = i.comprimento ? measures : ""
 
+			const stackNomeProd: any[] = [ {
+				text: i.nomeProd,
+				alignment: "left",
+				fontSize: 10,
+				bold: true,
+				lineHeight: 1.3
+			} ]
+			if ( !!measures ) {
+				stackNomeProd.push( {
+					table: {
+						body: [
+							[
+								{
+									text: `Med. internas: ${ measures }`,
+									alignment: "center",
+									color: "#000000",
+									fontSize: 10,
+								} ] ]
+					},
+					layout: {
+						fillColor: function () { return "#fbff04" },
+						paddingLeft: function () { return 3 },
+						paddingRight: function () { return 3 },
+						paddingTop: function () { return 3 },
+						paddingBottom: function () { return 3 },
+						hLineWidth: function () { return 0 },
+						vLineWidth: function () { return 0 }
+					},
+					margin: [ 0, 4, 0, 0 ]
+				} )
+			}
+			if ( !!i.codigo ) {
+				stackNomeProd.push( {
+					text: `Código: ${ i.codigo }`,
+					alignment: "left",
+					fontSize: 9,
+					color: '#666666',
+					bold: true,
+					margin: [ 0, 4, 0, 0 ]
+				} )
+			}
+
+			let stackMontagem: any[] = []
+			if ( i.mont ) {
+				stackMontagem.push( {
+					table: {
+						body: [
+							[ {
+								text: "SIM",
+								alignment: "center",
+								color: "#ffffff",
+								bold: true,
+								fontSize: 8,
+							} ]
+						],
+					},
+					layout: {
+						fillColor: function () { return "#009512" },
+						paddingLeft: function () { return 5 },
+						paddingRight: function () { return 5 },
+						paddingTop: function () { return 3 },
+						paddingBottom: function () { return 3 },
+						hLineWidth: function () { return 0 },
+						vLineWidth: function () { return 0 }
+					},
+					margin: [ 17, 0, 0, 5 ]
+				} )
+				stackMontagem.push( {
+					text: "+ " + valorMontagem.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ),
+					alignment: "center"
+				} )
+			}
+			else {
+				stackMontagem.push( {
+					table: {
+						body: [
+							[ {
+								text: "NÃO",
+								alignment: "center",
+								color: "#ffffff",
+								bold: true,
+								fontSize: 8,
+							} ]
+						],
+					},
+					layout: {
+						fillColor: function () { return "#666666" },
+						paddingLeft: function () { return 3 },
+						paddingRight: function () { return 3 },
+						paddingTop: function () { return 3 },
+						paddingBottom: function () { return 3 },
+						hLineWidth: function () { return 0 },
+						vLineWidth: function () { return 0 }
+					},
+					margin: [ 17, 0, 0, 0 ]
+				} )
+			}
+
+			let stackExportacao: any[] = []
+			if ( i.expo ) {
+				stackExportacao.push( {
+					table: {
+						body: [
+							[ {
+								text: "SIM",
+								alignment: "center",
+								color: "#ffffff",
+								bold: true,
+								fontSize: 8,
+							} ]
+						],
+					},
+					layout: {
+						fillColor: function () { return "#009512" },
+						paddingLeft: function () { return 5 },
+						paddingRight: function () { return 5 },
+						paddingTop: function () { return 3 },
+						paddingBottom: function () { return 3 },
+						hLineWidth: function () { return 0 },
+						vLineWidth: function () { return 0 }
+					},
+					margin: [ 17, 0, 0, 5 ]
+				} )
+				stackExportacao.push( {
+					text: "+ " + valorExportacao.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ),
+					alignment: "center"
+				} )
+			}
+			else {
+				stackExportacao.push( {
+					table: {
+						body: [
+							[ {
+								text: "NÃO",
+								alignment: "center",
+								color: "#ffffff",
+								bold: true,
+								fontSize: 8,
+							} ]
+						],
+					},
+					layout: {
+						fillColor: function () { return "#666666" },
+						paddingLeft: function () { return 3 },
+						paddingRight: function () { return 3 },
+						paddingTop: function () { return 3 },
+						paddingBottom: function () { return 3 },
+						hLineWidth: function () { return 0 },
+						vLineWidth: function () { return 0 }
+					},
+					margin: [ 17, 0, 0, 0 ]
+				} )
+			}
+
 			return [
-				{ text: x, style: "prodCells" },
-				{ text: i.nomeProd, style: "prodCells" },
-				{ text: i.codigo, style: "prodCells" },
-				{ text: i.Qtd, style: "prodCells" },
-				{ text: measures, style: "prodCells" },
-				{ text: !!i.mont ? "SIM" : "NÃO", style: "prodCells" },
-				{ text: !!i.expo ? "SIM" : "NÃO", style: "prodCells" },
-				{ text: preco, style: "prodCells" },
-				{ text: total, style: "prodCells" }
+				{
+					stack: [
+						...stackNomeProd
+					],
+					style: "prodCells",
+					alignment: "left"
+				},
+				{
+					text: ValorOriginal.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ),
+					style: "prodCells",
+					alignment: "center"
+				},
+				{
+					stack: [
+						...stackMontagem
+					],
+					style: "prodCells",
+					alignment: "center"
+				},
+				{
+					stack: [
+						...stackExportacao
+					],
+					style: "prodCells",
+					alignment: "center"
+				},
+				{
+					text: valorUnitario.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ),
+					style: "prodCells",
+					alignment: "center"
+				},
+				{
+					text: i.Qtd,
+					style: "prodCells",
+					alignment: "center"
+				},
+
+				{ text: valorTotal.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ), style: "prodCells", alignment: "center", bold: true }
 			]
 		} )
 
-		const paymentTerms = infos.prazo === "0" ? "À vista (antecipado)"
-			: ( infos.prazo === "1" ? "Antecipado c/ desconto"  : `${ infos.prazo.replace("/", " / ") } dias.` )			
-
-		const comAcrescimo = [
-			{
-				margin: [ 0, 5, 0, 0 ],
-				border: [ false, false, false, false ],
-				text: "Custos extras:",
-				bold: "true",
-				fontSize: 10
-			},
-			{
-				margin: [ 0, 5, 0, 0 ],
-				border: [ false, false, false, false ],
-				text: `R$ ${ infos.custoAdicional }`,
-				fontSize: 10
-			},
-		]
-
-		const semAcrescimo = [
-			{
-				margin: [ 0, 5, 0, 0 ],
-				border: [ false, false, false, false ],
-				text: "",
-			},
-			{
-				margin: [ 0, 5, 0, 0 ],
-				border: [ false, false, false, false ],
-				text: "",
-			},
-		]
-
-		const custoAdicional = infos.custoAdicional !== '0,00' ? comAcrescimo : semAcrescimo
-
-		const comDesc = [
-			{
-				margin: [ 0, 5, 0, 5 ],
-				border: [ false, false, false, false ],
-				text: "Desconto :",
-				bold: "true",
-				fontSize: 10
-			},
-			{
-				margin: [ 0, 5, 0, 5 ],
-				border: [ false, false, false, false ],
-				text: `- R$ ${ infos.Desconto }`,
-				bold: "true",
-				fontSize: 10
-			},
-		]
-
-		const semDesc = [
-			{
-				margin: [ 0, 5, 0, 0 ],
-				border: [ false, false, false, false ],
-				text: "",
-			},
-			{
-				margin: [ 0, 5, 0, 0 ],
-				border: [ false, false, false, false ],
-				text: "",
-			},
-		]
-
-		const FretValo = !infos.Valfrete ? 'R$ 0,00' : Number( infos.Valfrete.replace( '.', '' ).replace( ',', '.' ) ).toLocaleString( "pt-br", {
-			style: "currency",
-			currency: "BRL",
-		} )
-
-		const descontoNumber = Number( infos.Desconto.replace( 'R$', '' ).replace( '.', '' ).replace( ',', '.' ) )
-		const desconto = descontoNumber === 0 ? semDesc : comDesc
-
-		const observations = infos.obs ? [
-			[
+		// Cabeçalho principal compacto
+		const headerSection = {
+			margin: [ 0, 0, 0, 15 ],
+			columns: [
 				{
-					margin: [ 0, 5, 0, 0 ],
-					border: [ false, false, false, false ],
-					text: "OBS.:"
-
+					width: '60%',
+					alignment: 'left',
+					stack: [
+						{
+							text: 'PROPOSTA COMERCIAL',
+							fontSize: 20,
+							bold: true,
+							color: '#009512',
+						},
+						{
+							text: `Data: ${ date }`,
+							fontSize: 12,
+							color: '#666666',
+							margin: [ 0, 5, 0, 0 ]
+						},
+						{
+							text: `Validade da proposta: 10 dias`,
+							fontSize: 12,
+							color: '#666666',
+							margin: [ 0, 5, 0, 0 ]
+						}
+					],
+					margin: [ 0, 15, 0, 0 ]
 				},
-			],
-			[
 				{
-					margin: [ 5, 5, 5, 5 ],
-					border: [ false, false, false, false ],
-					text: infos.obs,
-					fillColor: '#4dff00',
-					style: "clienteFornecedor",
-					fontSize: 10,
+					width: '40%',
+					image: logo,
+					fit: [ 100, 100 ],
+					alignment: 'right'
+				}
+			]
+		}
+
+		// Informações de cliente e fornecedor compactas
+		const clienteFornecedorCompact = {
+			margin: [ 0, 0, 0, 10 ],
+			columns: [
+				{
+					width: '50%',
+					margin: [ 0, 0, 5, 0 ],
+					table: {
+						widths: [ '25%', '75%' ],
+						body: [
+							[
+								{ text: 'CLIENTE', style: 'sectionHeader', colSpan: 2 }, {}
+							],
+							[
+								{ text: 'Razão Social:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+								{ text: infos.cliente.razao, fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
+							],
+							[
+								{ text: 'CNPJ:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+								{ text: infos.cliente.CNPJ.replace( /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5" ), fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
+							],
+							[
+								{ text: 'Contato:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+								{
+									stack: [
+										{ text: formatarTelefone( infos.cliente.fone ), fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+										{ text: infos.cliente.email, fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
+									]
+								}
+							]
+						]
+					},
+					layout: {
+						hLineWidth: function () { return 0.5 },
+						vLineWidth: function () { return 0.5 },
+						hLineColor: function () { return '#AACCAA' },
+						vLineColor: function () { return '#AACCAA' },
+						fillColor: function ( rowIndex: number ) {
+							if ( rowIndex === 0 ) return '#009512'
+							return ( rowIndex % 2 === 0 ) ? '#eeffee' : null
+						}
+					}
 				},
-			] ] : []
+				{
+					width: '50%',
+					margin: [ 5, 0, 5, 0 ],
+					table: {
+						widths: [ '25%', '75%' ],
+						body: [
+							[
+								{ text: 'FORNECEDOR', style: 'sectionHeader', colSpan: 2, alignment: 'left' }, {}
+							],
+							[
+								{ text: 'Razão Social:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+								{ text: infos.fornecedor.data.razao, fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
+							],
+							[
+								{ text: 'CNPJ:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+								{ text: infos.fornecedor.data.cnpj.replace( /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5" ), fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
+							],
+							[
+								{ text: 'Contato:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+								{
+									stack: [
+										{ text: formatarTelefone( String( infos.fornecedor.data.tel ) ), fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+										{ text: infos.fornecedor.data.email, fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
+									]
+								}
+							]
+						]
+					},
+					layout: {
+						hLineWidth: function () { return 0.5 },
+						vLineWidth: function () { return 0.5 },
+						hLineColor: function () { return '#AACCAA' },
+						vLineColor: function () { return '#AACCAA' },
+						fillColor: function ( rowIndex: number ) {
+							if ( rowIndex === 0 ) return '#009512'
+							return ( rowIndex % 2 === 0 ) ? '#eeffee' : null
+						}
+					}
+				}
+			]
+		}
 
+		const condicoesComerciais = {
+			margin: [ 0, 0, 0, 10 ],
+			columns: [
+				{
+					width: '50%',
+					margin: [ 0, 0, 5, 0 ],
+					table: {
+						widths: [ '35%', '65%' ],
+						body: [
+							[
+								{ text: 'DADOS DA PROPOSTA', style: 'sectionHeader', colSpan: 2, alignment: 'left' }, {}
+							],
+							[
+								{ text: 'Nº da Proposta:', bold: true, fontSize: 8, alignment: 'left', margin: [ 0, 2, 0, 0 ] },
+								{ text: proposta, fontSize: 11, lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] }
+							],
+							[
+								{ text: 'Nº do Pedido:', bold: true, fontSize: 8, alignment: 'left', margin: [ 0, 2, 0, 0 ] },
+								{ text: infos.cliente_pedido || "", fontSize: 11, lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] }
+							],
+							[
+								{ text: 'Vendedor:', bold: true, fontSize: 8, alignment: 'left', margin: [ 0, 2, 0, 0 ] },
+								{ text: infos.Vendedor, fontSize: 11, lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] }
+							]
+						]
+					},
+					layout: {
+						hLineWidth: function () { return 0.5 },
+						vLineWidth: function () { return 0.5 },
+						hLineColor: function () { return '#AACCAA' },
+						vLineColor: function () { return '#AACCAA' },
+						fillColor: function ( rowIndex: number ) {
+							if ( rowIndex === 0 ) return '#009512'
+							return ( rowIndex % 2 === 0 ) ? '#eeffee' : null
+						}
+					}
+				},
+				{
+					width: '50%',
+					margin: [ 5, 0, 5, 0 ],
+					table: {
+						widths: [ '35%', '65%' ],
+						body: [
+							[
+								{ text: 'CONDIÇÕES DE FORNECIMENTO', style: 'sectionHeader', colSpan: 2, alignment: 'left' }, {}
+							],
+							[
+								{ text: 'Prazo de Pagamento:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] },
+								{ text: paymentTerms, fontSize: 11, lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] }
+							],
+							[
+								{ text: 'Tipo de Frete:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] },
+								{ text: infos.frete, fontSize: 11, lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] }
+							],
+							[
+								{ text: 'Prazo de Entrega:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] },
+								{ text: infos.dataEntrega, fontSize: 11, lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] }
+							]
+						]
+					},
+					layout: {
+						hLineWidth: function () { return 0.5 },
+						vLineWidth: function () { return 0.5 },
+						hLineColor: function () { return '#AACCAA' },
+						vLineColor: function () { return '#AACCAA' },
+						fillColor: function ( rowIndex: number ) {
+							if ( rowIndex === 0 ) return '#009512'
+							return ( rowIndex % 2 === 0 ) ? '#eeffee' : null
+						}
+					}
+				}
+			]
+		}
 
-		const logo =
-			infos.fornecedor.data.cnpj === "04.586.593/0001-70" ? dataUrl : dataUrl2
+		// Tabela de produtos - FOCO PRINCIPAL
+		const tabelaProdutos = {
+			margin: [ 0, 0, 0, 10 ],
+			table: {
+				headerRows: 1,
+				widths: [
+					"38%",   // Produto 
+					"10%",   // Preço
+					"12%",   // Montagem
+					"12%",   // Exportação
+					"10%",   // Valor Unitário
+					"6%",    // Qtde.
+					"12%",   // Total
+				],
+				body: [
+					[
+						{ text: "Produto", style: "tableHeader" },
+						{ text: "Preço", style: "tableHeader" },
+						{
+							stack: [
+								{ text: "Montagem", alignment: "center" },
+								{ text: "(+10%)", alignment: "center", margin: [ 0, 2, 0, 0 ] }
+							],
+							style: "tableHeader"
+						},
+						{
+							stack: [
+								{ text: "Exportação", alignment: "center" },
+								{ text: "(+10%)", alignment: "center", margin: [ 0, 2, 0, 0 ] }
+							],
+							style: "tableHeader"
+						},
+						{ text: "Valor Unitário", style: "tableHeader" },
+						{ text: "Qtde.", style: "tableHeader" },
+						{ text: "Subtotal", style: "tableHeader" },
+					],
+					...products,
+				],
+				// Evita quebra de linhas entre páginas
+				dontBreakRows: true,
+				keepWithHeaderRows: 1
+			},
+			layout: {
+				hLineWidth: function ( i: number, node: { table: { body: any[] } } ) {
+					return ( i === 0 || i === 1 || i === node.table.body.length ) ? 1.5 : 0.8
+				},
+				vLineWidth: function () {
+					return 0.8
+				},
+				hLineColor: function ( i: number ) {
+					return ( i === 0 || i === 1 ) ? '#009512' : '#AACCAA'
+				},
+				vLineColor: function () {
+					return '#AACCAA'
+				},
+				fillColor: function ( rowIndex: number ) {
+					return ( rowIndex === 0 ) ? '#009512' : ( rowIndex % 2 === 0 ) ? '#eeffee' : null
+				}
+			}
+		}
+
+		// Blocos finais: Informações importantes e Resumo financeiro lado a lado
+		const blocosFinais = {
+			margin: [ 0, 0, 0, 10 ],
+			// Evita quebra do bloco entre páginas
+			unbreakable: true,
+			columns: [
+				// Informações importantes (incluindo observações se houver)
+				{
+					width: '65%',
+					margin: [ 0, 0, 5, 0 ],
+					table: {
+						widths: [ '*' ],
+						body: [
+							[
+								{
+									text: "INFORMAÇÕES IMPORTANTES",
+									style: 'sectionHeader'
+								}
+							],
+							[
+								{
+									margin: [ 8, 5, 8, 5 ],
+									stack: [
+										{
+											text: "• Por padrão, todas as ambalagens são enviadas desmontadas;\n• Serviço de Montagem (+10%) deve ser solicitado na cotação;\n• Tratamento para Exportação (+10%) deve ser solicitado na cotação.",
+											fontSize: 10,
+											lineHeight: 2
+										},
+										// Adiciona observações se existirem
+										infos.obs ? {
+											text: [
+												{ text: "\nOBSERVAÇÕES: ", bold: true },
+												{ text: infos.obs }
+											],
+											fontSize: 10,
+											lineHeight: 2,
+											margin: [ 0, 5, 0, 0 ]
+										} : {}
+									]
+								}
+							]
+						]
+					},
+					layout: {
+						hLineWidth: function () { return 1 },
+						vLineWidth: function () { return 1 },
+						hLineColor: function () { return '#AACCAA' },
+						vLineColor: function () { return '#AACCAA' }
+					}
+				},
+
+				// Resumo financeiro
+				{
+					width: '35%',
+					margin: [ 5, 0, 0, 0 ],
+					table: {
+						widths: [ '45%', '55%' ],
+						body: [
+							[
+								{ text: "RESUMO FINANCEIRO", style: 'sectionHeader', colSpan: 2 }, {}
+							],
+							[
+								{ text: "Subtotal:", fontSize: 10, alignment: 'right', margin: [ 5, 5, 5, 2 ] },
+								{ text: valorSubTotal.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ), fontSize: 10, alignment: 'right', margin: [ 5, 5, 5, 2 ] }
+							],
+							[
+								{ text: "Desconto:", fontSize: 10, alignment: 'right', margin: [ 5, 2, 5, 2 ] },
+								{
+									text: !!valorDesconto
+										? "- " + valorDesconto.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } )
+										: "0,00",
+									fontSize: 10,
+									alignment: 'right',
+									margin: [ 5, 2, 5, 2 ],
+									color: !!valorDesconto ? '#ff0000' : '#000000'
+								}
+							],
+							[
+								{ text: "Custos extras:", fontSize: 10, alignment: 'right', margin: [ 5, 2, 5, 2 ] },
+								{ text: valorCustoAdicional.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ), fontSize: 10, alignment: 'right', margin: [ 5, 2, 5, 2 ] }
+							],
+							[
+								{ text: "Frete:", fontSize: 10, alignment: 'right', margin: [ 5, 2, 5, 2 ] },
+								{ text: valorFrete.toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ), fontSize: 10, alignment: 'right', margin: [ 5, 2, 5, 2 ] }
+							],
+							[
+								{ text: "TOTAL:", fontSize: 12, bold: true, alignment: 'right', margin: [ 5, 5, 5, 5 ], fillColor: '#009512', color: '#ffffff' },
+								{ text: "R$ " + ( valorSubTotal - valorDesconto + valorCustoAdicional + valorFrete ).toLocaleString( "pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ), fontSize: 12, bold: true, alignment: 'right', margin: [ 5, 5, 5, 5 ], fillColor: '#009512', color: '#ffffff' }
+							]
+						]
+					},
+					layout: {
+						hLineWidth: function () { return 1 },
+						vLineWidth: function () { return 1 },
+						hLineColor: function () { return '#AACCAA' },
+						vLineColor: function () { return '#AACCAA' }
+					}
+				}
+			]
+		}
 
 		const docDefinitions: TDocumentDefinitions = {
 			defaultStyle: { font: "Helvetica" },
-			header: {
-				style: "header",
-				table: {
-					widths: [ 300, 245 ],
-					body: [
-						[
-							{
-								border: [ false, false, false, false ],
-								image: logo,
-								fit: [ 140, 140 ],
-								margin: [ 25, 15, 0, 0 ]
-							},
-							{
-								border: [ false, false, false, false ],
-								margin: [ 0, 28, 0, 0 ],
-								table: {
-									widths: [ 55, "*" ],
-									heights: 12,
-									body: [
-										[ { text: "Data:", margin: [ 3, 2, 0, 2 ] }, { text: date, margin: [ 3, 2, 0, 2 ] } ],
-										[ { text: "Proposta N°:", margin: [ 3, 2, 0, 2 ] }, { text: proposta, margin: [ 3, 2, 0, 2 ] } ],
-										[ { text: "Vendedor:", margin: [ 3, 2, 0, 2 ] }, { text: infos.Vendedor, margin: [ 3, 2, 0, 2 ] } ],
-										[ { text: "Pedido N°:", margin: [ 3, 2, 0, 2 ] }, { text: infos.cliente_pedido, margin: [ 3, 2, 0, 2 ] } ]
-									],
-								},
-							},
-						],
-					],
-				},
-			},
 			content: [
+				headerSection,
+				condicoesComerciais,
+				clienteFornecedorCompact,
 				{
-					table: {
-						widths: [ "*" ],
-						body: [
-							[
-								{
-									border: [ false, false, false, false ],
-									table: {
-										widths: [ "50%", "*" ],
-										body: [
-											[
-												{
-													border: [ false, false, false, false ],
-													style: "clienteFornecedor",
-													table: {
-														widths: [ "25%", "*" ],
-														body: [
-															[
-																{
-																	text: "Fornecedor",
-																	bold: "true",
-																	fillColor: "#1a562e",
-																	color: "#ffffff",
-																	fontSize: 10,
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: "",
-																	fillColor: "#1a992e",
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Nome/Razão :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: infos.fornecedor.data.razao,
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Cnpj :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: infos.fornecedor.data.cnpj,
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Endereço :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: infos.fornecedor.data.endereco,
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Cidade :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text:
-																		infos.fornecedor.data.cidade +
-																		", " +
-																		infos.fornecedor.data.uf.toUpperCase(),
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Telefone :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: formatarTelefone( String(infos.fornecedor.data.tel) ),
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Email :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: infos.fornecedor.data.email,
-																	border: [ false, false, false, false ],
-																},
-															],
-														],
-													},
-												},
-												{
-													border: [ false, false, false, false ],
-													style: "clienteFornecedor",
-													table: {
-														widths: [ "25%", "*" ],
-														body: [
-															[
-																{
-																	text: "Cliente",
-																	bold: "true",
-																	fontSize: 10,
-																	fillColor: "#1a562e",
-																	color: "#ffffff",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: "",
-																	fillColor: "#1a992e",
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Nome/Razão :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: infos.cliente.razao,
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Cnpj :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: infos.cliente.CNPJ.replace(
-																		/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-																		"$1.$2.$3/$4-$5"
-																	),
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Endereço :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: infos.cliente.endereco,
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Cidade :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text:
-																		infos.cliente.cidade +
-																		", " +
-																		infos.cliente.uf.toUpperCase(),
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Telefone :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: formatarTelefone( infos.cliente.fone ),
-																	border: [ false, false, false, false ],
-																},
-															],
-															[
-																{
-																	text: "Email :",
-																	border: [ false, false, false, false ],
-																},
-																{
-																	text: infos.cliente.email,
-																	border: [ false, false, false, false ],
-																},
-															],
-														],
-													},
-												},
-											],
-										],
-									},
-								},
-							],
-						],
-					},
-				},
-				{
-					margin: [ 0, 0, 0, 10 ],
-					table: {
-						widths: [ "*", "40%" ],
-						body: [
-							[
-								{ text: "", fillColor: "#1a992e", border: [ false, false, false, false ], margin: [ 0, 5 ] },
-								{ text: "", fillColor: "#1a562e", border: [ false, false, false, false ], margin: [ 0, 5 ] },
-							],
-							[
-								{ text: "", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
-								{ text: "", border: [ false, false, false, false ], margin: [ 0, 10, 0, 0 ] },
-							],
-							[
-								{
-									table: {
-										widths: [ "*" ],
-										body: [
-											[
-												{
-													border: [ false, false, false, false ],
-													text: "Avisos",
-												},
-											],
-											[
-												{
-													margin: [ 0, 5, 0, 0 ],
-													border: [ false, false, false, false ],
-													text: "As embalagens, por padrão, são enviadas desmontadas.",
-													style: "clienteFornecedor",
-												},
-											],
-											[
-												{
-													border: [ false, false, false, false ],
-													text: "Para o envio das embalagens montadas, há um acréscimo de 10%.",
-													style: "clienteFornecedor",
-												},
-											],
-											[
-												{
-													margin: [ 0, 6, 0, 8 ],
-													border: [ false, false, false, false ],
-													text: "A montagem deve ser solicitada no momento da cotação.",
-													style: "clienteFornecedor",
-												},
-											],
-											...observations,
-										],
-									},
-								},
-								{
-									table: {
-										widths: [ "*" ],
-										body: [
-											[
-												{
-													border: [ false, false, false, false ],
-													table: {
-														widths: [ "49%", "*" ],
-														body: [
-															[
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: "Prazo de produção:",
-																	bold: "true",
-																	fontSize: 10,
-																},
-																{
-																	margin: [ 0, 13, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: infos.dataEntrega,
-																	fontSize: 10,
-																},
-															],
-															[
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	text: "Condição de pagamento:",
-																	bold: "true",
-																	fontSize: 10,
-																},
-																{
-																	margin: [ 0, 5, 0, 0 ],
-																	border: [ false, false, false, false ],
-																	fontSize: 10,
-																	text: paymentTerms,
-																},
-															],
-															[
-																{
-																	margin: [ 0, 5, 0, 5 ],
-																	border: [ false, false, false, false ],
-																	text: "Tipo de frete:",
-																	bold: "true",
-																	fontSize: 10,
-																},
-																{
-																	margin: [ 0, 5, 0, 5 ],
-																	border: [ false, false, false, false ],
-																	text: infos.frete,
-																	fontSize: 10,
-																},
-															],
-															[
-																{
-																	margin: [ 0, 10, 0, 0 ],
-																	border: [ false, true, false, false ],
-																	text: "Valor do frete:",
-																	bold: "true",
-																	fontSize: 10,
-																},
-																{
-																	margin: [ 0, 10, 0, 0 ],
-																	border: [ false, true, false, false ],
-																	fontSize: 10,
-																	text: FretValo,
-																},
-															],
-															custoAdicional,
-															desconto,
-															[
-																{
-																	margin: [ 0, 10, 0, 0 ],
-																	border: [ false, true, false, false ],
-																	text: "Total:",
-																	bold: "true",
-																	fontSize: 14,
-																},
-																{
-																	margin: [ 0, 10, 0, 0 ],
-																	border: [ false, true, false, false ],
-																	bold: "true",
-																	fontSize: 14,
-																	text: `R$ ${ infos.totoalGeral }`
-																},
-															],
-														],
-													},
-												},
-											],
-										],
-									},
-								},
-							]
-						],
-					},
-				},
-				{
-					margin: [ 0, 15, 0, 15 ],
-					table: {
-						widths: [
-							"4%",
-							"25%",
-							"8%",
-							"5%",
-							"16%",
-							"8%",
-							"8%",
-							"11%",
-							"15%",
-						],
-						headerRows: 1,
-						heights: 20,
-						body: [
-							[
-								{ text: "Item", style: "tableTitle" },
-								{ text: "Produto", style: "tableTitle" },
-								{ text: "Cód.", style: "tableTitle" },
-								{ text: "Qtd", style: "tableTitle" },
-								{ text: "Medidas internas (CxLxA)", style: "tableTitle" },
-								{ text: "MONT.       (+ 10%)", style: "tableTitle" },
-								{ text: "EXP.        (+ 10%)", style: "tableTitle" },
-								{ text: "Valor Un.", style: "tableTitle" },
-								{ text: "Total", style: "tableTitle" },
-							],
-							...products,
-						],
-						dontBreakRows: true
-					}
-				}
-			],
-			pageSize: "A4",
-			pageMargins: [ 25, 125, 25, 40 ],
-			styles: {
-				header: {
-					fontSize: 9,
-					alignment: "left"
-				},
-				clienteFornecedor: {
-					fontSize: 9,
-					alignment: "left",
-					lineHeight: 1.3
-				},
-				tableTitle: {
-					fontSize: 9,
-					alignment: "center",
-					fillColor: "#1a562e",
-					color: "#ffffff",
+					text: "PRODUTOS & SERVIÇOS",
+					fontSize: 13,
 					bold: true,
-					margin: [ 0, 5, 0, 3 ]
+					color: "#009512",
+					margin: [ 0, 5, 0, 8 ],
+					alignment: 'center'
+				},
+				tabelaProdutos,
+				blocosFinais
+			].filter( Boolean ) as Content[],
+			pageSize: "A4",
+			pageOrientation: "portrait",
+			pageMargins: [ 20, 20, 20, 30 ],
+			styles: {
+				tableHeader: {
+					fontSize: 10,
+					bold: true,
+					alignment: "center",
+					fillColor: "#009512",
+					color: "#ffffff",
+					margin: [ 1, 4, 1, 4 ]
 				},
 				prodCells: {
-					margin: [ 0, 4, 0, 4 ],
-					alignment: "center",
+					margin: [ 1, 4, 1, 4 ],
 					fontSize: 9
+				},
+				sectionHeader: {
+					fontSize: 10,
+					bold: true,
+					alignment: "left",
+					fillColor: "#009512",
+					color: "#ffffff",
+					margin: [ 1, 2, 1, 2 ]
 				}
 			},
 		}

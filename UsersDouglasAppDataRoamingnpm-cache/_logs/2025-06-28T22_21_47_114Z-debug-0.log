@@ -7,9 +7,9 @@
 6 silly config load:file:C:\Users\Douglas\.npm-global\etc\npmrc
 7 verbose title npm config get registry
 8 verbose argv "config" "get" "registry"
-9 verbose logfile logs-max:10 dir:C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2025-06-16T16_07_09_068Z-
-10 verbose logfile C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2025-06-16T16_07_09_068Z-debug-0.log
-11 silly logfile done cleaning log files
+9 verbose logfile logs-max:10 dir:C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2025-06-28T22_21_47_114Z-
+10 verbose logfile C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2025-06-28T22_21_47_114Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
 12 verbose cwd C:\projetos\sys-rbx-frontend
 13 verbose os Windows_NT 10.0.19045
 14 verbose node v22.14.0
