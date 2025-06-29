@@ -2,7 +2,7 @@ import fs from "fs"
 import { NextApiRequest, NextApiResponse } from "next"
 import path from "path"
 import PDFPrinter from "pdfmake"
-import { TDocumentDefinitions, Content, Column } from "pdfmake/interfaces"
+import { TDocumentDefinitions, Content } from "pdfmake/interfaces"
 import { getData } from "./lib/getinf"
 
 function normalizarValorMonetario ( valor: string ) {
