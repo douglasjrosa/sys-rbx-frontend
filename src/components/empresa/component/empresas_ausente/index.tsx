@@ -1,91 +1,236 @@
-import Loading from "@/components/elements/loading";
-import { Box, Flex, Heading } from "@chakra-ui/react"
-import { useEffect, useState } from "react";
-import { FaMoneyBillAlt } from "react-icons/fa";
-import { useRouter } from "next/router";
-import { HiChatBubbleLeftRight } from "react-icons/hi2";
-import { useSession } from "next-auth/react";
+import Loading from "@/components/elements/loading"
+import { Box, Button, Flex, Heading, HStack, Input, Text } from "@chakra-ui/react"
+import { memo, useMemo, useState } from "react"
+import { FaMoneyBillAlt } from "react-icons/fa"
+import { useRouter } from "next/router"
+import { HiChatBubbleLeftRight } from "react-icons/hi2"
+import { useSession } from "next-auth/react"
 
-
-
-export const CarteiraAusente = (props: { filtro: any }) => {
-  const [Data, setData] = useState<any | null>(null);
-  const { data: session } = useSession()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (props.filtro.length > 0) {
-      setData(props.filtro)
-    }
-  }, [props.filtro])
-
-
-  const BodyTabela = !!Data && Data.map((i: any) => {
-
-    const negocio = i.attributes.businesses.data.length > 0 ? i.attributes.businesses.data : []
-
-    const iconeTest = negocio.filter((n: any) => {
-      if (n.attributes.andamento === 3 && n.attributes.etapa !== 6 && n.attributes.vendedor_name == session?.user?.name) {
-        return true
-      } else {
-        return false
-      }
-    });
-
-    const interacao = i.attributes.interacaos.data
-
-    return (
-      <>
-        <tr key={i.id} style={{ borderBottom: '1px solid #ffff', cursor: 'pointer' }} onClick={() => router.push(`/empresas/CNPJ/${i.id}`)}>
-          <td style={{ padding: '0.3rem 1.2rem' }}>{i.attributes.nome}</td>
-          <td style={{ padding: '0.3rem 1.2rem' }}>{!!interacao && (
-            <Flex w={'100%'} justifyContent={'center'}>
-              {i.attributes.interacaos.data.length === 0 ? null : (<HiChatBubbleLeftRight color={!interacao.cor? '#1A202C' : interacao.cor} fontSize={'1.5rem'} />)}
-            </Flex>
-          )}</td>
-          <td style={{ padding: '0.3rem 1.2rem' }}>{iconeTest.length > 0 && (
-            <Flex w={'100%'} justifyContent={'center'}>
-              <FaMoneyBillAlt color={'green'} fontSize={'1.5rem'} />
-            </Flex>
-          )}</td>
-        </tr>
-      </>
-    )
-  })
-
-  const Reload = (
-    <Flex w={{ base: '100%', lg: '50%' }} mx={'60%'}>
-      <Box>
-        <Loading mt='-18vh' size="110px">Carregando...</Loading>
-      </Box>
-    </Flex>
-  )
-
-  return (
-    <>
-      <Box color={'white'} w={{ base: '100%', lg: '50%' }}>
-        <Heading size={'lg'}>Empresas sem carteira definida</Heading>
-        <Box
-          mt={5}
-          maxH={{ base: '23rem', lg: '90%' }}
-          pe={3}
-          overflow={'auto'}
-        >
-          <table style={{ width: '100%' }}>
-            <thead>
-              <tr style={{ background: '#ffffff12', borderBottom: '1px solid #ffff' }}>
-                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' }}>Nome</th>
-                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '6%' }}>Interações</th>
-                <th style={{ padding: '0.6rem 1.2rem', textAlign: 'start', width: '6%' }}>Negocios</th>
-              </tr>
-            </thead>
-            <tbody>
-              {!!Data && BodyTabela}
-              {!Data && Reload}
-            </tbody>
-          </table>
-        </Box>
-      </Box>
-    </>
-  )
+type EmpresaData = {
+	id: string
+	attributes: any
 }
+
+type CarteiraAusenteProps = {
+	filtro: EmpresaData[]
+	isLoading: boolean
+	paginaAtual: number
+	totalPaginas: number
+	onChangePagina: ( pagina: number ) => void
+}
+
+export const CarteiraAusente = memo( ( {
+	filtro,
+	isLoading,
+	paginaAtual,
+	totalPaginas,
+	onChangePagina
+}: CarteiraAusenteProps ) => {
+	const { data: session } = useSession()
+	const router = useRouter()
+	const [ paginaInput, setPaginaInput ] = useState<string>( paginaAtual.toString() )
+
+	// Função para lidar com a navegação manual por input
+	const handlePaginaInputChange = ( e: React.ChangeEvent<HTMLInputElement> ) => {
+		setPaginaInput( e.target.value )
+	}
+
+	// Função para validar e navegar para a página digitada
+	const handlePaginaInputSubmit = () => {
+		const numeroPagina = parseInt( paginaInput, 10 )
+		if ( !isNaN( numeroPagina ) && numeroPagina >= 1 && numeroPagina <= totalPaginas ) {
+			onChangePagina( numeroPagina )
+		} else {
+			// Resetar para a página atual se o valor for inválido
+			setPaginaInput( paginaAtual.toString() )
+		}
+	}
+
+	// Atualizar o input quando a página atual mudar
+	useMemo( () => {
+		setPaginaInput( paginaAtual.toString() )
+	}, [ paginaAtual ] )
+
+	// Renderizar tabela apenas quando os dados estiverem disponíveis
+	const tabelaContent = useMemo( () => {
+		if ( isLoading ) {
+			return (
+				<tr>
+					<td colSpan={ 3 } style={ { textAlign: 'center' } }>
+						<Flex justifyContent="center" w="100%" py={ 4 }>
+							<Loading size="110px">Carregando...</Loading>
+						</Flex>
+					</td>
+				</tr>
+			)
+		}
+
+		if ( !filtro || filtro.length === 0 ) {
+			return (
+				<tr>
+					<td colSpan={ 3 } style={ { textAlign: 'center', padding: '1rem' } }>
+						Nenhuma empresa encontrada
+					</td>
+				</tr>
+			)
+		}
+
+		return filtro.map( ( empresa ) => {
+			const negocio = empresa.attributes.businesses.data || []
+			const interacao = empresa.attributes.interacaos.data
+
+			// Filtrar negócios relevantes apenas uma vez
+			const temNegocioAtivo = negocio.some( ( n: any ) =>
+				n.attributes.andamento === 3 &&
+				n.attributes.etapa !== 6 &&
+				n.attributes.vendedor_name === session?.user?.name
+			)
+
+			// Verificar se há interação e se tem a propriedade cor
+			let corInteracao = '#1A202C' // cor padrão
+			let mostrarIconeInteracao = false
+
+			if ( interacao ) {
+				if ( typeof interacao === 'object' && 'cor' in interacao ) {
+					// Se interacao é um objeto com propriedade cor (formato após processamento)
+					corInteracao = interacao.cor || '#1A202C'
+					mostrarIconeInteracao = true
+				} else if ( Array.isArray( interacao ) && interacao.length > 0 ) {
+					// Se interacao é um array e tem elementos
+					mostrarIconeInteracao = true
+				}
+			}
+
+			return (
+				<tr
+					key={ empresa.id }
+					style={ { borderBottom: '1px solid #ffff', cursor: 'pointer' } }
+					onClick={ () => router.push( `/empresas/CNPJ/${ empresa.id }` ) }
+				>
+					<td style={ { padding: '0.3rem 1.2rem' } }>{ empresa.attributes.nome }</td>
+					<td style={ { padding: '0.3rem 1.2rem' } }>
+						{ mostrarIconeInteracao && (
+							<Flex w={ '100%' } justifyContent={ 'center' }>
+								<HiChatBubbleLeftRight color={ corInteracao } fontSize={ '1.5rem' } />
+							</Flex>
+						) }
+					</td>
+					<td style={ { padding: '0.3rem 1.2rem' } }>
+						{ temNegocioAtivo && (
+							<Flex w={ '100%' } justifyContent={ 'center' }>
+								<FaMoneyBillAlt color={ 'green' } fontSize={ '1.5rem' } />
+							</Flex>
+						) }
+					</td>
+				</tr>
+			)
+		} )
+	}, [ filtro, isLoading, router, session?.user?.name ] )
+
+	// Renderizar controles de paginação
+	const paginacao = useMemo( () => {
+		if ( totalPaginas <= 1 ) return null
+
+		return (
+			<Flex direction="column" alignItems="center" mt={ 4 } gap={ 2 }>
+				<HStack spacing={ 2 } justifyContent="center">
+					<Button
+						size="xs"
+						onClick={ () => onChangePagina( Math.max( 1, paginaAtual - 1 ) ) }
+						isDisabled={ paginaAtual === 1 || isLoading }
+					>
+						Anterior
+					</Button>
+
+					{ paginaAtual > 2 && (
+						<Button size="xs" onClick={ () => onChangePagina( 1 ) }>1</Button>
+					) }
+
+					{ paginaAtual > 3 && <Box>...</Box> }
+
+					{ paginaAtual > 1 && (
+						<Button size="xs" onClick={ () => onChangePagina( paginaAtual - 1 ) }>
+							{ paginaAtual - 1 }
+						</Button>
+					) }
+
+					<Button size="xs" colorScheme="blue">
+						{ paginaAtual }
+					</Button>
+
+					{ paginaAtual < totalPaginas && (
+						<Button size="xs" onClick={ () => onChangePagina( paginaAtual + 1 ) }>
+							{ paginaAtual + 1 }
+						</Button>
+					) }
+
+					{ paginaAtual < totalPaginas - 2 && <Box>...</Box> }
+
+					{ paginaAtual < totalPaginas - 1 && (
+						<Button size="xs" onClick={ () => onChangePagina( totalPaginas ) }>
+							{ totalPaginas }
+						</Button>
+					) }
+
+					<Button
+						size="xs"
+						onClick={ () => onChangePagina( Math.min( totalPaginas, paginaAtual + 1 ) ) }
+						isDisabled={ paginaAtual === totalPaginas || isLoading }
+					>
+						Próxima
+					</Button>
+				</HStack>
+
+				<HStack spacing={ 2 } mt={ 2 }>
+					<Text fontSize="xs">Ir para página:</Text>
+					<Input
+						size="xs"
+						width="50px"
+						value={ paginaInput }
+						onChange={ handlePaginaInputChange }
+						onBlur={ handlePaginaInputSubmit }
+						onKeyPress={ ( e ) => {
+							if ( e.key === 'Enter' ) {
+								handlePaginaInputSubmit()
+							}
+						} }
+					/>
+					<Text fontSize="xs">de { totalPaginas }</Text>
+				</HStack>
+			</Flex>
+		)
+	}, [ paginaAtual, totalPaginas, isLoading, onChangePagina, paginaInput ] )
+
+	return (
+		<Box color={ 'white' } w={ { base: '100%', lg: '50%' } } display="flex" flexDirection="column" h="100%">
+			<Heading size={ 'lg' }>Empresas sem carteira definida</Heading>
+			<Box
+				mt={ 5 }
+				maxH={ { base: '23rem', lg: 'calc(100% - 120px)' } }
+				pe={ 3 }
+				overflow={ 'auto' }
+				flex="1"
+			>
+				<table style={ { width: '100%' } }>
+					<thead>
+						<tr style={ { background: '#ffffff12', borderBottom: '1px solid #ffff' } }>
+							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' } }>Nome</th>
+							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'start', width: '6%' } }>Interações</th>
+							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'start', width: '6%' } }>Negocios</th>
+						</tr>
+					</thead>
+					<tbody>
+						{ tabelaContent }
+					</tbody>
+				</table>
+			</Box>
+
+			{ /* Paginação fixa na parte inferior */ }
+			<Box mt={ 3 } pb={ 2 }>
+				{ paginacao }
+			</Box>
+		</Box>
+	)
+} )
+
+CarteiraAusente.displayName = 'CarteiraAusente'

@@ -6,239 +6,251 @@ import axios from "axios"
 import { parseISO, startOfDay } from "date-fns"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
-
-
-
-
-function Empresas ( { dataRetorno }: any ) {
+function Empresas () {
 	const router = useRouter()
 	const { data: session } = useSession()
-	const [ Dados, setDados ] = useState<any | null>( [] )
-	const [ DataSearch, setDataSearch ] = useState<any | null>( [] )
-	const [ DataSearchOriginal, setDataSearchOriginal ] = useState<any | null>( [] )
-	const [ DataSearchUser, setDataSearchUser ] = useState<any | null>( [] )
-	const [ DataSearchUserOriginal, setDataSearchUserOriginal ] = useState<any | null>( [] )
-	const [ DataTotal, setDataTotal ] = useState<any | null>( [] )
 	const toast = useToast()
 
-	useEffect( () => {
+	// Estados separados para cada tipo de empresa
+	const [ empresasComVendedor, setEmpresasComVendedor ] = useState<any[]>( [] )
+	const [ empresasSemVendedor, setEmpresasSemVendedor ] = useState<any[]>( [] )
 
-		( async () => {
-			try {
-				const userId = session?.user.id 
-				const res = await axios( `/api/db/empresas/empresalist?userId=${ userId }` )
-				const repo = res.data
+	// Estados para filtro e paginação
+	const [ filtroTexto, setFiltroTexto ] = useState( "" )
+	const [ paginaAtual, setPaginaAtual ] = useState( 1 )
+	const [ carregandoVendedor, setCarregandoVendedor ] = useState( false )
+	const [ carregandoSemVendedor, setCarregandoSemVendedor ] = useState( false )
+	const [ totalPaginas, setTotalPaginas ] = useState( 1 )
 
-				setDados( repo )
-				setDataTotal( repo )
-			} catch ( error ) {
-				console.error( error )
-				toast( {
-					title: 'Erro',
-					description: 'Erro ao buscar dados, ' + JSON.stringify( error ),
-					status: 'error',
-					duration: 9000,
-					isClosable: true,
-				} )
-			}
+	// Função para calcular diferença em dias entre duas datas
+	const calcularDiferencaEmDias = useCallback( ( data1: Date, data2: Date ): number => {
+		const umDiaEmMilissegundos = 24 * 60 * 60 * 1000
+		const data1UTC = Date.UTC( data1.getFullYear(), data1.getMonth(), data1.getDate() )
+		const data2UTC = Date.UTC( data2.getFullYear(), data2.getMonth(), data2.getDate() )
+		return Math.floor( ( data2UTC - data1UTC ) / umDiaEmMilissegundos )
+	}, [] )
 
-		} )()
+	// Função para processar interações e definir cores e informações
+	const processarInteracao = useCallback( ( ultimaInteracao: any, dataAtual: Date ) => {
+		if ( !ultimaInteracao ) return { proxima: null, cor: 'gray', info: 'Você não tem interação agendada', difDias: 500 }
 
-	}, [ session?.user.id, toast ] )
+		const proximaData = startOfDay( parseISO( ultimaInteracao.attributes.proxima ) )
+		const diferencaEmDias = calcularDiferencaEmDias( dataAtual, proximaData )
 
-	useEffect( () => {
-		const calcularDiferencaEmDias = ( data1: Date, data2: Date ): number => {
-			const umDiaEmMilissegundos = 24 * 60 * 60 * 1000
-			const data1UTC = Date.UTC( data1.getFullYear(), data1.getMonth(), data1.getDate() )
-			const data2UTC = Date.UTC( data2.getFullYear(), data2.getMonth(), data2.getDate() )
-			return Math.floor( ( data2UTC - data1UTC ) / umDiaEmMilissegundos )
+		if ( ultimaInteracao.attributes.status_atendimento === false ) {
+			return { proxima: null, cor: 'gray', info: 'Você não tem interação agendada', difDias: 500 }
+		} else if ( diferencaEmDias === 0 ) {
+			return { proxima: proximaData.toISOString(), cor: 'yellow', info: 'Você tem interação agendada para hoje', difDias: diferencaEmDias }
+		} else if ( diferencaEmDias < 0 ) {
+			return { proxima: proximaData.toISOString(), cor: '#FC0707', info: `Você tem interação que já passou, a data agendada era ${ proximaData.toLocaleDateString() }`, difDias: diferencaEmDias }
+		} else {
+			return { proxima: proximaData.toISOString(), cor: '#3B2DFF', info: `Você tem interação agendada para ${ proximaData.toLocaleDateString() }`, difDias: diferencaEmDias }
 		}
+	}, [ calcularDiferencaEmDias ] )
 
-		console.log( { calcularDiferencaEmDias } )
+	// Função para processar empresas com vendedor
+	const processarEmpresasComVendedor = useCallback( ( empresasData: any[], username: string, dataAtual: Date ) => {
+		// Filtrar empresas do vendedor atual
+		const filtroVendedor = empresasData.filter( f =>
+			f.attributes.user.data?.attributes.username === username
+		)
 
-		const processarVendedorInteracoes = ( dataAtual: Date, Dados: any ) => {
-			const filtroVendedor = Dados.filter( ( f: any ) => f.attributes.user.data?.attributes.username === session?.user.name )
+		// Processar interações e ordenar
+		const processados = filtroVendedor.map( empresa => {
+			const interacoes = empresa.attributes.interacaos.data
+			const interacoesVendedor = interacoes.filter( ( interacao: any ) =>
+				interacao.attributes.vendedor_name === username
+			)
+			const ultimaInteracao = interacoesVendedor[ interacoesVendedor.length - 1 ]
 
-			const VendedorInteracaoMap = filtroVendedor.map( ( i: any ) => {
-				const interacoes = i.attributes.interacaos.data
-				const interacoesVendedor = interacoes.filter( ( interacao: any ) => interacao.attributes.vendedor_name === session?.user.name )
-				const ultimaInteracao = interacoesVendedor[ interacoesVendedor.length - 1 ]
+			const infoInteracao = processarInteracao( ultimaInteracao, dataAtual )
 
-				if ( !ultimaInteracao ) {
-					return null
-				}
-
-				const proximaData = startOfDay( parseISO( ultimaInteracao.attributes.proxima ) )
-				const diferencaEmDias = calcularDiferencaEmDias( dataAtual, proximaData )
-
-				let DifDias
-				let RetornoInteracao
-				if ( ultimaInteracao.attributes.status_atendimento === false ) {
-					RetornoInteracao = { proxima: null, cor: 'gray', info: 'Você não tem interação agendada' }
-					DifDias = 500
-				} else if ( diferencaEmDias === 0 ) {
-					RetornoInteracao = { proxima: proximaData.toISOString(), cor: 'yellow', info: 'Você tem interação agendada para hoje' }
-					DifDias = diferencaEmDias
-				} else if ( diferencaEmDias < 0 ) {
-					RetornoInteracao = { proxima: proximaData.toISOString(), cor: '#FC0707', info: `Você tem interação que já passou, a data agendada era ${ proximaData.toLocaleDateString() }` }
-					DifDias = diferencaEmDias
-				} else {
-					RetornoInteracao = { proxima: proximaData.toISOString(), cor: '#3B2DFF', info: `Você tem interação agendada para ${ proximaData.toLocaleDateString() }` }
-					DifDias = diferencaEmDias
-				}
-
-				return {
-					id: i.id,
-					attributes: {
-						...i.attributes,
-						interacaos: {
-							data: {
-								id: ultimaInteracao?.id,
-								proxima: RetornoInteracao?.proxima,
-								cor: RetornoInteracao?.cor,
-								info: RetornoInteracao?.info,
-							},
-						},
-						diferencaEmDias: DifDias,
+			return {
+				id: empresa.id,
+				attributes: {
+					...empresa.attributes,
+					interacaos: {
+						data: ultimaInteracao ? {
+							id: ultimaInteracao.id,
+							proxima: infoInteracao.proxima,
+							cor: infoInteracao.cor,
+							info: infoInteracao.info,
+						} : []
 					},
-				}
-			} ).filter( Boolean )
+					diferencaEmDias: infoInteracao.difDias,
+				},
+			}
+		} )
 
-			VendedorInteracaoMap.sort( ( a: any, b: any ) => {
-				return a.attributes.diferencaEmDias - b.attributes.diferencaEmDias
+		// Ordenar por data da próxima interação
+		processados.sort( ( a, b ) => a.attributes.diferencaEmDias - b.attributes.diferencaEmDias )
+
+		return processados
+	}, [ processarInteracao ] )
+
+	// Função para processar empresas sem vendedor
+	const processarEmpresasSemVendedor = useCallback( ( empresasData: any[], username: string, isAdmin: boolean, dataAtual: Date ) => {
+		// Filtrar empresas sem vendedor ou não pertencentes ao usuário atual
+		const filtroSemVendedor = empresasData.filter( f => {
+			if ( !isAdmin ) {
+				return f.attributes.user.data?.attributes.username == null
+			} else {
+				return f.attributes.user.data?.attributes.username !== username
+			}
+		} )
+
+		// Encontrar empresas sem vendedor mas com interações do usuário atual
+		const empresasComInteracoesDoUsuario = filtroSemVendedor
+			.filter( empresa => {
+				const interacoes = empresa.attributes.interacaos.data
+				return interacoes.some( ( interacao: any ) =>
+					interacao.attributes.vendedor_name === username
+				)
 			} )
-
-			const VendedorInteracao0 = filtroVendedor.filter( ( f: any ) => f.attributes.interacaos.data?.length === 0 )
-			const DataVendedor: any = [ ...VendedorInteracaoMap, ...VendedorInteracao0 ]
-
-			return DataVendedor
-		}
-
-
-		const processarSemVendedorInteracoes = ( dataAtual: Date, Dados: any ) => {
-			const filtroSemVendedor: any = Dados.filter( ( f: any ) => {
-				if ( session?.user.pemission !== 'Adm' ) {
-					return f.attributes.user.data?.attributes.username == null
-				} else {
-					return f.attributes.user.data?.attributes.username !== session?.user.name
-				}
-			} )
-
-			const FiltroInteracaoVendedor = filtroSemVendedor.map( ( i: any ) => {
-				const interacoes = i.attributes.interacaos.data
-				const filtro = interacoes.filter( ( interacao: any ) => interacao.attributes.vendedor_name == session?.user.name )
-				if ( filtro.length > 0 ) return i
-			} )
-
-			const valida = FiltroInteracaoVendedor.filter( ( f: any ) => f?.attributes?.interacaos.data?.length > 0 )
-
-
-			const SemVendedorInteracaoMap = valida.map( ( i: any ) => {
-				const interacoes = i.attributes.interacaos.data
+			.map( empresa => {
+				const interacoes = empresa.attributes.interacaos.data
 				const ultimaInteracao = interacoes[ interacoes.length - 1 ]
 
-				const proximaData = startOfDay( parseISO( ultimaInteracao.attributes.proxima ) )
-				const diferencaEmDias = calcularDiferencaEmDias( dataAtual, proximaData )
-
-				let DifDias
-				let RetornoInteracao
-				if ( ultimaInteracao.attributes.status_atendimento === false ) {
-					RetornoInteracao = { proxima: null, cor: 'gray', info: 'Você não tem interação agendada' }
-					DifDias = 500
-				} else if ( diferencaEmDias === 0 ) {
-					RetornoInteracao = { proxima: proximaData.toISOString(), cor: 'yellow', info: 'Você tem interação agendada para hoje' }
-					DifDias = diferencaEmDias
-				} else if ( diferencaEmDias < 0 ) {
-					RetornoInteracao = { proxima: proximaData.toISOString(), cor: '#FC0707', info: `Você tem interação que já passou, a data agendada era ${ proximaData.toLocaleDateString() }` }
-					DifDias = diferencaEmDias
-				} else {
-					RetornoInteracao = { proxima: proximaData.toISOString(), cor: '#3B2DFF', info: `Você tem interação agendada para ${ proximaData.toLocaleDateString() }` }
-					DifDias = diferencaEmDias
-				}
+				const infoInteracao = processarInteracao( ultimaInteracao, dataAtual )
 
 				return {
-					id: i.id,
+					id: empresa.id,
 					attributes: {
-						...i.attributes,
+						...empresa.attributes,
 						interacaos: {
 							data: {
 								id: ultimaInteracao?.id,
-								proxima: RetornoInteracao?.proxima,
-								cor: RetornoInteracao?.cor,
-								info: RetornoInteracao?.info,
-								vendedor_name: ultimaInteracao.attributes.vendedor_name,
+								proxima: infoInteracao.proxima,
+								cor: infoInteracao.cor,
+								info: infoInteracao.info,
+								vendedor_name: ultimaInteracao?.attributes.vendedor_name,
 							},
 						},
-						diferencaEmDias: DifDias,
+						diferencaEmDias: infoInteracao.difDias,
 					},
 				}
 			} )
 
-			SemVendedorInteracaoMap.sort( ( a: any, b: any ) => {
-				return a.attributes.diferencaEmDias - b.attributes.diferencaEmDias
+		// Ordenar por data da próxima interação
+		empresasComInteracoesDoUsuario.sort( ( a, b ) => a.attributes.diferencaEmDias - b.attributes.diferencaEmDias )
+
+		// Empresas sem interações ou com interações de outros vendedores
+		const empresasSemInteracoes = filtroSemVendedor.filter( f =>
+			f.attributes.interacaos.data.length === 0
+		)
+
+		const empresasComInteracoesDeOutros = filtroSemVendedor
+			.filter( empresa => {
+				const interacoes = empresa.attributes.interacaos.data
+				return interacoes.length > 0 && !interacoes.some( ( interacao: any ) =>
+					interacao.attributes.vendedor_name === username
+				)
 			} )
 
-			const SemVendedorInteracao0 = filtroSemVendedor.filter( ( f: any ) => f.attributes.interacaos.data.length == 0 )
+		// Combinar e ordenar alfabeticamente
+		const outrasEmpresas = [ ...empresasSemInteracoes, ...empresasComInteracoesDeOutros ]
+		outrasEmpresas.sort( ( a, b ) => {
+			const nomeA = a.attributes.nome.toLowerCase()
+			const nomeB = b.attributes.nome.toLowerCase()
+			if ( nomeA < nomeB ) return -1
+			if ( nomeA > nomeB ) return 1
+			return 0
+		} )
 
-			const FiltroInteracaoVendedor1 = filtroSemVendedor.map( ( i: any ) => {
-				const interacoes = i.attributes.interacaos.data
-				const filtro = interacoes.filter( ( interacao: any ) => interacao.attributes.vendedor_name !== session?.user.name )
-				if ( filtro.length > 0 ) return i
-			} )
-			const SemVendedorInteracao1 = FiltroInteracaoVendedor1.filter( ( f: any ) => f?.attributes.interacaos.data.length > 0 )
+		// Combinar todas as empresas sem vendedor
+		return [ ...empresasComInteracoesDoUsuario, ...outrasEmpresas ]
+	}, [ processarInteracao ] )
 
-			const mergedArray = [ ...SemVendedorInteracao0, ...SemVendedorInteracao1 ]
+	// Carregar empresas com vendedor (minha carteira)
+	const carregarEmpresasComVendedor = useCallback( async () => {
+		if ( !session?.user.id ) return
 
-			mergedArray.sort( ( a, b ) => {
-				const nomeA = a.attributes.nome.toLowerCase()
-				const nomeB = b.attributes.nome.toLowerCase()
-				if ( nomeA < nomeB ) return -1
-				if ( nomeA > nomeB ) return 1
-				return 0
-			} )
-
-
-			const DataVendedorSemVendedor: any = [ ...SemVendedorInteracaoMap, ...mergedArray ]
-
-
-			return DataVendedorSemVendedor
-		}
-		
-		
-		( async () => {
+		setCarregandoVendedor( true )
+		try {
+			const res = await axios( `/api/db/empresas/empresalist/vendedor?userId=${ session.user.id }` )
 			const dataAtual = startOfDay( new Date() )
-			
-			const DataVendedor = processarVendedorInteracoes( dataAtual, Dados )
-			const DataVendedorSemVendedor = processarSemVendedorInteracoes( dataAtual, Dados )
+			const processados = processarEmpresasComVendedor( res.data, session.user.name, dataAtual )
 
+			setEmpresasComVendedor( processados )
+		} catch ( error ) {
+			console.error( "Erro ao carregar empresas com vendedor:", error )
+			toast( {
+				title: 'Erro',
+				description: 'Erro ao carregar sua carteira de empresas',
+				status: 'error',
+				duration: 5000,
+				isClosable: true,
+			} )
+		} finally {
+			setCarregandoVendedor( false )
+		}
+	}, [ session?.user.id, session?.user.name, processarEmpresasComVendedor, toast ] )
 
-			setDataSearchOriginal( DataVendedorSemVendedor )
-			setDataSearchUserOriginal( DataVendedor )
-			setDataSearch( DataVendedorSemVendedor )
-			setDataSearchUser( DataVendedor )
-		} )()
+	// Carregar empresas sem vendedor (carteira ausente)
+	const carregarEmpresasSemVendedor = useCallback( async ( pagina = 1, filtro = "" ) => {
+		if ( !session?.user.id ) return
 
-	}, [ Dados, session?.user.name, session?.user.pemission ] )
+		setCarregandoSemVendedor( true )
+		try {
+			const res = await axios( `/api/db/empresas/empresalist/ausente?page=${ pagina }&filtro=${ encodeURIComponent( filtro ) }` )
+			const dataAtual = startOfDay( new Date() )
+			const isAdmin = session.user.pemission === 'Adm'
 
-	function filterEmpresa ( SearchEmpr: React.SetStateAction<any> ): any {
-		const filtro = SearchEmpr.toLowerCase()
+			const processados = processarEmpresasSemVendedor( res.data.data, session.user.name, isAdmin, dataAtual )
 
-		const PesqisaArrayVendedor = DataSearchUserOriginal.filter( ( item: any ) => item.attributes.nome.toLowerCase().includes( filtro ) )
-		const PesqisaArraySemVendedor = DataSearchOriginal.filter( ( item: any ) => item.attributes.nome.toLowerCase().includes( filtro ) )
+			setEmpresasSemVendedor( processados )
+			setTotalPaginas( Math.ceil( res.data.meta.pagination.total / res.data.meta.pagination.pageSize ) )
+		} catch ( error ) {
+			console.error( "Erro ao carregar empresas sem vendedor:", error )
+			toast( {
+				title: 'Erro',
+				description: 'Erro ao carregar empresas sem carteira definida',
+				status: 'error',
+				duration: 5000,
+				isClosable: true,
+			} )
+		} finally {
+			setCarregandoSemVendedor( false )
+		}
+	}, [ session?.user.id, session?.user.name, session?.user.pemission, processarEmpresasSemVendedor, toast ] )
 
+	// Carregar dados iniciais
+	useEffect( () => {
+		if ( session?.user.id ) {
+			carregarEmpresasComVendedor()
+			carregarEmpresasSemVendedor( paginaAtual, filtroTexto )
+		}
+	}, [ session?.user.id, carregarEmpresasComVendedor, carregarEmpresasSemVendedor, paginaAtual, filtroTexto ] )
 
-		const PesqisaArrayTotal = DataTotal.filter( ( item: any ) => item.attributes.nome.toLowerCase().includes( filtro ) )
+	// Filtrar empresas com vendedor
+	const empresasComVendedorFiltradas = useMemo( () => {
+		if ( !filtroTexto ) return empresasComVendedor
 
-		const PesquisaTotal = PesqisaArrayTotal.filter( ( f: any ) => f.attributes.user.data?.attributes.username !== session?.user.name && f.attributes.user.data !== null )
+		return empresasComVendedor.filter( item =>
+			item.attributes.nome.toLowerCase().includes( filtroTexto.toLowerCase() )
+		)
+	}, [ empresasComVendedor, filtroTexto ] )
 
-		if ( PesquisaTotal.length > 0 && filtro !== "" ) {
-			PesquisaTotal.map( ( i: any ) => {
-				const vendedor = i.attributes.user.data?.attributes.username
+	// Função para lidar com o filtro de empresas
+	const handleFiltroEmpresa = useCallback( ( searchText: string ) => {
+		setFiltroTexto( searchText )
+		setPaginaAtual( 1 ) // Resetar paginação ao filtrar
+
+		// Mostrar aviso para empresas que pertencem a outros vendedores
+		if ( searchText ) {
+			const empresasDeOutrosVendedores = [ ...empresasComVendedor, ...empresasSemVendedor ].filter( item =>
+				item.attributes.nome.toLowerCase().includes( searchText.toLowerCase() ) &&
+				item.attributes.user.data?.attributes.username !== session?.user.name &&
+				item.attributes.user.data !== null
+			)
+
+			empresasDeOutrosVendedores.forEach( empresa => {
+				const vendedor = empresa.attributes.user.data?.attributes.username
 				toast( {
 					title: 'Opss',
-					description: `O cliente ${ i.attributes.nome }, perece a o Vendedor(a) ${ vendedor }`,
+					description: `O cliente ${ empresa.attributes.nome }, perece a o Vendedor(a) ${ vendedor }`,
 					status: 'warning',
 					duration: 9000,
 					isClosable: true,
@@ -246,23 +258,44 @@ function Empresas ( { dataRetorno }: any ) {
 				} )
 			} )
 		}
-		setDataSearchUser( PesqisaArrayVendedor )
-		setDataSearch( PesqisaArraySemVendedor )
-	};
+	}, [ empresasComVendedor, empresasSemVendedor, session?.user.name, toast ] )
+
+	// Função para mudar de página
+	const handlePaginacao = useCallback( ( novaPagina: number ) => {
+		setPaginaAtual( novaPagina )
+		// Recarregar também a lista de empresas com vendedor quando mudar a página das empresas sem vendedor
+		carregarEmpresasComVendedor()
+	}, [ carregarEmpresasComVendedor ] )
 
 	return (
 		<>
-			<Box w={ '100%' } h={ '100%' } bg={ 'gray.800' } color={ 'white' } px={ 5 } py={ 2 } fontSize={ '0.8rem' }>
+			<Box w={ '100%' } h={ '100%' } bg={ 'gray.800' } color={ 'white' } px={ 5 } py={ 2 } fontSize={ '0.8rem' } display="flex" flexDirection="column">
 				<Heading size={ 'lg' }>Empresas</Heading>
 				<Flex w={ '100%' } py={ '1rem' } justifyContent={ 'space-between' } flexDir={ 'row' } alignItems={ 'self-end' } px={ 6 } gap={ 6 } borderBottom={ '1px' } borderColor={ 'white' } mb={ '1rem' }>
 					<Box>
-						<FiltroEmpresa empresa={ filterEmpresa } />
+						<FiltroEmpresa empresa={ handleFiltroEmpresa } />
 					</Box>
 					<Button size={ 'sm' } onClick={ () => router.push( '/empresas/cadastro' ) } colorScheme="green">+ Nova Empresa</Button>
 				</Flex>
-				<Box display={ 'flex' } flexDirection={ { base: 'column', lg: 'row' } } w={ '100%' } h={ '76%' } pt={ 5 } gap={ 5 } >
-					<CarteiraVendedor filtro={ DataSearchUser } />
-					<CarteiraAusente filtro={ DataSearch } />
+				<Box
+					display={ 'flex' }
+					flexDirection={ { base: 'column', lg: 'row' } }
+					w={ '100%' }
+					flex="1"
+					gap={ 5 }
+					overflow="hidden"
+				>
+					<CarteiraVendedor
+						filtro={ empresasComVendedorFiltradas }
+						isLoading={ carregandoVendedor }
+					/>
+					<CarteiraAusente
+						filtro={ empresasSemVendedor }
+						isLoading={ carregandoSemVendedor }
+						paginaAtual={ paginaAtual }
+						totalPaginas={ totalPaginas }
+						onChangePagina={ handlePaginacao }
+					/>
 				</Box>
 			</Box>
 		</>

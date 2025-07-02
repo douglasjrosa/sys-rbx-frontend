@@ -39,7 +39,7 @@ export default function Infos () {
 	const [ Representantes, setRepresentantes ] = useState( [] )
 	const [ Historico, setHistorico ] = useState( [] )
 	const [ Negocio, setNegocio ] = useState( [] )
-	const [ Interacoes, setInteracoes ] = useState( [] )
+	const [ Interacoes, setInteracoes ] = useState<any[]>( [] )
 	const [ isHovered, setIsHovered ] = useState( false )
 	const [ StatusAt, setStatusAt ] = useState( true )
 	const [ ItenIndex, setItenIndex ] = useState( '' )
@@ -52,6 +52,7 @@ export default function Infos () {
 	useEffect( () => {
 		( async () => {
 			try {
+				if ( !ID ) return
 				const request = await axios( `/api/db/empresas/getId/${ ID }` )
 				const response = request.data?.data
 
@@ -96,16 +97,21 @@ export default function Infos () {
 				setUf( response.attributes?.uf )
 				setTelefone( response.attributes?.fone )
 				setEmail( response.attributes?.email )
-				setHistorico( response.attributes?.history.slice( -3 ) )
-				setNegocio( response.attributes?.businesses.data.slice( -5 ) )
-				if ( session?.user.pemission === 'Adm' ) {
-					const request2 = await axios( `/api/db/empresas/interacoes/get_adm?Empresa=${ response.attributes?.nome }` )
-					const response2 = request2.data
-					setInteracoes( response2 )
-				} else {
-					const request2 = await axios( `/api/db/empresas/interacoes/get?Vendedor=${ session?.user.name }&Empresa=${ response.attributes?.nome }` )
-					const response2 = request2.data
-					setInteracoes( response2 )
+				setHistorico( response.attributes?.history?.slice( -3 ) || [] )
+				setNegocio( response.attributes?.businesses?.data?.slice( -5 ) || [] )
+				try {
+					if ( session?.user.pemission === 'Adm' ) {
+						const request2 = await axios( `/api/db/empresas/interacoes/get_adm?Empresa=${ response.attributes?.nome }` )
+						const response2 = request2.data
+						setInteracoes( Array.isArray( response2 ) ? response2 : [] )
+					} else {
+						const request2 = await axios( `/api/db/empresas/interacoes/get?Vendedor=${ session?.user.name }&Empresa=${ response.attributes?.nome }` )
+						const response2 = request2.data
+						setInteracoes( Array.isArray( response2 ) ? response2 : [] )
+					}
+				} catch ( error ) {
+					console.error( "Erro ao buscar interações:", error )
+					setInteracoes( [] )
 				}
 				setload( false )
 			} catch ( error: any ) {
@@ -165,27 +171,28 @@ export default function Infos () {
 						if ( session?.user.pemission === 'Adm' ) {
 							const request2 = await axios( `/api/db/empresas/interacoes/get_adm?Empresa=${ Nome }` )
 							const response2 = request2.data
-							setInteracoes( response2 )
+							setInteracoes( response2 || [] )
 						} else {
 							const request2 = await axios( `/api/db/empresas/interacoes/get?Vendedor=${ session?.user.name }&Empresa=${ Nome }` )
 							const response2 = request2.data
-							setInteracoes( response2 )
+							setInteracoes( response2 || [] )
 						}
 						setload( false )
 						onClose()
 					} catch ( error: any ) {
 						toast( {
 							title: 'Erro.',
-							description: JSON.stringify( error.response.data ),
+							description: JSON.stringify( error.response?.data || error ),
 							status: 'error',
 							duration: 9000,
 							isClosable: true,
 						} )
-
+						setload( false )
 					}
 				} )
 				.catch( ( error: any ) => {
 					console.error( error )
+					setload( false )
 				} )
 		}
 	}
@@ -204,7 +211,6 @@ export default function Infos () {
 		setIsHovered( false )
 		setItenIndex( '' )
 	}
-
 
 	return (
 		<>
@@ -367,11 +373,15 @@ export default function Infos () {
 								/>
 							</Flex>
 							<Flex h={ '70%' } overflowY={ 'auto' } flexDir={ 'column' } gap={ 3 }>
-								{ Interacoes.map( ( i: any ) => {
+								{ Interacoes && Interacoes.map( ( i: any ) => {
+									if ( !i || !i.attributes ) return null
 
-									const [ obj ] = ObjContato.filter( ( o: any ) => o.id == i.attributes?.objetivo ).map( ( d: any ) => d.title )
-									const [ tipo ] = TipoContato.filter( ( t: any ) => t.id == i.attributes?.tipo ).map( ( d: any ) => d.title )
-									const date = new Date( parseISO( i.attributes?.proxima ) )
+									const [ obj ] = ObjContato.filter( ( o: any ) => o.id == i.attributes?.objetivo ).map( ( d: any ) => d.title ) || [ "Sem objetivo" ]
+									const [ tipo ] = TipoContato.filter( ( t: any ) => t.id == i.attributes?.tipo ).map( ( d: any ) => d.title ) || [ "Sem tipo" ]
+									const date = i.attributes?.proxima ? new Date( parseISO( i.attributes.proxima ) ) : new Date()
+
+									// Verificar se o objeto vendedor e seus atributos existem antes de acessá-los
+									const vendedorNome = i.attributes?.vendedor?.data?.attributes?.nome || "Vendedor não definido"
 
 									return (
 										<>
@@ -380,10 +390,9 @@ export default function Infos () {
 												<chakra.p fontSize={ '0.8rem' }>{ i.attributes?.descricao }</chakra.p>
 												<Flex justifyContent={ 'space-between' } mt={ 1 }>
 													<chakra.span p={ '0.1rem' } px={ '0.3rem' } color={ 'white' } bg={ 'blue.400' }>{ tipo }</chakra.span>
-													{ session?.user.pemission === 'Adm' && ( <chakra.p>{ i.attributes?.vendedor.data.attributes?.nome }</chakra.p> ) }
+													{ session?.user.pemission === 'Adm' && ( <chakra.p>{ vendedorNome }</chakra.p> ) }
 													<chakra.p textDecor={ 'underline' }>{ date.toLocaleDateString() }</chakra.p>
 												</Flex>
-
 											</Box>
 										</>
 									)
@@ -414,12 +423,14 @@ export default function Infos () {
 									</tr>
 								</thead>
 								<tbody>
-									{ Negocio.map( ( i: any, index: number ) => {
+									{ Negocio && Negocio.map( ( i: any, index: number ) => {
+										if ( !i || !i.attributes ) return null
+
 										const valor = !!i.attributes?.Budget && parseFloat( i.attributes?.Budget.replace( '.', '' ).replace( ',', '.' ) )
 
-										const [ Status ] = StatusAndamento.filter( ( s: any ) => s.id == i.attributes?.andamento ).map( ( s: any ) => s.title )
+										const [ Status ] = StatusAndamento.filter( ( s: any ) => s.id == i.attributes?.andamento ).map( ( s: any ) => s.title ) || [ "Sem status" ]
 
-										const [ andamento ] = EtapasNegocio.filter( ( v: any ) => v.id == i.attributes?.etapa ).map( ( v: any ) => v.title )
+										const [ andamento ] = EtapasNegocio.filter( ( v: any ) => v.id == i.attributes?.etapa ).map( ( v: any ) => v.title ) || [ "Sem etapa" ]
 
 										const color = i.attributes?.etapa === 6 && i.attributes?.andamento === 1 ? 'red' : i.attributes?.etapa === 6 && i.attributes?.andamento === 5 ? 'green' : 'yellow'
 
