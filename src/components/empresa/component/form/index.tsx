@@ -107,7 +107,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 				isClosable: true,
 			} )
 		}
-	}, [emailNfe])
+	}, [] )
 
 	useEffect( () => {
 		localStorage.removeItem( 'idRetorno' )
@@ -331,7 +331,14 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 					representantes: Responsavel,
 					inativOk: Inatividade,
 					razao: Razao,
-					history: History.length === 0 ? historico : [ ...History, ...historico ]
+					history: History.length === 0 ? historico : [ ...History, ...historico ],
+					...( session?.user.pemission === 'User' && {
+						user: {
+							id: session?.user.id,
+						},
+						vendedor: session?.user.name,
+						vendedorId: String( session?.user.id ),
+					} )
 				},
 			}
 

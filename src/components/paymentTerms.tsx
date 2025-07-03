@@ -30,7 +30,8 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 				{ maxPg: 65, title: '45 / 55 / 65 dias' },
 				{ maxPg: 65, title: '65 dias' },
 				{ maxPg: 90, title: '30 / 60 / 90 dias' },
-				{ maxPg: 90, title: '90 dias' }
+				{ maxPg: 90, title: '90 dias' },
+				{ maxPg: 120, title: '120 dias' }
 			]
 
 			const latestDueDate = Math.max( ...maxPrazoPagto.split( '/' ).map( Number ), 1 )

@@ -16,6 +16,8 @@ export default async function GetEmpresa (
 		const data = req.body
 		const { Email, Vendedor }: any = req.query
 
+
+
 		try {
 			const DadosAtual: any = await getEmpresa( id )
 			const SaveLog = await LogEmpresa( DadosAtual, "PUT", Vendedor )
@@ -69,7 +71,7 @@ export default async function GetEmpresa (
 				modelo_especial: bodyData.modEsp === true ? "on" : "off",
 				formaPagto: bodyData.forpg,
 				prefPagto: bodyData.maxPg,
-				frete: bodyData.frete === "" ? "fob" : bodyData.frete,
+				frete: bodyData.frete === "" ? "fob" : bodyData.frete
 			}
 
 			let respostaPhp
@@ -80,14 +82,15 @@ export default async function GetEmpresa (
 					CNPJ: bodyData.CNPJ,
 				}
 
-				const ResposePhp = await DELET_PHP( dataExclud, UrlPHP, Email )
-				respostaPhp = ResposePhp
+				respostaPhp = await DELET_PHP( dataExclud, UrlPHP, Email )
 			} else {
-				const ResposePhp = await PUT_PHP( data, UrlPHP, Email )
-				respostaPhp = ResposePhp
+				respostaPhp = await PUT_PHP( DataRbx, UrlPHP, Email )
 			}
 
-			res.status( 200 ).json( DadosAtual )
+			res.status( 200 ).json( {
+				ResposeStrapi,
+				respostaPhp,
+			} )
 		} catch ( error: any ) {
 			console.error( error.response.data.error )
 			res.status( 400 ).json( {

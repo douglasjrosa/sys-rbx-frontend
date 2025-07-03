@@ -76,6 +76,9 @@ export default async function PostEmpresa (
 				formaPagto: bodyData.forpg,
 				prefPagto: bodyData.maxPg,
 				frete: bodyData.frete === "" ? "fob" : bodyData.frete,
+				...( bodyData.user && { user: bodyData.user } ),
+				...( bodyData.vendedor && { vendedor: bodyData.vendedor } ),
+				...( bodyData.vendedorId && { vendedorId: bodyData.vendedorId } ),
 			}
 
 
