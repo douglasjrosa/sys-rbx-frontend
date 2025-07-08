@@ -14,7 +14,7 @@ import axios from "axios"
 import { parseISO } from "date-fns"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { FiEdit3, FiPlusCircle } from "react-icons/fi"
 
 export default function Infos () {
@@ -43,6 +43,10 @@ export default function Infos () {
 	const [ isHovered, setIsHovered ] = useState( false )
 	const [ StatusAt, setStatusAt ] = useState( true )
 	const [ ItenIndex, setItenIndex ] = useState( '' )
+	const [ users, setUsers ] = useState( [] )
+	const [ user, setUser ] = useState( '' )
+	const [ vendedor, setVendedor ] = useState( '' )
+	const [ vendedorId, setVendedorId ] = useState( '' )
 
 	const [ load, setload ] = useState( true )
 	const toast = useToast()
@@ -82,9 +86,12 @@ export default function Infos () {
 
 				const dadosEntrada: any = !response.attributes?.representantes ? [] : response.attributes?.representantes
 				const SemVendedor: any = dadosEntrada.filter( ( i: any ) => i.Vendedor === '' || !i.Vendedor )
-				const setVendedor: any = dadosEntrada.filter( ( i: any ) => i.Vendedor === session?.user?.name )
-				const setAdm: any = dadosEntrada.filter( ( i: any ) => i.Vendedor === 'Adm' )
-				const DataArray: any = [ ...SemVendedor, ...setVendedor, ...setAdm ]
+				const comVendedor: any = dadosEntrada.filter( ( i: any ) => i.Vendedor === session?.user?.name )
+				const Adm: any = dadosEntrada.filter( ( i: any ) => i.Vendedor === 'Adm' )
+				const DataArray: any = [ ...SemVendedor, ...comVendedor, ...Adm ]
+				setUser( response.attributes?.user )
+				setVendedor( response.attributes?.vendedor )
+				setVendedorId( response.attributes?.vendedorId || '' )
 				setRepresentantes( !!response.attributes?.representantes && DataArray )
 				setNome( response.attributes?.nome )
 				setRazao( response.attributes?.razao )
@@ -127,6 +134,17 @@ export default function Infos () {
 			}
 		} )()
 	}, [ ID, router, session?.user.name, session?.user.pemission, toast ] )
+
+	const loadUsers = useCallback( async () => {
+		const request = await axios.get( `/api/db/user` )
+		const response = request.data
+		setUsers( response )
+	}, [] )
+
+	useEffect( () => {
+		loadUsers()
+	}, [ loadUsers ] )
+
 
 	if ( load ) return <Flex w={ '100%' } h={ '100vh' } bg={ 'gray.800' } justifyContent={ 'center' } alignItems={ 'center' }><Loading size="200px">Carregando...</Loading></Flex>
 
@@ -197,8 +215,6 @@ export default function Infos () {
 		}
 	}
 
-	const vendedor: any = session?.user.name
-
 	const Alert = encontrarObjetoMaisProximoComCor( Interacoes, vendedor )
 	const letra = Alert?.cor === 'yellow' ? 'black' : 'white'
 
@@ -219,6 +235,42 @@ export default function Infos () {
 					<Flex gap={ 5 } alignItems={ 'center' }>
 						<Box><BtmRetorno Url="/empresas" /></Box>
 						<Heading>{ Nome }</Heading>
+						<FormControl>
+							<Flex flexDir={ 'row' } gap={ 5 } alignItems={ 'center' }>
+								<chakra.p
+									color={ 'white' }
+									fontSize={ '0.8rem' }
+								>Vendedor:</chakra.p>
+								<Select
+									w={ '12rem' }
+									defaultValue={ vendedorId }
+									color="white"
+									bg='gray.800'
+								>
+									{ users.map( ( user: any ) => {
+										console.log( { user } )
+										return (
+											<option
+												style={ { backgroundColor: "#1A202C" } }
+												key={ user.id }
+												value={ user.id }
+												selected={ user.id === vendedorId }
+											>
+												{ user.username }
+											</option>
+										)
+									} ) }
+								</Select>
+								<Button
+									colorScheme='messenger'
+									onClick={ () => {
+										console.log( { user } )
+									} }
+								>
+									Atualizar
+								</Button>
+							</Flex>
+						</FormControl>
 					</Flex>
 					<IconButton
 						color={ 'white' }

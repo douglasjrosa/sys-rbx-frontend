@@ -33,8 +33,8 @@ export default async function PostEmpresa (
 
 			const DataRbx = {
 				nome: bodyData.nome,
-				email: bodyData.email,
-				xNome: bodyData.fantasia,
+				email: bodyData.email || bodyData.emailNfe,
+				xNome: bodyData.razao,
 				CNPJ: bodyData.CNPJ,
 				IE: bodyData.Ie,
 				IM: "",
@@ -75,10 +75,7 @@ export default async function PostEmpresa (
 				modelo_especial: bodyData.modEsp === true ? "on" : "off",
 				formaPagto: bodyData.forpg,
 				prefPagto: bodyData.maxPg,
-				frete: bodyData.frete === "" ? "fob" : bodyData.frete,
-				...( bodyData.user && { user: bodyData.user } ),
-				...( bodyData.vendedor && { vendedor: bodyData.vendedor } ),
-				...( bodyData.vendedorId && { vendedorId: bodyData.vendedorId } ),
+				frete: bodyData.frete === "" ? "fob" : bodyData.frete
 			}
 
 

@@ -17,11 +17,33 @@ export default async function GetEmpresaVendedor (
 	if ( req.method === "GET" ) {
 		try {
 			const userId = req.query.userId || ""
+			const page = parseInt( req.query.page as string ) || 1
+			const filtroTexto = req.query.filtro || ""
+			const pageSize = 50 // Número de itens por página
 
-			// Filtro específico para empresas do vendedor atual
-			const filters = {
-				user: {
-					id: { $eq: userId }
+			// Definir filtros com base no userId e texto de filtro
+			let filters: any = {}
+
+			if ( userId === "" ) {
+				// Se userId for vazio, retornar todas as empresas com vendedor
+				filters = {
+					user: {
+						id: { $notNull: true }
+					}
+				}
+			} else {
+				// Filtro específico para empresas do vendedor atual
+				filters = {
+					user: {
+						id: { $eq: userId }
+					}
+				}
+			}
+
+			// Adicionar filtro por nome se houver texto de busca
+			if ( filtroTexto ) {
+				filters.nome = {
+					$containsi: filtroTexto
 				}
 			}
 
@@ -38,7 +60,8 @@ export default async function GetEmpresaVendedor (
 					}
 				},
 				pagination: {
-					limit: 100 // Limite maior para empresas do vendedor
+					page,
+					pageSize
 				},
 				filters
 			}
@@ -46,7 +69,7 @@ export default async function GetEmpresaVendedor (
 			const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/empresas?${ qs.stringify( queryParams ) }`
 
 			const response = await GET_Strapi( url )
-			res.status( 200 ).json( response.data )
+			res.status( 200 ).json( response )
 		} catch ( error ) {
 			res.status( 400 ).json( error )
 		}

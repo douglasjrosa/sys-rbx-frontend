@@ -9,7 +9,7 @@ interface User {
 }
 
 export const SelectUser = ( props: {
-	onValue: any; user: string
+	onValue: any; user: any
 } ) => {
 	const { data: session } = useSession()
 	const [ user, setUser ] = useState<string>( '' )

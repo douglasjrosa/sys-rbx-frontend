@@ -26,8 +26,8 @@ export const CarteiraAusente = memo( ( {
 	totalPaginas,
 	onChangePagina
 }: CarteiraAusenteProps ) => {
-	const { data: session } = useSession()
-	const router = useRouter()
+  const { data: session } = useSession()
+  const router = useRouter()
 	const [ paginaInput, setPaginaInput ] = useState<string>( paginaAtual.toString() )
 
 	// Função para lidar com a navegação manual por input
@@ -40,7 +40,7 @@ export const CarteiraAusente = memo( ( {
 		const numeroPagina = parseInt( paginaInput, 10 )
 		if ( !isNaN( numeroPagina ) && numeroPagina >= 1 && numeroPagina <= totalPaginas ) {
 			onChangePagina( numeroPagina )
-		} else {
+      } else {
 			// Resetar para a página atual se o valor for inválido
 			setPaginaInput( paginaAtual.toString() )
 		}
@@ -101,7 +101,7 @@ export const CarteiraAusente = memo( ( {
 				}
 			}
 
-			return (
+    return (
 				<tr
 					key={ empresa.id }
 					style={ { borderBottom: '1px solid #ffff', cursor: 'pointer' } }
@@ -112,17 +112,17 @@ export const CarteiraAusente = memo( ( {
 						{ mostrarIconeInteracao && (
 							<Flex w={ '100%' } justifyContent={ 'center' }>
 								<HiChatBubbleLeftRight color={ corInteracao } fontSize={ '1.5rem' } />
-							</Flex>
+            </Flex>
 						) }
 					</td>
 					<td style={ { padding: '0.3rem 1.2rem' } }>
 						{ temNegocioAtivo && (
 							<Flex w={ '100%' } justifyContent={ 'center' }>
 								<FaMoneyBillAlt color={ 'green' } fontSize={ '1.5rem' } />
-							</Flex>
+            </Flex>
 						) }
 					</td>
-				</tr>
+        </tr>
 			)
 		} )
 	}, [ filtro, isLoading, router, session?.user?.name ] )
@@ -197,11 +197,11 @@ export const CarteiraAusente = memo( ( {
 					/>
 					<Text fontSize="xs">de { totalPaginas }</Text>
 				</HStack>
-			</Flex>
-		)
+    </Flex>
+  )
 	}, [ paginaAtual, totalPaginas, isLoading, onChangePagina, paginaInput ] )
 
-	return (
+  return (
 		<Box color={ 'white' } w={ { base: '100%', lg: '50%' } } display="flex" flexDirection="column" h="100%">
 			<Heading size={ 'lg' }>Empresas sem carteira definida</Heading>
 			<Box
@@ -212,25 +212,25 @@ export const CarteiraAusente = memo( ( {
 				flex="1"
 			>
 				<table style={ { width: '100%' } }>
-					<thead>
+            <thead>
 						<tr style={ { background: '#ffffff12', borderBottom: '1px solid #ffff' } }>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'start', width: '45%' } }>Nome</th>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'start', width: '6%' } }>Interações</th>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'start', width: '6%' } }>Negocios</th>
-						</tr>
-					</thead>
-					<tbody>
+              </tr>
+            </thead>
+            <tbody>
 						{ tabelaContent }
-					</tbody>
-				</table>
-			</Box>
+            </tbody>
+          </table>
+        </Box>
 
 			{ /* Paginação fixa na parte inferior */ }
 			<Box mt={ 3 } pb={ 2 }>
 				{ paginacao }
-			</Box>
-		</Box>
-	)
+        </Box>
+      </Box>
+  )
 } )
 
 CarteiraAusente.displayName = 'CarteiraAusente'

@@ -12,6 +12,7 @@ function Empresas () {
 	const router = useRouter()
 	const { data: session } = useSession()
 	const toast = useToast()
+	const isAdmin = session?.user?.pemission === 'Adm'
 
 	// Estados separados para cada tipo de empresa
 	const [ empresasComVendedor, setEmpresasComVendedor ] = useState<any[]>( [] )
@@ -19,10 +20,12 @@ function Empresas () {
 
 	// Estados para filtro e paginação
 	const [ filtroTexto, setFiltroTexto ] = useState( "" )
-	const [ paginaAtual, setPaginaAtual ] = useState( 1 )
+	const [ paginaAtualSemVendedor, setPaginaAtualSemVendedor ] = useState( 1 )
+	const [ paginaAtualComVendedor, setPaginaAtualComVendedor ] = useState( 1 )
 	const [ carregandoVendedor, setCarregandoVendedor ] = useState( false )
 	const [ carregandoSemVendedor, setCarregandoSemVendedor ] = useState( false )
-	const [ totalPaginas, setTotalPaginas ] = useState( 1 )
+	const [ totalPaginasSemVendedor, setTotalPaginasSemVendedor ] = useState( 1 )
+	const [ totalPaginasComVendedor, setTotalPaginasComVendedor ] = useState( 1 )
 
 	// Função para calcular diferença em dias entre duas datas
 	const calcularDiferencaEmDias = useCallback( ( data1: Date, data2: Date ): number => {
@@ -51,11 +54,12 @@ function Empresas () {
 	}, [ calcularDiferencaEmDias ] )
 
 	// Função para processar empresas com vendedor
-	const processarEmpresasComVendedor = useCallback( ( empresasData: any[], username: string, dataAtual: Date ) => {
-		// Filtrar empresas do vendedor atual
-		const filtroVendedor = empresasData.filter( f =>
-			f.attributes.user.data?.attributes.username === username
-		)
+	const processarEmpresasComVendedor = useCallback( ( empresasData: any[], username: string, dataAtual: Date, isAdmin: boolean ) => {
+		// Para admin, mostrar todas as empresas com vendedor
+		// Para usuários normais, filtrar apenas suas próprias empresas
+		const filtroVendedor = isAdmin
+			? empresasData.filter( f => f.attributes.user.data !== null )
+			: empresasData.filter( f => f.attributes.user.data?.attributes.username === username )
 
 		// Processar interações e ordenar
 		const processados = filtroVendedor.map( empresa => {
@@ -84,8 +88,24 @@ function Empresas () {
 			}
 		} )
 
-		// Ordenar por data da próxima interação
-		processados.sort( ( a, b ) => a.attributes.diferencaEmDias - b.attributes.diferencaEmDias )
+		// Ordenar por data da próxima interação para usuários normais
+		// Para admin, ordenar por nome do vendedor e depois por nome da empresa
+		if ( isAdmin ) {
+			processados.sort( ( a, b ) => {
+				const vendedorA = a.attributes.user?.data?.attributes?.username || ""
+				const vendedorB = b.attributes.user?.data?.attributes?.username || ""
+
+				if ( vendedorA !== vendedorB ) {
+					return vendedorA.localeCompare( vendedorB )
+				}
+
+				const nomeA = a.attributes.nome.toLowerCase()
+				const nomeB = b.attributes.nome.toLowerCase()
+				return nomeA.localeCompare( nomeB )
+			} )
+		} else {
+			processados.sort( ( a, b ) => a.attributes.diferencaEmDias - b.attributes.diferencaEmDias )
+		}
 
 		return processados
 	}, [ processarInteracao ] )
@@ -164,16 +184,19 @@ function Empresas () {
 	}, [ processarInteracao ] )
 
 	// Carregar empresas com vendedor (minha carteira)
-	const carregarEmpresasComVendedor = useCallback( async () => {
+	const carregarEmpresasComVendedor = useCallback( async ( pagina = 1 ) => {
 		if ( !session?.user.id ) return
 
 		setCarregandoVendedor( true )
 		try {
-			const res = await axios( `/api/db/empresas/empresalist/vendedor?userId=${ session.user.id }` )
+			const endpoint = `/api/db/empresas/empresalist/vendedor?userId=${ isAdmin ? '' : session.user.id }&page=${ pagina }&filtro=${ encodeURIComponent( filtroTexto ) }`
+
+			const res = await axios( endpoint )
 			const dataAtual = startOfDay( new Date() )
-			const processados = processarEmpresasComVendedor( res.data, session.user.name, dataAtual )
+			const processados = processarEmpresasComVendedor( res.data.data, session.user.name, dataAtual, isAdmin )
 
 			setEmpresasComVendedor( processados )
+			setTotalPaginasComVendedor( Math.ceil( res.data.meta.pagination.total / res.data.meta.pagination.pageSize ) )
 		} catch ( error ) {
 			console.error( "Erro ao carregar empresas com vendedor:", error )
 			toast( {
@@ -186,7 +209,7 @@ function Empresas () {
 		} finally {
 			setCarregandoVendedor( false )
 		}
-	}, [ session?.user.id, session?.user.name, processarEmpresasComVendedor, toast ] )
+	}, [ session?.user.id, session?.user.name, processarEmpresasComVendedor, toast, isAdmin, filtroTexto ] )
 
 	// Carregar empresas sem vendedor (carteira ausente)
 	const carregarEmpresasSemVendedor = useCallback( async ( pagina = 1, filtro = "" ) => {
@@ -201,7 +224,7 @@ function Empresas () {
 			const processados = processarEmpresasSemVendedor( res.data.data, session.user.name, isAdmin, dataAtual )
 
 			setEmpresasSemVendedor( processados )
-			setTotalPaginas( Math.ceil( res.data.meta.pagination.total / res.data.meta.pagination.pageSize ) )
+			setTotalPaginasSemVendedor( Math.ceil( res.data.meta.pagination.total / res.data.meta.pagination.pageSize ) )
 		} catch ( error ) {
 			console.error( "Erro ao carregar empresas sem vendedor:", error )
 			toast( {
@@ -219,27 +242,24 @@ function Empresas () {
 	// Carregar dados iniciais
 	useEffect( () => {
 		if ( session?.user.id ) {
-			carregarEmpresasComVendedor()
-			carregarEmpresasSemVendedor( paginaAtual, filtroTexto )
+			carregarEmpresasComVendedor( paginaAtualComVendedor )
+			carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
 		}
-	}, [ session?.user.id, carregarEmpresasComVendedor, carregarEmpresasSemVendedor, paginaAtual, filtroTexto ] )
+	}, [ session?.user.id, carregarEmpresasComVendedor, carregarEmpresasSemVendedor, paginaAtualComVendedor, paginaAtualSemVendedor, filtroTexto ] )
 
 	// Filtrar empresas com vendedor
 	const empresasComVendedorFiltradas = useMemo( () => {
-		if ( !filtroTexto ) return empresasComVendedor
-
-		return empresasComVendedor.filter( item =>
-			item.attributes.nome.toLowerCase().includes( filtroTexto.toLowerCase() )
-		)
-	}, [ empresasComVendedor, filtroTexto ] )
+		return empresasComVendedor
+	}, [ empresasComVendedor ] )
 
 	// Função para lidar com o filtro de empresas
 	const handleFiltroEmpresa = useCallback( ( searchText: string ) => {
 		setFiltroTexto( searchText )
-		setPaginaAtual( 1 ) // Resetar paginação ao filtrar
+		setPaginaAtualSemVendedor( 1 ) // Resetar paginação ao filtrar
+		setPaginaAtualComVendedor( 1 ) // Resetar paginação ao filtrar
 
 		// Mostrar aviso para empresas que pertencem a outros vendedores
-		if ( searchText ) {
+		if ( searchText && !isAdmin ) {
 			const empresasDeOutrosVendedores = [ ...empresasComVendedor, ...empresasSemVendedor ].filter( item =>
 				item.attributes.nome.toLowerCase().includes( searchText.toLowerCase() ) &&
 				item.attributes.user.data?.attributes.username !== session?.user.name &&
@@ -250,7 +270,7 @@ function Empresas () {
 				const vendedor = empresa.attributes.user.data?.attributes.username
 				toast( {
 					title: 'Opss',
-					description: `O cliente ${ empresa.attributes.nome }, perece a o Vendedor(a) ${ vendedor }`,
+					description: `O cliente ${ empresa.attributes.nome }, pertence ao(à) vendedor(a) ${ vendedor }`,
 					status: 'warning',
 					duration: 9000,
 					isClosable: true,
@@ -258,14 +278,17 @@ function Empresas () {
 				} )
 			} )
 		}
-	}, [ empresasComVendedor, empresasSemVendedor, session?.user.name, toast ] )
+	}, [ empresasComVendedor, empresasSemVendedor, session?.user.name, toast, isAdmin ] )
 
-	// Função para mudar de página
-	const handlePaginacao = useCallback( ( novaPagina: number ) => {
-		setPaginaAtual( novaPagina )
-		// Recarregar também a lista de empresas com vendedor quando mudar a página das empresas sem vendedor
-		carregarEmpresasComVendedor()
-	}, [ carregarEmpresasComVendedor ] )
+	// Função para mudar de página para empresas sem vendedor
+	const handlePaginacaoSemVendedor = useCallback( ( novaPagina: number ) => {
+		setPaginaAtualSemVendedor( novaPagina )
+	}, [] )
+
+	// Função para mudar de página para empresas com vendedor
+	const handlePaginacaoComVendedor = useCallback( ( novaPagina: number ) => {
+		setPaginaAtualComVendedor( novaPagina )
+	}, [] )
 
 	return (
 		<>
@@ -288,13 +311,17 @@ function Empresas () {
 					<CarteiraVendedor
 						filtro={ empresasComVendedorFiltradas }
 						isLoading={ carregandoVendedor }
+						showVendedor={ isAdmin }
+						paginaAtual={ paginaAtualComVendedor }
+						totalPaginas={ totalPaginasComVendedor }
+						onChangePagina={ handlePaginacaoComVendedor }
 					/>
 					<CarteiraAusente
 						filtro={ empresasSemVendedor }
 						isLoading={ carregandoSemVendedor }
-						paginaAtual={ paginaAtual }
-						totalPaginas={ totalPaginas }
-						onChangePagina={ handlePaginacao }
+						paginaAtual={ paginaAtualSemVendedor }
+						totalPaginas={ totalPaginasSemVendedor }
+						onChangePagina={ handlePaginacaoSemVendedor }
 					/>
 				</Box>
 			</Box>
