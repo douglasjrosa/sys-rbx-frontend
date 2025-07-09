@@ -60,31 +60,34 @@ export default async function handler (
 		}
 	} else if ( req.method === 'PUT' ) {
 		try {
-			const { id, tablecalc } = req.body
+			const { id, ...dataToUpdate } = req.body
 
 			const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL
 			const authToken = process.env.ATORIZZATION_TOKEN
 
-			const response = await axios.put( `${ strapiUrl }/empresas/${ id }`, {
-				data: {
-					tablecalc,
-				},
-			}, {
-				headers: {
-					Authorization: `Bearer ${ authToken }`,
-				},
-			} )
-
-			return res.status( 200 ).json( response.data )
-		} catch ( error ) {
-			const session = await getServerSession( req, res, authOptions )
-
-			if ( !session ) {
-				return res.status( 401 ).json( { error: 'Unauthorized' } )
+			if ( !strapiUrl || !authToken ) {
+				return res.status( 500 ).json( { error: 'Missing API URL or authorization token' } )
 			}
 
-			console.error( 'Error saving table:', error )
-			return res.status( 500 ).json( { error: 'Failed to save table' } )
+			console.log( 'Sending data to Strapi:', { data: dataToUpdate } )
+
+			const response = await axios.put(
+				`${ strapiUrl }/empresas/${ id }`,
+				{ data: dataToUpdate },
+				{
+					headers: {
+						Authorization: `Bearer ${ authToken }`,
+					},
+				}
+			)
+
+			return res.status( 200 ).json( response.data )
+		} catch ( error: any ) {
+			console.error( 'Error saving company:', error.response?.data || error.message || error )
+			return res.status( 500 ).json( {
+				error: 'Failed to save company',
+				details: error.response?.data || error.message
+			} )
 		}
 	}
 	else {

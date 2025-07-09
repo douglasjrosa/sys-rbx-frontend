@@ -44,10 +44,10 @@ export default function Infos () {
 	const [ StatusAt, setStatusAt ] = useState( true )
 	const [ ItenIndex, setItenIndex ] = useState( '' )
 	const [ users, setUsers ] = useState( [] )
-	const [ user, setUser ] = useState( '' )
+	const [ currentCompanyUser, setCurrentCompanyUser ] = useState<any>( null )
 	const [ vendedor, setVendedor ] = useState( '' )
 	const [ vendedorId, setVendedorId ] = useState( '' )
-
+	const [ maxPg, setMaxPg ] = useState( "" )
 	const [ load, setload ] = useState( true )
 	const toast = useToast()
 
@@ -89,9 +89,9 @@ export default function Infos () {
 				const comVendedor: any = dadosEntrada.filter( ( i: any ) => i.Vendedor === session?.user?.name )
 				const Adm: any = dadosEntrada.filter( ( i: any ) => i.Vendedor === 'Adm' )
 				const DataArray: any = [ ...SemVendedor, ...comVendedor, ...Adm ]
-				setUser( response.attributes?.user )
+				setCurrentCompanyUser( response.attributes?.user )
 				setVendedor( response.attributes?.vendedor )
-				setVendedorId( response.attributes?.vendedorId || '' )
+				setVendedorId( response.attributes?.user?.data?.id || '' )
 				setRepresentantes( !!response.attributes?.representantes && DataArray )
 				setNome( response.attributes?.nome )
 				setRazao( response.attributes?.razao )
@@ -106,6 +106,7 @@ export default function Infos () {
 				setEmail( response.attributes?.email )
 				setHistorico( response.attributes?.history?.slice( -3 ) || [] )
 				setNegocio( response.attributes?.businesses?.data?.slice( -5 ) || [] )
+				setMaxPg( response.attributes?.maxPg || "" )
 				try {
 					if ( session?.user.pemission === 'Adm' ) {
 						const request2 = await axios( `/api/db/empresas/interacoes/get_adm?Empresa=${ response.attributes?.nome }` )
@@ -235,42 +236,6 @@ export default function Infos () {
 					<Flex gap={ 5 } alignItems={ 'center' }>
 						<Box><BtmRetorno Url="/empresas" /></Box>
 						<Heading>{ Nome }</Heading>
-						<FormControl>
-							<Flex flexDir={ 'row' } gap={ 5 } alignItems={ 'center' }>
-								<chakra.p
-									color={ 'white' }
-									fontSize={ '0.8rem' }
-								>Vendedor:</chakra.p>
-								<Select
-									w={ '12rem' }
-									defaultValue={ vendedorId }
-									color="white"
-									bg='gray.800'
-								>
-									{ users.map( ( user: any ) => {
-										console.log( { user } )
-										return (
-											<option
-												style={ { backgroundColor: "#1A202C" } }
-												key={ user.id }
-												value={ user.id }
-												selected={ user.id === vendedorId }
-											>
-												{ user.username }
-											</option>
-										)
-									} ) }
-								</Select>
-								<Button
-									colorScheme='messenger'
-									onClick={ () => {
-										console.log( { user } )
-									} }
-								>
-									Atualizar
-								</Button>
-							</Flex>
-						</FormControl>
 					</Flex>
 					<IconButton
 						color={ 'white' }
@@ -280,6 +245,101 @@ export default function Infos () {
 						icon={ <FiEdit3 size={ '27px' } /> }
 					/>
 				</Flex>
+				{ session?.user.pemission === 'Adm' && (
+					<FormControl my={ 3 }>
+						<Flex flexDir={ 'row' } gap={ 5 } alignItems={ 'center' } justifyContent={ 'space-around' }>
+							<Flex flexDir={ 'row' } gap={ 5 } alignItems={ 'center' } justifyContent={ 'space-between' }>
+								<chakra.p
+									color={ 'white' }
+									fontSize={ '0.8rem' }
+									alignItems={ 'center' }
+									justifyContent={ 'center' }
+								>Vendedor:</chakra.p>
+								<Select
+									size='xs'
+									rounded={ 8 }
+									textAlign={ 'center' }
+									w={ '10rem' }
+									defaultValue={ vendedorId }
+									color="white"
+									bg='gray.800'
+									onChange={ ( e ) => {
+										const selectedUser: any = users.find( ( user: any ) => user.id === Number( e.target.value ) )
+										setVendedor( selectedUser?.username || '' )
+										setCurrentCompanyUser( selectedUser || null )
+										setVendedorId( e.target.value )
+									} }
+								>
+									<option value="">Nenhum</option>
+									{ users.map( ( user: any ) => (
+										<option
+											style={ { backgroundColor: "#1A202C" } }
+											key={ user.id }
+											value={ user.id }
+										>
+											{ user.username }
+										</option>
+									) ) }
+								</Select>
+							</Flex>
+							<Flex flexDir={ 'row' } gap={ 5 } alignItems={ 'center' } justifyContent={ 'space-between' }>
+								<chakra.p
+									color={ 'white' }
+									fontSize={ '0.8rem' }
+									alignItems={ 'center' }
+									justifyContent={ 'center' }
+								>Máximo prazo de pagamento (dias):</chakra.p>
+								<Input
+									size='xs'
+									rounded={ 8 }
+									w={ '5rem' }
+									textAlign={ 'center' }
+									color="white"
+									bg='gray.800'
+									value={ maxPg || '' }
+									onChange={ ( e ) => setMaxPg( e.target.value ) }
+								/>
+								<Button
+									size='xs'
+									rounded={ 8 }
+									colorScheme='messenger'
+									onClick={ async () => {
+										try {
+											const request = await axios.put( `/api/refactory/companies`, {
+												id: ID,
+												user: vendedorId ? {
+													id: parseInt( vendedorId )
+												} : null,
+												vendedor: vendedor,
+												maxPg: maxPg
+											} )
+											if ( request.status === 200 ) {
+												toast( {
+													title: 'Sucesso.',
+													description: "Dados atualizados com sucesso",
+													status: 'success',
+													duration: 9000,
+													isClosable: true,
+												} )
+											}
+										} catch ( error ) {
+											console.error( error )
+											toast( {
+												title: 'Erro.',
+												description: "Erro ao atualizar dados",
+												status: 'error',
+												duration: 9000,
+												isClosable: true,
+											} )
+										}
+									} }
+								>
+									Atualizar
+								</Button>
+							</Flex>
+						</Flex>
+					</FormControl>
+				) }
 
 				{/* colunas */ }
 				<Flex w={ '100%' } h={ '90%' } justifyContent={ 'space-between' }>
@@ -295,7 +355,7 @@ export default function Infos () {
 									const telefone = !item.attributes?.whatsapp ? item.attributes?.telefone : item.attributes?.whatsapp
 
 									return (
-										<>
+										<Box key={ `representante-${ index }` }>
 											<Box>
 												<Heading size={ 'sm' }>{ item.attributes?.nome }</Heading>
 												<Flex w={ '100%' } p={ 1 }>
@@ -327,7 +387,7 @@ export default function Infos () {
 													<Divider mb={ 5 } />
 												</>
 											) }
-										</>
+										</Box>
 									)
 								} ) }
 
@@ -436,7 +496,7 @@ export default function Infos () {
 									const vendedorNome = i.attributes?.vendedor?.data?.attributes?.nome || "Vendedor não definido"
 
 									return (
-										<>
+										<div key={ i.id }>
 											<Box bg={ 'gray.100' } rounded={ 10 } px={ 5 } py={ 2 } color={ 'black' } fontSize={ '0.7rem' }>
 												<Heading size={ 'sm' }>{ obj }</Heading>
 												<chakra.p fontSize={ '0.8rem' }>{ i.attributes?.descricao }</chakra.p>
@@ -446,7 +506,7 @@ export default function Infos () {
 													<chakra.p textDecor={ 'underline' }>{ date.toLocaleDateString() }</chakra.p>
 												</Flex>
 											</Box>
-										</>
+										</div>
 									)
 								} ) }
 
@@ -489,14 +549,12 @@ export default function Infos () {
 										const IndexLista = `${ index }`
 
 										return (
-											<>
-												<tr key={ i.id } style={ { backgroundColor: isHovered && ItenIndex == IndexLista ? '#ffffff40' : 'transparent', cursor: 'pointer', transition: 'background-color 0.2s' } } onMouseEnter={ () => handleMouseEnter( index ) } onMouseLeave={ handleMouseLeave } onClick={ () => router.push( `/negocios/${ i.id }` ) }>
-													<td style={ { textAlign: 'center', color: color } }>{ index + 1 }</td>
-													<td style={ { textAlign: 'center', color: color } }>{ andamento }</td>
-													<td style={ { textAlign: 'center', color: color } }>{ Status }</td>
-													<td style={ { textAlign: 'center', color: color } }>{ !!valor && valor.toLocaleString( 'pt-BR', { style: 'currency', currency: 'BRL' } ) }</td>
-												</tr>
-											</>
+											<tr key={ `negocio-${ i.id }` } style={ { backgroundColor: isHovered && ItenIndex == IndexLista ? '#ffffff40' : 'transparent', cursor: 'pointer', transition: 'background-color 0.2s' } } onMouseEnter={ () => handleMouseEnter( index ) } onMouseLeave={ handleMouseLeave } onClick={ () => router.push( `/negocios/${ i.id }` ) }>
+												<td style={ { textAlign: 'center', color: color } }>{ index + 1 }</td>
+												<td style={ { textAlign: 'center', color: color } }>{ andamento }</td>
+												<td style={ { textAlign: 'center', color: color } }>{ Status }</td>
+												<td style={ { textAlign: 'center', color: color } }>{ !!valor && valor.toLocaleString( 'pt-BR', { style: 'currency', currency: 'BRL' } ) }</td>
+											</tr>
 										)
 									} ) }
 

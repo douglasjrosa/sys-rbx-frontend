@@ -16,18 +16,19 @@ export default async function GetEmpresaAusente (
 ): Promise<void> {
 	if ( req.method === "GET" ) {
 		try {
-			const userId = req.query.userId || ""
 			const page = parseInt( req.query.page as string ) || 1
 			const filtro = req.query.filtro as string || ""
 
 			// Filtros para empresas sem vendedor ou não pertencentes ao usuário atual
-			const filters: any = { vendedor: { $eq: "" } }
-
-			// Adicionar filtro por nome se fornecido
-			if ( filtro ) {
-				filters.nome = {
-					$containsi: filtro
-				}
+			const filters = {
+				user: {
+					id: { $notNull: false }
+				},
+				...( filtro && {
+					nome: {
+						$containsi: filtro
+					}
+				} )
 			}
 
 			const queryParams = {

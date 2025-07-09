@@ -343,7 +343,6 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 			}
 
 			if ( ENVIO === 'POST' ) {
-				console.log( "FOOIII" )
 				const url = `/api/db/empresas/post?Email=${ session?.user.email }&Vendedor=${ session?.user.name }`
 				await axios( {
 					method: 'POST',
