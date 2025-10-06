@@ -44,6 +44,7 @@ const Proposta = () => {
 	const [ freightType, setFreightType ] = useState( "FOB" )
 
 	const [ aditionalDiscount, setAditionalDiscount ] = useState( 0 )
+	const [ previousDiscount, setPreviousDiscount ] = useState( 0 )
 	const [ aditionalCosts, setAditionalCosts ] = useState( 0 )
 	const [ subtotal, setSubtotal ] = useState( 0 )
 
@@ -150,11 +151,12 @@ const Proposta = () => {
 	useEffect( () => { fetchEmitenteId() }, [ fetchEmitenteId ] )
 
 	useEffect( () => {
-		const isPaymentwithDiscount = paymentTerms === "Antecipado (c/ desconto)"
-		const discount = subtotal * ( isPaymentwithDiscount ? 0.05 : 0 )
+		const isPaymentWithDiscount = paymentTerms === "Antecipado (c/ desconto)"
+		const paymentWithDiscount = isPaymentWithDiscount ? subtotal * 0.05 : 0
+		const discount = Math.max( previousDiscount, paymentWithDiscount )
 		setAditionalDiscount( discount )
 
-	}, [ paymentTerms, subtotal ] )
+	}, [ paymentTerms, subtotal, previousDiscount ] )
 
 	useEffect( () => { // First loading data from db
 		if ( orderData ) {
@@ -176,7 +178,7 @@ const Proposta = () => {
 			prazo && setPaymentTerms( prazo )
 			valorFrete && setFreightCost( valorFrete )
 			frete && setFreightType( frete )
-			descontoTotal && setAditionalDiscount( descontoTotal )
+			descontoTotal && setPreviousDiscount( parseCurrency(descontoTotal) )
 			cliente_pedido && setClientOrderNumber( cliente_pedido )
 			orderData.attributes?.custoAdicional && setAditionalCosts( orderData.attributes.custoAdicional )
 			obs && setOrderObservations( obs )
