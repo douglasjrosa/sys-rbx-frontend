@@ -345,6 +345,14 @@ export default async function GetEmpresa (
 			]
 		}
 
+		let enderecoCliente = infos.cliente.endereco + ', ' + infos.cliente.numero
+		enderecoCliente += !!infos.cliente.complemento ? ' - ' + infos.cliente.complemento : ''
+		enderecoCliente += !!infos.cliente.bairro ? ' - ' + infos.cliente.bairro : ''
+		enderecoCliente += !!infos.cliente.cidade ? ' - ' + infos.cliente.cidade : ''
+		enderecoCliente += !!infos.cliente.uf ? ' ' + infos.cliente.uf : ''
+
+		const enderecoFornecedor = infos.fornecedor.data.endereco + ' - ' + infos.fornecedor.data.cidade + ' ' + infos.fornecedor.data.uf
+
 		// Informações de cliente e fornecedor compactas
 		const clienteFornecedorCompact = {
 			margin: [ 0, 0, 0, 10 ],
@@ -372,6 +380,14 @@ export default async function GetEmpresa (
 									stack: [
 										{ text: formatarTelefone( infos.cliente.fone ), fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
 										{ text: infos.cliente.email, fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
+									]
+								}
+							],
+							[
+								{ text: 'Endereço:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+								{
+									stack: [
+										{ text: enderecoCliente, fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
 									]
 								}
 							]
@@ -411,6 +427,14 @@ export default async function GetEmpresa (
 									stack: [
 										{ text: formatarTelefone( String( infos.fornecedor.data.tel ) ), fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
 										{ text: infos.fornecedor.data.email, fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
+									]
+								}
+							],
+							[
+								{ text: 'Endereço:', bold: true, fontSize: 8, alignment: 'left', lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] },
+								{
+									stack: [
+										{ text: enderecoFornecedor, fontSize: 9, lineHeight: 1.3, margin: [ 0, 2, 0, 0 ] }
 									]
 								}
 							]
