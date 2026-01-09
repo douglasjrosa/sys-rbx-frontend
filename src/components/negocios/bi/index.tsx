@@ -1,5 +1,5 @@
 import { EtapasNegocio } from "@/components/data/etapa"
-import { Box, Flex, Table, TableContainer, Tbody, Td, Th, Thead, Tr, chakra } from "@chakra-ui/react"
+import { Box, Flex, LinkBox, Text, chakra } from "@chakra-ui/react"
 import { useState } from "react"
 import { useRouter } from "next/router"
 import Loading from "@/components/elements/loading"
@@ -10,6 +10,7 @@ import { SelectEmpresas } from "@/components/painel/calendario/select/selectEmpr
 import { BtCreate } from "../component/butonCreate"
 import { StatusAndamento } from "@/components/data/status"
 import { SetValue } from "@/function/currenteValor"
+import NextLink from "next/link"
 
 
 export const PowerBi = () => {
@@ -125,111 +126,91 @@ export const PowerBi = () => {
 						<Flex direction={ 'column' } w={ '100%' } my='5'>
 							<chakra.span fontSize={ '20px' } fontWeight={ 'medium' } color={ 'white' }>Funil de vendas</chakra.span>
 						</Flex>
-						<Box>
-							<TableContainer pb='2'>
-								<Table variant='simple'>
-									<Thead bg={ 'gray.600' }>
-										<Tr>
-											<Th color={ 'white' } textAlign={ 'center' } borderBottom={ 'none' } w={ '20px' }>Empresa</Th>
-											<Th color={ 'white' } textAlign={ 'center' } borderBottom={ 'none' } w={ '5rem' }>Etapa</Th>
-											<Th color={ 'white' } textAlign={ 'center' } borderBottom={ 'none' } w={ '5rem' }>Status</Th>
-											<Th color={ 'white' } textAlign={ 'center' } borderBottom={ 'none' } w={ '5rem' }>Valor</Th>
-											<Th color={ 'white' } textAlign={ 'center' } borderBottom={ 'none' } w={ '5rem' }>Retornar em</Th>
-										</Tr>
-									</Thead>
-									<Tbody>
-										{ data.map( ( itens: any ) => {
-											const statusAtual = itens.attributes.andamento
-											const [ statusRepresente ] = StatusAndamento.filter( ( i: any ) => i.id == statusAtual ).map( ( e: any ) => e.title )
-											const etapa = EtapasNegocio.filter( ( e: any ) => e.id == itens.attributes.etapa ).map( ( e: any ) => e.title )
+						<Box width="100%" pb="2">
+							{/* Cabeçalho da tabela */ }
+							<Flex
+								bg={ 'gray.600' }
+								width="100%"
+								p={ 3 }
+								mb={ 0 }
+								justifyContent="space-between"
+								borderTopRadius="md"
+							>
+								<Box width="30%" textAlign="center">
+									<Text color={ 'white' } fontWeight="bold" fontSize="sm">Empresa</Text>
+								</Box>
+								<Box width="17.5%" textAlign="center">
+									<Text color={ 'white' } fontWeight="bold" fontSize="sm">Etapa</Text>
+								</Box>
+								<Box width="17.5%" textAlign="center">
+									<Text color={ 'white' } fontWeight="bold" fontSize="sm">Expira em</Text>
+								</Box>
+								<Box width="17.5%" textAlign="center">
+									<Text color={ 'white' } fontWeight="bold" fontSize="sm">Valor</Text>
+								</Box>
+								<Box width="17.5%" textAlign="center">
+									<Text color={ 'white' } fontWeight="bold" fontSize="sm">Retornar em</Text>
+								</Box>
+							</Flex>
 
-											const colorLine = itens.attributes.DataRetorno <= new Date().toISOString() ? 'red.600' : ''
+							{/* Linhas da tabela */ }
+							<Box width="100%">
+								{ data.map( ( itens: any ) => {
+									const deadline = itens.attributes.deadline
+									const etapa = EtapasNegocio.filter( ( e: any ) => e.id == itens.attributes.etapa ).map( ( e: any ) => e.title ) || [ "Sem etapa" ]
+									const colorLine = itens.attributes.DataRetorno <= new Date().toISOString() ? 'red.600' : ''
+									const dataDed = new Date( itens.attributes.DataRetorno )
+									dataDed.setDate( dataDed.getDate() + 1 )
+									const dataFormatada = dataDed.toLocaleDateString( 'pt-BR' )
 
-											const dataDed = new Date( itens.attributes.DataRetorno )
-											dataDed.setDate( dataDed.getDate() + 1 )
-											const dataFormatada = dataDed.toLocaleDateString( 'pt-BR' )
-
-											return (
-												<Tr key={ itens.id } onClick={ () => router.push( `/negocios/${ itens.id }` ) } cursor={ 'pointer' }>
-													<Td color={ 'white' } w={ '20px' } p={ 2 } textAlign={ 'center' } fontSize={ '12px' } borderBottom={ '1px solid #CBD5E0' }>{ itens.attributes.empresa.data?.attributes.nome }</Td>
-													<Td color={ 'white' } fontSize={ '12px' } p={ 2 } textAlign={ 'center' } borderBottom={ '1px solid #CBD5E0' }>{ etapa }</Td>
-													<Td color={ 'white' } fontSize={ '12px' } p={ 2 } textAlign={ 'center' } borderBottom={ '1px solid #CBD5E0' }>{ statusRepresente }</Td>
-													<Td color={ 'white' } fontSize={ '12px' } p={ 2 } textAlign={ 'center' } borderBottom={ '1px solid #CBD5E0' }>{ SetValue( itens.attributes.Budget ) }</Td>
-													<Td color={ 'white' } bg={ colorLine } p={ 2 } textAlign={ 'center' } fontSize={ '12px' } borderBottom={ '1px solid #CBD5E0' }>{ dataFormatada }</Td>
-												</Tr>
-											)
-										} ) }
-									</Tbody>
-								</Table>
-							</TableContainer>
+									return (
+										<NextLink
+											href={ `/negocios/${ itens.id }` }
+											key={ itens.id }
+											style={ { textDecoration: 'none', width: '100%', display: 'block' } }
+										>
+											<Flex
+												width="100%"
+												justifyContent="space-between"
+												alignItems="center"
+												cursor="pointer"
+												borderBottom="1px solid #CBD5E0"
+												_hover={ { bg: 'whiteAlpha.100' } }
+												py={ 2 }
+												px={ 3 }
+											>
+												<Box width="30%" textAlign="center">
+													<Text color={ 'white' } fontSize={ '12px' }>
+														{ itens.attributes.empresa.data?.attributes.nome }
+													</Text>
+												</Box>
+												<Box width="17.5%" textAlign="center">
+													<Text color={ 'white' } fontSize={ '12px' }>
+														{ etapa }
+													</Text>
+												</Box>
+												<Box width="17.5%" textAlign="center">
+													<Text color={ 'white' } fontSize={ '12px' }>
+														{ deadline }
+													</Text>
+												</Box>
+												<Box width="17.5%" textAlign="center">
+													<Text color={ 'white' } fontSize={ '12px' }>
+														{ SetValue( itens.attributes.Budget ) }
+													</Text>
+												</Box>
+												<Box width="17.5%" textAlign="center" bg={ colorLine } py={ 1 } borderRadius={ colorLine ? "sm" : "none" }>
+													<Text color={ 'white' } fontSize={ '12px' }>
+														{ dataFormatada }
+													</Text>
+												</Box>
+											</Flex>
+										</NextLink>
+									)
+								} ) }
+							</Box>
 						</Box>
-
 					</Box>
-{/* 					<Flex w={ { lg: '30%', sm: '100%' } } p={ { lg: 3, sm: 1 } } gap={ { lg: 3, sm: 1 } } direction={ 'column' }>
-						<Box w={ '100%' } bg={ 'red.600' } p={ 2 } rounded={ 5 }>
-							<Flex direction={ 'column' } w={ '100%' }>
-								<chakra.span fontSize={ '20px' } fontWeight={ 'medium' } color={ 'white' }>Clientes em Inatividade</chakra.span>
-							</Flex>
-							<Box>
-								<TableContainer>
-									<Table>
-										<Thead bg={ 'red.400' }>
-											<Tr>
-												<Th color='white' border={ 'none' } w={ { sm: '60%', lg: '40%' } } textAlign={ 'center' }>Empresa</Th>
-												<Th color='white' border={ 'none' } textAlign={ 'center' }>última compra</Th>
-											</Tr>
-										</Thead>
-										<Tbody>
-											<Ausente user={ User } />
-										</Tbody>
-									</Table>
-								</TableContainer>
-							</Box>
-						</Box>
-
-						<Box w={ '100%' } bg={ 'green.600' } p={ 2 } rounded={ 5 }>
-							<Flex direction={ 'column' } w={ '100%' }>
-								<chakra.span fontSize={ '20px' } fontWeight={ 'medium' } color={ 'white' }>Clientes novos</chakra.span>
-							</Flex>
-							<Box>
-								<TableContainer>
-									<Table>
-										<Thead bg={ 'green.500' }>
-											<Tr>
-												<Th color={ 'white' } border={ 'none' } w={ { sm: '60%', lg: '40%' } } textAlign={ 'center' }>Empresa</Th>
-												<Th color={ 'white' } border={ 'none' } textAlign={ 'center' }>Data de entrada</Th>
-											</Tr>
-										</Thead>
-										<Tbody>
-											<NovoCliente user={ User } />
-										</Tbody>
-									</Table>
-								</TableContainer>
-							</Box>
-
-						</Box>
-						<Box w={ '100%' } bg={ 'blue.600' } p={ 2 } rounded={ 5 }>
-							<Flex direction={ 'column' } w={ '100%' }>
-								<chakra.span fontSize={ '20px' } fontWeight={ 'medium' } color={ 'white' }>Clientes recuperados</chakra.span>
-							</Flex>
-							<Box>
-								<TableContainer>
-									<Table>
-										<Thead bg={ 'blue.400' }>
-											<Tr>
-												<Th color={ 'white' } border={ 'none' } textAlign={ 'center' }>Empresa</Th>
-												<Th color={ 'white' } border={ 'none' } textAlign={ 'center' }>valor de compra</Th>
-											</Tr>
-										</Thead>
-										<Tbody>
-											<Presente user={ User } />
-										</Tbody>
-									</Table>
-								</TableContainer>
-							</Box>
-
-						</Box>
-					</Flex> */}
 				</Box>
 			</Box>
 		</>

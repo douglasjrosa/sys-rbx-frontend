@@ -57,7 +57,7 @@ export const NegocioHeader = ( props: {
 	const [ DataItens, setDataItens ] = useState<any | null>()
 	const [ Blocksave, setBlocksave ] = useState<boolean>( false )
 
-	const [ pedido, setPedido ] = useState<any>( { attributes: {}} )
+	const [ pedido, setPedido ] = useState<any>( { attributes: {} } )
 	const [ orderData, setOrderData ] = useState<any | null>()
 
 
@@ -65,7 +65,7 @@ export const NegocioHeader = ( props: {
 		if ( props.onData ) {
 			setStatus( parseInt( props.Status ) )
 			setBudget( SetValue( props.Budget ) )
-			setDeadline( props.Deadline )
+			setDeadline( props.Deadline ? props.Deadline.substring( 0, 10 ) : '' )
 			setBusines( props.nBusiness )
 			setApproach( props.Approach )
 			setDataRetorno( !props.DataRetorno ? new Date().toISOString() : props.DataRetorno )
@@ -83,7 +83,7 @@ export const NegocioHeader = ( props: {
 				&& parseInt( props.etapa ) === 6
 			) setBlocksave( true )
 			if ( session?.user.pemission === 'Adm' ) setBlocksave( false )
-			
+
 			setOrderData( {
 				propostaId: props.onData.attributes.pedidos?.data?.[ 0 ]?.id,
 				orderValue: props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes?.totalGeral,
@@ -288,6 +288,24 @@ export const NegocioHeader = ( props: {
 										</option>
 									) ) }
 								</Select>
+							</Box>
+							<Box>
+								<FormLabel
+									fontSize="xs"
+									fontWeight="md"
+								>
+									Data de Expiração
+								</FormLabel>
+								<Input
+									shadow="sm"
+									size="sm"
+									w="full"
+									type={ "date" }
+									fontSize="xs"
+									rounded="md"
+									onChange={ ( e ) => setDeadline( e.target.value ) }
+									value={ Deadline }
+								/>
 							</Box>
 							{ Etapa === 6 && (
 								<>

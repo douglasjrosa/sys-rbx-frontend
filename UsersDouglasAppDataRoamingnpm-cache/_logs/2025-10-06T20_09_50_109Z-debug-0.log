@@ -1,0 +1,20 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.2
+2 info using node@v22.14.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:c:\projetos\sys-rbx-frontend\.npmrc
+5 silly config load:file:C:\Users\Douglas\.npmrc
+6 silly config load:file:C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm\etc\npmrc
+7 verbose title npm view eslint-config-next description dist-tags.latest homepage version time
+8 verbose argv "view" "--json" "--" "eslint-config-next" "description" "dist-tags.latest" "homepage" "version" "time"
+9 verbose logfile logs-max:10 dir:C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2025-10-06T20_09_50_109Z-
+10 verbose logfile C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2025-10-06T20_09_50_109Z-debug-0.log
+11 silly logfile start cleaning logs, removing 2 files
+12 silly logfile done cleaning log files
+13 http fetch GET 200 https://registry.npmjs.org/eslint-config-next 269ms (cache revalidated)
+14 verbose cwd c:\projetos\sys-rbx-frontend
+15 verbose os Windows_NT 10.0.19045
+16 verbose node v22.14.0
+17 verbose npm  v10.9.2
+18 verbose exit 0
+19 info ok

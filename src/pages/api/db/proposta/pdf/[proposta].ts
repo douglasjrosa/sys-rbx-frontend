@@ -53,9 +53,18 @@ export default async function GetEmpresa (
 	res: NextApiResponse
 ) {
 	if ( req.method === "GET" ) {
-		const { proposta } = req.query
+		const { proposta, montFree, expoFree, cleanDefaultObs, latam } = req.query
+
+		const latamActive = latam !== undefined
+		const montFreeActive = montFree !== undefined || latamActive
+		const expoFreeActive = expoFree !== undefined || latamActive
+		const cleanDefaultObsActive = cleanDefaultObs !== undefined || latamActive
 
 		const infos = await getData( proposta )
+
+		if ( latamActive ) {
+			infos.fornecedor.data.cnpj = infos.fornecedor.data.cnpj.replace( /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "00.000.000/0000-00" )
+		}
 
 		const imagePath2 = path.join(
 			process.cwd(),
@@ -87,7 +96,7 @@ export default async function GetEmpresa (
 		const printer = new PDFPrinter( fonts )
 
 
-		const paymentTerms = infos.prazo
+		const paymentTerms = infos.prazo === "1" || infos.prazo === 1 ? "À vista (50% no ato da compra)" : infos.prazo
 		const valorFrete = normalizarValorMonetario( infos.Valfrete )
 		let valorSubTotal = 0
 		const valorDesconto = normalizarValorMonetario( infos.Desconto )
@@ -99,8 +108,8 @@ export default async function GetEmpresa (
 		const products = Product.map( ( i: any ) => {
 
 			const ValorOriginal = normalizarValorMonetario( i.vFinal )
-			const valorMontagem = i.mont ? ValorOriginal * 0.1 : 0
-			const valorExportacao = i.expo ? ValorOriginal * 0.1 : 0
+			const valorMontagem = i.mont && !montFreeActive ? ValorOriginal * 0.1 : 0
+			const valorExportacao = i.expo && !expoFreeActive ? ValorOriginal * 0.1 : 0
 			const valorUnitario = ValorOriginal + valorMontagem + valorExportacao
 			const valorTotal = valorUnitario * i.Qtd
 
@@ -154,7 +163,7 @@ export default async function GetEmpresa (
 			}
 
 			let stackMontagem: any[] = []
-			if ( i.mont ) {
+			if ( i.mont || montFreeActive ) {
 				stackMontagem.push( {
 					table: {
 						body: [
@@ -210,7 +219,7 @@ export default async function GetEmpresa (
 			}
 
 			let stackExportacao: any[] = []
-			if ( i.expo ) {
+			if ( i.expo || expoFreeActive ) {
 				stackExportacao.push( {
 					table: {
 						body: [
@@ -528,6 +537,7 @@ export default async function GetEmpresa (
 			]
 		}
 
+
 		// Tabela de produtos - FOCO PRINCIPAL
 		const tabelaProdutos = {
 			margin: [ 0, 0, 0, 10 ],
@@ -549,14 +559,14 @@ export default async function GetEmpresa (
 						{
 							stack: [
 								{ text: "Montagem", alignment: "center" },
-								{ text: "(+10%)", alignment: "center", margin: [ 0, 2, 0, 0 ] }
+								...( !montFreeActive ? [ { text: "(+10%)", alignment: "center", margin: [ 0, 2, 0, 0 ] } ] : [] ),
 							],
 							style: "tableHeader"
 						},
 						{
 							stack: [
 								{ text: "Exportação", alignment: "center" },
-								{ text: "(+10%)", alignment: "center", margin: [ 0, 2, 0, 0 ] }
+								...( !expoFreeActive ? [ { text: "(+10%)", alignment: "center", margin: [ 0, 2, 0, 0 ] } ] : [] )
 							],
 							style: "tableHeader"
 						},
@@ -612,11 +622,11 @@ export default async function GetEmpresa (
 								{
 									margin: [ 8, 5, 8, 5 ],
 									stack: [
-										{
+										...( !cleanDefaultObsActive ? [ {
 											text: "• Por padrão, todas as ambalagens são enviadas desmontadas;\n• Serviço de Montagem (+10%) deve ser solicitado na cotação;\n• Tratamento para Exportação (+10%) deve ser solicitado na cotação.",
 											fontSize: 10,
 											lineHeight: 2
-										},
+										} ] : [] ),
 										// Adiciona observações se existirem
 										infos.obs ? {
 											text: [
