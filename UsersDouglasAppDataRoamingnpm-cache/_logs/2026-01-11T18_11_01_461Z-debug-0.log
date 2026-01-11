@@ -7,8 +7,7 @@
 6 silly config load:file:C:\Users\Douglas\.npm-global\etc\npmrc
 7 verbose title npm run dev
 8 verbose argv "run" "dev"
-9 verbose logfile logs-max:10 dir:C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2025-10-23T16_28_52_816Z-
-10 verbose logfile C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2025-10-23T16_28_52_816Z-debug-0.log
+9 verbose logfile logs-max:10 dir:C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2026-01-11T18_11_01_461Z-
+10 verbose logfile C:\projetos\sys-rbx-frontend\UsersDouglasAppDataRoamingnpm-cache\_logs\2026-01-11T18_11_01_461Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 silly logfile done cleaning log files
-13 http fetch GET 200 https://registry.npmjs.org/npm 1876ms
