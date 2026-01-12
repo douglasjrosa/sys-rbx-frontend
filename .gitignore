@@ -38,3 +38,6 @@ next-env.d.ts
 # local certificate ssl
 /.cert
 certificates
+
+# npm cache
+UsersDouglasAppDataRoamingnpm-cache

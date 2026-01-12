@@ -63,12 +63,9 @@ export const NegocioHeader = ( props: {
 
 	useEffect( () => {
 		if ( props.onData ) {
-			// #region agent log
-			fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'hearder.tsx:64', message: 'useEffect - setting initial values', data: { propostaIdFromProps: props.onData.attributes.pedidos?.data?.[ 0 ]?.id, DataItensFromProps: props.onData.attributes.pedidos?.data?.[ 0 ]?.attributes.itens?.length, pedidosExists: !!props.onData.attributes.pedidos?.data }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'E' } ) } ).catch( () => { } )
-			// #endregion
 			setStatus( parseInt( props.Status ) )
 			setBudget( SetValue( props.Budget ) )
-			setDeadline( props.Deadline ? props.Deadline.substring( 0, 10 ) : '' )
+			setDeadline( props.Deadline )
 			setBusines( props.nBusiness )
 			setApproach( props.Approach )
 			setDataRetorno( !props.DataRetorno ? new Date().toISOString() : props.DataRetorno )
@@ -97,32 +94,26 @@ export const NegocioHeader = ( props: {
 		}
 	}, [ props, session ] )
 	const DataAtual = formatarDataParaSaoPaulo( new Date( Date.now() ) )
-	const DataAtualDate = new Date()
-	const DataAtualFormatada = DataAtualDate.toLocaleString( 'pt-BR', { timeZone: 'America/Sao_Paulo' } )
 
 	const historicomsg = {
 		vendedor: session?.user.name,
-		date: DataAtualFormatada,
+		date: DataAtual.toLocaleString(),
 		msg: `Vendedor(a) ${ session?.user.name }, alterou as informações desse Busines`,
 	}
 
-	const filtro = Mperca ? StatusPerca.filter( ( e: any ) => e.id == Mperca ).map( ( i: any ) => i.title ) : []
-	const motivoPerda = filtro.length > 0 ? filtro[ 0 ] : 'Não especificado'
+	const filtro = StatusPerca.filter( ( e: any ) => e.id == Mperca ).map( ( i: any ) => i.title )
 
 	const ChatConcluido = {
-		msg: Status === 5 ? `Parabéns, você concluiu esse Negocio com sucesso` : `Negocio perdido, motivo: ${ motivoPerda }`,
+		msg: Status === 5 ? `Parabéns, você concluiu esse Negocio com sucesso` : `Negocio perdido, motivo: ${ filtro }`,
 		date: DataAtual,
 		user: "Sistema",
 		susseso: Status === 5 ? 'green' : Status === 1 ? 'red' : '',
 		flag: Status === 5 ? "Ganho" : 'Perca'
 	}
 
-	const history = [ ...( props.historia || [] ), historicomsg ]
+	const history = [ ...props.historia, historicomsg ]
 
 	const Salve = async () => {
-		// #region agent log
-		fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'hearder.tsx:119', message: 'Salve function called', data: { Etapa, Status, propostaId, DataItensLength: DataItens?.length, ID }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'A,E' } ) } ).catch( () => { } )
-		// #endregion
 
 		if ( Etapa === 6 && Status == 3 ) {
 			toast( {
@@ -134,9 +125,6 @@ export const NegocioHeader = ( props: {
 				position: 'top-right'
 			} )
 		} else if ( !propostaId && Etapa === 6 && Status === 5 && !DataItens?.length ) {
-			// #region agent log
-			fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'hearder.tsx:130', message: 'Validation blocked - missing proposta or items', data: { Etapa, Status, propostaId, DataItensLength: DataItens?.length }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'A' } ) } ).catch( () => { } )
-			// #endregion
 			toast( {
 				title: "Esse Negócio não pode ser finalizado",
 				description: "para finalizar um negócio, a proposta deve ser gerada e autorizada",
@@ -146,9 +134,6 @@ export const NegocioHeader = ( props: {
 				position: 'top-right'
 			} )
 		} else {
-			// #region agent log
-			fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'hearder.tsx:139', message: 'Validation passed - preparing data', data: { Etapa, Status, Deadline, Busines, Budget, Approach, Mperca, DataRetorno, historyLength: history.length, chatLength: props.chat?.length }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'B' } ) } ).catch( () => { } )
-			// #endregion
 			const data1 = {
 				data: {
 					deadline: Deadline,
@@ -159,7 +144,7 @@ export const NegocioHeader = ( props: {
 					etapa: Etapa,
 					andamento: Status,
 					Mperca: Mperca,
-					incidentRecord: [ ...( props.chat || [] ), ChatConcluido ],
+					incidentRecord: [ ...props.chat, ChatConcluido ],
 					DataRetorno: DataRetorno,
 					date_conclucao: DataAtual
 				},
@@ -181,23 +166,13 @@ export const NegocioHeader = ( props: {
 
 			const data = Etapa === 6 ? data1 : data2
 
-			// #region agent log
-			fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'hearder.tsx:170', message: 'Before axios PUT request', data: { url: `/api/db/business/put/id/${ ID }`, dataPayload: JSON.stringify( data ), etapa: Etapa }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C' } ) } ).catch( () => { } )
-			// #endregion
-
 			await axios( {
 				url: "/api/db/business/put/id/" + ID,
 				method: "PUT",
 				data: data,
 			} )
 				.then( ( res ) => {
-					// #region agent log
-					fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'hearder.tsx:177', message: 'PUT request successful', data: { status: res.status, propostaId, Etapa, Status, shouldOpenModal: propostaId && Etapa === 6 && Status === 5 }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C,D' } ) } ).catch( () => { } )
-					// #endregion
 					if ( propostaId && Etapa === 6 && Status === 5 ) {
-						// #region agent log
-						fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'hearder.tsx:179', message: 'Opening modal for order send', data: { propostaId, Etapa, Status }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'D' } ) } ).catch( () => { } )
-						// #endregion
 						onOpen()
 						setBlocksave( true )
 					} else if ( Etapa === 6 && Status === 1 ) {
@@ -222,22 +197,8 @@ export const NegocioHeader = ( props: {
 					}
 				} )
 				.catch( ( err ) => {
-					// #region agent log
-					fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'hearder.tsx:202', message: 'PUT request failed', data: { errorMessage: err.message, status: err.response?.status, responseData: err.response?.data, url: err.config?.url }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C' } ) } ).catch( () => { } )
-					// #endregion
 					props.onchat( true )
 					console.error( err )
-					const errorMessage = err.response?.data?.error?.message || err.response?.data?.mensage || err.message || "Erro ao salvar o negócio"
-					const errorDetails = err.response?.data?.detalhe?.errors?.map( ( e: any ) => e.message ).join( ", " ) || err.response?.data?.error?.details?.errors?.map( ( e: any ) => e.message ).join( ", " )
-
-					toast( {
-						title: "Erro ao salvar",
-						description: errorDetails ? `${ errorMessage }: ${ errorDetails }` : errorMessage,
-						status: "error",
-						duration: 9000,
-						isClosable: true,
-						position: 'top-right'
-					} )
 				} )
 		}
 	}
@@ -327,24 +288,6 @@ export const NegocioHeader = ( props: {
 										</option>
 									) ) }
 								</Select>
-							</Box>
-							<Box>
-								<FormLabel
-									fontSize="xs"
-									fontWeight="md"
-								>
-									Data de Expiração
-								</FormLabel>
-								<Input
-									shadow="sm"
-									size="sm"
-									w="full"
-									type={ "date" }
-									fontSize="xs"
-									rounded="md"
-									onChange={ ( e ) => setDeadline( e.target.value ) }
-									value={ Deadline }
-								/>
 							</Box>
 							{ Etapa === 6 && (
 								<>
