@@ -96,7 +96,7 @@ export default async function GetEmpresa (
 		const printer = new PDFPrinter( fonts )
 
 
-		const paymentTerms = infos.prazo === "1" || infos.prazo === 1 ? "À vista (50% no ato da compra)" : infos.prazo
+		const paymentTerms = infos.prazo === "1" || infos.prazo === 1 ? "À vista" : infos.prazo
 		const valorFrete = normalizarValorMonetario( infos.Valfrete )
 		let valorSubTotal = 0
 		const valorDesconto = normalizarValorMonetario( infos.Desconto )
