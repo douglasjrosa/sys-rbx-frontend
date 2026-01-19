@@ -431,7 +431,9 @@ function Empresas () {
 	const carregarVendedores = useCallback( async () => {
 		try {
 			const res = await axios.get( '/api/db/user/getGeral' )
-			setVendedores( res.data || [] )
+			// Filtrar apenas vendedores ativos (não bloqueados)
+			const vendedoresAtivos = ( res.data || [] ).filter( ( v: any ) => !v.blocked )
+			setVendedores( vendedoresAtivos )
 		} catch ( error ) {
 			console.error( "Erro ao carregar vendedores:", error )
 		}
@@ -475,7 +477,8 @@ function Empresas () {
 
 		setCarregandoSemVendedor( true )
 		try {
-			const res = await axios( `/api/db/empresas/empresalist/ausente?page=${ pagina }&filtro=${ encodeURIComponent( filtro ) }&filtroCNAE=${ encodeURIComponent( filtroCNAE ) }&sort=${ ordemClassificacao }` )
+			// Empresas sem vendedor sempre ordenadas por nome (não usa ordemClassificacao)
+			const res = await axios( `/api/db/empresas/empresalist/ausente?page=${ pagina }&filtro=${ encodeURIComponent( filtro ) }&filtroCNAE=${ encodeURIComponent( filtroCNAE ) }&sort=relevancia` )
 			const dataAtual = startOfDay( new Date() )
 			const isAdmin = session.user.pemission === 'Adm'
 
@@ -497,7 +500,7 @@ function Empresas () {
 		} finally {
 			setCarregandoSemVendedor( false )
 		}
-	}, [ session?.user.id, session?.user.name, session?.user.pemission, processarEmpresasSemVendedor, toast, filtroCNAE, ordemClassificacao ] )
+	}, [ session?.user.id, session?.user.name, session?.user.pemission, processarEmpresasSemVendedor, toast, filtroCNAE ] )
 
 	// Carregar dados iniciais - apenas carregar vendedores e marcar como inicializado
 	useEffect( () => {
@@ -519,14 +522,14 @@ function Empresas () {
 	}, [ paginaAtualComVendedor, filtroTexto, filtroCNAE, filtroVendedorId, ordemClassificacao, session?.user.id ] )
 
 	// Carregar empresas sem vendedor quando mudar paginação, filtro de texto ou filtro de CNAE
-	// NOTA: ordemClassificacao recarrega da API
+	// NOTA: ordemClassificacao NÃO afeta empresas sem vendedor (apenas ordenação local por nome)
 	// IMPORTANTE: Ignorar se ainda não foi inicializado para evitar conflito com useEffect inicial
 	useEffect( () => {
 		if ( session?.user.id && inicializadoRef.current ) {
 			carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ paginaAtualSemVendedor, filtroTexto, filtroCNAE, ordemClassificacao, session?.user.id ] )
+	}, [ paginaAtualSemVendedor, filtroTexto, filtroCNAE, session?.user.id ] )
 
 	// Filtrar e ordenar empresas com vendedor localmente
 	const empresasComVendedorFiltradas = useMemo( () => {
@@ -558,9 +561,8 @@ function Empresas () {
 	// Função para lidar com mudança de ordenação
 	const handleOrdemClassificacaoChange = useCallback( ( novaOrdem: "relevancia" | "expiracao" ) => {
 		setOrdemClassificacao( novaOrdem )
-		// Resetar paginação ao mudar ordenação para começar do início da nova ordenação
+		// Resetar paginação apenas para empresas com vendedor (ordenação só afeta essa aba)
 		setPaginaAtualComVendedor( 1 )
-		setPaginaAtualSemVendedor( 1 )
 	}, [] )
 
 	// Função para lidar com mudança de filtro de vendedor
@@ -746,23 +748,25 @@ function Empresas () {
 						<Box>
 							<FiltroCNAE ref={ filtroCNAERef } cnae={ handleFiltroCNAE } />
 						</Box>
-						<Box>
-							<FormLabel fontSize="xs" fontWeight="md">
-								Ordenar por
-							</FormLabel>
-							<Select
-								size="sm"
-								borderColor="white"
-								focusBorderColor="white"
-								rounded="md"
-								value={ ordemClassificacao }
-								onChange={ ( e ) => handleOrdemClassificacaoChange( e.target.value as "relevancia" | "expiracao" ) }
-								w="150px"
-							>
-								<option value="relevancia" style={ { backgroundColor: "#1A202C", color: 'white' } }>Relevância</option>
-								<option value="expiracao" style={ { backgroundColor: "#1A202C", color: 'white' } }>Data de expiração</option>
-							</Select>
-						</Box>
+						{ tabIndex === 0 && (
+							<Box>
+								<FormLabel fontSize="xs" fontWeight="md">
+									Ordenar por
+								</FormLabel>
+								<Select
+									size="sm"
+									borderColor="white"
+									focusBorderColor="white"
+									rounded="md"
+									value={ ordemClassificacao }
+									onChange={ ( e ) => handleOrdemClassificacaoChange( e.target.value as "relevancia" | "expiracao" ) }
+									w="150px"
+								>
+									<option value="relevancia" style={ { backgroundColor: "#1A202C", color: 'white' } }>Relevância</option>
+									<option value="expiracao" style={ { backgroundColor: "#1A202C", color: 'white' } }>Data de expiração</option>
+								</Select>
+							</Box>
+						) }
 						{ isAdmin && (
 							<Box>
 								<FormLabel fontSize="xs" fontWeight="md">

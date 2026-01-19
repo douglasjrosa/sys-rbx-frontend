@@ -246,7 +246,7 @@ export const CarteiraVendedor = memo( ( {
 						</Link>
 					</td>
 					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						{ empresa.attributes.CNAE ? (
+						{ empresa.attributes.CNAE && (
 							<Flex justifyContent="center" alignItems="center" w="100%">
 								<Badge
 									colorScheme="blue"
@@ -262,18 +262,16 @@ export const CarteiraVendedor = memo( ( {
 									{ empresa.attributes.CNAE }
 								</Badge>
 							</Flex>
-						) : (
-							<Text textAlign="center">-</Text>
 						) }
 					</td>
 					{ showVendedor && (
 						<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>{ vendedorNome }</td>
 					) }
 					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						<Flex w={ '100%' } justifyContent={ 'center' } onClick={ ( e ) => e.stopPropagation() }>
-							<Tooltip
-								label={
-									dadosHistorico ? ( () => {
+						{ dadosHistorico && (
+							<Flex w={ '100%' } justifyContent={ 'center' } onClick={ ( e ) => e.stopPropagation() }>
+								<Tooltip
+									label={ ( () => {
 										const purchaseFrequency = empresa.attributes.purchaseFrequency || null
 										const valorFormatado = dadosHistorico.valor ? ( () => {
 											// Converter para número se for string
@@ -315,19 +313,19 @@ export const CarteiraVendedor = memo( ( {
 												) }
 											</Box>
 										)
-									} )() : "Não há negócios"
-								}
-								hasArrow
-								bg={ getBackgroundColor( corHistorico ) }
-								color={ getTextColor( getBackgroundColor( corHistorico ) ) }
-								fontSize="xs"
-								placement="top"
-							>
-								<span style={ { display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' } }>
-									<FaMoneyBillAlt color={ getBackgroundColor( corHistorico ) } fontSize={ '1.5rem' } />
-								</span>
-							</Tooltip>
-						</Flex>
+									} )() }
+									hasArrow
+									bg={ getBackgroundColor( corHistorico ) }
+									color={ getTextColor( getBackgroundColor( corHistorico ) ) }
+									fontSize="xs"
+									placement="top"
+								>
+									<span style={ { display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' } }>
+										<FaMoneyBillAlt color={ getBackgroundColor( corHistorico ) } fontSize={ '1.5rem' } />
+									</span>
+								</Tooltip>
+							</Flex>
+						) }
 					</td>
 					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
 						{ mostrarIconeInteracao && (

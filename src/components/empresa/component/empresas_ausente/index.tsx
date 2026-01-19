@@ -128,7 +128,7 @@ export const CarteiraAusente = memo( ( {
 		if ( !filtro || filtro.length === 0 ) {
 			return (
 				<tr>
-					<td colSpan={ 5 } style={ { textAlign: 'center', padding: '1rem' } }>
+					<td colSpan={ 4 } style={ { textAlign: 'center', padding: '1rem' } }>
 						Nenhuma empresa encontrada
 					</td>
 				</tr>
@@ -237,7 +237,7 @@ export const CarteiraAusente = memo( ( {
 						</Link>
 					</td>
 					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						{ empresa.attributes.CNAE ? (
+						{ empresa.attributes.CNAE && (
 							<Flex justifyContent="center">
 								<Badge
 									colorScheme="blue"
@@ -253,15 +253,13 @@ export const CarteiraAusente = memo( ( {
 									{ empresa.attributes.CNAE }
 								</Badge>
 							</Flex>
-						) : (
-							<Text textAlign="center">-</Text>
 						) }
 					</td>
 					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						<Flex w={ '100%' } justifyContent={ 'center' } onClick={ ( e ) => e.stopPropagation() }>
-							<Tooltip
-								label={
-									dadosHistorico ? ( () => {
+						{ dadosHistorico && (
+							<Flex w={ '100%' } justifyContent={ 'center' } onClick={ ( e ) => e.stopPropagation() }>
+								<Tooltip
+									label={ ( () => {
 										const purchaseFrequency = empresa.attributes.purchaseFrequency || null
 										const valorFormatado = dadosHistorico.valor ? ( () => {
 											// Converter para número se for string
@@ -303,7 +301,7 @@ export const CarteiraAusente = memo( ( {
 												) }
 											</Box>
 										)
-									} )() : "Não há negócios"
+									} )()
 								}
 								hasArrow
 								bg={ getBackgroundColor( corHistorico ) }
@@ -315,7 +313,8 @@ export const CarteiraAusente = memo( ( {
 									<FaMoneyBillAlt color={ getBackgroundColor( corHistorico ) } fontSize={ '1.5rem' } />
 								</span>
 							</Tooltip>
-						</Flex>
+							</Flex>
+						) }
 					</td>
 					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
 						{ mostrarIconeInteracao && (
@@ -390,43 +389,6 @@ export const CarteiraAusente = memo( ( {
 							</Flex>
 						) }
 					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						{ ( () => {
-							const expiresIn = empresa.attributes.expiresIn
-							if ( !expiresIn ) {
-								return <Text textAlign="center">-</Text>
-							}
-
-							try {
-								const dataExpiracao = parseISO( expiresIn )
-								const agora = new Date()
-								const diasRestantes = differenceInDays( dataExpiracao, agora )
-								const dataFormatada = dataExpiracao.toLocaleDateString( 'pt-BR' )
-
-								let corTexto = 'white'
-								let opacidade = 1
-
-								if ( diasRestantes < 0 ) {
-									// Já expirado - branco com opacidade menor
-									opacidade = 0.6
-								} else if ( diasRestantes <= 5 ) {
-									// Últimos 5 dias - vermelho
-									corTexto = '#EF4444'
-								} else if ( diasRestantes <= 15 ) {
-									// Próximos 15 dias - amarelo
-									corTexto = '#EAB308'
-								}
-
-								return (
-									<Text color={ corTexto } opacity={ opacidade } textAlign="center">
-										{ dataFormatada }
-									</Text>
-								)
-							} catch ( error ) {
-								return <Text textAlign="center">-</Text>
-							}
-						} )() }
-					</td>
         </tr>
 			)
 		} )
@@ -497,7 +459,6 @@ export const CarteiraAusente = memo( ( {
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '10%', textTransform: 'uppercase' } }>CNAE</th>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '15%', textTransform: 'uppercase' } }>Negócios</th>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '6%', textTransform: 'uppercase' } }>Interações</th>
-							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '15%', textTransform: 'uppercase' } }>Expira em</th>
               </tr>
             </thead>
             <tbody>
