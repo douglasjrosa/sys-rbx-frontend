@@ -1,6 +1,7 @@
 import axios from "axios"
 import { NextApiRequest, NextApiResponse } from "next"
 import { LogEmpresa } from "../../lib/logEmpresa"
+import { calculateExpiresInFromFrequency } from "../../lib/update-empresa-purchase"
 
 export default async function PostEmpresa (
 	req: NextApiRequest,
@@ -27,6 +28,35 @@ export default async function PostEmpresa (
 				}
 			)
 
+			// If empresa has vendedor assigned, set purchaseFrequency and expiresIn
+			const empresaId = response.data?.data?.id
+			const temVendedor = bodyData.vendedor || bodyData.user || bodyData.vendedorId
+
+			if ( empresaId && temVendedor ) {
+				try {
+					// For new empresas: purchaseFrequency = "Raramente" and expiresIn = 12 months from now
+					const expiresIn = calculateExpiresInFromFrequency( "Raramente" )
+
+					await axios.put(
+						`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/empresas/${ empresaId }`,
+						{
+							data: {
+								purchaseFrequency: "Raramente",
+								expiresIn: expiresIn,
+							},
+						},
+						{
+							headers: {
+								Authorization: `Bearer ${ token }`,
+								"Content-Type": "application/json",
+							},
+						}
+					)
+				} catch ( error: any ) {
+					console.error( `Error setting purchaseFrequency and expiresIn for new empresa ${ empresaId }:`, error.response?.data || error.message )
+					// Don't fail the request if this update fails
+				}
+			}
 
 			await LogEmpresa( data, "POST", Vendedor )
 

@@ -6,6 +6,8 @@ import { LogEmpresa } from "@/pages/api/lib/logEmpresa"
 import { PUT_Strapi } from "@/pages/api/lib/request_strapi/put"
 import { PUT_PHP } from "@/pages/api/lib/request_php/put"
 import { DELET_PHP } from "@/pages/api/lib/request_php/delete"
+import { calculateExpiresInFromFrequency } from "@/pages/api/lib/update-empresa-purchase"
+import axios from "axios"
 
 export default async function GetEmpresa (
 	req: NextApiRequest,
@@ -22,10 +24,52 @@ export default async function GetEmpresa (
 			const DadosAtual: any = await getEmpresa( id )
 			const SaveLog = await LogEmpresa( DadosAtual, "PUT", Vendedor )
 
+			// Check if vendedor was assigned (user or vendedor was updated with a valid value)
+			const bodyData = data.data
+			const vendedorAssigned = (
+				( bodyData?.user !== undefined && bodyData?.user !== null ) ||
+				( bodyData?.vendedor !== undefined && bodyData?.vendedor !== null && bodyData?.vendedor !== "" ) ||
+				( bodyData?.vendedorId !== undefined && bodyData?.vendedorId !== null && bodyData?.vendedorId !== "" )
+			)
+
+			if ( vendedorAssigned ) {
+				try {
+					const token = process.env.ATORIZZATION_TOKEN
+					// Fetch current empresa data to get purchaseFrequency
+					const empresaResponse = await axios.get(
+						`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/empresas/${ id }?fields[0]=purchaseFrequency`,
+						{
+							headers: {
+								Authorization: `Bearer ${ token }`,
+								"Content-Type": "application/json",
+							},
+						}
+					)
+
+					const purchaseFrequency = empresaResponse.data?.data?.attributes?.purchaseFrequency || null
+
+					// Calculate expiresIn based on purchaseFrequency from current date
+					if ( purchaseFrequency ) {
+						const expiresIn = calculateExpiresInFromFrequency( purchaseFrequency )
+						if ( expiresIn ) {
+							data.data.expiresIn = expiresIn
+						}
+					} else {
+						// If no purchaseFrequency, set to Raramente with 12 months
+						data.data.purchaseFrequency = "Raramente"
+						const expiresIn = calculateExpiresInFromFrequency( "Raramente" )
+						if ( expiresIn ) {
+							data.data.expiresIn = expiresIn
+						}
+					}
+				} catch ( error: any ) {
+					console.error( `Error fetching empresa data to calculate expiresIn:`, error.response?.data || error.message )
+					// Don't fail the request if this fails
+				}
+			}
+
 			const UrlStrapi = `/empresas/${ id }`
 			const ResposeStrapi = await PUT_Strapi( data, UrlStrapi )
-
-			const bodyData = data.data
 
 			const DataRbx = {
 				nome: bodyData.nome,

@@ -53,12 +53,12 @@ export default async function GetEmpresa (
 	res: NextApiResponse
 ) {
 	if ( req.method === "GET" ) {
-		const { proposta, montFree, expoFree, cleanDefaultObs, latam } = req.query
+		const { proposta, montFree, expoFree, cleanDefaultObs, latam, obsFree } = req.query
 
 		const latamActive = latam !== undefined
 		const montFreeActive = montFree !== undefined || latamActive
 		const expoFreeActive = expoFree !== undefined || latamActive
-		const cleanDefaultObsActive = cleanDefaultObs !== undefined || latamActive
+		const obsFreeActive = obsFree !== undefined || latamActive
 
 		const infos = await getData( proposta )
 
@@ -622,7 +622,7 @@ export default async function GetEmpresa (
 								{
 									margin: [ 8, 5, 8, 5 ],
 									stack: [
-										...( !cleanDefaultObsActive ? [ {
+										...( !obsFreeActive ? [ {
 											text: "• Por padrão, todas as ambalagens são enviadas desmontadas;\n• Serviço de Montagem (+10%) deve ser solicitado na cotação;\n• Tratamento para Exportação (+10%) deve ser solicitado na cotação.",
 											fontSize: 10,
 											lineHeight: 2

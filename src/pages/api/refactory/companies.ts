@@ -3,6 +3,7 @@ import axios from 'axios'
 import qs from 'qs'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../auth/[...nextauth]'
+import { calculateExpiresInFromFrequency } from '../lib/update-empresa-purchase'
 
 export default async function handler (
 	req: NextApiRequest,
@@ -67,6 +68,48 @@ export default async function handler (
 
 			if ( !strapiUrl || !authToken ) {
 				return res.status( 500 ).json( { error: 'Missing API URL or authorization token' } )
+			}
+
+			// Check if vendedor was assigned (user or vendedor was updated with a valid value)
+			const vendedorAssigned = (
+				( dataToUpdate.user !== undefined && dataToUpdate.user !== null ) ||
+				( dataToUpdate.vendedor !== undefined && dataToUpdate.vendedor !== null && dataToUpdate.vendedor !== "" ) ||
+				( dataToUpdate.vendedorId !== undefined && dataToUpdate.vendedorId !== null && dataToUpdate.vendedorId !== "" )
+			)
+
+			if ( vendedorAssigned ) {
+				try {
+					// Fetch current empresa data to get purchaseFrequency
+					const empresaResponse = await axios.get(
+						`${ strapiUrl }/empresas/${ id }?fields[0]=purchaseFrequency`,
+						{
+							headers: {
+								Authorization: `Bearer ${ authToken }`,
+								"Content-Type": "application/json",
+							},
+						}
+					)
+
+					const purchaseFrequency = empresaResponse.data?.data?.attributes?.purchaseFrequency || null
+
+					// Calculate expiresIn based on purchaseFrequency from current date
+					if ( purchaseFrequency ) {
+						const expiresIn = calculateExpiresInFromFrequency( purchaseFrequency )
+						if ( expiresIn ) {
+							dataToUpdate.expiresIn = expiresIn
+						}
+					} else {
+						// If no purchaseFrequency, set to Raramente with 12 months
+						dataToUpdate.purchaseFrequency = "Raramente"
+						const expiresIn = calculateExpiresInFromFrequency( "Raramente" )
+						if ( expiresIn ) {
+							dataToUpdate.expiresIn = expiresIn
+						}
+					}
+				} catch ( error: any ) {
+					console.error( `Error fetching empresa data to calculate expiresIn:`, error.response?.data || error.message )
+					// Don't fail the request if this fails
+				}
 			}
 
 			console.log( 'Sending data to Strapi:', { data: dataToUpdate } )

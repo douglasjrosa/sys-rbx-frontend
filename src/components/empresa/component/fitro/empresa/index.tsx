@@ -1,5 +1,5 @@
-import { Button, Flex, FormLabel, Input } from "@chakra-ui/react"
-import { memo, useCallback, useState } from "react"
+import { FormLabel, Input } from "@chakra-ui/react"
+import { memo, useCallback, useEffect, useState } from "react"
 
 type FiltroEmpresaProps = {
 	empresa: ( searchText: string ) => void
@@ -8,17 +8,19 @@ type FiltroEmpresaProps = {
 export const FiltroEmpresa = memo( ( { empresa }: FiltroEmpresaProps ) => {
 	const [ searchText, setSearchText ] = useState<string>( '' )
 
-	const handleSearch = useCallback( () => {
-		empresa( searchText )
-	}, [ empresa, searchText ] )
-
-	const handleBlur = useCallback( ( e: React.FocusEvent<HTMLInputElement> ) => {
-		const value = e.target.value
-		if ( value.length === 0 ) {
-			setSearchText( '' )
+	// Dispara a busca automaticamente quando o texto tiver 3 ou mais caracteres
+	useEffect( () => {
+		if ( searchText.length >= 3 ) {
+			empresa( searchText )
+		} else if ( searchText.length === 0 ) {
+			// Limpa o filtro quando o campo estiver vazio
 			empresa( '' )
 		}
-	}, [ empresa ] )
+	}, [ searchText, empresa ] )
+
+	const handleChange = useCallback( ( e: React.ChangeEvent<HTMLInputElement> ) => {
+		setSearchText( e.target.value )
+	}, [] )
 
 	return (
 		<>
@@ -28,26 +30,15 @@ export const FiltroEmpresa = memo( ( { empresa }: FiltroEmpresaProps ) => {
 			>
 				Empresa
 			</FormLabel>
-			<Flex gap={ 5 }>
-				<Input
-					type="text"
-					size={ 'sm' }
-					borderColor="white"
-					focusBorderColor="white"
-					rounded="md"
-					onChange={ ( e ) => setSearchText( e.target.value ) }
-					value={ searchText }
-					onBlur={ handleBlur }
-				/>
-				<Button
-					px={ 8 }
-					size={ 'sm' }
-					onClick={ handleSearch }
-					colorScheme="green"
-				>
-					Filtro
-				</Button>
-			</Flex>
+			<Input
+				type="text"
+				size={ 'sm' }
+				borderColor="white"
+				focusBorderColor="white"
+				rounded="md"
+				onChange={ handleChange }
+				value={ searchText }
+			/>
 		</>
 	)
 } )
