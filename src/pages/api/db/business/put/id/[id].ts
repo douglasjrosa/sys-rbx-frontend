@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { updateEmpresaPurchase } from '../../../../lib/update-empresa-purchase'
 
 export default async function GetEmpresa (
 	req: NextApiRequest,
@@ -10,8 +11,11 @@ export default async function GetEmpresa (
 		const token = process.env.ATORIZZATION_TOKEN
 		const { id } = req.query
 		const data = req.body
+		const etapa = data?.data?.etapa
+		const andamento = data?.data?.andamento
+		const date_conclucao = data?.data?.date_conclucao
 		// #region agent log
-		fetch('http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'[id].ts:12',message:'API PUT request received',data:{id,dataKeys:Object.keys(data?.data||{}),etapa:data?.data?.etapa,andamento:data?.data?.andamento},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+		fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: '[id].ts:12', message: 'API PUT request received', data: { id, dataKeys: Object.keys( data?.data || {} ), etapa: data?.data?.etapa, andamento: data?.data?.andamento }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C' } ) } ).catch( () => { } )
 		// #endregion
 
 
@@ -26,14 +30,57 @@ export default async function GetEmpresa (
 		} )
 			.then( async ( Response ) => {
 				// #region agent log
-				fetch('http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'[id].ts:24',message:'Strapi PUT successful',data:{status:Response.status,responseId:Response.data?.data?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+				fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: '[id].ts:24', message: 'Strapi PUT successful', data: { status: Response.status, responseId: Response.data?.data?.id }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C' } ) } ).catch( () => { } )
 				// #endregion
+
+				// If business was won (etapa=6 and andamento=5), update empresa purchase data
+				if ( etapa === 6 && andamento === 5 ) {
+					try {
+						// Fetch business data to get empresa and pedidos
+						const businessResponse = await axios.get(
+							`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses/${ id }?fields[0]=date_conclucao&populate[empresa][fields][0]=id&populate[pedidos][fields][0]=totalGeral`,
+							{
+								headers: {
+									Authorization: `Bearer ${ token }`,
+									'Content-Type': 'application/json',
+								},
+							}
+						)
+
+						const businessData = businessResponse.data.data
+						const empresaId = businessData?.attributes?.empresa?.data?.id
+						const pedidos = businessData?.attributes?.pedidos?.data || []
+						const dataCompra = date_conclucao || businessData?.attributes?.date_conclucao || new Date().toISOString().slice( 0, 10 )
+
+						// Get totalGeral from the first pedido (or sum all pedidos if needed)
+						const valorCompra = pedidos.length > 0
+							? pedidos[ 0 ]?.attributes?.totalGeral || null
+							: null
+
+						if ( empresaId ) {
+							// Update empresa purchase data asynchronously (fire-and-forget)
+							// This doesn't block the response to the client
+							updateEmpresaPurchase( {
+								empresaId: String( empresaId ),
+								dataCompra,
+								valorCompra,
+								token: token || "",
+							} ).catch( ( error: any ) => {
+								console.error( `Failed to update empresa purchase data for empresa ${ empresaId }:`, error )
+							} )
+						}
+					} catch ( error: any ) {
+						console.error( `Error fetching business data to update empresa purchase:`, error.response?.data || error.message )
+						// Don't fail the request if empresa update fails
+					}
+				}
+
 				res.status( 200 ).json( Response.data.data )
 
 			} )
 			.catch( ( err ) => {
 				// #region agent log
-				fetch('http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'[id].ts:28',message:'Strapi PUT failed',data:{status:err.response?.status,errorMessage:err.message,errorDetails:err.response?.data?.error,strapiError:JSON.stringify(err.response?.data)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B,C'})}).catch(()=>{});
+				fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: '[id].ts:28', message: 'Strapi PUT failed', data: { status: err.response?.status, errorMessage: err.message, errorDetails: err.response?.data?.error, strapiError: JSON.stringify( err.response?.data ) }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'B,C' } ) } ).catch( () => { } )
 				// #endregion
 				console.error( 'Error updating business:', err )
 

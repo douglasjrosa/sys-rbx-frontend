@@ -19,6 +19,8 @@ export default async function GetEmpresaVendedor (
 			const userId = req.query.userId || ""
 			const page = parseInt( req.query.page as string ) || 1
 			const filtroTexto = req.query.filtro || ""
+			const filtroCNAE = req.query.filtroCNAE as string || ""
+			const sortOrder = req.query.sort as string || "relevancia"
 			const pageSize = 50 // Número de itens por página
 
 			// Definir filtros com base no userId e texto de filtro
@@ -47,13 +49,30 @@ export default async function GetEmpresaVendedor (
 				}
 			}
 
-			const queryParams = {
-				sort: [ 'nome:asc' ],
-				fields: [ 'nome' ],
+			// Adicionar filtro por CNAE se houver
+			if ( filtroCNAE ) {
+				filters.CNAE = {
+					$containsi: filtroCNAE
+				}
+			}
+
+			// Definir ordenação para o Strapi
+			const strapiSort = sortOrder === "expiracao" 
+				? [ 'expiresIn:asc' ] 
+				: [ 'nome:asc' ];
+
+			const queryParams: any = {
+				fields: [ 'nome', 'ultima_compra', 'valor_ultima_compra', 'expiresIn', 'purchaseFrequency', 'CNAE' ],
 				populate: {
-					businesses: '*',
+					businesses: {
+						populate: {
+							vendedor: {
+								fields: [ 'username' ]
+							}
+						}
+					},
 					interacaos: {
-						fields: [ 'proxima', 'vendedor_name', 'status_atendimento' ]
+						fields: [ 'proxima', 'vendedor_name', 'status_atendimento', 'descricao', 'tipo', 'objetivo', 'createdAt' ]
 					},
 					user: {
 						fields: [ 'username' ]
@@ -66,7 +85,15 @@ export default async function GetEmpresaVendedor (
 				filters
 			}
 
-			const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/empresas?${ qs.stringify( queryParams ) }`
+			// Adicionar ordenação manualmente para garantir que o Strapi receba no formato correto
+			let queryString = qs.stringify( queryParams, { encodeValuesOnly: true } )
+			if ( sortOrder === "expiracao" ) {
+				queryString += '&sort[0]=expiresIn:asc&sort[1]=nome:asc'
+			} else {
+				queryString += '&sort[0]=nome:asc'
+			}
+
+			const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/empresas?${ queryString }`
 
 			const response = await GET_Strapi( url )
 			res.status( 200 ).json( response )
