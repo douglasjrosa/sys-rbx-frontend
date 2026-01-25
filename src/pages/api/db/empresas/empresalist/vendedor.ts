@@ -1,10 +1,19 @@
 /* eslint-disable no-undef */
 import { GET_Strapi } from "@/pages/api/lib/request_strapi/get"
 import { NextApiRequest, NextApiResponse } from "next"
-import qs from "qs"
 
 /**
  * GetEmpresaVendedor function to fetch empresas with vendedor from the API.
+ * Uses the custom backend route /empresas/vendedor which handles sorting internally.
+ *
+ * IMPORTANTE: O backend DEVE retornar os dados com `businesses` e `interacaos` populados.
+ * O frontend precisa desses dados para exibir informações sobre negócios e interações.
+ *
+ * Campos necessários em businesses:
+ * - etapa, andamento, date_conclucao, Budget, vendedor_name, pedidos (com totalGeral)
+ *
+ * Campos necessários em interacaos:
+ * - proxima, vendedor_name, status_atendimento, descricao, tipo, objetivo, createdAt
  *
  * @param req - The NextApiRequest object.
  * @param res - The NextApiResponse object.
@@ -20,82 +29,82 @@ export default async function GetEmpresaVendedor (
 			const page = parseInt( req.query.page as string ) || 1
 			const filtroTexto = req.query.filtro || ""
 			const filtroCNAE = req.query.filtroCNAE as string || ""
+			const filtroCidade = req.query.filtroCidade as string || ""
 			const sortOrder = req.query.sort as string || "relevancia"
-			const pageSize = 50 // Número de itens por página
+			const pageSize = 50
 
-			// Definir filtros com base no userId e texto de filtro
-			let filters: any = {}
+			// Build query string for the custom backend route
+			const queryParams = new URLSearchParams()
+			if ( userId ) queryParams.append( 'userId', userId as string )
+			queryParams.append( 'page', page.toString() )
+			queryParams.append( 'pageSize', pageSize.toString() )
+			queryParams.append( 'sortOrder', sortOrder )
+			if ( filtroTexto ) queryParams.append( 'filtroTexto', filtroTexto as string )
+			if ( filtroCNAE ) queryParams.append( 'filtroCNAE', filtroCNAE )
+			if ( filtroCidade ) queryParams.append( 'filtroCidade', filtroCidade )
 
-			if ( userId === "" ) {
-				// Se userId for vazio, retornar todas as empresas com vendedor
-				filters = {
-					user: {
-						id: { $notNull: true }
-					}
-				}
-			} else {
-				// Filtro específico para empresas do vendedor atual
-				filters = {
-					user: {
-						id: { $eq: userId }
-					}
-				}
-			}
+			const url = `/empresas/vendedor?${ queryParams.toString() }`
 
-			// Adicionar filtro por nome se houver texto de busca
-			if ( filtroTexto ) {
-				filters.nome = {
-					$containsi: filtroTexto
-				}
-			}
-
-			// Adicionar filtro por CNAE se houver
-			if ( filtroCNAE ) {
-				filters.CNAE = {
-					$containsi: filtroCNAE
-				}
-			}
-
-			// Definir ordenação para o Strapi
-			const strapiSort = sortOrder === "expiracao" 
-				? [ 'expiresIn:asc' ] 
-				: [ 'nome:asc' ];
-
-			const queryParams: any = {
-				fields: [ 'nome', 'ultima_compra', 'valor_ultima_compra', 'expiresIn', 'purchaseFrequency', 'CNAE' ],
-				populate: {
-					businesses: {
-						populate: {
-							vendedor: {
-								fields: [ 'username' ]
-							}
-						}
-					},
-					interacaos: {
-						fields: [ 'proxima', 'vendedor_name', 'status_atendimento', 'descricao', 'tipo', 'objetivo', 'createdAt' ]
-					},
-					user: {
-						fields: [ 'username' ]
-					}
-				},
-				pagination: {
-					page,
-					pageSize
-				},
-				filters
-			}
-
-			// Adicionar ordenação manualmente para garantir que o Strapi receba no formato correto
-			let queryString = qs.stringify( queryParams, { encodeValuesOnly: true } )
-			if ( sortOrder === "expiracao" ) {
-				queryString += '&sort[0]=expiresIn:asc&sort[1]=nome:asc'
-			} else {
-				queryString += '&sort[0]=nome:asc'
-			}
-
-			const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/empresas?${ queryString }`
+			console.log( `📄 [VENDEDOR] Requisição para backend: page=${ page }, pageSize=${ pageSize }` )
 
 			const response = await GET_Strapi( url )
+
+			console.log( `📄 [VENDEDOR] Resposta: ${ response?.data?.length || 0 } empresas, meta.pagination:`, response?.meta?.pagination )
+
+			// Log simplificado para análise de ordenação
+			if ( response?.data && Array.isArray( response.data ) && response.data.length > 0 && sortOrder === 'relevancia' ) {
+				const logData = response.data.map( ( empresa: any ) => {
+					// Última interação
+					const interacoes = empresa.attributes?.interacaos?.data || []
+					const ultimaInteracao = interacoes.length > 0 ? interacoes[ interacoes.length - 1 ] : null
+					const dataProximaDaInteracao = ultimaInteracao
+						? ( ultimaInteracao.attributes?.proxima || ultimaInteracao.proxima )
+						: null
+
+					// Negócios concluídos (etapa === 6)
+					const negocios = empresa.attributes?.businesses?.data || []
+					const negociosConcluidos = negocios.filter( ( n: any ) => {
+						const etapa = n.attributes?.etapa || n.etapa
+						return etapa === 6
+					} )
+
+					// Último negócio (ganho ou perdido)
+					const ultimoNegocio = negociosConcluidos
+						.sort( ( a: any, b: any ) => {
+							const dataA = ( a.attributes?.date_conclucao || a.date_conclucao ) ? new Date( a.attributes?.date_conclucao || a.date_conclucao ).getTime() : 0
+							const dataB = ( b.attributes?.date_conclucao || b.date_conclucao ) ? new Date( b.attributes?.date_conclucao || b.date_conclucao ).getTime() : 0
+							return dataB - dataA
+						} )[ 0 ]
+
+					// Status e valor
+					let status = null
+					let valor = null
+					if ( ultimoNegocio ) {
+						const andamento = ultimoNegocio.attributes?.andamento || ultimoNegocio.andamento
+						status = andamento === 5 ? 'Ganho' : 'Perdido'
+
+						// Calcular valor
+						const pedidos = ultimoNegocio.pedidos || ultimoNegocio.attributes?.pedidos || []
+						const pedidosArray = Array.isArray( pedidos ) ? pedidos : pedidos?.data || []
+						valor = ultimoNegocio.Budget || ultimoNegocio.attributes?.Budget ||
+							( pedidosArray.length > 0 ? ( pedidosArray[ 0 ]?.totalGeral || pedidosArray[ 0 ]?.attributes?.totalGeral ) : null )
+					}
+
+					// Purchase Frequency
+					const purchaseFrequency = empresa.attributes?.purchaseFrequency || null
+
+					return {
+						nome: empresa.attributes?.nome || null,
+						dataProximaDaInteracao: dataProximaDaInteracao,
+						purchaseFrequency: purchaseFrequency,
+						status: status,
+						valor: valor
+					}
+				} )
+
+				console.log( JSON.stringify( logData, null, 2 ) )
+			}
+
 			res.status( 200 ).json( response )
 		} catch ( error ) {
 			res.status( 400 ).json( error )

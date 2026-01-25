@@ -45,7 +45,7 @@ function Navbar () {
 					m="10%"
 					bg={ 'white' }
 					p={ 3 }
-					src="https://ribermax.com.br/images/logomarca-h.webp?w=1080&q=75"
+					src="/img/logomarca-efect.jpg"
 					alt="Ribermax Logomarca"
 				/>
 				<Flex flexDir="column" m="10%">

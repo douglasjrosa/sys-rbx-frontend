@@ -424,7 +424,24 @@ const MobileNavbar = () => {
 						_hover={ { bg: 'gray.600' } }
 						_expanded={ { bg: 'gray.600' } }
 					/>
-					<MenuList bg="gray.700">
+					<MenuList
+						bg="gray.700"
+						borderColor="gray.600"
+						sx={ {
+							'& .chakra-menu__menu-item': {
+								backgroundColor: '#4A5568 !important',
+								color: 'white !important',
+							},
+							'& .chakra-menu__menu-item:hover': {
+								backgroundColor: '#718096 !important',
+								color: 'white !important',
+							},
+							'& .chakra-menu__menu-item:focus': {
+								backgroundColor: '#718096 !important',
+								color: 'white !important',
+							}
+						} }
+					>
 						{ NavMenuItems.map( ( item ) => {
 							if ( router.asPath === item.url ) {
 								fontColor = 'greenyellow'
@@ -440,11 +457,13 @@ const MobileNavbar = () => {
 									target={ item.url.includes( 'https' ) ? '_blank' : '_self' }
 								>
 									<MenuItem
-										_hover={ { bg: 'gray.600' } }
+										bg="gray.600"
+										_hover={ { bg: 'gray.500', color: 'white' } }
+										_focus={ { bg: 'gray.500', color: 'white' } }
 										key={ `mobile-nav-${ item.id }` }
 										icon={ item.iconComponent }
 										color={ fontColor }
-										>
+									>
 										{ item.text }
 									</MenuItem>
 								</NextLink>

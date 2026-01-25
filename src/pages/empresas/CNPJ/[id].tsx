@@ -1,6 +1,4 @@
-import { EtapasNegocio } from "@/components/data/etapa"
 import { ObjContato } from "@/components/data/objetivo"
-import { StatusAndamento } from "@/components/data/status"
 import { TipoContato } from "@/components/data/tipo"
 import { BtmRetorno } from "@/components/elements/btmRetorno"
 import Loading from "@/components/elements/loading"
@@ -8,10 +6,9 @@ import { MaskCep } from "@/function/Mask/cep"
 import { MaskCnpj } from "@/function/Mask/cnpj"
 import { formatarTelefone } from "@/function/Mask/telefone-whatsapp"
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso"
-import { capitalizeWords } from "@/function/captalize"
 import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Link, Switch } from "@chakra-ui/react"
 import axios from "axios"
-import { parseISO } from "date-fns"
+import { parseISO, differenceInDays } from "date-fns"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
@@ -48,6 +45,7 @@ export default function Infos () {
 	const [ vendedor, setVendedor ] = useState( '' )
 	const [ vendedorId, setVendedorId ] = useState( '' )
 	const [ maxPg, setMaxPg ] = useState( "" )
+	const [ purchaseFrequency, setPurchaseFrequency ] = useState( "" )
 	const [ load, setload ] = useState( true )
 	const toast = useToast()
 
@@ -105,8 +103,11 @@ export default function Infos () {
 				setTelefone( response.attributes?.fone )
 				setEmail( response.attributes?.email )
 				setHistorico( response.attributes?.history?.slice( -3 ) || [] )
-				setNegocio( response.attributes?.businesses?.data?.slice( -5 ) || [] )
+				const negocios = response.attributes?.businesses?.data || []
+				// Pega os últimos 8 e inverte a ordem (mais recentes primeiro)
+				setNegocio( negocios.slice( -8 ).reverse() )
 				setMaxPg( response.attributes?.maxPg || "" )
+				setPurchaseFrequency( response.attributes?.purchaseFrequency || "" )
 				try {
 					if ( session?.user.pemission === 'Adm' ) {
 						const request2 = await axios( `/api/db/empresas/interacoes/get_adm?Empresa=${ response.attributes?.nome }` )
@@ -247,22 +248,30 @@ export default function Infos () {
 				</Flex>
 				{ session?.user.pemission === 'Adm' && (
 					<FormControl my={ 3 }>
-						<Flex flexDir={ 'row' } gap={ 5 } alignItems={ 'center' } justifyContent={ 'space-around' }>
-							<Flex flexDir={ 'row' } gap={ 5 } alignItems={ 'center' } justifyContent={ 'space-between' }>
-								<chakra.p
-									color={ 'white' }
-									fontSize={ '0.8rem' }
-									alignItems={ 'center' }
-									justifyContent={ 'center' }
-								>Vendedor:</chakra.p>
+						<Flex 
+							flexDir={ { base: 'column', md: 'row' } } 
+							gap={ { base: 4, md: 5 } } 
+							alignItems={ { base: 'stretch', md: 'flex-start' } }
+							justifyContent={ { base: 'flex-start', md: 'space-around' } }
+							flexWrap="wrap"
+						>
+							<Box flex={ { base: '1 1 100%', md: '1 1 0' } } minW={ { base: '100%', md: '200px' } }>
+								<FormLabel 
+									color={ 'white' } 
+									fontSize={ '0.8rem' } 
+									fontWeight="md"
+									mb={ 2 }
+								>
+									Vendedor
+								</FormLabel>
 								<Select
-									size='xs'
+									size='sm'
 									rounded={ 8 }
-									textAlign={ 'center' }
-									w={ '10rem' }
-									defaultValue={ vendedorId }
 									color="white"
 									bg='gray.800'
+									borderColor="gray.600"
+									focusBorderColor="blue.400"
+									defaultValue={ vendedorId }
 									onChange={ ( e ) => {
 										const selectedUser: any = users.find( ( user: any ) => user.id === Number( e.target.value ) )
 										setVendedor( selectedUser?.username || '' )
@@ -270,7 +279,7 @@ export default function Infos () {
 										setVendedorId( e.target.value )
 									} }
 								>
-									<option value="">Nenhum</option>
+									<option value="" style={ { backgroundColor: "#1A202C" } }>Nenhum</option>
 									{ users.map( ( user: any ) => (
 										<option
 											style={ { backgroundColor: "#1A202C" } }
@@ -281,175 +290,453 @@ export default function Infos () {
 										</option>
 									) ) }
 								</Select>
-							</Flex>
-							<Flex flexDir={ 'row' } gap={ 5 } alignItems={ 'center' } justifyContent={ 'space-between' }>
-								<chakra.p
-									color={ 'white' }
-									fontSize={ '0.8rem' }
-									alignItems={ 'center' }
-									justifyContent={ 'center' }
-								>Máximo prazo de pagamento (dias):</chakra.p>
+							</Box>
+							<Box flex={ { base: '1 1 100%', md: '1 1 0' } } minW={ { base: '100%', md: '200px' } }>
+								<FormLabel 
+									color={ 'white' } 
+									fontSize={ '0.8rem' } 
+									fontWeight="md"
+									mb={ 2 }
+								>
+									Máximo prazo de pagamento (dias)
+								</FormLabel>
 								<Input
-									size='xs'
+									size='sm'
 									rounded={ 8 }
-									w={ '5rem' }
-									textAlign={ 'center' }
 									color="white"
 									bg='gray.800'
+									borderColor="gray.600"
+									focusBorderColor="blue.400"
 									value={ maxPg || '' }
 									onChange={ ( e ) => setMaxPg( e.target.value ) }
+									type="number"
 								/>
-								<Button
-									size='xs'
+							</Box>
+							<Box flex={ { base: '1 1 100%', md: '1 1 0' } } minW={ { base: '100%', md: '200px' } }>
+								<FormLabel 
+									color={ 'white' } 
+									fontSize={ '0.8rem' } 
+									fontWeight="md"
+									mb={ 2 }
+								>
+									Frequência de compra
+								</FormLabel>
+								<Select
+									size='sm'
 									rounded={ 8 }
-									colorScheme='messenger'
-									onClick={ async () => {
-										try {
-											const request = await axios.put( `/api/refactory/companies`, {
-												id: ID,
-												user: vendedorId ? {
-													id: parseInt( vendedorId )
-												} : null,
-												vendedor: vendedor,
-												maxPg: maxPg
-											} )
-											if ( request.status === 200 ) {
-												toast( {
-													title: 'Sucesso.',
-													description: "Dados atualizados com sucesso",
-													status: 'success',
-													duration: 9000,
-													isClosable: true,
-												} )
-											}
-										} catch ( error ) {
-											console.error( error )
+									color="white"
+									bg='gray.800'
+									borderColor="gray.600"
+									focusBorderColor="blue.400"
+									value={ purchaseFrequency || '' }
+									onChange={ ( e ) => setPurchaseFrequency( e.target.value ) }
+								>
+									<option value="" style={ { backgroundColor: "#1A202C" } }>Selecione</option>
+									<option value="Mensalmente" style={ { backgroundColor: "#1A202C" } }>Mensalmente</option>
+									<option value="Eventualmente" style={ { backgroundColor: "#1A202C" } }>Eventualmente</option>
+									<option value="Raramente" style={ { backgroundColor: "#1A202C" } }>Raramente</option>
+								</Select>
+							</Box>
+						</Flex>
+						<Flex 
+							justifyContent={ { base: 'stretch', md: 'flex-end' } } 
+							mt={ { base: 4, md: 6 } }
+							w="100%"
+						>
+							<Button
+								size='md'
+								rounded={ 8 }
+								colorScheme='messenger'
+								w={ { base: '100%', md: 'auto' } }
+								minW={ { base: '100%', md: '150px' } }
+								onClick={ async () => {
+									try {
+										const request = await axios.put( `/api/refactory/companies`, {
+											id: ID,
+											user: vendedorId ? {
+												id: parseInt( vendedorId )
+											} : null,
+											vendedor: vendedor,
+											maxPg: maxPg,
+											purchaseFrequency: purchaseFrequency || null
+										} )
+										if ( request.status === 200 ) {
 											toast( {
-												title: 'Erro.',
-												description: "Erro ao atualizar dados",
-												status: 'error',
+												title: 'Sucesso.',
+												description: "Dados atualizados com sucesso",
+												status: 'success',
 												duration: 9000,
 												isClosable: true,
 											} )
 										}
-									} }
-								>
-									Atualizar
-								</Button>
-							</Flex>
+									} catch ( error ) {
+										console.error( error )
+										toast( {
+											title: 'Erro.',
+											description: "Erro ao atualizar dados",
+											status: 'error',
+											duration: 9000,
+											isClosable: true,
+										} )
+									}
+								} }
+							>
+								Atualizar
+							</Button>
 						</Flex>
 					</FormControl>
 				) }
 
 				{/* colunas */ }
-				<Flex w={ '100%' } h={ '90%' } justifyContent={ 'space-between' }>
-					<Flex h={ '100%' } w={ '50%' } flexDir={ 'column' } gap={ 3 } px={ 3 }>
+				<Flex w={ '100%' } h={ '90%' } flexDir={ 'column' } gap={ 3 }>
+					{/* Últimos Negócios e Últimas Interações lado a lado */ }
+					<Flex w={ '100%' } gap={ 3 }>
+					{/* últimos negocios - esquerda 50% */ }
+					<Box w={ '50%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
+						<Box><Heading size={ 'md' } mb={ 4 } color="white">Últimos Negocios</Heading></Box>
+						<Box
+							overflowX="auto"
+							overflowY="auto"
+							maxH="400px"
+							sx={ {
+								'&::-webkit-scrollbar': {
+									width: '8px',
+									height: '8px',
+								},
+								'&::-webkit-scrollbar-track': {
+									background: '#1A202C',
+									borderRadius: '4px',
+								},
+								'&::-webkit-scrollbar-thumb': {
+									background: '#4A5568',
+									borderRadius: '4px',
+								},
+								'&::-webkit-scrollbar-thumb:hover': {
+									background: '#718096',
+								},
+							} }
+						>
+							<table style={ { width: '100%', borderCollapse: 'separate', borderSpacing: 0 } }>
+								<thead style={ { position: 'sticky', top: 0, zIndex: 10, background: '#2d3748' } }>
+									<tr>
+										<th style={ {
+											textAlign: 'center',
+											fontWeight: 'bold',
+											fontSize: '0.875rem',
+											padding: '0.75rem 0.5rem',
+											borderBottom: '2px solid #4A5568',
+											color: 'white',
+											textTransform: 'uppercase',
+											letterSpacing: '0.05em'
+										} }>Data</th>
+										<th style={ {
+											textAlign: 'center',
+											fontWeight: 'bold',
+											fontSize: '0.875rem',
+											padding: '0.75rem 0.5rem',
+											borderBottom: '2px solid #4A5568',
+											color: 'white',
+											textTransform: 'uppercase',
+											letterSpacing: '0.05em'
+										} }>Vendedor</th>
+										<th style={ {
+											textAlign: 'center',
+											fontWeight: 'bold',
+											fontSize: '0.875rem',
+											padding: '0.75rem 0.5rem',
+											borderBottom: '2px solid #4A5568',
+											color: 'white',
+											textTransform: 'uppercase',
+											letterSpacing: '0.05em'
+										} }>Duração</th>
+										<th style={ {
+											textAlign: 'center',
+											fontWeight: 'bold',
+											fontSize: '0.875rem',
+											padding: '0.75rem 0.5rem',
+											borderBottom: '2px solid #4A5568',
+											color: 'white',
+											textTransform: 'uppercase',
+											letterSpacing: '0.05em'
+										} }>Valor</th>
+									</tr>
+								</thead>
+								<tbody>
+									{ Negocio && Negocio.length > 0 ? Negocio.map( ( i: any, index: number ) => {
+										if ( !i || !i.attributes ) return null
 
+										// Busca vendedor
+										const vendedor = i.attributes.vendedor?.data?.attributes?.username
+											|| i.attributes.vendedor_name
+											|| '-'
 
-						{/* constato */ }
-						<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ [ 3, 3, 5 ] }>
-							<Box><Heading size={ 'md' }>Contatos</Heading></Box>
-							<Box px={ [ 1, 2, 3, 5 ] } py={ 3 }>
+										// Busca dados dos pedidos para o valor
+										const pedidos = i.attributes.pedidos?.data || []
+										const primeiroPedido = pedidos.length > 0 ? pedidos[ 0 ] : null
 
-								{ !!Representantes && Representantes.map( ( item: any, index: number ) => {
-									const telefone = !item.attributes?.whatsapp ? item.attributes?.telefone : item.attributes?.whatsapp
+										// Valor pode vir de Budget ou totalGeral do pedido
+										const valorBudget = i.attributes?.Budget
+											? i.attributes.Budget.toString().replace( /\./g, '' ).replace( ',', '.' )
+											: null
 
-									return (
-										<Box key={ `representante-${ index }` }>
-											<Box>
-												<Heading size={ 'sm' }>{ item.attributes?.nome }</Heading>
-												<Flex w={ '100%' } p={ 1 }>
-													<Box w={ '50%' }>
-														<Flex gap={ 3 }>
-															<chakra.p>Cargo:</chakra.p>
-															<chakra.p>{ item.attributes?.cargo }</chakra.p>
-														</Flex>
-														<Flex gap={ 3 }>
-															<chakra.p>Departamento:</chakra.p>
-															<chakra.p>{ item.attributes?.departamento }</chakra.p>
-														</Flex>
-													</Box>
-													<Box w={ '50%' }>
-														<Flex gap={ 3 }>
-															<chakra.p>Telefone:</chakra.p>
-															{ telefone?.length === 11 && ( <chakra.a onClick={ () => window.open( `https://wa.me//55${ item.attributes?.whatsapp }?text=Ola%20${ item.attributes?.nome }.%20%20Tudo%20bem?!`, '_blank' ) } color={ 'blue.100' } cursor={ 'pointer' } _hover={ { color: 'blue.500' } } textDecor={ 'underline' }>{ formatarTelefone( telefone ) }</chakra.a> ) }
-															{ telefone?.length < 11 && ( <chakra.p>{ telefone?.length }{ formatarTelefone( telefone ) }</chakra.p> ) }
-														</Flex>
-														<Flex gap={ 3 }>
-															<chakra.p>E-mail:</chakra.p>
-															<Link href={ `mailto:${ item.attributes?.email }` } _hover={ { color: 'blue.500' } } textDecor={ 'underline' } color={ 'blue.100' }>{ item.attributes?.email }</Link>
-														</Flex>
-													</Box>
-												</Flex>
-											</Box>
-											{ Representantes.length > 1 && (
-												<>
-													<Divider mb={ 5 } />
-												</>
-											) }
+										const valorPedido = primeiroPedido?.attributes?.totalGeral
+											? primeiroPedido.attributes.totalGeral.toString().replace( /\./g, '' ).replace( ',', '.' )
+											: null
+
+										const valor = valorBudget
+											? parseFloat( valorBudget )
+											: valorPedido
+												? parseFloat( valorPedido )
+												: null
+
+										// Data de conclusão
+										const dataConclusao = i.attributes?.date_conclucao
+											? parseISO( i.attributes.date_conclucao ).toLocaleDateString( 'pt-BR' )
+											: '-'
+
+										// Calcula duração em dias entre criação e conclusão (inclusivo)
+										let duracao = '-'
+										if ( i.attributes?.date_conclucao && i.attributes?.createdAt ) {
+											try {
+												const dataCriacao = parseISO( i.attributes.createdAt )
+												const dataConclucao = parseISO( i.attributes.date_conclucao )
+												const dias = differenceInDays( dataConclucao, dataCriacao )
+												// Adiciona 1 para contagem inclusiva (mesmo dia = 1, dia seguinte = 2, etc)
+												const duracaoInclusiva = dias >= 0 ? dias + 1 : 0
+												duracao = duracaoInclusiva > 0
+													? `${ duracaoInclusiva } ${ duracaoInclusiva === 1 ? 'dia' : 'dias' }`
+													: '-'
+											} catch ( error ) {
+												duracao = '-'
+											}
+										}
+
+										const color = i.attributes?.etapa === 6 && i.attributes?.andamento === 1
+											? '#FC8181'
+											: i.attributes?.etapa === 6 && i.attributes?.andamento === 5
+												? '#68D391'
+												: '#F6E05E'
+
+										const IndexLista = `${ index }`
+										const isRowHovered = isHovered && ItenIndex === IndexLista
+
+										return (
+											<tr
+												key={ `negocio-${ i.id }` }
+												style={ {
+													backgroundColor: isRowHovered ? '#ffffff15' : 'transparent',
+													cursor: 'pointer',
+													transition: 'background-color 0.2s ease',
+													borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+												} }
+												onMouseEnter={ () => handleMouseEnter( index ) }
+												onMouseLeave={ handleMouseLeave }
+												onClick={ () => router.push( `/negocios/${ i.id }` ) }
+											>
+												<td style={ {
+													textAlign: 'center',
+													color: color,
+													padding: '0.75rem 0.5rem',
+													fontSize: '0.875rem'
+												} }>{ dataConclusao }</td>
+												<td style={ {
+													textAlign: 'center',
+													color: vendedor !== '-' ? color : '#9CA3AF',
+													padding: '0.75rem 0.5rem',
+													fontSize: '0.875rem'
+												} }>{ vendedor }</td>
+												<td style={ {
+													textAlign: 'center',
+													color: duracao !== '-' ? color : '#9CA3AF',
+													padding: '0.75rem 0.5rem',
+													fontSize: '0.875rem'
+												} }>{ duracao }</td>
+												<td style={ {
+													textAlign: 'center',
+													color: valor ? color : '#9CA3AF',
+													padding: '0.75rem 0.5rem',
+													fontSize: '0.875rem',
+													fontWeight: '600'
+												} }>{ valor ? valor.toLocaleString( 'pt-BR', { style: 'currency', currency: 'BRL' } ) : '-' }</td>
+											</tr>
+										)
+									} ) : (
+										<tr>
+											<td colSpan={ 4 } style={ {
+												textAlign: 'center',
+												padding: '2rem',
+												color: '#9CA3AF',
+												fontSize: '0.875rem'
+											} }>
+												Nenhum negócio encontrado
+											</td>
+										</tr>
+									) }
+								</tbody>
+							</table>
+						</Box>
+					</Box>
+
+					{/* interações - direita 50% */ }
+					<Flex flexDir={ 'column' } justifyContent={ 'space-between' } w={ '50%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
+						<Flex flexDir={ 'row' } justifyContent={ 'space-between' } alignItems={ 'center' } pb={ 3 }>
+							<Heading size={ 'md' }>
+								Últimas Interações
+							</Heading>
+							<IconButton
+								rounded={ 20 }
+								colorScheme='whatsapp'
+								aria-label='Adicionar Interação'
+								icon={ <FiPlusCircle size={ '27px' } /> }
+								onClick={ onOpen }
+							/>
+						</Flex>
+						<Flex flex={ 1 } overflowY={ 'auto' } flexDir={ 'column' } gap={ 3 } maxH="350px">
+							{ Interacoes && Interacoes.map( ( i: any ) => {
+								if ( !i || !i.attributes ) return null
+
+								const [ obj ] = ObjContato.filter( ( o: any ) => o.id == i.attributes?.objetivo ).map( ( d: any ) => d.title ) || [ "Sem objetivo" ]
+								const [ tipo ] = TipoContato.filter( ( t: any ) => t.id == i.attributes?.tipo ).map( ( d: any ) => d.title ) || [ "Sem tipo" ]
+								const date = i.attributes?.proxima ? new Date( parseISO( i.attributes.proxima ) ) : new Date()
+
+								// Verificar se o objeto vendedor e seus atributos existem antes de acessá-los
+								const vendedorNome = i.attributes?.vendedor?.data?.attributes?.nome || "Vendedor não definido"
+
+								return (
+									<div key={ i.id }>
+										<Box bg={ 'gray.100' } rounded={ 10 } px={ 5 } py={ 2 } color={ 'black' } fontSize={ '0.7rem' }>
+											<Heading size={ 'sm' }>{ obj }</Heading>
+											<chakra.p fontSize={ '0.8rem' }>{ i.attributes?.descricao }</chakra.p>
+											<Flex justifyContent={ 'space-between' } mt={ 1 }>
+												<chakra.span p={ '0.1rem' } px={ '0.3rem' } color={ 'white' } bg={ 'blue.400' }>{ tipo }</chakra.span>
+												{ session?.user.pemission === 'Adm' && ( <chakra.p>{ vendedorNome }</chakra.p> ) }
+												<chakra.p textDecor={ 'underline' }>{ date.toLocaleDateString() }</chakra.p>
+											</Flex>
 										</Box>
-									)
-								} ) }
+									</div>
+								)
+							} ) }
 
+						</Flex>
+						<Box mx={ 'auto' } mt={ 3 }>
+							{ !!Alert && (
+								<>
+									<Box bg={ Alert?.cor } p={ 1 }>
+										<chakra.p color={ letra }>{ Alert?.info } { Alert?.data?.toLocaleDateString() }</chakra.p>
+									</Box>
+								</>
+							) }
+						</Box>
+					</Flex>
+					</Flex>
+
+					<Flex w={ '100%' } h={ '100%' } justifyContent={ 'space-between' }>
+						<Flex h={ '100%' } w={ '50%' } flexDir={ 'column' } gap={ 3 } px={ 3 }>
+
+							{/* constato */ }
+							<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ [ 3, 3, 5 ] }>
+								<Box><Heading size={ 'md' }>Contatos</Heading></Box>
+								<Box px={ [ 1, 2, 3, 5 ] } py={ 3 }>
+
+									{ !!Representantes && Representantes.map( ( item: any, index: number ) => {
+										const telefone = !item.attributes?.whatsapp ? item.attributes?.telefone : item.attributes?.whatsapp
+
+										return (
+											<Box key={ `representante-${ index }` }>
+												<Box>
+													<Heading size={ 'sm' }>{ item.attributes?.nome }</Heading>
+													<Flex w={ '100%' } p={ 1 }>
+														<Box w={ '50%' }>
+															<Flex gap={ 3 }>
+																<chakra.p>Cargo:</chakra.p>
+																<chakra.p>{ item.attributes?.cargo }</chakra.p>
+															</Flex>
+															<Flex gap={ 3 }>
+																<chakra.p>Departamento:</chakra.p>
+																<chakra.p>{ item.attributes?.departamento }</chakra.p>
+															</Flex>
+														</Box>
+														<Box w={ '50%' }>
+															<Flex gap={ 3 }>
+																<chakra.p>Telefone:</chakra.p>
+																{ telefone?.length === 11 && ( <chakra.a onClick={ () => window.open( `https://wa.me//55${ item.attributes?.whatsapp }?text=Ola%20${ item.attributes?.nome }.%20%20Tudo%20bem?!`, '_blank' ) } color={ 'blue.100' } cursor={ 'pointer' } _hover={ { color: 'blue.500' } } textDecor={ 'underline' }>{ formatarTelefone( telefone ) }</chakra.a> ) }
+																{ telefone?.length < 11 && ( <chakra.p>{ telefone?.length }{ formatarTelefone( telefone ) }</chakra.p> ) }
+															</Flex>
+															<Flex gap={ 3 }>
+																<chakra.p>E-mail:</chakra.p>
+																<Link href={ `mailto:${ item.attributes?.email }` } _hover={ { color: 'blue.500' } } textDecor={ 'underline' } color={ 'blue.100' }>{ item.attributes?.email }</Link>
+															</Flex>
+														</Box>
+													</Flex>
+												</Box>
+												{ Representantes.length > 1 && (
+													<>
+														<Divider mb={ 5 } />
+													</>
+												) }
+											</Box>
+										)
+									} ) }
+
+								</Box>
 							</Box>
-						</Box>
 
-						{/* dados cadastrais */ }
-						<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ [ 3, 3, 5 ] }>
-							<Box><Heading size={ 'md' }>Dados Cadastrais</Heading></Box>
-							<Flex w={ '100%' } px={ [ 1, 2, 3, 5 ] } py={ [ 0, 3, 1, 0, 5, 5 ] } fontSize={ '15px' }>
-								<table style={ { width: '100%' } }>
-									<tbody>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>Razão Social: </td>
-											<td> { Razao }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>CNPJ: </td>
-											<td>{ MaskCnpj( CNPJ ) }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>Logradouro: </td>
-											<td>{ Endereço }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>N°: </td>
-											<td>{ Numero }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>Bairro: </td>
-											<td>{ Bairro }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>Cep; </td>
-											<td>{ MaskCep( CEP ) }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>Cidade: </td>
-											<td>{ Cidade }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>Uf: </td>
-											<td>{ Uf }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>Telefone: </td>
-											<td>{ formatarTelefone( Telefone ) }</td>
-										</tr>
-										<tr>
-											<td style={ { fontWeight: 'bold' } }>E-mail: </td>
-											<td>{ Email }</td>
-										</tr>
-									</tbody>
-								</table>
-							</Flex>
-						</Box>
+							{/* dados cadastrais */ }
+							<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ [ 3, 3, 5 ] }>
+								<Box><Heading size={ 'md' }>Dados Cadastrais</Heading></Box>
+								<Flex w={ '100%' } px={ [ 1, 2, 3, 5 ] } py={ [ 0, 3, 1, 0, 5, 5 ] } fontSize={ '15px' }>
+									<table style={ { width: '100%' } }>
+										<tbody>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>Razão Social: </td>
+												<td> { Razao }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>CNPJ: </td>
+												<td>{ MaskCnpj( CNPJ ) }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>Logradouro: </td>
+												<td>{ Endereço }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>N°: </td>
+												<td>{ Numero }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>Bairro: </td>
+												<td>{ Bairro }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>Cep; </td>
+												<td>{ MaskCep( CEP ) }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>Cidade: </td>
+												<td>{ Cidade }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>Uf: </td>
+												<td>{ Uf }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>Telefone: </td>
+												<td>{ formatarTelefone( Telefone ) }</td>
+											</tr>
+											<tr>
+												<td style={ { fontWeight: 'bold' } }>E-mail: </td>
+												<td>{ Email }</td>
+											</tr>
+										</tbody>
+									</table>
+								</Flex>
+							</Box>
 
-						{/* historico */ }
-						<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
-							<Box><Heading size={ 'md' }>Historico</Heading></Box>
-							<Flex w={ '100%' } h={ '80%' } overflowY={ 'auto' } gap={ 3 } flexDir={ 'column' }>
-								{/* {Historico.map((item: any) => {
+							{/* historico */ }
+							<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
+								<Box><Heading size={ 'md' }>Historico</Heading></Box>
+								<Flex w={ '100%' } h={ '80%' } overflowY={ 'auto' } gap={ 3 } flexDir={ 'column' }>
+									{/* {Historico.map((item: any) => {
 
                   const Data = new Date(item.date)
                   return (
@@ -463,107 +750,10 @@ export default function Infos () {
                     </>
                   )
                 })} */}
-							</Flex>
-						</Box>
-
-					</Flex>
-
-					<Flex h={ '100%' } w={ '50%' } flexDir={ 'column' } gap={ 3 } px={ 3 }>
-
-						{/* interações */ }
-						<Flex flexDir={ 'column' } justifyContent={ 'space-between' } w={ '100%' } h={ '80%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
-							<Flex flexDir={ 'row' } justifyContent={ 'space-between' } alignItems={ 'center' } pb={ 3 }>
-								<Heading size={ 'md' }>
-									Últimas Interações
-								</Heading>
-								<IconButton
-									rounded={ 20 }
-									colorScheme='whatsapp'
-									aria-label='Adicionar Interação'
-									icon={ <FiPlusCircle size={ '27px' } /> }
-									onClick={ onOpen }
-								/>
-							</Flex>
-							<Flex h={ '70%' } overflowY={ 'auto' } flexDir={ 'column' } gap={ 3 }>
-								{ Interacoes && Interacoes.map( ( i: any ) => {
-									if ( !i || !i.attributes ) return null
-
-									const [ obj ] = ObjContato.filter( ( o: any ) => o.id == i.attributes?.objetivo ).map( ( d: any ) => d.title ) || [ "Sem objetivo" ]
-									const [ tipo ] = TipoContato.filter( ( t: any ) => t.id == i.attributes?.tipo ).map( ( d: any ) => d.title ) || [ "Sem tipo" ]
-									const date = i.attributes?.proxima ? new Date( parseISO( i.attributes.proxima ) ) : new Date()
-
-									// Verificar se o objeto vendedor e seus atributos existem antes de acessá-los
-									const vendedorNome = i.attributes?.vendedor?.data?.attributes?.nome || "Vendedor não definido"
-
-									return (
-										<div key={ i.id }>
-											<Box bg={ 'gray.100' } rounded={ 10 } px={ 5 } py={ 2 } color={ 'black' } fontSize={ '0.7rem' }>
-												<Heading size={ 'sm' }>{ obj }</Heading>
-												<chakra.p fontSize={ '0.8rem' }>{ i.attributes?.descricao }</chakra.p>
-												<Flex justifyContent={ 'space-between' } mt={ 1 }>
-													<chakra.span p={ '0.1rem' } px={ '0.3rem' } color={ 'white' } bg={ 'blue.400' }>{ tipo }</chakra.span>
-													{ session?.user.pemission === 'Adm' && ( <chakra.p>{ vendedorNome }</chakra.p> ) }
-													<chakra.p textDecor={ 'underline' }>{ date.toLocaleDateString() }</chakra.p>
-												</Flex>
-											</Box>
-										</div>
-									)
-								} ) }
-
-							</Flex>
-							<Box mx={ 'auto' } mt={ 3 }>
-								{ !!Alert && (
-									<>
-										<Box bg={ Alert?.cor } p={ 1 }>
-											<chakra.p color={ letra }>{ Alert?.info } { Alert?.data?.toLocaleDateString() }</chakra.p>
-										</Box>
-									</>
-								) }
+								</Flex>
 							</Box>
+
 						</Flex>
-
-						{/* últimos negocios */ }
-						<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
-							<Box><Heading size={ 'md' } mb={ 3 }>Últimos Negocios</Heading></Box>
-							<table style={ { width: '100%' } }>
-								<thead>
-									<tr>
-										<th style={ { textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' } }></th>
-										<th style={ { textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' } }>Etapa</th>
-										<th style={ { textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' } }>Status</th>
-										<th style={ { textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem' } }>Valor</th>
-									</tr>
-								</thead>
-								<tbody>
-									{ Negocio && Negocio.map( ( i: any, index: number ) => {
-										if ( !i || !i.attributes ) return null
-
-										const valor = !!i.attributes?.Budget && parseFloat( i.attributes?.Budget.replace( '.', '' ).replace( ',', '.' ) )
-
-										const [ Status ] = StatusAndamento.filter( ( s: any ) => s.id == i.attributes?.andamento ).map( ( s: any ) => s.title ) || [ "Sem status" ]
-
-										const [ andamento ] = EtapasNegocio.filter( ( v: any ) => v.id == i.attributes?.etapa ).map( ( v: any ) => v.title ) || [ "Sem etapa" ]
-
-										const color = i.attributes?.etapa === 6 && i.attributes?.andamento === 1 ? 'red' : i.attributes?.etapa === 6 && i.attributes?.andamento === 5 ? 'green' : 'yellow'
-
-										const IndexLista = `${ index }`
-
-										return (
-											<tr key={ `negocio-${ i.id }` } style={ { backgroundColor: isHovered && ItenIndex == IndexLista ? '#ffffff40' : 'transparent', cursor: 'pointer', transition: 'background-color 0.2s' } } onMouseEnter={ () => handleMouseEnter( index ) } onMouseLeave={ handleMouseLeave } onClick={ () => router.push( `/negocios/${ i.id }` ) }>
-												<td style={ { textAlign: 'center', color: color } }>{ index + 1 }</td>
-												<td style={ { textAlign: 'center', color: color } }>{ andamento }</td>
-												<td style={ { textAlign: 'center', color: color } }>{ Status }</td>
-												<td style={ { textAlign: 'center', color: color } }>{ !!valor && valor.toLocaleString( 'pt-BR', { style: 'currency', currency: 'BRL' } ) }</td>
-											</tr>
-										)
-									} ) }
-
-								</tbody>
-							</table>
-							<Flex w={ '100%' } h={ '90%' } p={ 2 } flexDir={ 'column' } gap={ 5 } overflowY={ 'auto' }>
-
-							</Flex>
-						</Box>
 					</Flex>
 				</Flex>
 			</Box>
@@ -693,7 +883,8 @@ export default function Infos () {
 											placeholder="Especifique aqui, todos os detalhes do cliente"
 											size="sm"
 											resize={ "none" }
-											onChange={ ( e: any ) => setDescricao( capitalizeWords( e.target.value ) ) }
+											rounded="md"
+											onChange={ ( e: any ) => setDescricao( e.target.value ) }
 											value={ Descricao }
 										/>
 									</Box>
@@ -705,7 +896,7 @@ export default function Infos () {
 									</Heading>
 									<Box as={ GridItem } colSpan={ 12 } >
 										<Switch
-											colorScheme='red'
+											colorScheme='blue'
 											size='sm'
 											isChecked={ StatusAt }
 											onChange={ ( e ) => setStatusAt( e.target.checked ) }

@@ -44,6 +44,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	const [ emailNfe, setEmailNfe ] = useState( "" )
 	const [ ieStatus, setIeStatus ] = useState( false )
 	const [ CNAE, setCNAE ] = useState( "" )
+	const [ MaskCNAE, setMaskCNAE ] = useState( "" )
 	const [ Ie, setIE ] = useState( "" )
 	const [ porte, setPorte ] = useState( "" )
 	const [ simples, setSimples ] = useState( false )
@@ -98,18 +99,6 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	}
 
 	useEffect( () => {
-		if ( emailNfe === "" ) {
-			toast( {
-				title: 'ATENÇÃO!',
-				description: "Preencher o campo E-mail NF-e é OBRIGATÓRIO.",
-				status: 'warning',
-				duration: 9000,
-				isClosable: true,
-			} )
-		}
-	}, [] )
-
-	useEffect( () => {
 		localStorage.removeItem( 'idRetorno' )
 		if ( props.data ) {
 			setload( true )
@@ -131,7 +120,9 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 			setEmail( empresa.attributes?.email )
 			setEmailNfe( empresa.attributes?.emailNfe )
 			setIeStatus( empresa.attributes?.ieStatus )
-			setCNAE( empresa.attributes?.CNAE )
+			const cnaeValue = empresa.attributes?.CNAE || ""
+			setCNAE( cnaeValue )
+			setMaskCNAE( mask( cnaeValue, [ "9999-9/99" ] ) )
 			setIE( empresa.attributes?.Ie )
 			setPorte( empresa.attributes?.porte )
 			setSimples( empresa.attributes?.simples )
@@ -234,7 +225,9 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 			setEmail( Data.estabelecimento?.email )
 			setPais( Data.estabelecimento?.pais.nome )
 			setCodpais( Data.estabelecimento?.pais.id )
-			setCNAE( Data.estabelecimento?.atividade_principal.id )
+			const cnaeValue = Data.estabelecimento?.atividade_principal.id || ""
+			setCNAE( cnaeValue )
+			setMaskCNAE( mask( cnaeValue, [ "9999-9/99" ] ) )
 			setPorte( Data.porte?.descricao )
 			const cheksimples = Data.simples?.simples === 'Sim' ? true : false
 			setSimples( cheksimples )
@@ -402,7 +395,9 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 		setEmail( data.attributes.dados.data.email )
 		setEmailNfe( data.attributes.dados.data.emailNfe )
 		setIeStatus( data.attributes.dados.data.ieStatus )
-		setCNAE( data.attributes.dados.data.CNAE )
+		const cnaeValue = data.attributes.dados.data.CNAE || ""
+		setCNAE( cnaeValue )
+		setMaskCNAE( mask( cnaeValue, [ "9999-9/99" ] ) )
 		setIE( data.attributes.dados.data.Ie )
 		setPorte( data.attributes.dados.data.porte )
 		setSimples( data.attributes.dados.data.simples )
@@ -461,6 +456,14 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 		const masked = mask( valorLinpo, [ "(99) 9 9999-9999" ] )
 		setCelular( valorLinpo )
 		setWhatsMask( masked )
+	}
+
+	const maskCNAE = ( e: any ) => {
+		const valor = e.target.value
+		const valorLimpo = unMask( valor )
+		const masked = mask( valorLimpo, [ "9999-9/99" ] )
+		setCNAE( valorLimpo )
+		setMaskCNAE( masked )
 	}
 
 	if ( load ) {
@@ -684,8 +687,8 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														size="xs"
 														w="full"
 														rounded="md"
-														onChange={ ( e ) => setCNAE( e.target.value ) }
-														value={ CNAE }
+														onChange={ maskCNAE }
+														value={ MaskCNAE }
 													/>
 												</FormControl>
 

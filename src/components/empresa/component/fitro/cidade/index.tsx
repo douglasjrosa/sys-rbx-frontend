@@ -1,30 +1,34 @@
 import { FormLabel, Input, Box, IconButton } from "@chakra-ui/react"
-import { memo, useCallback, useEffect, useState } from "react"
+import { memo, useCallback, useEffect, useState, useImperativeHandle, forwardRef } from "react"
 import { FaTimes } from "react-icons/fa"
-import { unMask } from "remask"
 
-type FiltroEmpresaProps = {
-	empresa: ( searchText: string ) => void
+type FiltroCidadeProps = {
+	cidade: ( searchText: string ) => void
 }
 
-// Função para detectar se o texto é um CNPJ (apenas números, 11-14 dígitos)
-const isCNPJ = ( text: string ): boolean => {
-	const cleanText = unMask( text )
-	return /^\d{11,14}$/.test( cleanText )
+export type FiltroCidadeRef = {
+	setValue: ( value: string ) => void
 }
 
-export const FiltroEmpresa = memo( ( { empresa }: FiltroEmpresaProps ) => {
+export const FiltroCidade = memo( forwardRef<FiltroCidadeRef, FiltroCidadeProps>( ( { cidade }, ref ) => {
 	const [ searchText, setSearchText ] = useState<string>( '' )
+
+	// Expor método para definir o valor externamente
+	useImperativeHandle( ref, () => ( {
+		setValue: ( value: string ) => {
+			setSearchText( value )
+		}
+	} ) )
 
 	// Dispara a busca automaticamente quando o texto tiver 1 ou mais caracteres
 	useEffect( () => {
 		if ( searchText.length >= 1 ) {
-			empresa( searchText )
+			cidade( searchText )
 		} else if ( searchText.length === 0 ) {
 			// Limpa o filtro quando o campo estiver vazio
-			empresa( '' )
+			cidade( '' )
 		}
-	}, [ searchText, empresa ] )
+	}, [ searchText, cidade ] )
 
 	const handleChange = useCallback( ( e: React.ChangeEvent<HTMLInputElement> ) => {
 		setSearchText( e.target.value )
@@ -32,8 +36,8 @@ export const FiltroEmpresa = memo( ( { empresa }: FiltroEmpresaProps ) => {
 
 	const handleClear = useCallback( () => {
 		setSearchText( '' )
-		empresa( '' )
-	}, [ empresa ] )
+		cidade( '' )
+	}, [ cidade ] )
 
 	return (
 		<>
@@ -41,7 +45,7 @@ export const FiltroEmpresa = memo( ( { empresa }: FiltroEmpresaProps ) => {
 				fontSize="xs"
 				fontWeight="md"
 			>
-				Empresa
+				Cidade
 			</FormLabel>
 			<Box position="relative" minW="150px">
 				<Input
@@ -52,7 +56,7 @@ export const FiltroEmpresa = memo( ( { empresa }: FiltroEmpresaProps ) => {
 					rounded="md"
 					onChange={ handleChange }
 					value={ searchText }
-					placeholder="Nome ou CNPJ"
+					placeholder="Cidade"
 					pr={ searchText ? "2.5rem" : "0.75rem" }
 					minW="150px"
 					w="100%"
@@ -77,6 +81,6 @@ export const FiltroEmpresa = memo( ( { empresa }: FiltroEmpresaProps ) => {
 			</Box>
 		</>
 	)
-} )
+} ) )
 
-FiltroEmpresa.displayName = 'FiltroEmpresa'
+FiltroCidade.displayName = 'FiltroCidade'

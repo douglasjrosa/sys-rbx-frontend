@@ -2,10 +2,11 @@ import { CarteiraAusente } from "@/components/empresa/component/empresas_ausente
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor"
 import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa"
 import { FiltroCNAE, FiltroCNAERef } from "@/components/empresa/component/fitro/cnae"
+import { FiltroCidade, FiltroCidadeRef } from "@/components/empresa/component/fitro/cidade"
 import { Box, Button, Flex, Heading, useToast, Select, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Text, Tabs, TabList, TabPanels, Tab, TabPanel, HStack, Input } from "@chakra-ui/react"
 import { FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa"
 import axios from "axios"
-import { parseISO, startOfDay, differenceInDays } from "date-fns"
+import { parseISO, startOfDay } from "date-fns"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useMemo, useState, useRef } from "react"
@@ -23,9 +24,11 @@ function Empresas () {
 	// Estados para filtro e paginação
 	const [ filtroTexto, setFiltroTexto ] = useState( "" )
 	const [ filtroCNAE, setFiltroCNAE ] = useState( "" )
+	const [ filtroCidade, setFiltroCidade ] = useState( "" )
 	const [ filtroVendedorId, setFiltroVendedorId ] = useState<string>( "" )
 	const [ ordemClassificacao, setOrdemClassificacao ] = useState<"relevancia" | "expiracao">( "relevancia" )
 	const filtroCNAERef = useRef<FiltroCNAERef>( null )
+	const filtroCidadeRef = useRef<FiltroCidadeRef>( null )
 	const [ paginaAtualSemVendedor, setPaginaAtualSemVendedor ] = useState( 1 )
 	const [ paginaAtualComVendedor, setPaginaAtualComVendedor ] = useState( 1 )
 	const [ carregandoVendedor, setCarregandoVendedor ] = useState( false )
@@ -41,6 +44,8 @@ function Empresas () {
 	const [ vendedores, setVendedores ] = useState<any[]>( [] )
 	const [ novoVendedorId, setNovoVendedorId ] = useState<string>( "" )
 	const [ migrando, setMigrando ] = useState( false )
+	const [ refatorandoPurchaseFrequency, setRefatorandoPurchaseFrequency ] = useState( false )
+	const [ checandoExpiradas, setChecandoExpiradas ] = useState( false )
 	const { isOpen: isOpenMigrate, onOpen: onOpenMigrate, onClose: onCloseMigrate } = useDisclosure()
 
 	// Função para calcular diferença em dias entre duas datas
@@ -53,246 +58,83 @@ function Empresas () {
 
 	// Função para processar interações e definir cores e informações
 	const processarInteracao = useCallback( ( ultimaInteracao: any, dataAtual: Date ) => {
-		if ( !ultimaInteracao ) return { proxima: null, cor: 'gray', info: 'Você não tem interação agendada', difDias: 500 }
-
-		const proximaData = startOfDay( parseISO( ultimaInteracao.attributes.proxima ) )
-		const diferencaEmDias = calcularDiferencaEmDias( dataAtual, proximaData )
-
-		if ( ultimaInteracao.attributes.status_atendimento === false ) {
+		if ( !ultimaInteracao ) {
 			return { proxima: null, cor: 'gray', info: 'Você não tem interação agendada', difDias: 500 }
-		} else if ( diferencaEmDias === 0 ) {
-			return { proxima: proximaData.toISOString(), cor: 'yellow', info: 'Você tem interação agendada para hoje', difDias: diferencaEmDias }
-		} else if ( diferencaEmDias < 0 ) {
-			return { proxima: proximaData.toISOString(), cor: '#FC0707', info: `Você tem interação que já passou, a data agendada era ${ proximaData.toLocaleDateString() }`, difDias: diferencaEmDias }
-		} else {
-			return { proxima: proximaData.toISOString(), cor: '#3B2DFF', info: `Você tem interação agendada para ${ proximaData.toLocaleDateString() }`, difDias: diferencaEmDias }
+		}
+
+		// Função auxiliar para acessar campos que podem estar em attributes ou diretamente no objeto
+		const getField = ( obj: any, field: string ) => {
+			if ( !obj ) return undefined
+			return obj.attributes ? obj.attributes[ field ] : obj[ field ]
+		}
+
+		const proxima = getField( ultimaInteracao, 'proxima' )
+		if ( !proxima ) {
+			return { proxima: null, cor: 'gray', info: 'Você não tem interação agendada', difDias: 500 }
+		}
+
+		try {
+			const proximaData = startOfDay( parseISO( proxima ) )
+			const diferencaEmDias = calcularDiferencaEmDias( dataAtual, proximaData )
+
+			if ( getField( ultimaInteracao, 'status_atendimento' ) === false ) {
+				return { proxima: null, cor: 'gray', info: 'Você não tem interação agendada', difDias: 500 }
+			} else if ( diferencaEmDias === 0 ) {
+				return { proxima: proximaData.toISOString(), cor: 'yellow', info: 'Você tem interação agendada para hoje', difDias: diferencaEmDias }
+			} else if ( diferencaEmDias < 0 ) {
+				return { proxima: proximaData.toISOString(), cor: '#FC0707', info: `Você tem interação que já passou, a data agendada era ${ proximaData.toLocaleDateString() }`, difDias: diferencaEmDias }
+			} else {
+				return { proxima: proximaData.toISOString(), cor: '#3B2DFF', info: `Você tem interação agendada para ${ proximaData.toLocaleDateString() }`, difDias: diferencaEmDias }
+			}
+		} catch ( error ) {
+			console.error( 'Erro ao processar interação:', error, ultimaInteracao )
+			return { proxima: null, cor: 'gray', info: 'Erro ao processar interação', difDias: 500 }
 		}
 	}, [ calcularDiferencaEmDias ] )
 
-	// Função auxiliar para obter prioridade da cor da interação
-	const getPrioridadeCorInteracao = ( cor: string | undefined ): number => {
-		if ( !cor ) return 2 // Sem ícone (cinza)
-		if ( cor === '#FC0707' || cor === 'red' ) return 0 // Vermelho - mais alta prioridade
-		if ( cor === 'yellow' || cor === '#EAB308' ) return 1 // Amarelo
-		if ( cor === '#3B2DFF' || cor === 'blue' || cor === 'rgb(0,100,255)' ) return 3 // Azul - menor prioridade
-		return 2 // Sem ícone (cinza) - padrão
-	}
-
-	// Função auxiliar para obter prioridade do purchaseFrequency
-	const getPrioridadePurchaseFrequency = ( frequency: string | null | undefined ): number => {
-		if ( frequency === 'Mensalmente' ) return 0
-		if ( frequency === 'Eventualmente' ) return 1
-		if ( frequency === 'Raramente' ) return 2
-		return 3 // Sem frequência definida
-	}
-
-	// Função auxiliar para obter status do negócio e sua prioridade
-	const getStatusNegocio = ( empresa: any, username: string ): { status: string, prioridade: number } => {
-		const negocios = empresa.attributes.businesses?.data || []
-
-		// Filtrar negócios concluídos (etapa === 6)
-		const negociosConcluidos = negocios.filter( ( n: any ) => n.attributes.etapa === 6 )
-			.sort( ( a: any, b: any ) => {
-				const dataA = a.attributes.date_conclucao ? new Date( a.attributes.date_conclucao ).getTime() : 0
-				const dataB = b.attributes.date_conclucao ? new Date( b.attributes.date_conclucao ).getTime() : 0
-				return dataB - dataA
-			} )
-
-		// Filtrar negócios em andamento (andamento === 3 e etapa !== 6)
-		const negociosAtivos = negocios.filter( ( n: any ) =>
-			n.attributes.andamento === 3 &&
-			n.attributes.etapa !== 6 &&
-			n.attributes.vendedor_name === username
-		)
-
-		if ( negociosConcluidos.length > 0 ) {
-			const ultimoNegocio = negociosConcluidos[ 0 ]
-			if ( ultimoNegocio.attributes.andamento === 5 ) {
-				return { status: 'Ganhos', prioridade: 0 } // Ganhos - mais alta prioridade
-			}
-			if ( ultimoNegocio.attributes.andamento === 1 ) {
-				return { status: 'Perdidos', prioridade: 2 } // Perdidos
-			}
-		}
-
-		if ( negociosAtivos.length > 0 ) {
-			return { status: 'Em andamento', prioridade: 1 } // Em andamento
-		}
-
-		return { status: 'Sem negócios', prioridade: 3 } // Sem negócios - menor prioridade
-	}
-
-	// Função para obter dias até expiração (retorna número grande se não houver data)
-	const getDiasAteExpiracao = ( expiresIn: string | null | undefined ): number => {
-		if ( !expiresIn ) return 999999 // Sem data de expiração vem por último
-		try {
-			const dataExpiracao = parseISO( expiresIn )
-			const agora = new Date()
-			return differenceInDays( dataExpiracao, agora )
-		} catch {
-			return 999999
-		}
-	}
-
-	// Função para obter valor do negócio (retorna 0 se não houver negócio)
-	const getValorNegocio = ( empresa: any, username: string ): number => {
-		const negocios = empresa.attributes.businesses?.data || []
-
-		if ( negocios.length === 0 ) return 0
-
-		// Filtrar negócios concluídos (etapa === 6) e ordenar por data_conclucao (mais recente primeiro)
-		const negociosConcluidos = negocios.filter( ( n: any ) => n.attributes.etapa === 6 )
-			.sort( ( a: any, b: any ) => {
-				const dataA = a.attributes.date_conclucao ? new Date( a.attributes.date_conclucao ).getTime() : 0
-				const dataB = b.attributes.date_conclucao ? new Date( b.attributes.date_conclucao ).getTime() : 0
-				return dataB - dataA
-			} )
-
-		// Filtrar negócios em andamento (andamento === 3 e etapa !== 6)
-		const negociosAtivos = negocios.filter( ( n: any ) =>
-			n.attributes.andamento === 3 &&
-			n.attributes.etapa !== 6 &&
-			n.attributes.vendedor_name === username
-		)
-
-		// Priorizar: Ganhos > Em andamento > Perdidos
-		if ( negociosConcluidos.length > 0 ) {
-			const ultimoNegocio = negociosConcluidos[ 0 ]
-			if ( ultimoNegocio.attributes.andamento === 5 ) {
-				// Negócio ganho - usar Budget ou totalGeral do primeiro pedido
-				const pedidos = ultimoNegocio.attributes.pedidos?.data || []
-				const valor = ultimoNegocio.attributes.Budget ||
-					( pedidos.length > 0 ? pedidos[ 0 ]?.attributes?.totalGeral : null )
-
-				if ( !valor ) return 0
-
-				// Converter para número se for string
-				if ( typeof valor === 'string' ) {
-					const valorLimpo = valor.replace( /\./g, '' ).replace( ',', '.' )
-					const valorNumerico = parseFloat( valorLimpo )
-					return isNaN( valorNumerico ) ? 0 : valorNumerico
-				}
-
-				return parseFloat( valor ) || 0
-			}
-			if ( ultimoNegocio.attributes.andamento === 1 ) {
-				// Negócio perdido
-				const pedidos = ultimoNegocio.attributes.pedidos?.data || []
-				const valor = ultimoNegocio.attributes.Budget ||
-					( pedidos.length > 0 ? pedidos[ 0 ]?.attributes?.totalGeral : null )
-
-				if ( !valor ) return 0
-
-				if ( typeof valor === 'string' ) {
-					const valorLimpo = valor.replace( /\./g, '' ).replace( ',', '.' )
-					const valorNumerico = parseFloat( valorLimpo )
-					return isNaN( valorNumerico ) ? 0 : valorNumerico
-				}
-
-				return parseFloat( valor ) || 0
-			}
-		}
-
-		if ( negociosAtivos.length > 0 ) {
-			// Negócio em andamento
-			const primeiroNegocioAtivo = negociosAtivos[ 0 ]
-			const valor = primeiroNegocioAtivo.attributes.Budget || null
-
-			if ( !valor ) return 0
-
-			if ( typeof valor === 'string' ) {
-				const valorLimpo = valor.replace( /\./g, '' ).replace( ',', '.' )
-				const valorNumerico = parseFloat( valorLimpo )
-				return isNaN( valorNumerico ) ? 0 : valorNumerico
-			}
-
-			return parseFloat( valor ) || 0
-		}
-
-		return 0
-	}
-
-	// Função para ordenar empresas com base nos novos critérios
-	const ordenarEmpresas = ( empresas: any[], username: string, ordem: "relevancia" | "expiracao" = "relevancia" ): any[] => {
-		// Se ordenação por expiração, confiar na ordenação da API (que já vem globalmente ordenada)
-		if ( ordem === "expiracao" ) {
-			return empresas;
-		}
-
-		return [ ...empresas ].sort( ( a, b ) => {
-			// Se ordenação por relevância, aplicar todos os critérios (somente localmente pois envolve dados processados)
-			// 1. Prioridade da cor da interação
-			const corA = typeof a.attributes.interacaos?.data === 'object' && a.attributes.interacaos?.data?.cor
-				? a.attributes.interacaos.data.cor
-				: undefined
-			const corB = typeof b.attributes.interacaos?.data === 'object' && b.attributes.interacaos?.data?.cor
-				? b.attributes.interacaos.data.cor
-				: undefined
-
-			const prioridadeCorA = getPrioridadeCorInteracao( corA )
-			const prioridadeCorB = getPrioridadeCorInteracao( corB )
-
-			if ( prioridadeCorA !== prioridadeCorB ) {
-				return prioridadeCorA - prioridadeCorB
-			}
-
-			// 2. Prioridade do purchaseFrequency
-			const freqA = a.attributes.purchaseFrequency
-			const freqB = b.attributes.purchaseFrequency
-
-			const prioridadeFreqA = getPrioridadePurchaseFrequency( freqA )
-			const prioridadeFreqB = getPrioridadePurchaseFrequency( freqB )
-
-			if ( prioridadeFreqA !== prioridadeFreqB ) {
-				return prioridadeFreqA - prioridadeFreqB
-			}
-
-			// 3. Status do negócio
-			const statusA = getStatusNegocio( a, username )
-			const statusB = getStatusNegocio( b, username )
-
-			if ( statusA.prioridade !== statusB.prioridade ) {
-				return statusA.prioridade - statusB.prioridade
-			}
-
-			// 4. Data de expiração (mais próxima primeiro)
-			const diasA = getDiasAteExpiracao( a.attributes.expiresIn )
-			const diasB = getDiasAteExpiracao( b.attributes.expiresIn )
-
-			if ( diasA !== diasB ) {
-				return diasA - diasB
-			}
-
-			// 5. Valor do negócio (do maior para o menor)
-			const valorA = getValorNegocio( a, username )
-			const valorB = getValorNegocio( b, username )
-
-			if ( valorA !== valorB ) {
-				return valorB - valorA // Ordenar decrescente (maior primeiro)
-			}
-
-			// Empate: ordenar alfabeticamente por nome
-			const nomeA = a.attributes.nome.toLowerCase()
-			const nomeB = b.attributes.nome.toLowerCase()
-			return nomeA.localeCompare( nomeB )
-		} )
-	}
-
 	// Função para processar empresas com vendedor
 	const processarEmpresasComVendedor = useCallback( ( empresasData: any[], username: string, dataAtual: Date, isAdmin: boolean ) => {
+		if ( !empresasData || empresasData.length === 0 ) {
+			return []
+		}
+
 		// Para admin, mostrar todas as empresas com vendedor
 		// Para usuários normais, filtrar apenas suas próprias empresas
 		const filtroVendedor = isAdmin
-			? empresasData.filter( f => f.attributes.user.data !== null )
-			: empresasData.filter( f => f.attributes.user.data?.attributes.username === username )
+			? empresasData.filter( f => f.attributes?.user?.data !== null )
+			: empresasData.filter( f => f.attributes?.user?.data?.attributes?.username === username )
 
 		// Processar interações e ordenar
 		const processados = filtroVendedor.map( empresa => {
-			const interacoes = empresa.attributes.interacaos.data
+			const interacoes = empresa.attributes?.interacaos?.data || []
+			// Função auxiliar para acessar campos que podem estar em attributes ou diretamente no objeto
+			const getInteracaoField = ( interacao: any, field: string ) => {
+				if ( !interacao ) return undefined
+				return interacao.attributes ? interacao.attributes[ field ] : interacao[ field ]
+			}
+
+			// Primeiro, tentar encontrar interações do usuário atual
 			const interacoesVendedor = interacoes.filter( ( interacao: any ) =>
-				interacao.attributes.vendedor_name === username
+				getInteracaoField( interacao, 'vendedor_name' ) === username
 			)
-			const ultimaInteracao = interacoesVendedor[ interacoesVendedor.length - 1 ]
+			let ultimaInteracao = interacoesVendedor[ interacoesVendedor.length - 1 ]
+
+			// Se não houver interações do usuário, usar a última interação de qualquer vendedor
+			// (especialmente útil para admin ver todas as interações)
+			if ( !ultimaInteracao && interacoes.length > 0 ) {
+				ultimaInteracao = interacoes[ interacoes.length - 1 ]
+			}
+
+			// Log para debug
+			if ( empresa.id === filtroVendedor[ 0 ]?.id ) {
+				console.log( '🔍 [PROCESSAR VENDEDOR] Primeira empresa:', empresa.attributes?.nome )
+				console.log( '  - Total interações:', interacoes.length )
+				console.log( '  - Interações do usuário:', interacoesVendedor.length )
+				console.log( '  - Última interação (do usuário):', ultimaInteracao ? 'SIM' : 'NÃO' )
+				if ( !ultimaInteracao && interacoes.length > 0 ) {
+					console.log( '  - Usando última interação de qualquer vendedor' )
+				}
+			}
 
 			const infoInteracao = processarInteracao( ultimaInteracao, dataAtual )
 
@@ -306,12 +148,12 @@ function Empresas () {
 							proxima: infoInteracao.proxima,
 							cor: infoInteracao.cor,
 							info: infoInteracao.info,
-							descricao: ultimaInteracao.attributes?.descricao || null,
-							tipo: ultimaInteracao.attributes?.tipo || null,
-							objetivo: ultimaInteracao.attributes?.objetivo || null,
-							vendedor_name: ultimaInteracao.attributes?.vendedor_name || null,
-							createdAt: ultimaInteracao.attributes?.createdAt || null,
-						} : []
+							descricao: getInteracaoField( ultimaInteracao, 'descricao' ) || null,
+							tipo: getInteracaoField( ultimaInteracao, 'tipo' ) || null,
+							objetivo: getInteracaoField( ultimaInteracao, 'objetivo' ) || null,
+							vendedor_name: getInteracaoField( ultimaInteracao, 'vendedor_name' ) || null,
+							createdAt: getInteracaoField( ultimaInteracao, 'createdAt' ) || null,
+						} : null
 					},
 					diferencaEmDias: infoInteracao.difDias,
 				},
@@ -324,25 +166,25 @@ function Empresas () {
 
 	// Função para processar empresas sem vendedor
 	const processarEmpresasSemVendedor = useCallback( ( empresasData: any[], username: string, isAdmin: boolean, dataAtual: Date ) => {
-		// Filtrar empresas sem vendedor ou não pertencentes ao usuário atual
-		const filtroSemVendedor = empresasData.filter( f => {
-			if ( !isAdmin ) {
-				return f.attributes.user.data?.attributes.username == null
-			} else {
-				return f.attributes.user.data?.attributes.username !== username
-			}
-		} )
+		// Função auxiliar para acessar campos que podem estar em attributes ou diretamente no objeto
+		const getInteracaoField = ( interacao: any, field: string ) => {
+			if ( !interacao ) return undefined
+			return interacao.attributes ? interacao.attributes[ field ] : interacao[ field ]
+		}
+
+		// Confiar no filtro do backend para empresas ausentes
+		const filtroSemVendedor = empresasData
 
 		// Encontrar empresas sem vendedor mas com interações do usuário atual
 		const empresasComInteracoesDoUsuario = filtroSemVendedor
 			.filter( empresa => {
-				const interacoes = empresa.attributes.interacaos.data
+				const interacoes = empresa.attributes?.interacaos?.data || []
 				return interacoes.some( ( interacao: any ) =>
-					interacao.attributes.vendedor_name === username
+					getInteracaoField( interacao, 'vendedor_name' ) === username
 				)
 			} )
 			.map( empresa => {
-				const interacoes = empresa.attributes.interacaos.data
+				const interacoes = empresa.attributes?.interacaos?.data || []
 				const ultimaInteracao = interacoes[ interacoes.length - 1 ]
 
 				const infoInteracao = processarInteracao( ultimaInteracao, dataAtual )
@@ -357,11 +199,11 @@ function Empresas () {
 								proxima: infoInteracao.proxima,
 								cor: infoInteracao.cor,
 								info: infoInteracao.info,
-								vendedor_name: ultimaInteracao?.attributes.vendedor_name,
-								descricao: ultimaInteracao?.attributes?.descricao || null,
-								tipo: ultimaInteracao?.attributes?.tipo || null,
-								objetivo: ultimaInteracao?.attributes?.objetivo || null,
-								createdAt: ultimaInteracao?.attributes?.createdAt || null,
+								vendedor_name: getInteracaoField( ultimaInteracao, 'vendedor_name' ),
+								descricao: getInteracaoField( ultimaInteracao, 'descricao' ) || null,
+								tipo: getInteracaoField( ultimaInteracao, 'tipo' ) || null,
+								objetivo: getInteracaoField( ultimaInteracao, 'objetivo' ) || null,
+								createdAt: getInteracaoField( ultimaInteracao, 'createdAt' ) || null,
 							},
 						},
 						diferencaEmDias: infoInteracao.difDias,
@@ -370,9 +212,10 @@ function Empresas () {
 			} )
 
 		// Empresas sem interações ou com interações de outros vendedores
-		const empresasSemInteracoes = filtroSemVendedor.filter( f =>
-			f.attributes.interacaos.data.length === 0
-		).map( empresa => {
+		const empresasSemInteracoes = filtroSemVendedor.filter( f => {
+			const interacoes = f.attributes?.interacaos?.data || []
+			return interacoes.length === 0
+		} ).map( empresa => {
 			return {
 				id: empresa.id,
 				attributes: {
@@ -387,14 +230,14 @@ function Empresas () {
 
 		const empresasComInteracoesDeOutros = filtroSemVendedor
 			.filter( empresa => {
-				const interacoes = empresa.attributes.interacaos.data
+				const interacoes = empresa.attributes?.interacaos?.data || []
 				return interacoes.length > 0 && !interacoes.some( ( interacao: any ) =>
-					interacao.attributes.vendedor_name === username
+					getInteracaoField( interacao, 'vendedor_name' ) === username
 				)
 			} )
 			.map( empresa => {
 				// Processar interação mesmo que seja de outro vendedor (para ter a cor)
-				const interacoes = empresa.attributes.interacaos.data
+				const interacoes = empresa.attributes?.interacaos?.data || []
 				const ultimaInteracao = interacoes[ interacoes.length - 1 ]
 				const infoInteracao = processarInteracao( ultimaInteracao, dataAtual )
 
@@ -408,11 +251,11 @@ function Empresas () {
 								proxima: infoInteracao.proxima,
 								cor: infoInteracao.cor,
 								info: infoInteracao.info,
-								vendedor_name: ultimaInteracao?.attributes.vendedor_name,
-								descricao: ultimaInteracao?.attributes?.descricao || null,
-								tipo: ultimaInteracao?.attributes?.tipo || null,
-								objetivo: ultimaInteracao?.attributes?.objetivo || null,
-								createdAt: ultimaInteracao?.attributes?.createdAt || null,
+								vendedor_name: getInteracaoField( ultimaInteracao, 'vendedor_name' ),
+								descricao: getInteracaoField( ultimaInteracao, 'descricao' ) || null,
+								tipo: getInteracaoField( ultimaInteracao, 'tipo' ) || null,
+								objetivo: getInteracaoField( ultimaInteracao, 'objetivo' ) || null,
+								createdAt: getInteracaoField( ultimaInteracao, 'createdAt' ) || null,
 							},
 						},
 						diferencaEmDias: infoInteracao.difDias,
@@ -431,9 +274,9 @@ function Empresas () {
 	const carregarVendedores = useCallback( async () => {
 		try {
 			const res = await axios.get( '/api/db/user/getGeral' )
-			// Filtrar apenas vendedores ativos (não bloqueados)
-			const vendedoresAtivos = ( res.data || [] ).filter( ( v: any ) => !v.blocked )
-			setVendedores( vendedoresAtivos )
+			// Filtrar apenas vendedores confirmados
+			const vendedoresConfirmados = ( res.data || [] ).filter( ( v: any ) => v.confirmed === true )
+			setVendedores( vendedoresConfirmados )
 		} catch ( error ) {
 			console.error( "Erro ao carregar vendedores:", error )
 		}
@@ -446,14 +289,37 @@ function Empresas () {
 		setCarregandoVendedor( true )
 		try {
 			const userId = filtroVendedorId || ( isAdmin ? '' : session.user.id )
-			const endpoint = `/api/db/empresas/empresalist/vendedor?userId=${ userId }&page=${ pagina }&filtro=${ encodeURIComponent( filtroTexto ) }&filtroCNAE=${ encodeURIComponent( filtroCNAE ) }&sort=${ ordemClassificacao }`
+			const endpoint = `/api/db/empresas/empresalist/vendedor?userId=${ userId }&page=${ pagina }&filtro=${ encodeURIComponent( filtroTexto ) }&filtroCNAE=${ encodeURIComponent( filtroCNAE ) }&filtroCidade=${ encodeURIComponent( filtroCidade ) }&sort=${ ordemClassificacao }`
 
 			const res = await axios( endpoint )
-			const dataAtual = startOfDay( new Date() )
-			const processados = processarEmpresasComVendedor( res.data.data, session.user.name, dataAtual, isAdmin )
 
-			const novoTotal = Math.ceil( res.data.meta.pagination.total / res.data.meta.pagination.pageSize )
-			
+			const dataAtual = startOfDay( new Date() )
+			const empresasData = Array.isArray( res.data?.data ) ? res.data.data : []
+
+			// Log para verificar dados recebidos no frontend
+			console.log( '🔍 [FRONTEND VENDEDOR] Dados recebidos da API:' )
+			console.log( '  - Total de empresas:', empresasData.length )
+			if ( empresasData.length > 0 ) {
+				const primeiraEmpresa = empresasData[ 0 ]
+				console.log( '  - Primeira empresa ID:', primeiraEmpresa?.id )
+				console.log( '  - Primeira empresa nome:', primeiraEmpresa?.attributes?.nome )
+				console.log( '  - businesses existe?', !!primeiraEmpresa?.attributes?.businesses )
+				console.log( '  - businesses.data existe?', !!primeiraEmpresa?.attributes?.businesses?.data )
+				console.log( '  - businesses.data é array?', Array.isArray( primeiraEmpresa?.attributes?.businesses?.data ) )
+				console.log( '  - Quantidade businesses:', primeiraEmpresa?.attributes?.businesses?.data?.length || 0 )
+				console.log( '  - interacaos existe?', !!primeiraEmpresa?.attributes?.interacaos )
+				console.log( '  - interacaos.data existe?', !!primeiraEmpresa?.attributes?.interacaos?.data )
+				console.log( '  - interacaos.data é array?', Array.isArray( primeiraEmpresa?.attributes?.interacaos?.data ) )
+				console.log( '  - Quantidade interacaos:', primeiraEmpresa?.attributes?.interacaos?.data?.length || 0 )
+			}
+
+			const processados = processarEmpresasComVendedor( empresasData, session.user.name, dataAtual, isAdmin )
+
+			const pagination = res.data?.meta?.pagination
+			const total = pagination?.total ?? empresasData.length
+			const pageSizeMeta = pagination?.pageSize ?? 50
+			const novoTotal = total > 0 ? Math.ceil( total / pageSizeMeta ) : 1
+
 			setEmpresasComVendedor( processados )
 			// Atualizar total de páginas apenas após atualizar os dados
 			setTotalPaginasComVendedor( novoTotal )
@@ -469,7 +335,7 @@ function Empresas () {
 		} finally {
 			setCarregandoVendedor( false )
 		}
-	}, [ session?.user.id, session?.user.name, processarEmpresasComVendedor, toast, isAdmin, filtroTexto, filtroCNAE, filtroVendedorId, ordemClassificacao ] )
+	}, [ session?.user.id, session?.user.name, processarEmpresasComVendedor, toast, isAdmin, filtroTexto, filtroCNAE, filtroCidade, filtroVendedorId, ordemClassificacao ] )
 
 	// Carregar empresas sem vendedor (carteira ausente)
 	const carregarEmpresasSemVendedor = useCallback( async ( pagina = 1, filtro = "" ) => {
@@ -477,15 +343,34 @@ function Empresas () {
 
 		setCarregandoSemVendedor( true )
 		try {
-			// Empresas sem vendedor sempre ordenadas por nome (não usa ordemClassificacao)
-			const res = await axios( `/api/db/empresas/empresalist/ausente?page=${ pagina }&filtro=${ encodeURIComponent( filtro ) }&filtroCNAE=${ encodeURIComponent( filtroCNAE ) }&sort=relevancia` )
+			const userIdParam = session?.user?.pemission === 'Adm' ? filtroVendedorId : session?.user?.id
+			const userIdQuery = userIdParam ? `&userId=${ encodeURIComponent( String( userIdParam ) ) }` : ''
+
+			// Empresas sem vendedor sempre ordenadas por relevância (não usa ordemClassificacao)
+			const res = await axios(
+				`/api/db/empresas/empresalist/ausente?page=${ pagina }&filtro=${ encodeURIComponent( filtro ) }&filtroCNAE=${ encodeURIComponent( filtroCNAE ) }&filtroCidade=${ encodeURIComponent( filtroCidade ) }&sort=relevancia${ userIdQuery }`
+			)
+
+			// #region agent log
+			fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'empresas/index.tsx:373', message: 'Dados recebidos APÓS CORREÇÃO', data: { count: res.data?.data?.length, sample: res.data?.data?.slice( 0, 2 ).map( ( e: any ) => ( { id: e.id, nome: e.attributes?.nome } ) ) }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H5' } ) } ).catch( () => { } )
+			// #endregion
+
 			const dataAtual = startOfDay( new Date() )
 			const isAdmin = session.user.pemission === 'Adm'
 
-			const processados = processarEmpresasSemVendedor( res.data.data, session.user.name, isAdmin, dataAtual )
+			const empresasData = Array.isArray( res.data?.data ) ? res.data.data : []
 
-			const novoTotal = Math.ceil( res.data.meta.pagination.total / res.data.meta.pagination.pageSize )
-			
+			const processados = processarEmpresasSemVendedor( empresasData, session.user.name, isAdmin, dataAtual )
+
+			// #region agent log
+			fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'empresas/index.tsx:382', message: 'Processados APÓS CORREÇÃO', data: { inputCount: empresasData.length, outputCount: processados.length }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H5' } ) } ).catch( () => { } )
+			// #endregion
+
+			const pagination = res.data?.meta?.pagination
+			const total = pagination?.total ?? empresasData.length
+			const pageSizeMeta = pagination?.pageSize ?? 50
+			const novoTotal = total > 0 ? Math.ceil( total / pageSizeMeta ) : 1
+
 			setEmpresasSemVendedor( processados )
 			setTotalPaginasSemVendedor( novoTotal )
 		} catch ( error ) {
@@ -500,7 +385,7 @@ function Empresas () {
 		} finally {
 			setCarregandoSemVendedor( false )
 		}
-	}, [ session?.user.id, session?.user.name, session?.user.pemission, processarEmpresasSemVendedor, toast, filtroCNAE ] )
+	}, [ session?.user.id, session?.user.name, session?.user.pemission, processarEmpresasSemVendedor, toast, filtroCNAE, filtroCidade, filtroVendedorId ] )
 
 	// Carregar dados iniciais - apenas carregar vendedores e marcar como inicializado
 	useEffect( () => {
@@ -519,9 +404,9 @@ function Empresas () {
 			carregarEmpresasComVendedor( paginaAtualComVendedor )
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ paginaAtualComVendedor, filtroTexto, filtroCNAE, filtroVendedorId, ordemClassificacao, session?.user.id ] )
+	}, [ paginaAtualComVendedor, filtroTexto, filtroCNAE, filtroCidade, filtroVendedorId, ordemClassificacao, session?.user.id ] )
 
-	// Carregar empresas sem vendedor quando mudar paginação, filtro de texto ou filtro de CNAE
+	// Carregar empresas sem vendedor quando mudar paginação, filtro de texto, filtro de CNAE ou filtro de vendedor
 	// NOTA: ordemClassificacao NÃO afeta empresas sem vendedor (apenas ordenação local por nome)
 	// IMPORTANTE: Ignorar se ainda não foi inicializado para evitar conflito com useEffect inicial
 	useEffect( () => {
@@ -529,21 +414,17 @@ function Empresas () {
 			carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ paginaAtualSemVendedor, filtroTexto, filtroCNAE, session?.user.id ] )
+	}, [ paginaAtualSemVendedor, filtroTexto, filtroCNAE, filtroCidade, filtroVendedorId, session?.user.id ] )
 
-	// Filtrar e ordenar empresas com vendedor localmente
+	// Usar dados diretamente da API - ordenação já aplicada no backend
 	const empresasComVendedorFiltradas = useMemo( () => {
-		if ( !session?.user?.name ) return empresasComVendedor
-		// Aplicar ordenação localmente aos dados já carregados
-		return ordenarEmpresas( empresasComVendedor, session.user.name, ordemClassificacao )
-	}, [ empresasComVendedor, ordemClassificacao, session?.user?.name ] )
+		return empresasComVendedor
+	}, [ empresasComVendedor ] )
 
-	// Aplicar ordenação localmente nas empresas sem vendedor
+	// Usar dados diretamente da API - ordenação já aplicada no backend
 	const empresasSemVendedorOrdenadas = useMemo( () => {
-		if ( !session?.user?.name ) return empresasSemVendedor
-		// Aplicar ordenação localmente aos dados já carregados
-		return ordenarEmpresas( empresasSemVendedor, session.user.name, ordemClassificacao )
-	}, [ empresasSemVendedor, ordemClassificacao, session?.user?.name ] )
+		return empresasSemVendedor
+	}, [ empresasSemVendedor ] )
 
 	// Garantir que a página atual não seja maior que o total de páginas
 	// Só ajustar quando o total mudar E a página atual for maior que o novo total
@@ -568,7 +449,9 @@ function Empresas () {
 	// Função para lidar com mudança de filtro de vendedor
 	const handleFiltroVendedorChange = useCallback( ( vendedorId: string ) => {
 		setFiltroVendedorId( vendedorId )
+		// Resetar paginação para ambas as abas quando o filtro mudar
 		setPaginaAtualComVendedor( 1 )
+		setPaginaAtualSemVendedor( 1 )
 	}, [] )
 
 	// Função para migrar carteira em massa
@@ -713,6 +596,20 @@ function Empresas () {
 		}
 	}, [] )
 
+	// Função para lidar com o filtro de cidade
+	const handleFiltroCidade = useCallback( ( cidadeText: string ) => {
+		setFiltroCidade( prev => {
+			if ( prev === cidadeText ) return prev
+			setPaginaAtualSemVendedor( 1 )
+			setPaginaAtualComVendedor( 1 )
+			return cidadeText
+		} )
+		// Atualizar o valor do input quando chamado externamente (ex: ao clicar no badge)
+		if ( filtroCidadeRef.current ) {
+			filtroCidadeRef.current.setValue( cidadeText )
+		}
+	}, [] )
+
 	// Estado local para inputs de paginação (para evitar resets durante digitação)
 	const [ inputPaginaComVendedor, setInputPaginaComVendedor ] = useState<string>( "1" )
 	const [ inputPaginaSemVendedor, setInputPaginaSemVendedor ] = useState<string>( "1" )
@@ -736,20 +633,113 @@ function Empresas () {
 		setPaginaAtualComVendedor( novaPagina )
 	}, [] )
 
+	// Função para refatorar purchaseFrequency
+	const handleRefatorarPurchaseFrequency = useCallback( async () => {
+		setRefatorandoPurchaseFrequency( true )
+		try {
+			const response = await axios.post( '/api/refactory/companies/purchase-frequency' )
+			const data = response.data
+
+			if ( data.success ) {
+				toast( {
+					title: 'Refatoração concluída',
+					description: `Processadas: ${ data.summary.processed } empresas | Atualizadas: ${ data.summary.updated } | Erros: ${ data.summary.errors }`,
+					status: 'success',
+					duration: 10000,
+					isClosable: true,
+				} )
+
+				// Recarregar dados das empresas
+				if ( tabIndex === 0 ) {
+					carregarEmpresasComVendedor( paginaAtualComVendedor )
+				} else {
+					carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
+				}
+			} else {
+				toast( {
+					title: 'Erro na refatoração',
+					description: 'Não foi possível completar a refatoração',
+					status: 'error',
+					duration: 5000,
+					isClosable: true,
+				} )
+			}
+		} catch ( error: any ) {
+			console.error( 'Erro ao refatorar purchase frequency:', error )
+			toast( {
+				title: 'Erro',
+				description: error.response?.data?.error || 'Erro ao refatorar frequência de compra',
+				status: 'error',
+				duration: 7000,
+				isClosable: true,
+			} )
+		} finally {
+			setRefatorandoPurchaseFrequency( false )
+		}
+	}, [ toast, tabIndex, paginaAtualComVendedor, paginaAtualSemVendedor, filtroTexto, carregarEmpresasComVendedor, carregarEmpresasSemVendedor ] )
+
+	// Função para checar empresas expiradas
+	const handleChecarExpiradas = useCallback( async () => {
+		setChecandoExpiradas( true )
+		try {
+			const response = await axios.get( '/api/db/empresas/check-expiration' )
+			const data = response.data
+
+			if ( data.success !== false ) {
+				toast( {
+					title: 'Verificação concluída',
+					description: `Total: ${ data.total } empresas | Atualizadas: ${ data.updated } | Sem alterações: ${ data.noChanges } | Erros: ${ data.failed }`,
+					status: 'success',
+					duration: 10000,
+					isClosable: true,
+				} )
+
+				// Recarregar dados das empresas
+				if ( tabIndex === 0 ) {
+					carregarEmpresasComVendedor( paginaAtualComVendedor )
+				} else {
+					carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
+				}
+			} else {
+				toast( {
+					title: 'Aviso',
+					description: `Verificação concluída com erros. Total: ${ data.total } | Atualizadas: ${ data.updated } | Erros: ${ data.failed }`,
+					status: 'warning',
+					duration: 10000,
+					isClosable: true,
+				} )
+			}
+		} catch ( error: any ) {
+			console.error( 'Erro ao checar empresas expiradas:', error )
+			toast( {
+				title: 'Erro',
+				description: error.response?.data?.error || 'Erro ao verificar empresas expiradas',
+				status: 'error',
+				duration: 7000,
+				isClosable: true,
+			} )
+		} finally {
+			setChecandoExpiradas( false )
+		}
+	}, [ toast, tabIndex, paginaAtualComVendedor, paginaAtualSemVendedor, filtroTexto, carregarEmpresasComVendedor, carregarEmpresasSemVendedor ] )
+
 	return (
 		<>
 			<Box w={ '100%' } h={ '100%' } bg={ 'gray.800' } color={ 'white' } px={ 5 } py={ 2 } fontSize={ '0.8rem' } display="flex" flexDirection="column">
 				<Heading size={ 'lg' }>Empresas</Heading>
-				<Flex w={ '100%' } py={ '1rem' } justifyContent={ 'space-between' } flexDir={ 'row' } alignItems={ 'self-end' } px={ 6 } gap={ 6 } borderBottom={ '1px' } borderColor={ 'white' } mb={ '1rem' }>
-					<Flex gap={ 4 } alignItems={ 'flex-end' }>
-						<Box>
+				<Flex w={ '100%' } py={ '1rem' } justifyContent={ 'space-between' } flexDir={ 'row' } alignItems={ 'self-end' } px={ 6 } gap={ 6 } borderBottom={ '1px' } borderColor={ 'white' } mb={ '1rem' } flexWrap="wrap">
+					<Flex gap={ 4 } alignItems={ 'flex-end' } flexWrap="wrap">
+						<Box minW="150px" flexShrink={ 0 }>
 							<FiltroEmpresa empresa={ handleFiltroEmpresa } />
 						</Box>
-						<Box>
+						<Box minW="150px" flexShrink={ 0 }>
 							<FiltroCNAE ref={ filtroCNAERef } cnae={ handleFiltroCNAE } />
 						</Box>
+						<Box minW="150px" flexShrink={ 0 }>
+							<FiltroCidade ref={ filtroCidadeRef } cidade={ handleFiltroCidade } />
+						</Box>
 						{ tabIndex === 0 && (
-							<Box>
+							<Box minW="150px" flexShrink={ 0 }>
 								<FormLabel fontSize="xs" fontWeight="md">
 									Ordenar por
 								</FormLabel>
@@ -761,6 +751,7 @@ function Empresas () {
 									value={ ordemClassificacao }
 									onChange={ ( e ) => handleOrdemClassificacaoChange( e.target.value as "relevancia" | "expiracao" ) }
 									w="150px"
+									minW="150px"
 								>
 									<option value="relevancia" style={ { backgroundColor: "#1A202C", color: 'white' } }>Relevância</option>
 									<option value="expiracao" style={ { backgroundColor: "#1A202C", color: 'white' } }>Data de expiração</option>
@@ -768,7 +759,7 @@ function Empresas () {
 							</Box>
 						) }
 						{ isAdmin && (
-							<Box>
+							<Box minW="200px" flexShrink={ 0 }>
 								<FormLabel fontSize="xs" fontWeight="md">
 									Filtrar por Vendedor
 								</FormLabel>
@@ -777,11 +768,28 @@ function Empresas () {
 									borderColor="white"
 									focusBorderColor="white"
 									rounded="md"
-									value={ filtroVendedorId }
+									value={ filtroVendedorId || '' }
 									onChange={ ( e ) => handleFiltroVendedorChange( e.target.value ) }
-									placeholder="Todos os vendedores"
 									w="200px"
+									minW="200px"
+									sx={ {
+										'& option': {
+											backgroundColor: '#1A202C !important',
+											color: 'white !important',
+										},
+										'& option:hover': {
+											backgroundColor: '#2D3748 !important',
+											color: 'white !important',
+										},
+										'& option:checked': {
+											backgroundColor: '#2D3748 !important',
+											color: 'white !important',
+										}
+									} }
 								>
+									<option value="" style={ { backgroundColor: "#1A202C", color: 'white' } }>
+										Todos os vendedores
+									</option>
 									{ vendedores.map( ( vendedor: any ) => (
 										<option key={ vendedor.id } value={ vendedor.id } style={ { backgroundColor: "#1A202C", color: 'white' } }>
 											{ vendedor.username }
@@ -790,13 +798,63 @@ function Empresas () {
 								</Select>
 							</Box>
 						) }
-						{ isAdmin && filtroVendedorId && empresasComVendedorFiltradas.length > 0 && (
-							<Button size={ 'sm' } onClick={ onOpenMigrate } colorScheme="orange">
+						{ isAdmin && tabIndex === 0 && filtroVendedorId && empresasComVendedorFiltradas.length > 0 && (
+							<Button
+								size={ 'sm' }
+								onClick={ onOpenMigrate }
+								colorScheme="orange"
+								whiteSpace="normal"
+								wordBreak="break-word"
+								minW="fit-content"
+								flexShrink={ 0 }
+							>
 								Migrar Carteira ({ empresasComVendedorFiltradas.length })
 							</Button>
 						) }
 					</Flex>
-					<Button size={ 'sm' } onClick={ () => router.push( '/empresas/cadastro' ) } colorScheme="green">+ Nova Empresa</Button>
+					<Flex gap={ 2 } alignItems={ 'flex-end' } flexWrap="wrap">
+						{ isAdmin && (
+							<>
+								<Button
+									size={ 'sm' }
+									onClick={ handleRefatorarPurchaseFrequency }
+									colorScheme="purple"
+									whiteSpace="normal"
+									wordBreak="break-word"
+									minW="fit-content"
+									flexShrink={ 0 }
+									isLoading={ refatorandoPurchaseFrequency }
+									loadingText="Refatorando..."
+								>
+									Refatorar Frequência
+								</Button>
+								<Button
+									size={ 'sm' }
+									onClick={ handleChecarExpiradas }
+									colorScheme="orange"
+									whiteSpace="normal"
+									wordBreak="break-word"
+									minW="fit-content"
+									flexShrink={ 0 }
+									isLoading={ checandoExpiradas }
+									loadingText="Verificando..."
+								>
+									Checar Expiradas
+								</Button>
+							</>
+						) }
+						<Button
+							size={ 'sm' }
+							onClick={ () => router.push( '/empresas/cadastro' ) }
+							colorScheme="green"
+							whiteSpace="normal"
+							wordBreak="break-word"
+							minW="fit-content"
+							flexShrink={ 0 }
+						>
+							+ Nova Empresa
+						</Button>
+					</Flex>
 				</Flex>
 				<Tabs colorScheme="blue" w={ '100%' } flex="1" display="flex" flexDirection="column" overflowY="auto" variant="unstyled" index={ tabIndex } onChange={ setTabIndex }>
 					<Flex justifyContent="space-between" alignItems="flex-end" mb={ 0 } borderBottom="2px solid #ffffff">
@@ -959,7 +1017,7 @@ function Empresas () {
 						</Box>
 					</Flex>
 
-					<TabPanels flex="1" overflowY="auto" sx={ {
+					<TabPanels flex="1" display="flex" flexDirection="column" minH={ 0 } sx={ {
 						'&::-webkit-scrollbar': {
 							width: '10px',
 						},
@@ -974,7 +1032,7 @@ function Empresas () {
 							background: '#718096',
 						},
 					} }>
-						<TabPanel px={ 0 } py={ 4 }>
+						<TabPanel px={ 0 } py={ 4 } flex="1" display="flex" flexDirection="column" minH={ 0 }>
 							<CarteiraVendedor
 								filtro={ empresasComVendedorFiltradas }
 								isLoading={ carregandoVendedor }
@@ -983,9 +1041,10 @@ function Empresas () {
 								totalPaginas={ totalPaginasComVendedor }
 								onChangePagina={ handlePaginacaoComVendedor }
 								onFilterByCNAE={ handleFiltroCNAE }
+								onFilterByCidade={ handleFiltroCidade }
 							/>
 						</TabPanel>
-						<TabPanel px={ 0 } py={ 4 }>
+						<TabPanel px={ 0 } py={ 4 } flex="1" display="flex" flexDirection="column" minH={ 0 }>
 							<CarteiraAusente
 								filtro={ empresasSemVendedorOrdenadas }
 								isLoading={ carregandoSemVendedor }
@@ -993,6 +1052,7 @@ function Empresas () {
 								totalPaginas={ totalPaginasSemVendedor }
 								onChangePagina={ handlePaginacaoSemVendedor }
 								onFilterByCNAE={ handleFiltroCNAE }
+								onFilterByCidade={ handleFiltroCidade }
 							/>
 						</TabPanel>
 					</TabPanels>

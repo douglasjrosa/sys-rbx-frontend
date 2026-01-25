@@ -14,7 +14,7 @@ export default async function GetEmpresa (
 			method: 'GET',
 			url:
 				process.env.NEXT_PUBLIC_STRAPI_API_URL +
-				`/empresas/${ id }?&populate=%2A`,
+				`/empresas/${ id }?populate[businesses][populate][0]=pedidos&populate[businesses][populate][1]=vendedor&populate[user]=*&populate=*`,
 			headers: {
 				Authorization: `Bearer ${ token }`,
 				'Content-Type': 'application/json',

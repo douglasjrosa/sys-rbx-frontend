@@ -72,39 +72,33 @@ function buildResponse (
 }
 
 /**
- * Process a batch of empresas with limited concurrency
+ * Process a batch of empresas sequentially to avoid DB deadlocks on empresas_user_links.
+ * Optional delayMs after each update to allow DB to release locks.
  */
 async function processarLote (
 	empresas: Empresa[],
 	token: string,
 	dataAtual: Date,
-	maxConcorrencia: number = 10
+	delayMs: number = 150
 ): Promise<ProcessResult[]> {
 	const resultados: ProcessResult[] = []
-	let indiceAtual = 0
 
-	const processarProximo = async (): Promise<void> => {
-		while ( indiceAtual < empresas.length ) {
-			const empresa = empresas[ indiceAtual++ ]
-			try {
-				const resultado = await processarEmpresa( empresa, token, dataAtual )
-				resultados.push( resultado )
-			} catch ( error: any ) {
-				resultados.push( {
-					empresaId: empresa.id,
-					success: false,
-					error: error.response?.data || error.message || "Unknown error",
-				} )
+	for ( const empresa of empresas ) {
+		try {
+			const resultado = await processarEmpresa( empresa, token, dataAtual )
+			resultados.push( resultado )
+			// Delay after each update to avoid deadlocks on empresas_user_links
+			if ( resultado.updates && delayMs > 0 ) {
+				await new Promise( ( resolve ) => setTimeout( resolve, delayMs ) )
 			}
+		} catch ( error: any ) {
+			resultados.push( {
+				empresaId: empresa.id,
+				success: false,
+				error: error.response?.data || error.message || "Unknown error",
+			} )
 		}
 	}
-
-	// Create concurrent workers
-	const workers = Array.from( { length: Math.min( maxConcorrencia, empresas.length ) }, () =>
-		processarProximo()
-	)
-
-	await Promise.all( workers )
 
 	return resultados
 }
@@ -193,9 +187,9 @@ export default async function CheckExpiration (
 
 		const dataAtual = new Date()
 		const tokenString: string = token
-		const tamanhoLote = parseInt( req.query.batchSize as string ) || 100
-		const maxConcorrencia = parseInt( req.query.concurrency as string ) || 10
-		const limitePagina = parseInt( req.query.pageSize as string ) || 1000
+		const tamanhoLote = parseInt( req.query.batchSize as string ) || 50
+		const delayMs = Math.max( 0, parseInt( req.query.delayMs as string ) || 150 )
+		const limitePagina = parseInt( req.query.pageSize as string ) || 500
 
 		// Fetch first page to get total count
 		const primeiraPagina = await axios.get(
@@ -247,12 +241,12 @@ export default async function CheckExpiration (
 			const lotes = dividirEmLotes( empresas, tamanhoLote )
 			console.log( `Processing page ${ paginaAtual }/${ totalPaginas }: ${ empresas.length } empresas in ${ lotes.length } batches` )
 
-			// Process each batch sequentially
+			// Process each batch sequentially (no concurrency to avoid deadlocks)
 			for ( let i = 0; i < lotes.length; i++ ) {
 				const lote = lotes[ i ]
 				console.log( `Processing batch ${ i + 1 }/${ lotes.length } of page ${ paginaAtual } (${ lote.length } empresas)` )
 
-				const resultadosLote = await processarLote( lote, tokenString, dataAtual, maxConcorrencia )
+				const resultadosLote = await processarLote( lote, tokenString, dataAtual, delayMs )
 
 				// Separate successes and errors
 				resultadosLote.forEach( ( item: ProcessResult ) => {
@@ -263,9 +257,9 @@ export default async function CheckExpiration (
 					}
 				} )
 
-				// Small delay between batches to avoid rate limiting
+				// Delay between batches to avoid DB lock contention
 				if ( i < lotes.length - 1 ) {
-					await new Promise( ( resolve ) => setTimeout( resolve, 100 ) )
+					await new Promise( ( resolve ) => setTimeout( resolve, 200 ) )
 				}
 			}
 
@@ -287,7 +281,7 @@ export default async function CheckExpiration (
 			pagesProcessed: totalPaginas,
 			batchesProcessed: Math.ceil( totalEmpresas / tamanhoLote ),
 			batchSize: tamanhoLote,
-			concurrency: maxConcorrencia,
+			delayMs,
 		} )
 	} catch ( err: any ) {
 		console.error( "Error in CheckExpiration:", err )

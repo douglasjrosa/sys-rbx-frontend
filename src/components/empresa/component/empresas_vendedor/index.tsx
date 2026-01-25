@@ -9,6 +9,7 @@ import { parseISO, differenceInDays } from "date-fns"
 import { ObjContato } from "@/components/data/objetivo"
 import { TipoContato } from "@/components/data/tipo"
 import Link from "next/link"
+import { formatCNAE } from "@/function/Mask/cnae"
 
 type EmpresaData = {
 	id: string
@@ -23,6 +24,7 @@ type CarteiraVendedorProps = {
 	totalPaginas: number
 	onChangePagina: ( pagina: number ) => void
 	onFilterByCNAE?: ( cnae: string ) => void
+	onFilterByCidade?: ( cidade: string ) => void
 }
 
 export const CarteiraVendedor = memo( ( {
@@ -32,7 +34,8 @@ export const CarteiraVendedor = memo( ( {
 	paginaAtual,
 	totalPaginas,
 	onChangePagina,
-	onFilterByCNAE
+	onFilterByCNAE,
+	onFilterByCidade
 }: CarteiraVendedorProps ) => {
 	const { data: session } = useSession()
 	const router = useRouter()
@@ -65,6 +68,11 @@ export const CarteiraVendedor = memo( ( {
 		// Para verde (negócio ganho), sempre usar branco
 		if ( bgColor === '#22C55E' || bgColor === '#16a34a' ) {
 			return '#FFFFFF'
+		}
+
+		// Para amarelo (negócio em andamento), sempre usar preto para melhor contraste
+		if ( bgColor === '#EAB308' || bgColor === 'yellow' || bgColor?.toLowerCase()?.includes( 'yellow' ) ) {
+			return '#000000'
 		}
 
 		// Converter hex para RGB
@@ -129,6 +137,9 @@ export const CarteiraVendedor = memo( ( {
 					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
 						<Skeleton height="20px" startColor="gray.600" endColor="gray.700" width="80px" mx="auto" />
 					</td>
+					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
+						<Skeleton height="20px" startColor="gray.600" endColor="gray.700" width="100px" mx="auto" />
+					</td>
 				</tr>
 			) )
 		}
@@ -136,33 +147,70 @@ export const CarteiraVendedor = memo( ( {
 		if ( !filtro || filtro.length === 0 ) {
 			return (
 				<tr>
-					<td colSpan={ showVendedor ? 5 : 4 } style={ { textAlign: 'center', padding: '1rem' } }>
+					<td colSpan={ showVendedor ? 7 : 6 } style={ { textAlign: 'center', padding: '1rem' } }>
 						Nenhuma empresa encontrada
 					</td>
 				</tr>
 			)
 		}
 
+		// Log para verificar dados no componente
+		if ( filtro.length > 0 ) {
+			const primeiraEmpresa = filtro[ 0 ]
+			console.log( '🔍 [COMPONENTE VENDEDOR] Processando primeira empresa:' )
+			console.log( '  - ID:', primeiraEmpresa?.id )
+			console.log( '  - Nome:', primeiraEmpresa?.attributes?.nome )
+			console.log( '  - businesses.data:', primeiraEmpresa?.attributes?.businesses?.data )
+			console.log( '  - businesses.data length:', primeiraEmpresa?.attributes?.businesses?.data?.length || 0 )
+			console.log( '  - interacaos.data:', primeiraEmpresa?.attributes?.interacaos?.data )
+			console.log( '  - interacaos.data length:', primeiraEmpresa?.attributes?.interacaos?.data?.length || 0 )
+		}
+
+		// Função auxiliar para acessar campos que podem estar em attributes ou diretamente no objeto
+		const getField = ( obj: any, field: string ) => {
+			if ( !obj ) return undefined
+			// Se tem attributes, usar attributes, senão usar diretamente
+			return obj.attributes ? obj.attributes[ field ] : obj[ field ]
+		}
+
 		return filtro.map( ( empresa ) => {
-			const negocio = empresa.attributes.businesses.data || []
-			const interacao = empresa.attributes.interacaos.data
-			const vendedorNome = empresa.attributes.user?.data?.attributes?.username || "Sem vendedor"
+			const negocio = empresa.attributes?.businesses?.data || []
+			// Normalizar interacao: pode vir como objeto único (após processamento) ou array
+			const interacaoRaw = empresa.attributes?.interacaos?.data || null
+			let interacao: any = null
+			
+			// Determinar o formato da interação
+			if ( !interacaoRaw ) {
+				interacao = null
+			} else if ( Array.isArray( interacaoRaw ) ) {
+				// Se é array vazio, null
+				if ( interacaoRaw.length === 0 ) {
+					interacao = null
+				} else {
+					// Array com elementos, usar o array
+					interacao = interacaoRaw
+				}
+			} else if ( typeof interacaoRaw === 'object' ) {
+				// Objeto único (pode ser processado ou não)
+				interacao = interacaoRaw
+			}
+			const vendedorNome = empresa.attributes?.user?.data?.attributes?.username || empresa.attributes?.user?.data?.username || "Sem vendedor"
 
 			// Filtrar negócios concluídos (etapa === 6) e ordenar por data_conclucao (mais recente primeiro)
 			const negociosConcluidos = negocio
-				.filter( ( n: any ) => n.attributes.etapa === 6 )
+				.filter( ( n: any ) => getField( n, 'etapa' ) === 6 )
 				.sort( ( a: any, b: any ) => {
-					const dataA = a.attributes.date_conclucao ? new Date( a.attributes.date_conclucao ).getTime() : 0
-					const dataB = b.attributes.date_conclucao ? new Date( b.attributes.date_conclucao ).getTime() : 0
+					const dataA = getField( a, 'date_conclucao' ) ? new Date( getField( a, 'date_conclucao' ) ).getTime() : 0
+					const dataB = getField( b, 'date_conclucao' ) ? new Date( getField( b, 'date_conclucao' ) ).getTime() : 0
 					return dataB - dataA
 				} )
 			const ultimoNegocioConcluido = negociosConcluidos[ 0 ]
 
 			// Filtrar negócios em andamento (andamento === 3 e etapa !== 6)
 			const negociosAtivos = negocio.filter( ( n: any ) =>
-				n.attributes.andamento === 3 &&
-				n.attributes.etapa !== 6 &&
-				n.attributes.vendedor_name === session?.user?.name
+				getField( n, 'andamento' ) === 3 &&
+				getField( n, 'etapa' ) !== 6 &&
+				getField( n, 'vendedor_name' ) === session?.user?.name
 			)
 			const temNegocioAtivo = negociosAtivos.length > 0
 			const primeiroNegocioAtivo = negociosAtivos[ 0 ]
@@ -174,35 +222,39 @@ export const CarteiraVendedor = memo( ( {
 			if ( temNegocioAtivo ) {
 				// Amarelo = Há negócio em andamento
 				corHistorico = '#EAB308'
-				const vendedorNome = primeiroNegocioAtivo?.attributes?.vendedor?.data?.attributes?.username ||
-					primeiroNegocioAtivo?.attributes?.vendedor_name ||
+				const vendedorObj = primeiroNegocioAtivo?.vendedor || primeiroNegocioAtivo?.attributes?.vendedor
+				const vendedorNome = vendedorObj?.username || vendedorObj?.data?.attributes?.username || 
+					getField( primeiroNegocioAtivo, 'vendedor_name' ) ||
 					"Não informado"
 				dadosHistorico = {
-					data: primeiroNegocioAtivo?.attributes?.deadline || primeiroNegocioAtivo?.attributes?.createdAt,
-					valor: primeiroNegocioAtivo?.attributes?.Budget || null,
+					data: getField( primeiroNegocioAtivo, 'deadline' ) || getField( primeiroNegocioAtivo, 'createdAt' ),
+					valor: getField( primeiroNegocioAtivo, 'Budget' ) || null,
 					vendedor: vendedorNome
 				}
 			} else if ( ultimoNegocioConcluido ) {
 				// Determinar cor baseado no último negócio concluído
-				if ( ultimoNegocioConcluido.attributes.andamento === 5 ) {
+				const andamento = getField( ultimoNegocioConcluido, 'andamento' )
+				if ( andamento === 5 ) {
 					// Verde = Ganho (usar verde mais escuro para melhor contraste)
 					corHistorico = '#16a34a'
-				} else if ( ultimoNegocioConcluido.attributes.andamento === 1 ) {
+				} else if ( andamento === 1 ) {
 					// Vermelho = Perdido
 					corHistorico = '#EF4444'
 				}
 
 				// Buscar valor do negócio (Budget ou totalGeral do primeiro pedido)
-				const pedidos = ultimoNegocioConcluido.attributes.pedidos?.data || []
-				const valor = ultimoNegocioConcluido.attributes.Budget ||
-					( pedidos.length > 0 ? pedidos[ 0 ]?.attributes?.totalGeral : null )
+				const pedidos = ultimoNegocioConcluido?.pedidos || ultimoNegocioConcluido?.attributes?.pedidos || []
+				const pedidosArray = Array.isArray( pedidos ) ? pedidos : pedidos?.data || []
+				const valor = getField( ultimoNegocioConcluido, 'Budget' ) ||
+					( pedidosArray.length > 0 ? ( pedidosArray[ 0 ]?.totalGeral || pedidosArray[ 0 ]?.attributes?.totalGeral ) : null )
 
-				const vendedorNome = ultimoNegocioConcluido.attributes.vendedor?.data?.attributes?.username ||
-					ultimoNegocioConcluido.attributes.vendedor_name ||
+				const vendedorObj = ultimoNegocioConcluido?.vendedor || ultimoNegocioConcluido?.attributes?.vendedor
+				const vendedorNome = vendedorObj?.username || vendedorObj?.data?.attributes?.username ||
+					getField( ultimoNegocioConcluido, 'vendedor_name' ) ||
 					"Não informado"
 
 				dadosHistorico = {
-					data: ultimoNegocioConcluido.attributes.date_conclucao || ultimoNegocioConcluido.attributes.createdAt,
+					data: getField( ultimoNegocioConcluido, 'date_conclucao' ) || getField( ultimoNegocioConcluido, 'createdAt' ),
 					valor: valor,
 					vendedor: vendedorNome
 				}
@@ -214,19 +266,27 @@ export const CarteiraVendedor = memo( ( {
 			let dadosInteracao: any = null
 
 			if ( interacao ) {
-				if ( typeof interacao === 'object' && 'cor' in interacao ) {
+				// Se é array vazio, não mostrar
+				if ( Array.isArray( interacao ) && interacao.length === 0 ) {
+					mostrarIconeInteracao = false
+				} else if ( typeof interacao === 'object' && 'cor' in interacao ) {
 					// Se interacao é um objeto processado (formato após processamento)
 					corInteracao = interacao.cor || 'rgb(0,100,255)'
 					mostrarIconeInteracao = true
 					// Usar o objeto processado que agora tem descricao
 					dadosInteracao = interacao
 				} else if ( Array.isArray( interacao ) && interacao.length > 0 ) {
-					// Se interacao é um array
+					// Se interacao é um array com elementos
 					mostrarIconeInteracao = true
 					const ultima = interacao[ interacao.length - 1 ]
-					if ( ultima && ultima.attributes ) {
-						dadosInteracao = ultima.attributes
+					if ( ultima ) {
+						// Normalizar acesso aos campos (pode estar em attributes ou diretamente)
+						dadosInteracao = ultima.attributes || ultima
 					}
+				} else if ( typeof interacao === 'object' && interacao !== null ) {
+					// Se interacao é um objeto único (não array)
+					mostrarIconeInteracao = true
+					dadosInteracao = interacao.attributes || interacao
 				}
 			}
 
@@ -259,7 +319,7 @@ export const CarteiraVendedor = memo( ( {
 									} }
 									_hover={ { opacity: 0.8 } }
 								>
-									{ empresa.attributes.CNAE }
+									{ formatCNAE( empresa.attributes.CNAE ) }
 								</Badge>
 							</Flex>
 						) }
@@ -437,10 +497,31 @@ export const CarteiraVendedor = memo( ( {
 							}
 						} )() }
 					</td>
+					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
+						<Flex justifyContent="center" alignItems="center" w="100%">
+							{ empresa.attributes.cidade ? (
+								<Badge
+									colorScheme="purple"
+									cursor="pointer"
+									fontSize="0.65rem"
+									onClick={ ( e: React.MouseEvent<HTMLSpanElement> ) => {
+										e.stopPropagation()
+										if ( onFilterByCidade ) {
+											onFilterByCidade( empresa.attributes.cidade )
+										}
+									} }
+									_hover={ { opacity: 0.8 } }
+									textTransform="none"
+								>
+									{ `${ empresa.attributes.cidade } - ${ empresa.attributes.uf || '' }` }
+								</Badge>
+							) : '-' }
+						</Flex>
+					</td>
 				</tr>
 			)
 		} )
-	}, [ filtro, isLoading, router, session?.user?.name, showVendedor, onFilterByCNAE ] )
+	}, [ filtro, isLoading, router, session?.user?.name, showVendedor, onFilterByCNAE, onFilterByCidade ] )
 
 	// Renderizar controles de paginação
 	const paginacao = useMemo( () => {
@@ -495,13 +576,32 @@ export const CarteiraVendedor = memo( ( {
 	}, [ paginaAtual, totalPaginas, isLoading, onChangePagina, paginaInput ] )
 
 	return (
-		<Box color={ 'white' } w={ '100%' } display="flex" flexDirection="column">
+		<Box color={ 'white' } w={ '100%' } h={ '100%' } display="flex" flexDirection="column">
 			<Box
 				mt={ 0 }
 				pe={ 3 }
+				flex="1"
+				overflowY="auto"
+				minH={ 0 }
+				sx={ {
+					'&::-webkit-scrollbar': {
+						width: '8px',
+					},
+					'&::-webkit-scrollbar-track': {
+						background: '#1A202C',
+						borderRadius: '4px',
+					},
+					'&::-webkit-scrollbar-thumb': {
+						background: '#4A5568',
+						borderRadius: '4px',
+					},
+					'&::-webkit-scrollbar-thumb:hover': {
+						background: '#718096',
+					},
+				} }
 			>
-				<table style={ { width: '100%' } }>
-					<thead>
+				<table style={ { width: '100%', borderCollapse: 'separate', borderSpacing: 0 } }>
+					<thead style={ { position: 'sticky', top: 0, zIndex: 10, background: '#1A202C' } }>
 						<tr style={ { background: '#ffffff12', borderBottom: '1px solid #ffff' } }>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'start', width: showVendedor ? '25%' : '30%', textTransform: 'uppercase' } }>Nome</th>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '10%', textTransform: 'uppercase' } }>CNAE</th>
@@ -511,6 +611,7 @@ export const CarteiraVendedor = memo( ( {
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '15%', textTransform: 'uppercase' } }>Negócios</th>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '6%', textTransform: 'uppercase' } }>Interações</th>
 							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '15%', textTransform: 'uppercase' } }>Expira em</th>
+							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '15%', textTransform: 'uppercase' } }>Cidade</th>
 						</tr>
 					</thead>
 					<tbody>
