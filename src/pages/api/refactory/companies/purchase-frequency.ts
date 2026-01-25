@@ -85,7 +85,7 @@ export default async function handler (
 							dateString: dateConclucao,
 						}
 					} )
-					.sort( ( a, b ) => b.date.getTime() - a.date.getTime() ) // Most recent first
+					.sort( ( a: any, b: any ) => b.date.getTime() - a.date.getTime() ) // Most recent first
 
 				results.processed++
 
@@ -107,7 +107,7 @@ export default async function handler (
 					}
 
 					if ( differences.length > 0 ) {
-						const sum = differences.reduce( ( acc, val ) => acc + val, 0 )
+						const sum = differences.reduce( ( acc: number, val: number ) => acc + val, 0 )
 						averageDays = sum / differences.length
 					}
 				}
