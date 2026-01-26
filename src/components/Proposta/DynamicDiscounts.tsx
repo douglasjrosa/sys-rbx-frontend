@@ -83,13 +83,13 @@ export const DynamicDiscounts: React.FC<DynamicDiscountsProps> = ( {
 					return isNaN( numericTabela ) ? null : numericTabela
 				} )
 				.filter( ( value ): value is number => value !== null )
-			
+
 			if ( tabelaValues.length > 0 ) {
 				const minTabela = Math.min( ...tabelaValues )
 				return findClosestMarginTable( minTabela )
 			}
 		}
-		
+
 		// Fallback to companyTablecalc if no items or no tabela values
 		return findClosestMarginTable( companyTablecalc )
 	}, [ itemsList, companyTablecalc ] )

@@ -498,9 +498,9 @@ const Proposta = () => {
 						<chakra.p fontSize={ { base: "xs", md: "sm" } }>
 							Custos extras:<br />R$ { formatCurrency( aditionalCosts ) }
 						</chakra.p>
-						<chakra.p 
-							fontSize={ { base: "sm", md: "md" } } 
-							fontWeight="bold" 
+						<chakra.p
+							fontSize={ { base: "sm", md: "md" } }
+							fontWeight="bold"
 							color="white"
 							bg="gray.600"
 							p={ 3 }
