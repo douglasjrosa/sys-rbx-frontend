@@ -10,8 +10,7 @@ interface PaymentTermsProps {
 const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerms, setPaymentTermsOnChange } ) => {
 
 	const [ options, setOptions ] = useState<any[]>( [
-		{ maxPg: 0, title: 'À vista (antecipado)' },
-		{ maxPg: 1, title: 'Antecipado (c/ desconto)' }
+		{ maxPg: 0, title: 'À vista (antecipado)' }
 	] )
 
 	useEffect( () => {
@@ -40,7 +39,6 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 
 			setOptions( [
 				{ maxPg: 0, title: 'À vista (antecipado)' },
-				{ maxPg: 1, title: 'Antecipado (c/ desconto)' },
 				...allowedOptions
 			] )
 		}
@@ -69,8 +67,10 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 					>
 						{ options.map( ( option: any, key ) => {
 							return (
-								<option style={ { backgroundColor: "#1A202C" } }
+								<option 
+									style={ { backgroundColor: "#1A202C" } }
 									key={ `formaPagto-${ key }` }
+									value={ option.title }
 								>
 									{ option.title }
 								</option>

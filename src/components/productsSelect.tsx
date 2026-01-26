@@ -141,15 +141,46 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email 
 						style={ { backgroundColor: "#1A202C" } }
 						value=""
 					>Selecione um produto</option>
-					{ productList.map( ( currentProduct: any, key ) => (
-						<option
-							key={ `prodList${ key }` }
-							style={ { backgroundColor: "#1A202C" } }
-							value={ currentProduct.prodId }
-						>
-							{ currentProduct.nomeProd }
-						</option>
-					) ) }
+					{ productList.map( ( currentProduct: any, key ) => {
+						const formatCurrencyValue = ( value: number | string | undefined ) => {
+							if ( !value ) return ''
+							let num: number
+							if ( typeof value === 'string' ) {
+								// Try to parse as formatted currency (e.g., "R$ 1.234,56" or "1234.56")
+								const cleaned = value.replace( /[^\d,.-]/g, '' ).replace( '.', '' ).replace( ',', '.' )
+								num = parseFloat( cleaned ) || 0
+							} else {
+								num = value
+							}
+							if ( isNaN( num ) || num === 0 ) return ''
+							return new Intl.NumberFormat( 'pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 } ).format( num )
+						}
+						
+						const formatDimensions = ( comp: number | undefined, larg: number | undefined, alt: number | undefined ) => {
+							if ( !comp || !larg || !alt ) return ''
+							return `${ comp }x${ larg }x${ alt }cm`
+						}
+						
+						const productInfo = []
+						if ( currentProduct.nomeProd ) productInfo.push( currentProduct.nomeProd )
+						const codigo = currentProduct.codigo || ( currentProduct.prodId ? `rbx-${ currentProduct.prodId }` : '' )
+						if ( codigo ) productInfo.push( codigo )
+						if ( currentProduct.titulo ) productInfo.push( currentProduct.titulo )
+						const dims = formatDimensions( currentProduct.comprimento, currentProduct.largura, currentProduct.altura )
+						if ( dims ) productInfo.push( dims )
+						const price = formatCurrencyValue( currentProduct.vFinal || currentProduct.preco )
+						if ( price ) productInfo.push( price )
+						
+						return (
+							<option
+								key={ `prodList${ key }` }
+								style={ { backgroundColor: "#1A202C" } }
+								value={ currentProduct.prodId }
+							>
+								{ productInfo.join( ' | ' ) }
+							</option>
+						)
+					} ) }
 				</Select>
 				||
 				<Skeleton height='30px' startColor='gray.600' endColor='gray.700' rounded={ "md" } w="100%" />

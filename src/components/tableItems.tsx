@@ -1,6 +1,7 @@
-import { Button, Checkbox, Icon, Input, Table, TableContainer, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react"
-import { Dispatch, SetStateAction } from "react"
-import { BsTrash } from "react-icons/bs"
+import { Badge, Box, Button, Checkbox, Icon, Input, Table, TableContainer, Tbody, Td, Th, Thead, Tr, VStack } from "@chakra-ui/react"
+import React, { Dispatch, SetStateAction } from "react"
+import { BsX } from "react-icons/bs"
+import { formatCurrency, parseCurrency } from "@/utils/customNumberFormats"
 
 interface TableItemsProps {
 	itemsList: any[]
@@ -44,6 +45,10 @@ const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChang
 		setItemsListOnChange( newList )
 	}
 
+	const getInternalMeasurements = ( item: any ): string | null => {
+		if ( !item.comprimento ) return null
+		return `${ item.comprimento } x ${ item.largura } x ${ item.altura }cm(alt.)`
+	}
 
 	return (
 		<TableContainer>
@@ -51,102 +56,38 @@ const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChang
 				<Thead>
 					<Tr bg={ '#ffffff12' }>
 						<Th px='0' w={ "1.3rem" }></Th>
-						<Th px='0' w={ "8rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>Itens</Th>
-						<Th px='0' w={ "5rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
-							Código
-						</Th>
-						<Th px='0' w={ "3rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
-							Qtd
-						</Th>
-						<Th px='0' w={ "5rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
-							Medidas Internas
-						</Th>
-						<Th px='0' w={ "3rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
-							Mont.
-						</Th>
-						<Th px='0' w={ "3rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
-							Expo.
-						</Th>
+						<Th px='0' minW={ "20rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>Item</Th>
 						<Th px='0' w={ "6rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
 							Preço un
 						</Th>
 						<Th px='0' w={ "6rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
-							Preço total
+							SERVIÇOS
 						</Th>
-						<Th px='0' textAlign={ "center" } w={ "5rem" }>
-							<Icon as={ BsTrash } boxSize={ 4 } color='white' />
+						<Th px='0' w={ "3rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
+							Qtd
+						</Th>
+						<Th px='0' w={ "6rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
+							Preço total
 						</Th>
 					</Tr>
 				</Thead>
 				<Tbody>
 					{ itemsList && !!itemsList.length && itemsList.map( ( item, key ) => {
+						const internalMeasurements = getInternalMeasurements( item )
 
 						return (
 							<Tr key={ `item-${ key }` } >
-								<Td textAlign="center" fontSize="xs" >{ key + 1 }</Td>
-								<Td
-									textAlign="center"
-									fontSize="xs"
-									whiteSpace="normal"
-									wordBreak="break-word"
-									w={ "14rem" } 
-								>{ item.nomeProd }</Td>
-								<Td textAlign="center" fontSize="xs" >{ item.codigo }</Td>
-								<Td>
-									<Input
-										type="number"
-										value={ Number( item.Qtd ) }
-										onChange={ e => {
-											handleItemChange( {
-												index: key,
-												qtde: Number( e.target.value )
-											} )
-										} }
-										textAlign="center"
-										fontSize="xs"
-										size="xs"
-										w={ 14 }
-										rounded="md"
-									/>
-								</Td>
-								<Td textAlign="center" fontSize="xs" >
-									{ !item.comprimento ? '' : `${ item.comprimento } x ${ item.largura } x ${ item.altura }cm(alt.)` }
-								</Td>
-								<Td>
-									<Checkbox
-										borderColor="whatsapp.600"
-										rounded="md"
-										px="3"
-										onChange={ e => {
-											handleItemChange( {
-												index: key,
-												mont: e.target.checked
-											} )
-										} }
-										isChecked={ item.mont } />
-								</Td>
-								<Td>
-									<Checkbox
-										borderColor="whatsapp.600"
-										rounded="md"
-										px="3"
-										onChange={ e => {
-											handleItemChange( {
-												index: key,
-												expo: e.target.checked
-											} )
-										} }
-										isChecked={ item.expo } />
-								</Td>
-								<Td textAlign="center" fontSize="xs" >{ item.vFinal }</Td>
-								<Td textAlign="center" fontSize="xs" >{ item.total }</Td>
-								<Td textAlign="center" fontSize="xs" >
+								<Td textAlign="center" fontSize="xs" verticalAlign="middle">
 									<Button
 										bg="transparent"
 										color="red.500"
-										rounded="full"
-										width="50px"
-										height="50px"
+										border="1px solid"
+										borderColor="red.500"
+										rounded="md"
+										width="24px"
+										height="24px"
+										minW="24px"
+										p={ 0 }
 										_hover={ {
 											bg: "red.500",
 											color: "white",
@@ -161,9 +102,125 @@ const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChang
 											deleteItem: true
 										} ) }
 									>
-										<Icon as={ BsTrash } boxSize={ 4 } />
+										<Icon as={ BsX } boxSize={ 4 } />
 									</Button>
 								</Td>
+								<Td
+									px={ 3 }
+									py={ 2 }
+									fontSize="xs"
+									whiteSpace="normal"
+									wordBreak="break-word"
+									minW={ "20rem" }
+								>
+									<VStack align="start" spacing={ 2 }>
+										<Box fontWeight="medium">{ item.nomeProd }</Box>
+										{ ( internalMeasurements || item.codigo ) && (
+											<Box display="flex" flexWrap="wrap" gap={ 2 }>
+												{ internalMeasurements && (
+													<Badge bg="yellow.400" color="black" fontSize="2xs" px={ 1.5 } py={ 0.5 }>
+														{ internalMeasurements }
+													</Badge>
+												) }
+												{ item.codigo && (
+													<Badge colorScheme="gray" fontSize="2xs" px={ 1.5 } py={ 0.5 }>
+														{ item.codigo }
+													</Badge>
+												) }
+											</Box>
+										) }
+									</VStack>
+								</Td>
+								<Td textAlign="center" fontSize="xs" verticalAlign="middle">{ item.vFinal }</Td>
+								<Td textAlign="center" fontSize="xs" verticalAlign="middle">
+									{ ( () => {
+										const unitPrice = parseCurrency( item.vFinal )
+										let servicesValue = 0
+										if ( item.mont ) servicesValue += unitPrice * 0.1
+										if ( item.expo ) servicesValue += unitPrice * 0.1
+										return formatCurrency( servicesValue )
+									} )() }
+								</Td>
+								<Td textAlign="center" verticalAlign="middle">
+									<VStack spacing={ 2 } align="center">
+										<Input
+											type="number"
+											value={ Number( item.Qtd ) }
+											onChange={ e => {
+												handleItemChange( {
+													index: key,
+													qtde: Number( e.target.value )
+												} )
+											} }
+											textAlign="center"
+											fontSize="xs"
+											size="xs"
+											w={ 14 }
+											rounded="md"
+										/>
+										<VStack spacing={ 1 } align="center">
+											<Checkbox
+												borderColor="whatsapp.600"
+												rounded="md"
+												size="sm"
+												onChange={ e => {
+													handleItemChange( {
+														index: key,
+														mont: e.target.checked
+													} )
+												} }
+												isChecked={ item.mont }
+											>
+												<Box
+													as="span"
+													fontSize="2xs"
+													onClick={ ( e: React.MouseEvent ) => {
+														e.preventDefault()
+														e.stopPropagation()
+														handleItemChange( {
+															index: key,
+															mont: !item.mont
+														} )
+													} }
+													cursor="pointer"
+													userSelect="none"
+												>
+													Mont.
+												</Box>
+											</Checkbox>
+											<Checkbox
+												borderColor="whatsapp.600"
+												rounded="md"
+												size="sm"
+												onChange={ e => {
+													handleItemChange( {
+														index: key,
+														expo: e.target.checked
+													} )
+												} }
+												isChecked={ item.expo }
+											>
+												<Box
+													as="span"
+													fontSize="2xs"
+													onClick={ ( e: React.MouseEvent ) => {
+														e.preventDefault()
+														e.stopPropagation()
+														handleItemChange( {
+															index: key,
+															expo: !item.expo
+														} )
+													} }
+													cursor="pointer"
+													userSelect="none"
+												>
+													Expo.
+												</Box>
+											</Checkbox>
+										</VStack>
+									</VStack>
+								</Td>
+								<Td textAlign="center" fontSize="xs" verticalAlign="middle">{ item.total }</Td>
 							</Tr>
 						)
 					} ) }

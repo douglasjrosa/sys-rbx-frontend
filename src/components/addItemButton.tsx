@@ -81,8 +81,6 @@ const AddItemButton: React.FC<AddItemButtonProps> = ( {
 			aria-label="Add Item"
 			rounded={ 'lg' }
 			colorScheme="whatsapp"
-			mt={ '1rem' }
-			me={ '3rem' }
 			onClick={ handleAddItem }
 			isDisabled={ loading }
 		>

@@ -9,6 +9,7 @@ import FreightSelect from "@/components/freightSelect"
 import { LabelEmpresa } from "@/components/labelEmpresa"
 import ProductsSelect from "@/components/productsSelect"
 import TableItems from "@/components/tableItems"
+import { DynamicDiscounts } from "@/components/Proposta/DynamicDiscounts"
 import { customDateIso } from "@/utils/customDateFunctions"
 import { Box, Button, Flex, FormLabel, Heading, IconButton, Input, Textarea, chakra, useToast } from "@chakra-ui/react"
 import { useSession } from "next-auth/react"
@@ -135,7 +136,7 @@ const Proposta = () => {
 				const clientCnpj = companyData.attributes.CNPJ
 				const emitenteCnpj = emitentes[ clientCnpj ]?.emitente ?? emitentes.default.emitente
 
-				if(emitenteCnpj)
+				if ( emitenteCnpj )
 					setEmitenteCnpj( emitenteCnpj )
 			}
 
@@ -150,13 +151,9 @@ const Proposta = () => {
 
 	useEffect( () => { fetchEmitenteId() }, [ fetchEmitenteId ] )
 
-	useEffect( () => {
-		const isPaymentWithDiscount = paymentTerms === "Antecipado (c/ desconto)"
-		const paymentWithDiscount = isPaymentWithDiscount ? subtotal * 0.05 : 0
-		const discount = Math.max( previousDiscount, paymentWithDiscount )
-		setAditionalDiscount( discount )
-
-	}, [ paymentTerms, subtotal, previousDiscount ] )
+	const handleDynamicDiscountChange = useCallback( ( discountValue: number ) => {
+		setAditionalDiscount( discountValue )
+	}, [] )
 
 	useEffect( () => { // First loading data from db
 		if ( orderData ) {
@@ -178,7 +175,7 @@ const Proposta = () => {
 			prazo && setPaymentTerms( prazo )
 			valorFrete && setFreightCost( valorFrete )
 			frete && setFreightType( frete )
-			descontoTotal && setPreviousDiscount( parseCurrency(descontoTotal) )
+			descontoTotal && setPreviousDiscount( parseCurrency( descontoTotal ) )
 			cliente_pedido && setClientOrderNumber( cliente_pedido )
 			orderData.attributes?.custoAdicional && setAditionalCosts( orderData.attributes.custoAdicional )
 			obs && setOrderObservations( obs )
@@ -204,7 +201,7 @@ const Proposta = () => {
 				dataPedido: customDateIso(),
 				dataEntrega: deliverDate,
 				prazo: paymentTerms === "0" ? "1" : paymentTerms,
-				condi: paymentTerms === "0" ? "À vista (antecipado)" : ( paymentTerms === "1" ? "Antecipado c/ desconto" : "A prazo" ),
+				condi: paymentTerms === "0" ? "À vista (antecipado)" : "A prazo",
 				frete: freightType,
 				valorFrete: formatCurrency( freightCost ),
 				descontoTotal: formatCurrency( aditionalDiscount ),
@@ -303,7 +300,7 @@ const Proposta = () => {
 
 	return (
 		<Flex h="100vh" w="100%">
-			<Flex h="100vh" w="100%" flexDir={ "column" } px={ '5' } py={ 1 } bg={ 'gray.800' } color={ 'white' } justifyContent={ 'space-between' } >
+			<Flex h="100vh" w="100%" flexDir={ "column" } px={ '5' } py={ 1 } bg={ 'gray.800' } color={ 'white' } justifyContent={ 'space-between' } pb={ 24 }>
 				<Box w="100%" bg={ 'gray.800' } pt={ 3 }>
 					<Flex gap={ 3 } alignItems={ 'center' }>
 						<IconButton
@@ -317,34 +314,45 @@ const Proposta = () => {
 						/>
 						<Heading size="md">Proposta comercial</Heading>
 					</Flex>
-					<Box display="flex" flexWrap={ 'wrap' } gap={ 5 } alignItems="center" pt={ 3 } px={ 5 }>
-						<Box>
+					<Box
+						display="flex"
+						flexWrap="wrap"
+						gap={ { base: 4, md: 5, lg: 6 } }
+						alignItems={ { base: "stretch", md: "flex-end" } }
+						pt={ 4 }
+						px={ { base: 2, md: 5 } }
+						pb={ 3 }
+						bg="gray.700"
+						rounded="md"
+						mb={ 4 }
+					>
+						<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 							<EmitenteSelect
 								accountsData={ accountsData }
 								emitenteCnpj={ emitenteCnpj }
 								setEmitenteCnpjOnChange={ setEmitenteCnpj }
 							/>
 						</Box>
-						<Box mx={ 2 }>
+						<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 							<LabelEmpresa companyName={ companyData?.attributes?.nome } />
 						</Box>
-						<Box>
+						<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 							<DeliverDate deliverDate={ deliverDate } setDeliverDateOnChange={ setDeliverDate } />
 						</Box>
-						<Box>
+						<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 							<PaymentTerms
 								maxPrazoPagto={ companyData?.attributes?.maxPg ?? "" }
 								paymentTerms={ paymentTerms }
 								setPaymentTermsOnChange={ setPaymentTerms }
 							/>
 						</Box>
-						<Box>
+						<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 							<FreightSelect
 								freightType={ freightType }
 								setFreightTypeOnChange={ setFreightType }
 							/>
 						</Box>
-						<Box>
+						<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 							<FreightCost
 								setFreightCostOnChange={ setFreightCost }
 								freightCost={ parseCurrency( freightCost ) }
@@ -353,13 +361,13 @@ const Proposta = () => {
 
 						{ user && user.pemission === 'Adm' && (
 							<>
-								<Box>
+								<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 									<AditionalDiscount
 										setAditionalDiscountOnChange={ setAditionalDiscount }
 										aditionalDiscount={ aditionalDiscount }
 									/>
 								</Box>
-								<Box>
+								<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 									<AditionalCosts
 										setAditionalCostsOnChange={ setAditionalCosts }
 										aditionalCosts={ aditionalCosts }
@@ -367,31 +375,7 @@ const Proposta = () => {
 								</Box>
 							</>
 						) }
-					</Box>
-					<Box mt={ 4 }>
-						<Heading size="sm">Itens da proposta comercial</Heading>
-					</Box>
-					<Box display="flex" gap={ 5 } alignItems="center" pt={ 3 } px={ 5 }>
-						<Box w={ "300px" } alignItems="center" >
-							{ !!companyData?.attributes?.CNPJ && !!user && (
-								<ProductsSelect
-									cnpj={ companyData.attributes.CNPJ }
-									email={ user.email }
-									onChange={ e => setCurrentProductSelected( e.target.value ) }
-								/>
-							) }
-						</Box>
-						<Box>
-							<AddItemButton
-								currentProductSelected={ currentProductSelected }
-								user={ user }
-								itemsList={ itemsList }
-								setItemsListOnClick={ setItemsList }
-								loading={ loading }
-								setLoading={ setLoading }
-							/>
-						</Box>
-						<Box alignItems="center">
+						<Box minW={ { base: "100%", sm: "200px", md: "auto" } } flex={ { base: "1 1 100%", sm: "1 1 calc(50% - 20px)", md: "0 0 auto" } }>
 							<FormLabel
 								fontSize="xs"
 								fontWeight="md"
@@ -402,32 +386,64 @@ const Proposta = () => {
 								shadow="sm"
 								type={ "text" }
 								size="xs"
-								w="32"
+								w={ { base: "full", lg: "32" } }
 								fontSize="xs"
 								rounded="md"
 								onChange={ ( e ) => setClientOrderNumber( e.target.value ) }
 								value={ clientOrderNumber }
 							/>
 						</Box>
-						<Box w={ "40rem" }>
-							<Box display="flex" gap={ 5 } alignItems="center">
-								<Box w="full">
-									<FormLabel
-										fontSize="xs"
-										fontWeight="md"
-									>
-										Observação
-									</FormLabel>
-									<Textarea
-										w="full"
-										h={ "10" }
-										onChange={ ( e ) => setOrderObservations( e.target.value ) }
-										placeholder="Breve descrição sobre o andamento"
-										size="xs"
-										value={ orderObservations }
+					</Box>
+					<Box mt={ 4 }>
+						<Heading size="sm">Itens da proposta comercial</Heading>
+					</Box>
+					<Box
+						display="flex"
+						flexDir={ { base: "column", lg: "row" } }
+						gap={ { base: 3, md: 10 } }
+						alignItems={ { base: "stretch", lg: "flex-start" } }
+						pt={ 3 }
+						px={ { base: 2, md: 5 } }
+					>
+						<Box w={ { base: "100%", lg: "50%" } }>
+							<Box w="100%" alignItems="center" mb={ 3 } display="flex" gap={ 2 }>
+								<Box flex="1">
+									{ !!companyData?.attributes?.CNPJ && !!user && (
+										<ProductsSelect
+											cnpj={ companyData.attributes.CNPJ }
+											email={ user.email }
+											onChange={ e => setCurrentProductSelected( e.target.value ) }
+										/>
+									) }
+								</Box>
+								<Box>
+									<AddItemButton
+										currentProductSelected={ currentProductSelected }
+										user={ user }
+										itemsList={ itemsList }
+										setItemsListOnClick={ setItemsList }
+										loading={ loading }
+										setLoading={ setLoading }
 									/>
 								</Box>
 							</Box>
+						</Box>
+						<Box w={ { base: "100%", lg: "50%" } }>
+							<FormLabel
+								fontSize="xs"
+								fontWeight="md"
+							>
+								Observação
+							</FormLabel>
+							<Textarea
+								w="full"
+								h={ "10" }
+								onChange={ ( e ) => setOrderObservations( e.target.value ) }
+								placeholder="Breve descrição sobre o andamento"
+								size="xs"
+								rounded="md"
+								value={ orderObservations }
+							/>
 						</Box>
 					</Box>
 					<Box mt={ 8 } w={ "100%" } mb={ 5 } bg={ 'gray.800' }>
@@ -438,25 +454,77 @@ const Proposta = () => {
 							/>
 						</Box>
 					</Box>
+					{ companyData && (
+						<DynamicDiscounts
+							companyTablecalc={ companyData.attributes?.tablecalc }
+							deliverDate={ deliverDate }
+							paymentTerms={ paymentTerms }
+							freightType={ freightType }
+							itemsList={ itemsList }
+							subtotal={ subtotal }
+							purchaseFrequency={ companyData.attributes?.purchaseFrequency }
+							onDiscountChange={ handleDynamicDiscountChange }
+						/>
+					) }
 				</Box>
-				<Box display={ "flex" } justifyContent={ "space-between" } p={ 2 } bg={ 'gray.700' }>
-
-					<Flex gap={ 20 } alignContent={ "center" }>
-						<chakra.p>
+				<Box
+					display="flex"
+					flexDir={ { base: "column", lg: "row" } }
+					justifyContent={ { base: "flex-start", lg: "space-between" } }
+					alignItems={ { base: "stretch", lg: "center" } }
+					gap={ { base: 3, lg: 0 } }
+					pt={ { base: 3, md: 2 } }
+					px={ { base: 3, md: 2 } }
+					pb="75px"
+					bg={ 'gray.700' }
+					mb={ "30px" }
+				>
+					<Flex
+						flexWrap="wrap"
+						gap={ { base: 4, md: 8, lg: 20 } }
+						alignContent="center"
+						justifyContent="center"
+						w="100%"
+					>
+						<chakra.p fontSize={ { base: "xs", md: "sm" } }>
 							subtotal:<br />R$ { formatCurrency( subtotal ) }
 						</chakra.p>
-						<chakra.p>
+						<chakra.p fontSize={ { base: "xs", md: "sm" } }>
 							Frete:<br />R$ { formatCurrency( freightCost ) }
 						</chakra.p>
-						<chakra.p>Descontos:<br />R$ { formatCurrency( aditionalDiscount ) }</chakra.p>
-						<chakra.p>
+						<chakra.p fontSize={ { base: "xs", md: "sm" } }>
+							Descontos:<br />R$ { formatCurrency( aditionalDiscount ) }
+						</chakra.p>
+						<chakra.p fontSize={ { base: "xs", md: "sm" } }>
 							Custos extras:<br />R$ { formatCurrency( aditionalCosts ) }
 						</chakra.p>
-						<chakra.p>Valor Total:<br />R$ { orderTotalValue }</chakra.p>
+						<chakra.p 
+							fontSize={ { base: "sm", md: "md" } } 
+							fontWeight="bold" 
+							color="white"
+							bg="gray.600"
+							p={ 3 }
+							rounded="md"
+						>
+							Valor Total:<br />R$ { orderTotalValue }
+						</chakra.p>
 					</Flex>
-					<Button colorScheme={ "whatsapp" } onClick={ handleSaveOrder } isDisabled={ loading }>
-						Salvar Proposta
-					</Button>
+					<Box
+						position="fixed"
+						bottom={ 5 }
+						right={ 5 }
+						zIndex={ 1000 }
+					>
+						<Button
+							colorScheme="whatsapp"
+							onClick={ handleSaveOrder }
+							isDisabled={ loading }
+							w={ { base: "auto", lg: "auto" } }
+							boxShadow="lg"
+						>
+							Salvar Proposta
+						</Button>
+					</Box>
 				</Box>
 			</Flex>
 		</Flex>
