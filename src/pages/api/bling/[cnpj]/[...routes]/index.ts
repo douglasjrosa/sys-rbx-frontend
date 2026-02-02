@@ -25,7 +25,6 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 
 		const queryString = queryParams.toString()
 		const externalUrl = `${ blingApiEndpoint }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
-		console.log({externalUrl})
 		let bodyData
 		if ( [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ) {
 			if ( req.body ) {

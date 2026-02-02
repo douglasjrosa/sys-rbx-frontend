@@ -45,11 +45,7 @@ export default async function GetEmpresaVendedor (
 
 			const url = `/empresas/vendedor?${ queryParams.toString() }`
 
-			console.log( `📄 [VENDEDOR] Requisição para backend: page=${ page }, pageSize=${ pageSize }` )
-
 			const response = await GET_Strapi( url )
-
-			console.log( `📄 [VENDEDOR] Resposta: ${ response?.data?.length || 0 } empresas, meta.pagination:`, response?.meta?.pagination )
 
 			// Log simplificado para análise de ordenação
 			if ( response?.data && Array.isArray( response.data ) && response.data.length > 0 && sortOrder === 'relevancia' ) {
@@ -101,8 +97,6 @@ export default async function GetEmpresaVendedor (
 						valor: valor
 					}
 				} )
-
-				console.log( JSON.stringify( logData, null, 2 ) )
 			}
 
 			res.status( 200 ).json( response )

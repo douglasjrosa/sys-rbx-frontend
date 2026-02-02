@@ -1,50 +1,50 @@
 export const modCaix = [
   {
-    id: '1',
+    id: 'caixa_economica',
     title: 'Caixa econômica',
   },
   {
-    id: '2',
+    id: 'caixa_estruturada',
     title: 'Caixa estruturada',
   },
   {
-    id: '3',
+    id: 'caixa_leve',
     title: 'Caixa leve',
   },
   {
-    id: '4',
+    id: 'caixa_reforcada',
     title: 'Caixa Reforçada',
   },
   {
-    id: '5',
+    id: 'caixa_super_reforcada',
     title: 'Caixa Super Reforçada',
   },
   {
-    id: '6',
+    id: 'palete_sob_medida',
     title: 'Paletes sob medida',
   },
   {
-    id: '7',
+    id: 'caixa_resistente',
     title: 'Caixa Resistente',
   },
   {
-    id: '8',
+    id: 'engradado_economico',
     title: 'Engradado econômico',
   },
   {
-    id: '9',
+    id: 'engradado_leve',
     title: 'Engradado leve',
   },
   {
-    id: '10',
+    id: 'engradado_reforcado',
     title: 'Engradado reforçado',
   },
   {
-    id: '11',
+    id: 'engradado_resistente',
     title: 'Engradado resistente',
   },
   {
-    id: '12',
+    id: 'modelo_especial',
     title: 'Modelo especial',
   },
 ];

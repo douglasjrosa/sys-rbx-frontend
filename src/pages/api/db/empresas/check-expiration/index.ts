@@ -189,62 +189,29 @@ export default async function CheckExpiration (
 		const tokenString: string = token
 		const tamanhoLote = parseInt( req.query.batchSize as string ) || 50
 		const delayMs = Math.max( 0, parseInt( req.query.delayMs as string ) || 150 )
-		const limitePagina = parseInt( req.query.pageSize as string ) || 500
+		const limit = parseInt( req.query.pageSize as string ) || 100
+		const page = parseInt( req.query.page as string ) || 1
 
-		// Fetch first page to get total count
-		const primeiraPagina = await axios.get(
-			buildEmpresasUrl( 1, limitePagina ),
+		// Fetch the requested page
+		const response = await axios.get(
+			buildEmpresasUrl( page, limit ),
 			{ headers: buildHeaders( tokenString ) }
 		)
 
-		const paginacao = primeiraPagina.data.meta?.pagination || {}
-		const totalPaginas = paginacao.pageCount || 1
+		const paginacao = response.data.meta?.pagination || {}
 		const totalEmpresas = paginacao.total || 0
+		const empresas: Empresa[] = response.data.data
 
 		const results: ProcessResult[] = []
 		const errors: ProcessResult[] = []
 
-		if ( totalEmpresas === 0 ) {
-			return res.status( 200 ).json( {
-				success: true,
-				total: 0,
-				updated: 0,
-				noChanges: 0,
-				failed: 0,
-				results: [],
-				errors: [],
-				pagination: paginacao,
-				message: "No empresas found",
-			} )
-		}
-
-		console.log( `Processing ${ totalEmpresas } empresas across ${ totalPaginas } pages` )
-
-		// Process all pages
-		for ( let paginaAtual = 1; paginaAtual <= totalPaginas; paginaAtual++ ) {
-			console.log( `Fetching page ${ paginaAtual }/${ totalPaginas }` )
-
-			const getEmpresas = paginaAtual === 1
-				? primeiraPagina
-				: await axios.get(
-					buildEmpresasUrl( paginaAtual, limitePagina ),
-					{ headers: buildHeaders( tokenString ) }
-				)
-
-			const empresas: Empresa[] = getEmpresas.data.data
-
-			if ( empresas.length === 0 ) {
-				continue
-			}
-
+		if ( empresas.length > 0 ) {
 			// Divide empresas into batches
 			const lotes = dividirEmLotes( empresas, tamanhoLote )
-			console.log( `Processing page ${ paginaAtual }/${ totalPaginas }: ${ empresas.length } empresas in ${ lotes.length } batches` )
 
 			// Process each batch sequentially (no concurrency to avoid deadlocks)
 			for ( let i = 0; i < lotes.length; i++ ) {
 				const lote = lotes[ i ]
-				console.log( `Processing batch ${ i + 1 }/${ lotes.length } of page ${ paginaAtual } (${ lote.length } empresas)` )
 
 				const resultadosLote = await processarLote( lote, tokenString, dataAtual, delayMs )
 
@@ -262,24 +229,18 @@ export default async function CheckExpiration (
 					await new Promise( ( resolve ) => setTimeout( resolve, 200 ) )
 				}
 			}
-
-			// Small delay between pages to avoid rate limiting
-			if ( paginaAtual < totalPaginas ) {
-				await new Promise( ( resolve ) => setTimeout( resolve, 200 ) )
-			}
 		}
 
 		res.status( 200 ).json( {
 			success: errors.length === 0,
 			total: totalEmpresas,
+			count: empresas.length,
 			updated: results.filter( ( r ) => r.updates ).length,
 			noChanges: results.filter( ( r ) => !r.updates ).length,
 			failed: errors.length,
 			results,
 			errors,
 			pagination: paginacao,
-			pagesProcessed: totalPaginas,
-			batchesProcessed: Math.ceil( totalEmpresas / tamanhoLote ),
 			batchSize: tamanhoLote,
 			delayMs,
 		} )

@@ -98,8 +98,6 @@ export default async function GetEmpresaAusente (
 						valor: valor
 					}
 				} )
-
-				console.log( JSON.stringify( logData, null, 2 ) )
 			}
 
 			res.status( 200 ).json( response )

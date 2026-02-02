@@ -105,7 +105,9 @@ export default async function PostEmpresa (
 				modelo_especial: bodyData.modEsp === true ? "on" : "off",
 				formaPagto: bodyData.forpg,
 				prefPagto: bodyData.maxPg,
-				frete: bodyData.frete === "" ? "fob" : bodyData.frete
+				frete: bodyData.frete === "" ? "fob" : bodyData.frete,
+				indIEDest: bodyData.contribuinte || "9",
+				tipoPessoa: bodyData.tipoPessoa === "cpf" ? "F" : "J"
 			}
 
 

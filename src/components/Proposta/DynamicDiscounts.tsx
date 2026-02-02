@@ -85,8 +85,8 @@ export const DynamicDiscounts: React.FC<DynamicDiscountsProps> = ( {
 				.filter( ( value ): value is number => value !== null )
 
 			if ( tabelaValues.length > 0 ) {
-				const minTabela = Math.min( ...tabelaValues )
-				return findClosestMarginTable( minTabela )
+				const maxTabela = Math.max( ...tabelaValues )
+				return findClosestMarginTable( maxTabela )
 			}
 		}
 
@@ -429,7 +429,7 @@ export const DynamicDiscounts: React.FC<DynamicDiscountsProps> = ( {
 
 				{ hasMontOrExpo && (
 					<Tooltip
-						label={ `Desconto manual baseado em 3% do total dos itens com Montagem ou Exposição marcados. Máximo: R$ ${ formatCurrency( maxManualDiscount ) }` }
+						label={ `Desconto manual baseado em 3% do total dos itens com Montagem ou Exportação marcados. Máximo: R$ ${ formatCurrency( maxManualDiscount ) }` }
 						placement="top"
 					>
 						<Box flexShrink={ 0 } minW="140px" display="flex" alignItems="center" gap={ 2 }>

@@ -296,11 +296,16 @@ export const CompPessoa = ( props: { Resp: any; onAddResp: any; cnpj: any } ) =>
 
 	return (
 		<Box>
-			<Flex gap={ 5 } flexDir={ 'row' } alignItems={ 'self-end' }>
+			<Flex gap={ 3 } flexDir={ 'row' } alignItems={ 'flex-end' } flexWrap="wrap">
 				<Button
 					h={ 8 }
 					px={ 5 }
 					colorScheme="teal"
+					size="xs"
+					whiteSpace="normal"
+					height="auto"
+					minH="32px"
+					py={1}
 					onClick={ onOpen }
 				>
 					+ Nova Pessoa

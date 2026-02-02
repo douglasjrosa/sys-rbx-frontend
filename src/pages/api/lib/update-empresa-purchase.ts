@@ -169,8 +169,6 @@ export async function updateEmpresaPurchase ( {
 			{ data: update },
 			{ headers: buildHeaders( token ) }
 		)
-
-		console.log( `Updated empresa ${ empresaId } purchase data:`, update )
 	} catch ( error: any ) {
 		console.error( `Error updating empresa ${ empresaId } purchase data:`, error.response?.data || error.message )
 		// Don't throw - this is a background operation and shouldn't fail the business update

@@ -46,6 +46,8 @@ function Empresas () {
 	const [ migrando, setMigrando ] = useState( false )
 	const [ refatorandoPurchaseFrequency, setRefatorandoPurchaseFrequency ] = useState( false )
 	const [ checandoExpiradas, setChecandoExpiradas ] = useState( false )
+	const [ recalculandoTabelas, setRecalculandoTabelas ] = useState( false )
+	const [ sincronizandoProdutos, setSincronizandoProdutos ] = useState( false )
 	const { isOpen: isOpenMigrate, onOpen: onOpenMigrate, onClose: onCloseMigrate } = useDisclosure()
 
 	// Função para calcular diferença em dias entre duas datas
@@ -127,13 +129,6 @@ function Empresas () {
 
 			// Log para debug
 			if ( empresa.id === filtroVendedor[ 0 ]?.id ) {
-				console.log( '🔍 [PROCESSAR VENDEDOR] Primeira empresa:', empresa.attributes?.nome )
-				console.log( '  - Total interações:', interacoes.length )
-				console.log( '  - Interações do usuário:', interacoesVendedor.length )
-				console.log( '  - Última interação (do usuário):', ultimaInteracao ? 'SIM' : 'NÃO' )
-				if ( !ultimaInteracao && interacoes.length > 0 ) {
-					console.log( '  - Usando última interação de qualquer vendedor' )
-				}
 			}
 
 			const infoInteracao = processarInteracao( ultimaInteracao, dataAtual )
@@ -296,23 +291,6 @@ function Empresas () {
 			const dataAtual = startOfDay( new Date() )
 			const empresasData = Array.isArray( res.data?.data ) ? res.data.data : []
 
-			// Log para verificar dados recebidos no frontend
-			console.log( '🔍 [FRONTEND VENDEDOR] Dados recebidos da API:' )
-			console.log( '  - Total de empresas:', empresasData.length )
-			if ( empresasData.length > 0 ) {
-				const primeiraEmpresa = empresasData[ 0 ]
-				console.log( '  - Primeira empresa ID:', primeiraEmpresa?.id )
-				console.log( '  - Primeira empresa nome:', primeiraEmpresa?.attributes?.nome )
-				console.log( '  - businesses existe?', !!primeiraEmpresa?.attributes?.businesses )
-				console.log( '  - businesses.data existe?', !!primeiraEmpresa?.attributes?.businesses?.data )
-				console.log( '  - businesses.data é array?', Array.isArray( primeiraEmpresa?.attributes?.businesses?.data ) )
-				console.log( '  - Quantidade businesses:', primeiraEmpresa?.attributes?.businesses?.data?.length || 0 )
-				console.log( '  - interacaos existe?', !!primeiraEmpresa?.attributes?.interacaos )
-				console.log( '  - interacaos.data existe?', !!primeiraEmpresa?.attributes?.interacaos?.data )
-				console.log( '  - interacaos.data é array?', Array.isArray( primeiraEmpresa?.attributes?.interacaos?.data ) )
-				console.log( '  - Quantidade interacaos:', primeiraEmpresa?.attributes?.interacaos?.data?.length || 0 )
-			}
-
 			const processados = processarEmpresasComVendedor( empresasData, session.user.name, dataAtual, isAdmin )
 
 			const pagination = res.data?.meta?.pagination
@@ -351,20 +329,12 @@ function Empresas () {
 				`/api/db/empresas/empresalist/ausente?page=${ pagina }&filtro=${ encodeURIComponent( filtro ) }&filtroCNAE=${ encodeURIComponent( filtroCNAE ) }&filtroCidade=${ encodeURIComponent( filtroCidade ) }&sort=relevancia${ userIdQuery }`
 			)
 
-			// #region agent log
-			fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'empresas/index.tsx:373', message: 'Dados recebidos APÓS CORREÇÃO', data: { count: res.data?.data?.length, sample: res.data?.data?.slice( 0, 2 ).map( ( e: any ) => ( { id: e.id, nome: e.attributes?.nome } ) ) }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H5' } ) } ).catch( () => { } )
-			// #endregion
-
 			const dataAtual = startOfDay( new Date() )
 			const isAdmin = session.user.pemission === 'Adm'
 
 			const empresasData = Array.isArray( res.data?.data ) ? res.data.data : []
 
 			const processados = processarEmpresasSemVendedor( empresasData, session.user.name, isAdmin, dataAtual )
-
-			// #region agent log
-			fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: 'empresas/index.tsx:382', message: 'Processados APÓS CORREÇÃO', data: { inputCount: empresasData.length, outputCount: processados.length }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'H5' } ) } ).catch( () => { } )
-			// #endregion
 
 			const pagination = res.data?.meta?.pagination
 			const total = pagination?.total ?? empresasData.length
@@ -637,35 +607,59 @@ function Empresas () {
 	const handleRefatorarPurchaseFrequency = useCallback( async () => {
 		setRefatorandoPurchaseFrequency( true )
 		try {
-			const response = await axios.post( '/api/refactory/companies/purchase-frequency' )
-			const data = response.data
+			const PAGE_SIZE = 50
+			let currentPage = 1
+			let totalProcessed = 0
+			let totalUpdated = 0
+			let hasMore = true
 
-			if ( data.success ) {
-				toast( {
-					title: 'Refatoração concluída',
-					description: `Processadas: ${ data.summary.processed } empresas | Atualizadas: ${ data.summary.updated } | Erros: ${ data.summary.errors }`,
-					status: 'success',
-					duration: 10000,
-					isClosable: true,
+			toast( {
+				id: 'refactor-progress',
+				title: 'Refatorando frequência',
+				description: 'Iniciando processamento...',
+				status: 'info',
+				duration: null,
+				isClosable: false,
+			} )
+
+			while ( hasMore ) {
+				const response = await axios.post( `/api/refactory/companies/purchase-frequency?pageSize=${ PAGE_SIZE }&page=${ currentPage }` )
+				const data = response.data
+
+				totalProcessed += data.summary.processed
+				totalUpdated += data.summary.updated
+
+				const totalToProcess = data.summary.totalCompanies || totalProcessed
+
+				toast.update( 'refactor-progress', {
+					description: `Processando: ${ totalProcessed } de ${ totalToProcess } empresas... (${ totalUpdated } atualizadas)`,
 				} )
 
-				// Recarregar dados das empresas
-				if ( tabIndex === 0 ) {
-					carregarEmpresasComVendedor( paginaAtualComVendedor )
+				if ( data.summary.count < PAGE_SIZE || totalProcessed >= totalToProcess ) {
+					hasMore = false
 				} else {
-					carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
+					currentPage++
 				}
+			}
+
+			toast.close( 'refactor-progress' )
+			toast( {
+				title: 'Refatoração concluída',
+				description: `Sucesso: ${ totalProcessed } empresas processadas e ${ totalUpdated } atualizadas.`,
+				status: 'success',
+				duration: 10000,
+				isClosable: true,
+			} )
+
+			// Recarregar dados das empresas
+			if ( tabIndex === 0 ) {
+				carregarEmpresasComVendedor( paginaAtualComVendedor )
 			} else {
-				toast( {
-					title: 'Erro na refatoração',
-					description: 'Não foi possível completar a refatoração',
-					status: 'error',
-					duration: 5000,
-					isClosable: true,
-				} )
+				carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
 			}
 		} catch ( error: any ) {
 			console.error( 'Erro ao refatorar purchase frequency:', error )
+			toast.close( 'refactor-progress' )
 			toast( {
 				title: 'Erro',
 				description: error.response?.data?.error || 'Erro ao refatorar frequência de compra',
@@ -682,35 +676,59 @@ function Empresas () {
 	const handleChecarExpiradas = useCallback( async () => {
 		setChecandoExpiradas( true )
 		try {
-			const response = await axios.get( '/api/db/empresas/check-expiration' )
-			const data = response.data
+			const PAGE_SIZE = 100
+			let currentPage = 1
+			let totalProcessed = 0
+			let totalUpdated = 0
+			let hasMore = true
 
-			if ( data.success !== false ) {
-				toast( {
-					title: 'Verificação concluída',
-					description: `Total: ${ data.total } empresas | Atualizadas: ${ data.updated } | Sem alterações: ${ data.noChanges } | Erros: ${ data.failed }`,
-					status: 'success',
-					duration: 10000,
-					isClosable: true,
+			toast( {
+				id: 'check-progress',
+				title: 'Checando expiradas',
+				description: 'Iniciando verificação...',
+				status: 'info',
+				duration: null,
+				isClosable: false,
+			} )
+
+			while ( hasMore ) {
+				const response = await axios.get( `/api/db/empresas/check-expiration?pageSize=${ PAGE_SIZE }&page=${ currentPage }` )
+				const data = response.data
+
+				totalProcessed += data.count
+				totalUpdated += data.updated
+
+				const totalToProcess = data.total || totalProcessed
+
+				toast.update( 'check-progress', {
+					description: `Verificando: ${ totalProcessed } de ${ totalToProcess } empresas... (${ totalUpdated } expiradas)`,
 				} )
 
-				// Recarregar dados das empresas
-				if ( tabIndex === 0 ) {
-					carregarEmpresasComVendedor( paginaAtualComVendedor )
+				if ( data.count < PAGE_SIZE || totalProcessed >= totalToProcess ) {
+					hasMore = false
 				} else {
-					carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
+					currentPage++
 				}
+			}
+
+			toast.close( 'check-progress' )
+			toast( {
+				title: 'Verificação concluída',
+				description: `Sucesso: ${ totalProcessed } empresas verificadas e ${ totalUpdated } atualizadas (vendedor removido).`,
+				status: 'success',
+				duration: 10000,
+				isClosable: true,
+			} )
+
+			// Recarregar dados das empresas
+			if ( tabIndex === 0 ) {
+				carregarEmpresasComVendedor( paginaAtualComVendedor )
 			} else {
-				toast( {
-					title: 'Aviso',
-					description: `Verificação concluída com erros. Total: ${ data.total } | Atualizadas: ${ data.updated } | Erros: ${ data.failed }`,
-					status: 'warning',
-					duration: 10000,
-					isClosable: true,
-				} )
+				carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
 			}
 		} catch ( error: any ) {
 			console.error( 'Erro ao checar empresas expiradas:', error )
+			toast.close( 'check-progress' )
 			toast( {
 				title: 'Erro',
 				description: error.response?.data?.error || 'Erro ao verificar empresas expiradas',
@@ -722,6 +740,178 @@ function Empresas () {
 			setChecandoExpiradas( false )
 		}
 	}, [ toast, tabIndex, paginaAtualComVendedor, paginaAtualSemVendedor, filtroTexto, carregarEmpresasComVendedor, carregarEmpresasSemVendedor ] )
+
+	// Função para recalcular tabelas de margem
+	const handleRecalcularTabelas = useCallback( async () => {
+		setRecalculandoTabelas( true )
+		try {
+			const BATCH_SIZE = 50
+			let currentStart = 0
+			let totalProcessed = 0
+			let totalUpdated = 0
+			let hasMore = true
+
+			toast( {
+				id: 'recalc-progress',
+				title: 'Iniciando recálculo',
+				description: 'Aguarde o processamento de todas as empresas...',
+				status: 'info',
+				duration: null,
+				isClosable: false,
+			} )
+
+			while ( hasMore ) {
+				const response = await axios.get( `/api/db/empresas/update-tablecalc?limit=${ BATCH_SIZE }&start=${ currentStart }` )
+				const data = response.data
+
+				totalProcessed += data.total
+				totalUpdated += data.updated
+
+				const totalToProcess = data.totalCount || totalProcessed
+
+				toast.update( 'recalc-progress', {
+					description: `Processando: ${ totalProcessed } de ${ totalToProcess } empresas... (${ totalUpdated } atualizadas)`,
+				} )
+
+				if ( data.total < BATCH_SIZE || totalProcessed >= totalToProcess ) {
+					hasMore = false
+				} else {
+					currentStart += BATCH_SIZE
+				}
+			}
+
+			toast.close( 'recalc-progress' )
+			toast( {
+				title: 'Recálculo concluído',
+				description: `Sucesso: ${ totalProcessed } empresas processadas e ${ totalUpdated } atualizadas.`,
+				status: 'success',
+				duration: 10000,
+				isClosable: true,
+			} )
+
+			// Recarregar dados das empresas
+			if ( tabIndex === 0 ) {
+				carregarEmpresasComVendedor( paginaAtualComVendedor )
+			} else {
+				carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
+			}
+		} catch ( error: any ) {
+			console.error( 'Erro ao recalcular tabelas:', error )
+			const errorMsg = error.response?.data?.error?.message ||
+				( typeof error.response?.data?.error === 'string' ? error.response.data.error : null ) ||
+				( typeof error.message === 'string' ? error.message : null ) ||
+				'Erro ao recalcular margens das empresas'
+
+			const finalMsg = typeof errorMsg === 'object' ? JSON.stringify( errorMsg ) : errorMsg
+
+			toast( {
+				title: 'Erro',
+				description: finalMsg,
+				status: 'error',
+				duration: 7000,
+				isClosable: true,
+			} )
+		} finally {
+			setRecalculandoTabelas( false )
+		}
+	}, [ toast, tabIndex, paginaAtualComVendedor, paginaAtualSemVendedor, filtroTexto, carregarEmpresasComVendedor, carregarEmpresasSemVendedor ] )
+
+	// Função para sincronizar produtos da API externa para o Strapi
+	const handleSincronizarProdutos = useCallback( async () => {
+		setSincronizandoProdutos( true )
+		try {
+			const PAGE_SIZE = 50
+			let currentStart = 0
+			let totalProcessed = 0
+			let totalCreated = 0
+			let totalUpdated = 0
+			let hasMore = true
+
+			toast( {
+				id: 'sync-prod-progress',
+				title: 'Sincronizando Produtos',
+				description: 'Iniciando sincronização para todas as empresas...',
+				status: 'info',
+				duration: null,
+				isClosable: false,
+			} )
+
+			while ( hasMore ) {
+				// 1. Obter lote de empresas do Strapi via proxy
+				const companiesRes = await axios.get( `/api/db/empresas/sync-list?limit=${ PAGE_SIZE }&start=${ currentStart }` )
+				const companies = companiesRes.data.data
+				const totalToProcess = companiesRes.data.meta?.pagination?.total || totalProcessed
+
+				if ( !companies || companies.length === 0 ) {
+					hasMore = false
+					break
+				}
+
+				// 2. Para cada empresa no lote, buscar produtos na Ribermax e salvar no Strapi
+				for ( const company of companies ) {
+					const cnpj = company.attributes.CNPJ
+					const empresaId = company.id
+					const nomeEmpresa = company.attributes.nome
+
+					totalProcessed++
+
+					toast.update( 'sync-prod-progress', {
+						description: `Empresa ${ totalProcessed }/${ totalToProcess }: ${ nomeEmpresa }...`,
+					} )
+
+					try {
+						// Buscar produtos na API externa via proxy - limite alto para pegar todos os produtos da empresa
+						const prodRes = await axios.get( `/api/rbx/${ session?.user?.email }/produtos?CNPJ=${ cnpj }&limit=1000` )
+						const allProducts = prodRes.data || []
+
+						// Filtrar apenas ativos
+						const activeProducts = allProducts.filter( ( p: any ) => p.ativo === "1" )
+
+						if ( activeProducts.length > 0 ) {
+							// Enviar para sincronização no Strapi via proxy
+							const syncRes = await axios.post( `/api/db/produtos/sync`, {
+								empresaId,
+								produtos: activeProducts
+							} )
+
+							totalCreated += syncRes.data.created
+							totalUpdated += syncRes.data.updated
+						}
+					} catch ( err ) {
+						console.error( `Erro ao sincronizar empresa ${ nomeEmpresa }:`, err )
+					}
+				}
+
+				if ( companies.length < PAGE_SIZE || totalProcessed >= totalToProcess ) {
+					hasMore = false
+				} else {
+					currentStart += PAGE_SIZE
+				}
+			}
+
+			toast.close( 'sync-prod-progress' )
+			toast( {
+				title: 'Sincronização concluída',
+				description: `Sucesso: ${ totalCreated } criados e ${ totalUpdated } atualizados. Total de empresas processadas: ${ totalProcessed }.`,
+				status: 'success',
+				duration: 10000,
+				isClosable: true,
+			} )
+
+		} catch ( error: any ) {
+			console.error( 'Erro ao sincronizar produtos:', error )
+			toast.close( 'sync-prod-progress' )
+			toast( {
+				title: 'Erro',
+				description: error.response?.data?.error || error.message || 'Erro ao sincronizar produtos',
+				status: 'error',
+				duration: 7000,
+				isClosable: true,
+			} )
+		} finally {
+			setSincronizandoProdutos( false )
+		}
+	}, [ session?.user?.email, toast ] )
 
 	return (
 		<>
@@ -840,6 +1030,32 @@ function Empresas () {
 									loadingText="Verificando..."
 								>
 									Checar Expiradas
+								</Button>
+								<Button
+									size={ 'sm' }
+									onClick={ handleRecalcularTabelas }
+									colorScheme="blue"
+									whiteSpace="normal"
+									wordBreak="break-word"
+									minW="fit-content"
+									flexShrink={ 0 }
+									isLoading={ recalculandoTabelas }
+									loadingText="Recalculando..."
+								>
+									Recalcular Tabelas
+								</Button>
+								<Button
+									size={ 'sm' }
+									onClick={ handleSincronizarProdutos }
+									colorScheme="teal"
+									whiteSpace="normal"
+									wordBreak="break-word"
+									minW="fit-content"
+									flexShrink={ 0 }
+									isLoading={ sincronizandoProdutos }
+									loadingText="Sincronizando..."
+								>
+									Sincronizar Produtos
 								</Button>
 							</>
 						) }

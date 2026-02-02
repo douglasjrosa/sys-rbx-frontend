@@ -52,22 +52,23 @@ function Navbar () {
 					<List spacing={ 5 }>
 						{ Dados.map( ( navItem: any ) => (
 							<ListItem key={ `navbar-${ navItem.id }` }>
-								<Text>
-									<ListIcon fontSize="2xl" color="lime" as={ navItem.icon } />
+								<Flex align="center">
+									<ListIcon fontSize={ { md: 'xl', lg: '2xl' } } color="lime" as={ navItem.icon } mb={ 0 } />
 									<Link
 										as={ NextLink }
 										href={ navItem.url }
-										fontSize="lg"
+										fontSize={ { md: 'md', lg: 'lg', '2xl': 'xl' } }
 										color={
 											router.asPath === navItem.url
 												? 'lime'
 												: 'whiteAlpha.800'
 										}
 										target={ navItem.url.includes( 'https' ) ? '_blank' : '_self' }
+										whiteSpace="nowrap"
 									>
 										{ navItem.text }
 									</Link>
-								</Text>
+								</Flex>
 							</ListItem>
 						) ) }
 					</List>

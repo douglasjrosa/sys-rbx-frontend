@@ -26,11 +26,11 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		const queryString = queryParams.toString()
 		const externalUrl = `${ rbxApiUrl }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
 
-		let bodyData
+		let bodyData = req.body
 		if ( [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ) {
-			if ( req.body ) {
+			if ( typeof bodyData === 'string' && bodyData.length > 0 ) {
 				try {
-					bodyData = JSON.parse( req.body )
+					bodyData = JSON.parse( bodyData )
 				} catch ( error ) {
 					res.status( 400 ).json( { error: 'Invalid JSON in request body' } )
 					return

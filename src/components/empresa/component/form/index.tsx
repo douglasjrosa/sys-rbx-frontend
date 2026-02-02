@@ -13,6 +13,7 @@ import {
 	Flex,
 	FormControl,
 	FormLabel,
+	Grid,
 	GridItem,
 	Heading,
 	Input,
@@ -36,7 +37,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	const [ MaskCNPJ, setMaskCNPJ ] = useState( "" )
 	const [ nome, setNome ] = useState( "" )
 	const [ fantasia, setFantasia ] = useState( "" )
-	const [ tipoPessoa, setTipoPessoa ] = useState( "" )
+	const [ tipoPessoa, setTipoPessoa ] = useState( "cnpj" )
 	const [ fone, setFone ] = useState( "" )
 	const [ celular, setCelular ] = useState( "" )
 	const [ WhatsMask, setWhatsMask ] = useState( "" )
@@ -109,12 +110,10 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 			setCNPJ( empresa.attributes?.CNPJ )
 			setAutorize( props.data ? true : false )
 			const cnpj = empresa.attributes?.CNPJ
-			setMaskCNPJ( mask( cnpj, [ "99.999.999/9999-99" ] ) )
-			setNome( empresa.attributes?.nome )
-			setFantasia( empresa.attributes?.fantasia )
-			setHistory( empresa.attributes?.history )
-			setRazao( empresa.attributes?.razao )
-			setTipoPessoa( empresa.attributes?.tipoPessoa )
+			const personType = empresa.attributes?.tipoPessoa || "cnpj"
+			setTipoPessoa( personType )
+			const maskPattern = personType === 'cnpj' ? "99.999.999/9999-99" : "999.999.999-99"
+			setMaskCNPJ( mask( cnpj, [ maskPattern ] ) )
 			setFone( empresa.attributes?.fone === null ? '' : empresa.attributes?.fone )
 			setCelular( empresa.attributes?.celular === null ? "" : empresa.attributes?.celular )
 			setEmail( empresa.attributes?.email )
@@ -389,7 +388,10 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 		setFantasia( data.attributes.dados.data.fantasia )
 		setHistory( data.attributes.dados.data.history )
 		setRazao( data.attributes.dados.data.razao )
-		setTipoPessoa( data.attributes.dados.data.tipoPessoa )
+		const personType = data.attributes.dados.data.tipoPessoa || "cnpj"
+		setTipoPessoa( personType )
+		const maskPattern = personType === 'cnpj' ? "99.999.999/9999-99" : "999.999.999-99"
+		setMaskCNPJ( mask( data.attributes.dados.data.CNPJ, [ maskPattern ] ) )
 		setFone( data.attributes.dados.data.fone === null ? '' : data.attributes.dados.data.fone )
 		setCelular( data.attributes.dados.data.celular === null ? "" : data.attributes.dados.data.celular )
 		setEmail( data.attributes.dados.data.email )
@@ -445,7 +447,8 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	const maskCnpj = ( e: any ) => {
 		const valor = e.target.value
 		const valorLinpo = unMask( valor )
-		const masked = mask( valorLinpo, [ "99.999.999/9999-99" ] )
+		const maskPattern = tipoPessoa === 'cnpj' ? "99.999.999/9999-99" : "999.999.999-99"
+		const masked = mask( valorLinpo, [ maskPattern ] )
 		setCNPJ( valorLinpo )
 		setMaskCNPJ( masked )
 	}
@@ -543,13 +546,39 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 										<Heading as={ GridItem } colSpan={ 12 } size="sd">
 											Dados da empresa
 										</Heading>
-										<FormControl as={ GridItem } colSpan={ [ 8, 5, null, 2 ] }>
+										<FormControl as={ GridItem } colSpan={ [ 12, 4, 3, 2 ] }>
+											<FormLabel
+												fontSize="xs"
+												fontWeight="md"
+											>
+												Tipo de Pessoa
+											</FormLabel>
+											<Select
+												focusBorderColor="#ffff"
+												bg='#ffffff12'
+												shadow="sm"
+												size="xs"
+												w="full"
+												fontSize="xs"
+												rounded="md"
+												value={ tipoPessoa }
+												onChange={ ( e ) => {
+													setTipoPessoa( e.target.value )
+													setCNPJ( '' )
+													setMaskCNPJ( '' )
+												} }
+											>
+												<option style={ { backgroundColor: "#1A202C" } } value="cnpj">Jurídica (CNPJ)</option>
+												<option style={ { backgroundColor: "#1A202C" } } value="cpf">Física (CPF)</option>
+											</Select>
+										</FormControl>
+										<FormControl as={ GridItem } colSpan={ [ 12, 4, 3, 2 ] }>
 											<FormLabel
 												htmlFor="cnpj"
 												fontSize="xs"
 												fontWeight="md"
 											>
-												Cnpj
+												{ tipoPessoa === 'cnpj' ? 'CNPJ' : 'CPF' }
 											</FormLabel>
 											<Input
 												type="text"
@@ -566,16 +595,18 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 										</FormControl>
 										<Button
 											as={ GridItem }
-											colSpan={ [ 8, 4, null, 2 ] }
+											colSpan={ [ 12, 4, 3, 2 ] }
 											h={ 8 }
-											mt={ 5 }
+											mt={ [ 0, 5 ] }
 											colorScheme="messenger"
+											size="xs"
 											isDisabled={ session?.user.pemission !== 'Adm' && ENVIO === 'UPDATE' ? true : false }
 											onClick={ consulta }
 										>
 											Buscar dados
 										</Button>
-										<Box ms={ 5 } mt={ 'auto' } hidden={ !props.data }>
+										<Flex as={ GridItem } colSpan={ [ 12, 4, 2 ] } alignItems="center" mt={ [ 2, 'auto' ] }>
+											<FormLabel fontSize="xs" fontWeight="md" mb={ 0 } mr={ 2 }>Status:</FormLabel>
 											<Switch
 												colorScheme="green"
 												borderColor="gray.900"
@@ -584,7 +615,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 												isDisabled={ session?.user.pemission !== 'Adm' && ENVIO === 'UPDATE' ? true : false }
 												onChange={ ( e ) => setStatus( e.target.checked ) }
 											/>
-										</Box>
+										</Flex>
 									</SimpleGrid>
 								</Stack>
 
@@ -593,8 +624,8 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 										<Stack
 											px={ 4 }
 											py={ 3 }>
-											<SimpleGrid columns={ 9 } spacing={ 3 }>
-												<FormControl as={ GridItem } colSpan={ [ 5, 2 ] }>
+											<SimpleGrid columns={ 12 } spacing={ 3 }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -614,7 +645,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														isDisabled={ session?.user.pemission !== 'Adm' && ENVIO === 'UPDATE' ? true : false }
 													/>
 												</FormControl>
-												<FormControl as={ GridItem } colSpan={ [ 5, 2 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -633,7 +664,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														value={ Razao }
 													/>
 												</FormControl>
-												<FormControl as={ GridItem } colSpan={ [ 5, 2 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -653,7 +684,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 2 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -672,7 +703,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														value={ email }
 													/>
 												</FormControl>
-												<FormControl as={ GridItem } colSpan={ [ 6, 2 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 2 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -692,7 +723,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 1 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 2 ] }>
 													<FormLabel
 														htmlFor="ie"
 														fontSize="xs"
@@ -713,7 +744,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 1 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 2, 1 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -740,7 +771,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 1 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 2, 1 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -755,16 +786,15 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														shadow="sm"
 														size="xs"
 														w="full"
-														maxLength={ 3 }
 														rounded="md"
 														value={ Inatividade }
-														onChange={ ( e ) => setInatividade( parseInt( e.target.value ) ) }
+														onChange={ ( e ) => setInatividade( parseInt( e.target.value ) || 0 ) }
 													/>
 												</FormControl>
 											</SimpleGrid>
 
 											<SimpleGrid columns={ 12 } spacing={ 3 }>
-												<FormControl as={ GridItem } colSpan={ [ 6, 2, 1 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 6, 4, 2, 1 ] }>
 													<FormLabel
 														htmlFor="pais"
 														fontSize="xs"
@@ -785,7 +815,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 2 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 6, 4, 2 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -805,7 +835,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 4, null, 3 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 8, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -825,7 +855,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 1 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 6, 4, 2, 1 ] }>
 													<FormLabel
 														htmlFor="numero"
 														fontSize="xs"
@@ -846,7 +876,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 2 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 6, 8, 4, 2 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -866,7 +896,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 3, null, 3 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -886,7 +916,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 3, null, 1 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 6, 6, 4, 1 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -907,7 +937,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 3, null, 2 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 2 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -927,7 +957,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 3, null, 1 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 6, 6, 4, 1 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -946,7 +976,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														value={ uf }
 													/>
 												</FormControl>
-												<FormControl as={ GridItem } colSpan={ [ 6, 4, null, 3 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -966,7 +996,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 													/>
 												</FormControl>
 
-												<FormControl as={ GridItem } colSpan={ [ 6, 4, null, 3 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -985,7 +1015,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														value={ emailNfe }
 													/>
 												</FormControl>
-												<FormControl as={ GridItem } colSpan={ [ 6, 4, null, 3 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														htmlFor="cidade"
 														fontSize="xs"
@@ -1005,7 +1035,7 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 														value={ WhatsMask }
 													/>
 												</FormControl>
-												<FormControl as={ GridItem } colSpan={ [ 6, 4, null, 3 ] }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
 													<FormLabel
 														fontSize="xs"
 														fontWeight="md"
@@ -1038,12 +1068,12 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 										>
 											{ session?.user.pemission === 'Adm' && (
 												<>
-													<SimpleGrid columns={ 12 } spacing={ 3 }>
+													<Grid templateColumns="repeat(12, 1fr)" gap={ 3 }>
 														<Heading as={ GridItem } colSpan={ 12 } size="sd">
 															Configurações da Empresa
 														</Heading>
 
-														<FormControl as={ GridItem } colSpan={ [ 6, 3 ] }>
+														<FormControl hidden={ session?.user.pemission === 'Adm' ? false : true } as={ GridItem } colSpan={ [ 12, 6, 3 ] }>
 															<FormLabel
 																fontSize="xs"
 																fontWeight="md"
@@ -1062,26 +1092,25 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 																value={ tablecalc }
 															>
 																<option style={ { backgroundColor: "#1A202C" } } value="">Selecione uma opção</option>
-																<option style={ { backgroundColor: "#1A202C" } } selected value="0.30">Balcão</option>
-																<option style={ { backgroundColor: "#1A202C" } } value="0.26" selected>
-																	Vip
-																</option>
-																<option style={ { backgroundColor: "#1A202C" } } value="0.23">Bronze</option>
-																<option style={ { backgroundColor: "#1A202C" } } value="0.20">Prata</option>
-																<option style={ { backgroundColor: "#1A202C" } } value="0.17">Ouro</option>
-																<option style={ { backgroundColor: "#1A202C" } } value="0.14">Platinum</option>
+																<option style={ { backgroundColor: "#1A202C" } } value="0.35">Balcão</option>
+																<option style={ { backgroundColor: "#1A202C" } } value="0.30">Vip</option>
+																<option style={ { backgroundColor: "#1A202C" } } value="0.26">Bronze</option>
+																<option style={ { backgroundColor: "#1A202C" } } value="0.22">Prata</option>
+																<option style={ { backgroundColor: "#1A202C" } } value="0.18">Ouro</option>
+																<option style={ { backgroundColor: "#1A202C" } } value="0.15">Platinum</option>
+																<option style={ { backgroundColor: "#1A202C" } } value="0.12">Estratégica</option>
 															</Select>
 														</FormControl>
 
-														<FormControl hidden={ session?.user.pemission === 'Adm' ? false : true } as={ GridItem } colSpan={ [ 6, 3 ] }>
+														<FormControl hidden={ session?.user.pemission === 'Adm' ? false : true } as={ GridItem } colSpan={ [ 12, 6, 3 ] }>
 															<PrazoPg id={ ID } retorno={ maxPg } envio={ RetornoMaxpg } />
 														</FormControl>
 
-														<FormControl as={ GridItem } colSpan={ [ 6, 4 ] }>
+														<FormControl as={ GridItem } colSpan={ [ 12, 6, 3 ] }>
 															<FormaPg id={ ID } retorno={ forpg } envio={ RetornoFormapg } />
 														</FormControl>
 
-														<FormControl as={ GridItem } colSpan={ [ 6, 2 ] }>
+														<FormControl as={ GridItem } colSpan={ [ 12, 6, 3 ] }>
 															<FormLabel
 																htmlFor="frete"
 																fontSize="xs"
@@ -1108,10 +1137,10 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 															</Select>
 														</FormControl>
 
-														<FormControl as={ GridItem } colSpan={ [ 6, 3 ] }>
+														<FormControl as={ GridItem } colSpan={ [ 12, 6, 3 ] }>
 															<RestData CNPJ={ CNPJ } onRetorno={ resetData } />
 														</FormControl>
-													</SimpleGrid>
+													</Grid>
 												</>
 											) }
 
@@ -1119,8 +1148,8 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 												<Heading as={ GridItem } colSpan={ 12 } size="sd">
 													Dados de contato
 												</Heading>
-												<FormControl as={ GridItem } colSpan={ [ 6, 3, 4, 3 ] }>
-													<Flex flexDir={ 'row' } alignItems={ 'self-end' } gap={ 5 }>
+												<FormControl as={ GridItem } colSpan={ [ 12, 6, 4, 3 ] }>
+													<Flex flexDir={ 'row' } alignItems={ 'flex-end' } gap={ 3 } flexWrap="wrap">
 														<CompPessoa
 															Resp={ router.query.id }
 															onAddResp={ getResponsavel }

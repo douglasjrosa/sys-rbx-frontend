@@ -163,12 +163,10 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 		method,
 		body: JSON.stringify( newClientData )
 	} )
-	console.log( { saveClientResponse } )
 
 	const saveClientData = saveClientResponse.status !== 204
 		? await saveClientResponse.json()
 		: {}
-	console.log( { saveClientData } )
 
 	let error
 	if ( !blingClientId && !saveClientResponse.ok && !saveClientData.data?.id ) {

@@ -31,7 +31,6 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email 
 			const response = await fetch( `/api/rbx/${ email }/produtos?CNPJ=${ cnpj }&limit=${ LIMIT + 1 }&offset=${ offset }` )
 			if ( response.ok ) {
 				const products = await response.json()
-				console.log( { products } )
 				setNextOffsetExists( products.length > LIMIT )
 				const productList = products.slice( 0, LIMIT )
 				setProductList( productList )

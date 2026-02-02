@@ -72,13 +72,14 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
 
   return (
     <>
-      <Flex gap={3} alignItems={'self-end'}>
-        <Box>
+      <Flex gap={3} alignItems={'flex-end'} flexWrap="wrap">
+        <Box flex="1" minW="150px" w="full">
           {/* Label for the maximum payment deadline selection */}
           <FormLabel
             htmlFor="prazo pagamento"
             fontSize="xs"
             fontWeight="md"
+            mb={1}
           >
             Máximo prazo p/ pagamento:
           </FormLabel>
@@ -117,7 +118,19 @@ export const PrazoPg = (props: { id: any; retorno: any; envio: any }) => {
           closeOnBlur={false}
         >
           <PopoverTrigger>
-            <Button colorScheme="whatsapp">Adicionar prazo</Button>
+            <Button 
+              colorScheme="whatsapp" 
+              size="xs" 
+              px={4}
+              whiteSpace="normal"
+              height="auto"
+              minH="24px"
+              py={1}
+              flexShrink={0}
+              w={['full', 'auto']}
+            >
+              Adicionar prazo
+            </Button>
           </PopoverTrigger>
           <PopoverContent p={5}>
             <PopoverArrow />

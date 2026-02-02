@@ -19,7 +19,7 @@ export interface MarginTable {
 export const marginTables: MarginTable[] = [
 	{
 		id: 1,
-		name: 'Counter',
+		name: 'Balcão',
 		profitMargin: 0.35,
 		discounts: {
 			wholesale: 0.03,
@@ -64,7 +64,7 @@ export const marginTables: MarginTable[] = [
 	},
 	{
 		id: 4,
-		name: 'Silver',
+		name: 'Prata',
 		profitMargin: 0.22,
 		discounts: {
 			wholesale: 0.02,
@@ -79,7 +79,7 @@ export const marginTables: MarginTable[] = [
 	},
 	{
 		id: 5,
-		name: 'Gold',
+		name: 'Ouro',
 		profitMargin: 0.18,
 		discounts: {
 			wholesale: 0.02,
@@ -94,7 +94,7 @@ export const marginTables: MarginTable[] = [
 	},
 	{
 		id: 6,
-		name: 'Platinum',
+		name: 'Platina',
 		profitMargin: 0.15,
 		discounts: {
 			wholesale: 0,
@@ -109,7 +109,7 @@ export const marginTables: MarginTable[] = [
 	},
 	{
 		id: 7,
-		name: 'Strategic',
+		name: 'Estratégico',
 		profitMargin: 0.12,
 		discounts: {
 			wholesale: 0,

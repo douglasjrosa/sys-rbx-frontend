@@ -21,20 +21,20 @@ export default async function handler (
 			}
 
 			// Construir a query string para o Strapi
-			const query = qs.stringify( {
-				filters: {
-					nome: {
-						$containsi: searchString,
-					},
-					user: {
-						id: {
-							$eq: session?.user?.id,
-						},
-					},
-				},
-			}, {
-				encodeValuesOnly: true,
-			} )
+			const filters: any = {
+				$or: [
+					{ nome: { $containsi: searchString } },
+					{ CNPJ: { $containsi: searchString } },
+					{ fantasia: { $containsi: searchString } }
+				]
+			}
+
+			// Se não for admin, filtrar apenas pelas empresas do usuário
+			if ( session?.user?.pemission !== 'Adm' ) {
+				filters.user = { id: { $eq: session?.user?.id } }
+			}
+
+			const query = qs.stringify( { filters }, { encodeValuesOnly: true } )
 
 			const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL
 			const authToken = process.env.ATORIZZATION_TOKEN
@@ -129,8 +129,6 @@ export default async function handler (
 					// Don't fail the request if this fails
 				}
 			}
-
-			console.log( 'Sending data to Strapi:', { data: dataToUpdate } )
 
 			const response = await axios.put(
 				`${ strapiUrl }/empresas/${ id }`,

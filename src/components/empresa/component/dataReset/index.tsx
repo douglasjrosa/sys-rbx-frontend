@@ -31,13 +31,13 @@ export const RestData = (props: { CNPJ: string, onRetorno: any }) => {
 
   return (
     <>
-      <Flex gap={5} alignItems={'self-end'}>
-        <Box>
+      <Flex gap={3} alignItems={'flex-end'} flexWrap="wrap">
+        <Box flex="1" minW="150px" w="full">
           <FormLabel
             htmlFor="frete"
             fontSize="xs"
             fontWeight="md"
-
+            mb={1}
           >
             Historico de atualização
           </FormLabel>
@@ -64,7 +64,20 @@ export const RestData = (props: { CNPJ: string, onRetorno: any }) => {
             })}
           </Select>
         </Box>
-        <Button colorScheme="green" onClick={salvar}>Recuperar</Button>
+        <Button 
+          colorScheme="green" 
+          size="xs"
+          px={4}
+          whiteSpace="normal"
+          height="auto"
+          minH="24px"
+          py={1}
+          flexShrink={0}
+          w={['full', 'auto']}
+          onClick={salvar}
+        >
+          Recuperar
+        </Button>
       </Flex>
     </>
   )

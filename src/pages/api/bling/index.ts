@@ -37,6 +37,5 @@ export async function updateToken (
 
 export async function getBlingToken ( account: string ) {
 	const response = await fetch( `${ baseUrl }/api/bling/auth?account=${ account }` ).then( r => r.json() )
-	console.log( { response } )
 	return response
 }

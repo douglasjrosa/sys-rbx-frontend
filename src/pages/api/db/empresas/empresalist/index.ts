@@ -17,7 +17,6 @@ export default async function GetEmpresaAllMin (
 	if ( req.method === "GET" ) {
 		try {
 			const userId = req.query.userId || ""
-			console.log( { userId } )
 			const page = req.query.page || "1"
 
 

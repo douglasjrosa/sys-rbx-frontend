@@ -18,32 +18,22 @@ export default async function handler (
 			return res.status( 500 ).json( { error: 'Missing API URL or authorization token' } )
 		}
 
-		// Step 1: List all companies with pagination
-		let allCompanies: any[] = []
-		let page = 1
-		let hasMore = true
-		const pageSize = 100
+		// Step 1: Get pagination params
+		const pageSize = parseInt( req.query.pageSize as string ) || 50
+		const page = parseInt( req.query.page as string ) || 1
 
-		while ( hasMore ) {
-			const companiesResponse = await axios.get(
-				`${ strapiUrl }/empresas?pagination[page]=${ page }&pagination[pageSize]=${ pageSize }&fields[0]=id&fields[1]=nome`,
-				{
-					headers: {
-						Authorization: `Bearer ${ authToken }`,
-						'Content-Type': 'application/json',
-					},
-				}
-			)
+		const companiesResponse = await axios.get(
+			`${ strapiUrl }/empresas?pagination[page]=${ page }&pagination[pageSize]=${ pageSize }&fields[0]=id&fields[1]=nome`,
+			{
+				headers: {
+					Authorization: `Bearer ${ authToken }`,
+					'Content-Type': 'application/json',
+				},
+			}
+		)
 
-			const companies = companiesResponse.data?.data || []
-			allCompanies = [ ...allCompanies, ...companies ]
-
-			const pagination = companiesResponse.data?.meta?.pagination
-			hasMore = pagination && page < pagination.pageCount
-			page++
-		}
-
-		console.log( `📊 Total companies found: ${ allCompanies.length }` )
+		const companies = companiesResponse.data?.data || []
+		const pagination = companiesResponse.data?.meta?.pagination || {}
 
 		const results = {
 			processed: 0,
@@ -53,7 +43,7 @@ export default async function handler (
 		}
 
 		// Process each company
-		for ( const empresa of allCompanies ) {
+		for ( const empresa of companies ) {
 			try {
 				const empresaId = empresa.id
 				const empresaNome = empresa.attributes?.nome || empresaId
@@ -166,8 +156,6 @@ export default async function handler (
 					expiresIn,
 					lastBusinessDate: lastBusinessDate ? formatISO( lastBusinessDate, { representation: 'date' } ) : null,
 				} )
-
-				console.log( `✓ Updated ${ empresaNome }: ${ purchaseFrequency } (avg: ${ averageDays !== null ? averageDays.toFixed( 2 ) : 'N/A' } days)` )
 			} catch ( error: any ) {
 				const empresaId = empresa.id
 				const empresaNome = empresa.attributes?.nome || empresaId
@@ -186,11 +174,13 @@ export default async function handler (
 		return res.status( 200 ).json( {
 			success: true,
 			summary: {
-				totalCompanies: allCompanies.length,
+				totalCompanies: pagination.total || companies.length,
+				count: companies.length,
 				processed: results.processed,
 				updated: results.updated,
 				errors: results.errors.length,
 			},
+			pagination,
 			details: results.details,
 			errors: results.errors,
 		} )

@@ -154,18 +154,6 @@ export const CarteiraVendedor = memo( ( {
 			)
 		}
 
-		// Log para verificar dados no componente
-		if ( filtro.length > 0 ) {
-			const primeiraEmpresa = filtro[ 0 ]
-			console.log( '🔍 [COMPONENTE VENDEDOR] Processando primeira empresa:' )
-			console.log( '  - ID:', primeiraEmpresa?.id )
-			console.log( '  - Nome:', primeiraEmpresa?.attributes?.nome )
-			console.log( '  - businesses.data:', primeiraEmpresa?.attributes?.businesses?.data )
-			console.log( '  - businesses.data length:', primeiraEmpresa?.attributes?.businesses?.data?.length || 0 )
-			console.log( '  - interacaos.data:', primeiraEmpresa?.attributes?.interacaos?.data )
-			console.log( '  - interacaos.data length:', primeiraEmpresa?.attributes?.interacaos?.data?.length || 0 )
-		}
-
 		// Função auxiliar para acessar campos que podem estar em attributes ou diretamente no objeto
 		const getField = ( obj: any, field: string ) => {
 			if ( !obj ) return undefined
