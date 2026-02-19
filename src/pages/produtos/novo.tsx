@@ -13,13 +13,12 @@ import {
 	IconButton,
 	Badge,
 	SimpleGrid,
-	Divider,
 	Spinner,
 	useColorModeValue,
 } from '@chakra-ui/react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FaArrowLeft, FaCalculator, FaSave } from 'react-icons/fa'
 import axios from 'axios'
 
@@ -32,17 +31,26 @@ interface CalcResult {
 	preco: number
 	pesoCx: number
 	titulo: string
-	[key: string]: any
+	[ key: string ]: any
 }
 
-const formatCNPJ = ( cnpj: string ) => {
+const formatCNPJ = ( cnpj: string | undefined | null ) => {
+	if ( !cnpj ) return ''
 	const cleaned = cnpj.replace( /\D/g, '' )
 	return cleaned.replace( /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5' )
 }
 
-export default function NovoProduto() {
+const MAX_COMPANY_NAME_LENGTH = 15
+
+const formatCompanyDisplayName = ( name: string | undefined | null ): string => {
+	if ( !name ) return ''
+	const upper = name.toUpperCase()
+	return upper.length > MAX_COMPANY_NAME_LENGTH ? `${ upper.slice( 0, MAX_COMPANY_NAME_LENGTH ) }...` : upper
+}
+
+export default function NovoProduto () {
 	const router = useRouter()
-	const { cnpj, email, prodId } = router.query
+	const { cnpj, prodId } = router.query
 	const { data: session, status } = useSession()
 	const toast = useToast()
 
@@ -61,22 +69,32 @@ export default function NovoProduto() {
 		codigo: '',
 		pesoProd: '',
 		tabela: '',
-		empresa: cnpj || '',
+		empresa: typeof cnpj === 'string' ? cnpj : ( Array.isArray( cnpj ) ? cnpj[ 0 ] : '' ),
 	} )
 
 	const [ result, setResult ] = useState<CalcResult | null>( null )
+	const pageBottomRef = useRef<HTMLDivElement>( null )
+
+	// Scroll to bottom of page when result is set (after Calcular)
+	useEffect( () => {
+		if ( result && pageBottomRef.current ) {
+			setTimeout( () => {
+				pageBottomRef.current?.scrollIntoView( { behavior: 'smooth', block: 'end' } )
+			}, 200 )
+		}
+	}, [ result ] )
 
 	// Fetch existing product data if prodId is provided (cloning/editing)
 	useEffect( () => {
 		if ( cnpj && session?.user?.email && router.isReady ) {
 			setIsLoading( true )
-			
+
 			// 1. Fetch Company Data to get default tablecalc
 			axios.get( `/api/refactory/companies?searchString=${ cnpj }` )
 				.then( res => {
 					const company = res.data.data?.[ 0 ]
 					if ( company ) {
-						setCompanyData( company.attributes )
+						setCompanyData( company )
 						const tablecalc = parseFloat( company.attributes.tablecalc )
 						if ( !isNaN( tablecalc ) ) {
 							setFormData( prev => ( { ...prev, tabela: tablecalc.toFixed( 2 ) } ) )
@@ -114,8 +132,13 @@ export default function NovoProduto() {
 		}
 	}, [ prodId, cnpj, session, router.isReady, toast ] )
 
+	const FIELDS_THAT_INVALIDATE_RESULT = [ 'comprimento', 'largura', 'altura', 'modelo', 'tabela' ]
+
 	const handleInputChange = ( e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> ) => {
 		const { name, value } = e.target
+		if ( result && FIELDS_THAT_INVALIDATE_RESULT.includes( name ) ) {
+			setResult( null )
+		}
 		setFormData( prev => ( { ...prev, [ name ]: value } ) )
 	}
 
@@ -132,7 +155,7 @@ export default function NovoProduto() {
 				...formData
 			} )
 			const response = await axios.get( `/api/rbx/${ session?.user?.email }/produtos?${ params.toString() }` )
-			
+
 			console.log( "API Response:", response.data )
 
 			if ( response.data && !response.data.error ) {
@@ -157,15 +180,26 @@ export default function NovoProduto() {
 			return
 		}
 
+		if ( !session?.user?.email ) {
+			toast( { title: "Usuário não autenticado", status: "error" } )
+			return
+		}
+
 		setIsSaving( true )
 		try {
-			// 1. Obter ID da empresa no Strapi
-			const compRes = await axios.get( `/api/refactory/companies?searchString=${ cnpj }` )
-			const company = compRes.data.data?.[ 0 ]
-			if ( !company ) throw new Error( "Empresa não encontrada no sistema comercial (Strapi)" )
+			// Garantir que cnpj seja uma string
+			const cnpjStr = Array.isArray( cnpj ) ? cnpj[ 0 ] : cnpj
+
+			// 1. Obter ID da empresa no Strapi (usar o que já carregamos se disponível)
+			let company = companyData
+			if ( !company && cnpjStr ) {
+				const compRes = await axios.get( `/api/refactory/companies?searchString=${ cnpjStr }` )
+				company = compRes.data.data?.[ 0 ]
+			}
+
+			if ( !company ) throw new Error( "Empresa não encontrada no sistema comercial" )
 
 			// 2. Salvar no WordPress (API externa)
-			// Preparar dados para o salvarCx do WP
 			const now = new Date()
 			const formattedDate = now.toLocaleDateString( 'pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' } )
 			const formattedTime = now.toLocaleTimeString( 'pt-BR', { hour: '2-digit', minute: '2-digit' } )
@@ -173,18 +207,18 @@ export default function NovoProduto() {
 
 			const wpSaveData = {
 				...result,
-				nomeProd: formData.nomeProd || result.nomeProd || '',
-				codigo: formData.codigo || result.codigo || '',
+				nomeProd: formData.nomeProd,
+				codigo: formData.codigo,
 				modelo: formData.modelo,
 				tabela: formData.tabela,
-				empresa: cnpj, // O page-produtos.php vai resolver o CNPJ para ID se necessário
+				empresa: cnpjStr,
 				lastUser: session?.user?.name || 'Sistema',
 				lastChange: lastChange,
 				ativo: "1",
 			}
 
 			// Chamar o proxy para o WP
-			const wpRes = await axios.post( `/api/rbx/${ session?.user?.email }/produtos`, {
+			const wpRes = await axios.post( `/api/rbx/${ session.user.email }/produtos`, {
 				salvar: true,
 				dados: wpSaveData
 			} )
@@ -196,28 +230,31 @@ export default function NovoProduto() {
 			const newIndice = wpRes.data.indice
 
 			// 3. Salvar/Sincronizar no Strapi
-			// Usamos o nosso controller SyncProducts que já lida com o mapeamento correto
 			const syncRes = await axios.post( `/api/db/produtos/sync`, {
 				empresaId: company.id,
 				produtos: [ {
 					...wpSaveData,
 					prodId: newIndice,
-					// O controller do Strapi espera campos como 'tabela' que ele mapeia para 'tablecalc'
 				} ]
 			} )
 
 			if ( syncRes.data.failed > 0 ) {
-				throw new Error( "Produto salvo no legado, mas falhou ao sincronizar com Strapi: " + syncRes.data.details[0]?.error )
+				throw new Error( "Produto salvo no legado, mas houve uma falha na sincronização." )
 			}
 
 			toast( { title: "Produto salvo com sucesso", status: "success", duration: 5000 } )
-			
-			// Redirecionar de volta para a lista de produtos daquela empresa
-			router.push( `/produtos` )
-			
+
+			// Redirecionar de volta para a lista de produtos daquela empresa já carregada
+			router.push( `/produtos?empresaId=${ company.id }` )
+
 		} catch ( error: any ) {
 			console.error( "Erro ao salvar:", error )
-			toast( { title: "Erro ao salvar", description: error.response?.data?.error || error.message, status: "error", duration: 7000 } )
+			toast( {
+				title: "Erro ao salvar",
+				description: error.response?.data?.error || error.message,
+				status: "error",
+				duration: 7000
+			} )
 		} finally {
 			setIsSaving( false )
 		}
@@ -235,167 +272,210 @@ export default function NovoProduto() {
 	}
 
 	return (
-		<Box p={ 10 } bg={ bgColor } minH="100vh" color="white">
-			<HStack spacing={ 4 } mb={ 8 }>
-				<IconButton
-					aria-label="Voltar"
-					icon={ <FaArrowLeft /> }
-					onClick={ () => router.back() }
-					variant="ghost"
-					colorScheme="blue"
-				/>
-				<VStack align="start" spacing={ 0 }>
-					<Heading size="lg">Novo Produto</Heading>
-				</VStack>
-			</HStack>
-
-			<Box bg={ cardBg } p={ 8 } borderRadius="xl" shadow="2xl" maxW="container.md" mx="auto" mb={ 10 }>
-				<VStack spacing={ 6 } align="stretch">
-					{ companyData && (
-						<Box mb={ 2 }>
-							<Heading size="md" color="white">{ companyData.nome }</Heading>
-							<Text fontSize="sm" color="gray.400">{ formatCNPJ( companyData.CNPJ ) }</Text>
-							<Divider mt={ 4 } borderColor="gray.600" />
-						</Box>
-					) }
-					<Heading size="sm" color="blue.300">Dimensões Internas e Identificação</Heading>
-					<SimpleGrid columns={ 3 } spacing={ 4 }>
-						<Box>
-							<FormLabel fontSize="sm">Comprimento (cm)</FormLabel>
-							<Input
-								name="comprimento"
-								type="number"
-								value={ formData.comprimento }
-								onChange={ handleInputChange }
-								bg="gray.800"
-								border="none"
-							/>
-						</Box>
-						<Box>
-							<FormLabel fontSize="sm">Largura (cm)</FormLabel>
-							<Input
-								name="largura"
-								type="number"
-								value={ formData.largura }
-								onChange={ handleInputChange }
-								bg="gray.800"
-								border="none"
-							/>
-						</Box>
-						<Box>
-							<FormLabel fontSize="sm">Altura (cm)</FormLabel>
-							<Input
-								name="altura"
-								type="number"
-								value={ formData.altura }
-								onChange={ handleInputChange }
-								bg="gray.800"
-								border="none"
-							/>
-						</Box>
-					</SimpleGrid>
-
-					<Box>
-						<FormLabel fontSize="sm">Modelo da Embalagem</FormLabel>
-						<Select
-							name="modelo"
-							value={ formData.modelo }
-							onChange={ handleInputChange }
-							bg="gray.800"
-							border="none"
-							placeholder="Selecione o modelo"
-							size="sm"
-							rounded="md"
-						>
-							{ modCaix.map( m => (
-								<option key={ m.id } value={ m.id } style={ { background: '#1A202C' } }>
-									{ m.title }
-								</option>
-							) ) }
-						</Select>
+		<Box px={ 10 } pt={ 10 } pb={ 16 } bg={ bgColor } minH="100vh" color="white">
+			<Flex
+				mb={ 8 }
+				flexDirection={{ base: 'column', md: 'row' }}
+				justifyContent="space-between"
+				alignItems={{ base: 'stretch', md: 'center' }}
+				gap={ 4 }
+			>
+				<HStack spacing={ 4 }>
+					<IconButton
+						aria-label="Voltar"
+						icon={ <FaArrowLeft /> }
+						onClick={ () => router.back() }
+						variant="ghost"
+						colorScheme="blue"
+					/>
+					<VStack align="start" spacing={ 0 }>
+						<Heading size="lg">Novo Produto</Heading>
+					</VStack>
+				</HStack>
+				{ companyData && (
+					<Box
+						bg={ cardBg }
+						px={ 4 }
+						py={ 3 }
+						borderRadius="md"
+						shadow="md"
+						alignSelf={{ base: 'stretch', md: 'flex-end' }}
+					>
+						<Text fontWeight="bold" fontSize="lg" color="white">{ formatCompanyDisplayName( companyData.attributes.nome ) }</Text>
+						<Text fontSize="xs" color="gray.400">{ formatCNPJ( companyData.attributes.CNPJ ) }</Text>
 					</Box>
+				) }
+			</Flex>
 
-					<SimpleGrid columns={ { base: 1, md: 2 } } spacing={ 6 }>
-						<Box>
-							<FormLabel fontSize="sm">Nome do Produto (Opcional)</FormLabel>
-							<Input
-								name="nomeProd"
-								value={ formData.nomeProd }
-								onChange={ handleInputChange }
-								bg="gray.800"
-								border="none"
-								placeholder="Ex: Embalagem para Peça X"
-								size="sm"
-								rounded="md"
-							/>
-						</Box>
-						<Box>
-							<FormLabel fontSize="sm">Código (Opcional)</FormLabel>
-							<Input
-								name="codigo"
-								value={ formData.codigo }
-								onChange={ handleInputChange }
-								bg="gray.800"
-								border="none"
-								placeholder="Cód. interno"
-								size="sm"
-								rounded="md"
-							/>
-						</Box>
-					</SimpleGrid>
-
-					{ session?.user?.pemission === 'Adm' && (
-						<>
-							<Divider borderColor="gray.600" />
-							<Heading size="sm" color="blue.300">Tabela</Heading>
-							<Box>
-								<FormLabel fontSize="sm">Tabela de Margem</FormLabel>
-								<Select
-									name="tabela"
-									value={ formData.tabela }
+			<SimpleGrid columns={ { base: 1, lg: 2 } } spacing={ 10 } maxW="container.xl" mx="auto" mb={ 10 } alignItems="stretch">
+				{/* Coluna da Esquerda: Dimensões e Modelo */ }
+				<Box bg={ cardBg } p={ 8 } borderRadius="xl" shadow="2xl" display="flex" flexDirection="column">
+					<VStack spacing={ 6 } align="stretch" flex={ 1 }>
+						<Heading size="sm" color="blue.300">Dimensões Internas e Modelo</Heading>
+						<VStack spacing={ 4 } align="stretch" w="full">
+							<Box maxW="230px" mx="auto" w="full">
+								<FormLabel fontSize="sm">Comprimento (cm)</FormLabel>
+								<Input
+									name="comprimento"
+									type="number"
+									value={ formData.comprimento }
 									onChange={ handleInputChange }
 									bg="gray.800"
 									border="none"
+									w="full"
+									textAlign="center"
+								/>
+							</Box>
+							<Box maxW="230px" mx="auto" w="full">
+								<FormLabel fontSize="sm">Largura (cm)</FormLabel>
+								<Input
+									name="largura"
+									type="number"
+									value={ formData.largura }
+									onChange={ handleInputChange }
+									bg="gray.800"
+									border="none"
+									w="full"
+									textAlign="center"
+								/>
+							</Box>
+							<Box maxW="230px" mx="auto" w="full">
+								<FormLabel fontSize="sm">Altura (cm)</FormLabel>
+								<Input
+									name="altura"
+									type="number"
+									value={ formData.altura }
+									onChange={ handleInputChange }
+									bg="gray.800"
+									border="none"
+									w="full"
+									textAlign="center"
+								/>
+							</Box>
+							<Box maxW="230px" mx="auto" w="full">
+								<FormLabel fontSize="sm">Modelo da Embalagem</FormLabel>
+								<Select
+									name="modelo"
+									value={ formData.modelo }
+									onChange={ handleInputChange }
+									bg="gray.800"
+									border="none"
+									placeholder="Selecione o modelo"
 									size="sm"
 									rounded="md"
+									w="full"
+									textAlign="center"
 								>
-									<option value="" style={ { background: '#1A202C' } }>Selecione a tabela</option>
-									{ marginTables.map( t => (
-										<option key={ t.id } value={ t.profitMargin.toFixed( 2 ) } style={ { background: '#1A202C' } }>
-											{ t.name } ({ ( t.profitMargin * 100 ).toFixed( 0 ) }%)
+									{ modCaix.map( m => (
+										<option key={ m.id } value={ m.id } style={ { background: '#1A202C' } }>
+											{ m.title }
 										</option>
 									) ) }
 								</Select>
 							</Box>
-						</>
-					) }
+						</VStack>
+					</VStack>
+				</Box>
 
-					<Button
-						leftIcon={ <FaCalculator /> }
-						colorScheme="blue"
-						size="lg"
-						onClick={ handleCalculate }
-						isLoading={ isCalculating }
-						loadingText="Calculando..."
-						mt={ 4 }
-					>
-						Calcular
-					</Button>
+				{/* Coluna da Direita: Identificação, Tabela, Calcular */ }
+				<Box bg={ cardBg } p={ 8 } borderRadius="xl" shadow="2xl" display="flex" flexDirection="column">
+					<VStack spacing={ 6 } align="stretch" flex={ 1 }>
+						<Box w="full">
+							<Heading size="sm" color="blue.300" mb={ 4 }>Identificação</Heading>
+							<VStack spacing={ 4 } align="stretch" w="full">
+								<Box maxW="230px" mx="auto" w="full">
+									<FormLabel fontSize="sm">Nome do Produto (Opcional)</FormLabel>
+									<Input
+										name="nomeProd"
+										value={ formData.nomeProd }
+										onChange={ handleInputChange }
+										bg="gray.800"
+										border="none"
+										placeholder="Ex: Embalagem para Peça X"
+										size="sm"
+										rounded="md"
+										w="full"
+										textAlign="center"
+									/>
+								</Box>
+								<Box maxW="230px" mx="auto" w="full">
+									<FormLabel fontSize="sm">Código (Opcional)</FormLabel>
+									<Input
+										name="codigo"
+										value={ formData.codigo }
+										onChange={ handleInputChange }
+										bg="gray.800"
+										border="none"
+										placeholder="Cód. interno"
+										size="sm"
+										rounded="md"
+										w="full"
+										textAlign="center"
+									/>
+								</Box>
+							</VStack>
+						</Box>
 
-					{ result && (
-						<VStack spacing={ 6 } align="stretch" mt={ 4 }>
-							<Box bg="green.900" p={ 8 } borderRadius="xl" shadow="xl" border="1px" borderColor="green.500">
-								<VStack spacing={ 4 } align="center">
-									<Text fontSize="sm" fontWeight="bold" color="green.200" textTransform="uppercase">Preço Calculado</Text>
-									<Heading size="2xl">
-										{ new Intl.NumberFormat( 'pt-BR', { style: 'currency', currency: 'BRL' } ).format( result.vFinal ) }
-									</Heading>
-									<Badge colorScheme="green" fontSize="md" px={ 3 } py={ 1 } borderRadius="full">
-										{ formData.tabela ? marginTables.find( t => t.profitMargin.toFixed( 2 ) === formData.tabela )?.name : 'Margem Padrão' }
-									</Badge>
-								</VStack>
+						{ session?.user?.pemission === 'Adm' && (
+							<Box w="full">
+								<Heading size="sm" color="blue.300" mb={ 4 }>Tabela</Heading>
+								<Box maxW="230px" mx="auto" w="full">
+									<FormLabel fontSize="sm">Tabela de Margem</FormLabel>
+									<Select
+										name="tabela"
+										value={ formData.tabela }
+										onChange={ handleInputChange }
+										bg="gray.800"
+										border="none"
+										size="sm"
+										rounded="md"
+										w="full"
+										textAlign="center"
+									>
+										<option value="" style={ { background: '#1A202C' } }>Selecione a tabela</option>
+										{ marginTables.map( t => (
+											<option key={ t.id } value={ t.profitMargin.toFixed( 2 ) } style={ { background: '#1A202C' } }>
+												{ t.name } ({ ( t.profitMargin * 100 ).toFixed( 0 ) }%)
+											</option>
+										) ) }
+									</Select>
+								</Box>
 							</Box>
+						) }
 
+						<Button
+							leftIcon={ <FaCalculator /> }
+							colorScheme="blue"
+							size="sm"
+							onClick={ handleCalculate }
+							isLoading={ isCalculating }
+							loadingText="Calculando..."
+							rounded="md"
+							w="full"
+						>
+							Calcular
+						</Button>
+					</VStack>
+				</Box>
+			</SimpleGrid>
+
+			{ result && (
+				<Box bg={ cardBg } p={ 8 } borderRadius="xl" shadow="2xl" maxW="container.xl" mx="auto" mb={ 20 }>
+					<VStack spacing={ 6 } align="stretch">
+						<Heading size="sm" color="blue.300">Resultado do Cálculo</Heading>
+						<Box bg="green.900" p={ 8 } borderRadius="xl" shadow="xl" border="1px" borderColor="green.500">
+							<VStack spacing={ 4 } align="center">
+								<Text fontSize="sm" fontWeight="bold" color="green.200" textTransform="uppercase">Preço Calculado</Text>
+								<Heading size="2xl">
+									{ new Intl.NumberFormat( 'pt-BR', { style: 'currency', currency: 'BRL' } ).format( result.vFinal ) }
+								</Heading>
+								<Badge colorScheme="green" fontSize="md" px={ 3 } py={ 1 } borderRadius="full">
+									{ formData.tabela ? marginTables.find( t => t.profitMargin.toFixed( 2 ) === formData.tabela )?.name : 'Margem Padrão' }
+								</Badge>
+							</VStack>
+						</Box>
+
+						<Box>
 							<Button
 								leftIcon={ <FaSave /> }
 								colorScheme="green"
@@ -406,10 +486,11 @@ export default function NovoProduto() {
 							>
 								Salvar
 							</Button>
-						</VStack>
-					) }
-				</VStack>
-			</Box>
+						</Box>
+					</VStack>
+				</Box>
+			) }
+			<Box ref={ pageBottomRef } h={ 5 } />
 		</Box>
 	)
 }

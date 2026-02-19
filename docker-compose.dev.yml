@@ -3,6 +3,7 @@ services:
     container_name: next_frontend
     build:
       context: .
+      dockerfile: Dockerfile.dev
       args:
         NEXT_PUBLIC_STRAPI_API_URL: http://host.docker.internal:1339/api
     restart: unless-stopped
@@ -12,7 +13,11 @@ services:
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_STRAPI_API_URL: http://host.docker.internal:1339/api
       RIBERMAX_API_URL: http://host.docker.internal/api
+      CHOKIDAR_USEPOLLING: 'true'
     env_file:
       - .env.local
     extra_hosts:
       - host.docker.internal:host-gateway
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public

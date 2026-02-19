@@ -53,14 +53,14 @@ function Navbar () {
 						{ Dados.map( ( navItem: any ) => (
 							<ListItem key={ `navbar-${ navItem.id }` }>
 								<Flex align="center">
-									<ListIcon fontSize={ { md: 'xl', lg: '2xl' } } color="lime" as={ navItem.icon } mb={ 0 } />
+									<ListIcon fontSize={ { md: 'xl', lg: '2xl' } } color="#00dc00" as={ navItem.icon } mb={ 0 } />
 									<Link
 										as={ NextLink }
 										href={ navItem.url }
 										fontSize={ { md: 'md', lg: 'lg', '2xl': 'xl' } }
 										color={
 											router.asPath === navItem.url
-												? 'lime'
+												? '#00dc00'
 												: 'whiteAlpha.800'
 										}
 										target={ navItem.url.includes( 'https' ) ? '_blank' : '_self' }

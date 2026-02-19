@@ -284,7 +284,7 @@ export const CardList = ( props: { id: string; onloading: any; desbilitar: any }
 														colorScheme={ "blackAlpha" }
 														onClick={ () =>
 															router.push(
-																"/propostas/update/" + i.attributes.nPedido
+																`/negocios/proposta/${ i.attributes.business.data.id }`
 															)
 														}
 														isDisabled={ i.attributes.Bpedido !== null ? true : false }

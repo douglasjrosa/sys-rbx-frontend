@@ -34,6 +34,7 @@ export type BlingOrderDataType = {
 		| 9 // Sem Ocorrência de Transporte
 		frete: number
 	}
+	observacoes?: string
 }
 
 export type InstallmentsType = {

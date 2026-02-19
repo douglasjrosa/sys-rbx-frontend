@@ -1,18 +1,17 @@
-import { NotasSms } from '@/components/data/notas'
-import { Box, Flex, IconButton, Select, Textarea, useToast } from '@chakra-ui/react'
+import { Flex, IconButton, Textarea, useToast } from '@chakra-ui/react'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { FaLocationArrow } from 'react-icons/fa'
 
-export const NegocioFooter = ( props: { onGetValue: any; data: any } ) => {
+export const NegocioFooter = ( props: { onGetValue: any; onOptimisticUpdate?: ( record: any[] ) => void; data: any } ) => {
 	const router = useRouter()
 	const ID = router.query.id
 	const toast = useToast()
 	const { data: session } = useSession()
 	const [ Valor, setValor ] = useState( '' )
-	const [ Flag, setFlag ] = useState( 'Notas' )
+	const [ isSending, setIsSending ] = useState( false )
 
 	useEffect( () => {
 		setTimeout( () => {
@@ -27,7 +26,6 @@ export const NegocioFooter = ( props: { onGetValue: any; data: any } ) => {
 		const msg = {
 			date: DateAtua,
 			user: session?.user.name,
-			flag: Flag,
 			msg: Valor,
 		}
 
@@ -39,6 +37,8 @@ export const NegocioFooter = ( props: { onGetValue: any; data: any } ) => {
 			},
 		}
 		if ( Valor.trim() !== '' ) {
+			setIsSending( true )
+			props.onOptimisticUpdate?.( record )
 			await axios( {
 				method: 'PUT',
 				url: '/api/db/business/put/id/' + ID,
@@ -59,69 +59,39 @@ export const NegocioFooter = ( props: { onGetValue: any; data: any } ) => {
 						isClosable: true,
 					} )
 				} )
+				.finally( () => setIsSending( false ) )
 		}
 	}
 
 	return (
-		<>
-
-			<Flex
-				px={ { base: '2rem', md: '4rem' } }
-				py={ 4 }
-				h={ '100%' }
-				justifyContent={ 'space-between' }
-				alignItems={ 'center' }
-				gap={ 5 }
-			>
-				<Textarea
-					resize={ 'none' }
-					overflowY={ 'hidden' }
-					fontSize={ '15px' }
-					lineHeight={ '1.2' }
-					bg={ '#ffffff12' }
-					color={ 'white' }
-					p={ '10px' }
-					w={ '85%' }
-					rounded={ '5px' }
-					borderColor={ 'gray.300' }
-					rows={ 1 }
-					onChange={ ( e: any ) => setValor( e.target.value ) }
-				/>
-				<Box color={ 'white' }>
-					<Select
-						bg='#2a303b'
-						borderColor='white'
-						p={ '10px' }
-						rounded={ '5px' }
-						fontSize='12px'
-						w='11rem'
-						focusBorderColor='white'
-						onChange={ ( e ) => setFlag( e.target.value ) }
-					>
-						{ NotasSms.map( ( i: any ) => {
-							return (
-								<option
-									key={ i.id }
-									style={ { backgroundColor: '#2a303b' } }
-								>
-									{ i.title }
-								</option >
-							)
-						} ) }
-					</Select>
-				</Box>
-				<IconButton
-					aria-label="Send"
-					style={ { backgroundColor: '#38A169' } }
-					fontSize={ 'xl' }
-					icon={ <FaLocationArrow /> }
-					color="gray.700"
-					onClick={ addItens }
-					h='3rem'
-					w='5rem'
-				/>
-			</Flex >
-
-		</>
+		<Flex gap={3} alignItems="stretch" w="full">
+			<Textarea
+				flex={1}
+				resize="none"
+				overflowY="auto"
+				fontSize="15px"
+				lineHeight="1.2"
+				bg="#ffffff12"
+				color="white"
+				p="10px"
+				rounded="5px"
+				borderColor="gray.300"
+				minH="44px"
+				value={Valor}
+				onChange={( e: any ) => setValor( e.target.value )}
+				placeholder="Digite sua anotação"
+			/>
+			<IconButton
+				aria-label="Enviar"
+				bg="#38A169"
+				color="gray.700"
+				icon={<FaLocationArrow />}
+				onClick={addItens}
+				isLoading={isSending}
+				minH="44px"
+				minW="44px"
+				flexShrink={0}
+			/>
+		</Flex>
 	)
 }

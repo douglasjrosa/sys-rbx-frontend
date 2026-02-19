@@ -1,6 +1,5 @@
 import { Box, Flex, Link } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
-import Loading from '../../elements/loading';
 
 interface MyTextAreaElement extends HTMLTextAreaElement { }
 
@@ -23,12 +22,6 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
       (textareaRef.current as HTMLTextAreaElement).style.width = `${textareaRef.current.scrollWidth}px`;
     }
   }, [data]);
-
-
-  if (Load) {
-    return <Loading size="200px">Carregando...</Loading>;
-  }
-
 
 
   return (
@@ -76,20 +69,8 @@ export const BodyChat = (props: { conteudo?: any; loading: boolean }) => {
               fontSize="12px"
 
             >{Textofinal}</Box>
-            <Box
-              fontSize="10px"
-              mt={2}
-
-              textAlign={'end'}
-            >
-              <Flex gap={5} justifyContent={'space-between'}>
-                <Box textDecoration='none' color={'white'} px={'5px'} rounded={'5px'} bg={'messenger.600'} fontWeight={'bold'} hidden={!mensagem.flag}>
-                  {mensagem.flag}
-                </Box>
-                <Box textDecoration={'underline'}>
-                  {dateFormate}
-                </Box>
-              </Flex>
+            <Box fontSize="10px" mt={2} textAlign="end" textDecoration="underline">
+              {dateFormate}
             </Box>
           </Box>
         );

@@ -37,6 +37,11 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			}
 		}
 		
+		if ( !blingApiEndpoint ) {
+			res.status( 500 ).json( { error: 'BLING_API_V3_ENDPOINT is not configured' } )
+			return
+		}
+
 		const response = await fetch( externalUrl, {
 			method: req.method as string,
 			headers: {
@@ -45,9 +50,16 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			},
 			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
 		} )
-		
-		const responseData = !!response.body ? await response.json() : null
-		// console.log({externalUrl, method: req.method, bodyData, responseData, errors: responseData.error?.fields})
+
+		let responseData: any = null
+		const contentType = response.headers.get( 'content-type' )
+		if ( contentType?.includes( 'application/json' ) ) {
+			try {
+				responseData = await response.json()
+			} catch {
+				responseData = null
+			}
+		}
 
 		if ( !!responseData && !response.ok ) {
 			res.status( response.status ).json( {

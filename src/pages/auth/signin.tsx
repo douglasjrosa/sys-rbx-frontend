@@ -49,11 +49,11 @@ const SignIn: NextPage = (): JSX.Element => {
         <Stack spacing={4} w={'full'} maxW={'md'} bg={'white'}>
           <Image
             alt={'Logo'}
-            objectFit={'cover'}
+            objectFit={'contain'}
             bg={'white'}
             w={'18rem'}
             m={'auto'}
-            src={'https://ribermax.com.br/images/logomarca-efect.webp?w=1080&q=75'}
+            src={'/img/logomarca-efect.jpg'}
           />
           <form onSubmit={handleSubmit}>
             <FormControl bg={'white'}>
@@ -95,7 +95,7 @@ const SignIn: NextPage = (): JSX.Element => {
         <Image
           alt={'Login Image'}
           objectFit={'cover'}
-          src={'https://ribermax.com.br/images/porto%20de%20santos.jpg?w=1080&q=75'}
+          src={'/img/porto-santos-1080x675.jpg'}
         />
       </Flex>
     </Stack>

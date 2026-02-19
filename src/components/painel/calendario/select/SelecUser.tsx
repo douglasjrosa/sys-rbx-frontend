@@ -29,8 +29,9 @@ export const SelectUser = ( props: {
 		fetchData()
 	}, [ props, session?.user.name ] )
 
-	const handleUserChange = () => {
-		props.onValue( user )
+	const handleUserChange = ( newValue: string ) => {
+		setUser( newValue )
+		props.onValue( newValue )
 	}
 
 	return (
@@ -63,7 +64,7 @@ export const SelectUser = ( props: {
 							</FormLabel>
 							<Select
 								w={ '12rem' }
-								onChange={ ( e ) => setUser( e.target.value ) }
+								onChange={ ( e ) => handleUserChange( e.target.value ) }
 								value={ user }
 								color="white"
 								bg='gray.800'
@@ -75,7 +76,6 @@ export const SelectUser = ( props: {
 								) ) }
 							</Select>
 						</Box>
-						<Button variant={ 'solid' } colorScheme={ 'green' } px={ 6 } onClick={ handleUserChange }>Filtrar</Button>
 					</Flex>
 
 				</>

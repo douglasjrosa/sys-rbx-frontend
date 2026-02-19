@@ -11,7 +11,7 @@ export default async function handler (
 ) {
 	if ( req.method === 'GET' ) {
 		try {
-			const { searchString } = req.query
+			const { searchString, populate } = req.query
 
 			// Verificar autenticação
 			const session = await getServerSession( req, res, authOptions )
@@ -29,12 +29,27 @@ export default async function handler (
 				]
 			}
 
-			// Se não for admin, filtrar apenas pelas empresas do usuário
-			if ( session?.user?.pemission !== 'Adm' ) {
-				filters.user = { id: { $eq: session?.user?.id } }
+			const queryObj: any = { filters }
+			
+			// Always populate user to check ownership
+			if ( populate ) {
+				if ( typeof populate === 'string' && populate === 'businesses' ) {
+					queryObj.populate = {
+						businesses: { populate: [ 'vendedor' ] },
+						user: { fields: [ 'id', 'username' ] }
+					}
+				} else if ( typeof populate === 'string' ) {
+					queryObj.populate = [ populate, 'user' ]
+				} else if ( Array.isArray( populate ) ) {
+					queryObj.populate = [ ...populate, 'user' ]
+				} else {
+					queryObj.populate = { ...populate as object, user: { fields: [ 'id', 'username' ] } }
+				}
+			} else {
+				queryObj.populate = { user: { fields: [ 'id', 'username' ] } }
 			}
 
-			const query = qs.stringify( { filters }, { encodeValuesOnly: true } )
+			const query = qs.stringify( queryObj, { encodeValuesOnly: true } )
 
 			const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL
 			const authToken = process.env.ATORIZZATION_TOKEN

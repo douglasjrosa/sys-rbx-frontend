@@ -15,6 +15,10 @@ export default async function UpdateTableCalc (
 
 		const response = await GET_Strapi( url )
 
+		if ( response?.error ) {
+			return res.status( response.error?.status ?? 400 ).json( response )
+		}
+
 		res.status( 200 ).json( response )
 	} catch ( error: any ) {
 		console.error( "Error in UpdateTableCalc proxy:", error?.response?.data || error.message )

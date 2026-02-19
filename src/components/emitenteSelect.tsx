@@ -18,6 +18,8 @@ const EmitenteSelect: React.FC<EmitenteSelectProps> = ( {
 			<FormLabel
 				fontSize="xs"
 				fontWeight="md"
+				textAlign="center"
+				w="full"
 			>
 				Emitente
 			</FormLabel>
@@ -26,9 +28,11 @@ const EmitenteSelect: React.FC<EmitenteSelectProps> = ( {
 				<Select
 					shadow="sm"
 					size="xs"
-					w="28"
+					py={1}
+					w="full"
 					fontSize="xs"
 					rounded="md"
+					textAlign="center"
 					onChange={ ( e ) => setEmitenteCnpjOnChange( e.target.value ) }
 					value={ emitenteCnpj }
 				>
@@ -43,7 +47,7 @@ const EmitenteSelect: React.FC<EmitenteSelectProps> = ( {
 					) )
 					}
 				</Select>
-				|| <Skeleton height='27px' w="28" startColor='gray.600' endColor='gray.700' rounded={ "md" } />
+				|| <Skeleton height='27px' w="full" startColor='gray.600' endColor='gray.700' rounded={ "md" } />
 			}
 		</>
 	)

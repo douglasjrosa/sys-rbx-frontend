@@ -16,7 +16,7 @@ export default async function ListProdutos (
 			return res.status( 400 ).json( { error: "empresaId or cnpj is required" } )
 		}
 
-		let url = `/produtos?pagination[limit]=1000&populate=*`
+		let url = `/produtos?pagination[limit]=1000&populate=*&sort[0]=prodId:desc`
 		
 		if ( empresaId ) {
 			url += `&filters[empresa][id][$eq]=${ empresaId }`

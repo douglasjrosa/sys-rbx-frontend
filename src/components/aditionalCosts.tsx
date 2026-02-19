@@ -13,15 +13,18 @@ const AditionalCosts: React.FC<AditionalCostsProps> = ( { setAditionalCostsOnCha
 			<FormLabel
 				fontSize="xs"
 				fontWeight="md"
+				textAlign="center"
+				w="full"
 			>
 				Custos adicionais
 			</FormLabel>
 			<CustomCurrencyInput
 				onCurrencyChange={ setAditionalCostsOnChange }
 				value={ aditionalCosts }
-				textAlign={ "end" }
+				textAlign={ "center" }
 				size="xs"
-				w={ 24 }
+				py={1}
+				w="full"
 				fontSize="xs"
 				rounded="md"
 			/>

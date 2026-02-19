@@ -36,46 +36,38 @@ export const FiltroEmpresa = memo( ( { empresa }: FiltroEmpresaProps ) => {
 	}, [ empresa ] )
 
 	return (
-		<>
-			<FormLabel
-				fontSize="xs"
-				fontWeight="md"
-			>
-				Empresa
-			</FormLabel>
-			<Box position="relative" minW="150px">
-				<Input
-					type="text"
-					size={ 'sm' }
-					borderColor="white"
-					focusBorderColor="white"
-					rounded="md"
-					onChange={ handleChange }
-					value={ searchText }
-					placeholder="Nome ou CNPJ"
-					pr={ searchText ? "2.5rem" : "0.75rem" }
-					minW="150px"
-					w="100%"
+		<Box position="relative" minW="150px">
+			<Input
+				type="text"
+				size={ 'sm' }
+				borderColor="white"
+				focusBorderColor="white"
+				rounded="md"
+				onChange={ handleChange }
+				value={ searchText }
+				placeholder="Nome ou CNPJ"
+				pr={ searchText ? "2.5rem" : "0.75rem" }
+				minW="150px"
+				w="100%"
+			/>
+			{ searchText && (
+				<IconButton
+					aria-label="Limpar busca"
+					icon={ <FaTimes /> }
+					size="xs"
+					colorScheme="red"
+					variant="ghost"
+					position="absolute"
+					right="0.25rem"
+					top="50%"
+					transform="translateY(-50%)"
+					onClick={ handleClear }
+					zIndex={ 10 }
+					pointerEvents="auto"
+					_hover={ { bg: "red.500", color: "white" } }
 				/>
-				{ searchText && (
-					<IconButton
-						aria-label="Limpar busca"
-						icon={ <FaTimes /> }
-						size="xs"
-						colorScheme="red"
-						variant="ghost"
-						position="absolute"
-						right="0.25rem"
-						top="50%"
-						transform="translateY(-50%)"
-						onClick={ handleClear }
-						zIndex={ 10 }
-						pointerEvents="auto"
-						_hover={ { bg: "red.500", color: "white" } }
-					/>
-				) }
-			</Box>
-		</>
+			) }
+		</Box>
 	)
 } )
 

@@ -1,4 +1,5 @@
-import { Box, Button, Input, Select, Table, Thead, Th, Tr, Tbody, Td, useToast, Badge, Flex, Heading, Text, InputGroup, InputLeftElement, Spinner, HStack, VStack, Skeleton, useDisclosure,
+import {
+	Box, Button, Input, Select, Table, Thead, Th, Tr, Tbody, Td, useToast, Badge, Flex, Heading, Text, InputGroup, InputLeftElement, InputRightElement, IconButton, Spinner, HStack, VStack, Skeleton, useDisclosure, Divider,
 	Modal,
 	ModalOverlay,
 	ModalContent,
@@ -6,13 +7,46 @@ import { Box, Button, Input, Select, Table, Thead, Th, Tr, Tbody, Td, useToast, 
 	ModalBody,
 	ModalFooter,
 	ModalCloseButton,
+	AlertDialog,
+	AlertDialogBody,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogContent,
+	AlertDialogOverlay,
 } from '@chakra-ui/react'
 import { useSession } from 'next-auth/react'
-import { useCallback, useEffect, useState, useMemo } from 'react'
+import { useRouter } from 'next/router'
+import { useCallback, useEffect, useState, useMemo, useRef } from 'react'
 import axios, { AxiosError } from 'axios'
 import Link from 'next/link'
-import { FaSearch, FaSync, FaFileInvoiceDollar, FaTrash, FaInfoCircle } from 'react-icons/fa'
+import { FaSearch, FaSync, FaFileInvoiceDollar, FaTrash, FaInfoCircle, FaTimes, FaAngleDoubleLeft, FaAngleDoubleRight, FaMoneyBillWave, FaSave, FaShoppingCart } from 'react-icons/fa'
 import { marginTables } from '@/components/data/marginTables'
+import { getTableBadgeColor, getTableNameInPortuguese } from '@/utils/tableUtils'
+import { parseCurrency } from '@/utils/customNumberFormats'
+
+interface Pedido {
+	id: number
+	attributes: {
+		itens: string | any[]
+	}
+}
+
+interface Business {
+	id: number
+	attributes: {
+		createdAt: string
+		budget: number
+		Budget?: number // Some endpoints return with capital B
+		etapa: number
+		andamento: number
+		pedidos?: {
+			data: Pedido[]
+		}
+		vendedor?: {
+			data?: { id: number }
+		}
+	}
+}
 
 interface Company {
 	id: number
@@ -22,7 +56,17 @@ interface Company {
 		tablecalc: string
 		email: string
 		emailNfe: string
-		// ... other attributes
+		businesses?: {
+			data: Business[]
+		}
+		user?: {
+			data?: {
+				id: number
+				attributes: {
+					username: string
+				}
+			}
+		}
 	}
 }
 
@@ -54,658 +98,1493 @@ interface Product {
 	audit?: any
 }
 
-const formatCNPJ = ( cnpj: string ) => {
-	const cleaned = cnpj.replace( /\D/g, '' )
-	return cleaned.replace( /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5' )
+const formatCNPJ = (cnpj: string | undefined | null) => {
+	if (!cnpj) return ''
+	const cleaned = cnpj.replace(/\D/g, '')
+	return cleaned.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
 }
 
-const formatDate = ( dateString?: string ) => {
-	if ( !dateString || dateString === '-' ) return '-'
+const formatDate = (dateString?: string) => {
+	if (!dateString || dateString === '-') return '-'
 	try {
 		// Tentar detectar se a data está no formato DD/MM/YYYY
-		if ( typeof dateString === 'string' && dateString.includes( '/' ) ) {
-			const parts = dateString.split( '/' )
-			if ( parts.length === 3 ) {
+		if (typeof dateString === 'string' && dateString.includes('/')) {
+			const parts = dateString.split('/')
+			if (parts.length === 3) {
 				// Assumindo DD/MM/YYYY, JavaScript espera MM/DD/YYYY ou YYYY-MM-DD
-				const day = parts[ 0 ]
-				const month = parts[ 1 ]
-				const year = parts[ 2 ]
-				return `${ day }/${ month }/${ year }`
+				const day = parts[0]
+				const month = parts[1]
+				const year = parts[2]
+				return `${day}/${month}/${year}`
 			}
 		}
 
-		const date = new Date( dateString )
-		if ( isNaN( date.getTime() ) ) return dateString // Retornar original se não conseguir parsear
-		return new Intl.DateTimeFormat( 'pt-BR' ).format( date )
+		const date = new Date(dateString)
+		if (isNaN(date.getTime())) return dateString // Retornar original se não conseguir parsear
+		return new Intl.DateTimeFormat('pt-BR').format(date)
 	} catch {
 		return dateString || '-'
 	}
 }
 
-const getTableBadgeColor = ( tableName?: string ) => {
-	if ( !tableName ) return 'gray'
-	const name = tableName.toLowerCase()
-	if ( name.includes( 'balcão' ) ) return 'gray'
-	if ( name.includes( 'vip' ) ) return 'blue'
-	if ( name.includes( 'bronze' ) ) return 'orange'
-	if ( name.includes( 'prata' ) ) return 'gray'
-	if ( name.includes( 'ouro' ) ) return 'yellow'
-	if ( name.includes( 'platina' ) ) return 'cyan'
-	if ( name.includes( 'estratégico' ) ) return 'purple'
-	return 'teal'
-}
-
-const getTableNameInPortuguese = ( margin?: number | string ) => {
-	if ( margin === undefined || margin === null ) return '-'
-	const marginValue = parseFloat( String( margin ) )
-	const table = marginTables.find( t => t.profitMargin.toFixed( 2 ) === marginValue.toFixed( 2 ) )
-	if ( table ) return table.name
-	return `${ ( marginValue * 100 ).toFixed( 0 ) }%`
-}
-
-function Produtos () {
-	const [ companies, setCompanies ] = useState( [] )
-	const [ selectedCompany, setSelectedCompany ] = useState<Company | null>( null )
-	const [ selectedCompanyName, setSelectedCompanyName ] = useState<string | null>( null )
-	const [ selectedTable, setSelectedTable ] = useState<string | null>( null )
-	const [ searchTerm, setSearchTerm ] = useState( '' )
+function Produtos() {
+	const router = useRouter()
+	const { empresaId, pagina, proposta } = router.query
+	// Fallback when router.query not ready (Next.js hydration)
+	const queryFromPath = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+	const effectiveEmpresaId = (Array.isArray(empresaId) ? empresaId[0] : empresaId) ?? queryFromPath?.get('empresaId') ?? ''
+	const effectiveProposta = (Array.isArray(proposta) ? proposta[0] : proposta) ?? queryFromPath?.get('proposta') ?? ''
+	const [companies, setCompanies] = useState<Company[]>([])
+	const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
+	const [selectedCompanyName, setSelectedCompanyName] = useState<string | null>(null)
+	const [selectedTable, setSelectedTable] = useState<string | null>(null)
+	const [searchTerm, setSearchTerm] = useState('')
 	const { data: session } = useSession()
 	const toast = useToast()
-	const [ products, setProducts ] = useState<Product[]>( [] )
-	const [ isLoadingProducts, setIsLoadingProducts ] = useState( false )
-	const [ isUpdatingAll, setIsUpdatingAll ] = useState( false )
+	const [products, setProducts] = useState<Product[]>([])
+	const [selectedItems, setSelectedItems] = useState<number[]>([])
+	const [isLoadingProposalItems, setIsLoadingProposalItems] = useState(false)
+	const [isLoadingProducts, setIsLoadingProducts] = useState(() => {
+		if (typeof window === 'undefined') return false
+		const params = new URLSearchParams(window.location.search)
+		return !!(params.get('empresaId') || params.get('proposta'))
+	})
+
+	// Efeito para carregar itens da proposta selecionada
+	useEffect(() => {
+		if (!effectiveProposta) {
+			// Only clear when router is ready (avoids clearing during hydration/navigation)
+			if (router.isReady) {
+				setSelectedItems([])
+			}
+			return
+		}
+		// Load from localStorage first - localStorage prevails over DB (including empty array)
+		if (typeof localStorage !== 'undefined') {
+			const storedItems = localStorage.getItem(`proposal_items_${effectiveProposta}`)
+			if (storedItems !== null) {
+				try {
+					const items = JSON.parse(storedItems)
+					if (Array.isArray(items)) {
+						const ids = items.map((item: any) => {
+							const id = item.prodId ?? item.codg
+							return parseInt(String(id), 10)
+						}).filter(id => !isNaN(id))
+						setSelectedItems(ids)
+						return
+					}
+				} catch {
+					/* ignore parse errors */
+				}
+			}
+		}
+		// Fallback: load from DB when selectedCompany is available (only when no localStorage)
+		if (selectedCompany) {
+			const business = selectedCompany.attributes.businesses?.data?.find(
+				(b: any) => String(b.id) === String(effectiveProposta)
+			)
+			if (business) {
+				const pedido = business.attributes.pedidos?.data?.[0]
+				if (pedido?.attributes?.itens) {
+					try {
+						const itens = typeof pedido.attributes.itens === 'string'
+							? JSON.parse(pedido.attributes.itens)
+							: pedido.attributes.itens
+						if (Array.isArray(itens)) {
+							const ids = itens.map((item: any) => {
+								const id = item.prodId ?? item.codg
+								return parseInt(String(id), 10)
+							}).filter(id => !isNaN(id))
+							setSelectedItems(ids)
+							localStorage.setItem(`proposal_items_${effectiveProposta}`, JSON.stringify(itens))
+						}
+					} catch {
+						setSelectedItems([])
+					}
+				} else {
+					setSelectedItems([])
+				}
+			}
+		}
+	}, [effectiveProposta, selectedCompany, router.isReady])
+
+	const [isUpdatingAll, setIsUpdatingAll] = useState(false)
+	const [isSyncing, setIsSyncing] = useState(false)
+	const [isSyncingCompany, setIsSyncingCompany] = useState(false)
+
+	// Refs
+	const companyInputRef = useRef<HTMLInputElement>(null)
+
+	// Pagination State
+	const [currentPage, setCurrentPage] = useState(1)
+	const [pageSize] = useState(10)
+	const [inputPage, setInputPage] = useState('1')
+
+	// Efeito para carregar a empresa e página caso existam na query
+	useEffect(() => {
+		if (effectiveEmpresaId && (!selectedCompany || String(selectedCompany.id) !== String(effectiveEmpresaId))) {
+			const fetchSelectedCompany = async () => {
+				try {
+					const url = `/api/db/empresas/getId/${effectiveEmpresaId}`
+					const response = await axios.get(url)
+					if (response.data) {
+						const company = response.data.data
+						setSelectedCompany(company)
+						setSelectedCompanyName(company.attributes.nome)
+					}
+				} catch (error) {
+					console.error('Erro ao carregar empresa da querystring:', error)
+					setIsLoadingProducts(false)
+				}
+			}
+			fetchSelectedCompany()
+		}
+
+		if (pagina) {
+			const p = parseInt(Array.isArray(pagina) ? pagina[0] : pagina, 10)
+			if (!isNaN(p) && p > 0) {
+				setCurrentPage(p)
+			}
+		}
+	}, [effectiveEmpresaId, pagina])
+
+	// Efeito para atualizar a querystring quando uma empresa ou página é selecionada
+	// Do not remove empresaId when loading from URL (selectedCompany not yet set)
+	useEffect(() => {
+		const currentEmpresaId = router.query.empresaId
+		const currentPagina = router.query.pagina
+		const newQuery: any = { ...router.query }
+		let changed = false
+
+		if (selectedCompany) {
+			if (String(currentEmpresaId) !== String(selectedCompany.id)) {
+				newQuery.empresaId = selectedCompany.id
+				changed = true
+			}
+		}
+
+		if (currentPage > 1) {
+			if (String(currentPagina) !== String(currentPage)) {
+				newQuery.pagina = currentPage
+				changed = true
+			}
+		} else if (currentPagina) {
+			delete newQuery.pagina
+			changed = true
+		}
+
+		if (changed) {
+			router.push({
+				pathname: router.pathname,
+				query: newQuery,
+			}, undefined, { shallow: true })
+		}
+	}, [selectedCompany, currentPage, router])
 
 	// Modal States
 	const { isOpen: isDeleteOpen, onOpen: onOpenDelete, onClose: onDeleteClose } = useDisclosure()
 	const { isOpen: isDetailsOpen, onOpen: onOpenDetails, onClose: onDetailsClose } = useDisclosure()
-	const [ productToDelete, setProductToDelete ] = useState<Product | null>( null )
-	const [ productToShow, setProductToDetails ] = useState<Product | null>( null )
-	const [ isDeleting, setIsDeleting ] = useState( false )
+	const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+	const [productToShow, setProductToDetails] = useState<Product | null>(null)
+	const [isDeleting, setIsDeleting] = useState(false)
+	const cancelRef = useRef<HTMLButtonElement>(null)
 
-	const fetchProducts = useCallback( async () => {
-		if ( !selectedCompany?.id || !session?.user?.email ) return
-		
-		setIsLoadingProducts( true )
+	const fetchProducts = useCallback(async () => {
+		if (!selectedCompany?.id || !session?.user?.email) {
+			// Only clear loading when we are not expecting to load (no empresaId in URL)
+			if (!effectiveEmpresaId) setIsLoadingProducts(false)
+			return
+		}
+
+		setIsLoadingProducts(true)
 		try {
 			const empresaId = selectedCompany.id
-			const response = await axios.get( `/api/db/produtos/list?empresaId=${ empresaId }` )
-			setProducts( response.data || [] )
-		} catch ( error ) {
-			console.error( 'Erro ao buscar produtos:', error )
+			const response = await axios.get(`/api/db/produtos/list?empresaId=${empresaId}`)
+			setProducts(response.data || [])
+		} catch (error) {
+			console.error('Erro ao buscar produtos:', error)
 		} finally {
-			setIsLoadingProducts( false )
+			setIsLoadingProducts(false)
 		}
-	}, [ session, selectedCompany ] )
+	}, [session?.user?.email, selectedCompany?.id, effectiveEmpresaId])
 
-	const handleDeleteProduct = useCallback( async () => {
-		if ( !productToDelete || !session?.user?.email ) return
+	const handleDeleteProduct = useCallback(async () => {
+		if (!productToDelete || !session?.user?.email) return
 
-		setIsDeleting( true )
+		setIsDeleting(true)
 		try {
-			// 1. Excluir do Strapi
-			const strapiRes = await axios.get( `/api/db/produtos/list?empresaId=${ selectedCompany?.id }` )
-			const strapiProduct = strapiRes.data.find( ( p: any ) => p.prodId === productToDelete.prodId )
-			
-			if ( strapiProduct ) {
-				await axios.delete( `/api/db/produtos/delete?id=${ strapiProduct.id }` )
+			// 1. Desativar na API externa (WordPress) - Define como ativo=0
+			await axios.post(`/api/rbx/${session?.user?.email}/produtos`, {
+				delete: true,
+				prodId: productToDelete.prodId
+			})
+
+			// 2. Excluir do Strapi
+			// O productToDelete já deve conter o 'id' do Strapi se veio da nossa API de listagem
+			try {
+				if ((productToDelete as any).id) {
+					await axios.delete(`/api/db/produtos/delete?id=${(productToDelete as any).id}`)
+				} else {
+					// Fallback caso o ID não esteja no objeto (busca por prodId)
+					const strapiRes = await axios.get(`/api/db/produtos/list?empresaId=${selectedCompany?.id}`)
+					const strapiProduct = strapiRes.data.find((p: any) => p.prodId === productToDelete.prodId)
+					if (strapiProduct) {
+						await axios.delete(`/api/db/produtos/delete?id=${strapiProduct.id}`)
+					}
+				}
+			} catch (strapiError: any) {
+				// Se retornar 404, significa que o produto já foi removido (talvez pela sincronização do passo 1)
+				// Nesse caso, ignoramos o erro e seguimos o fluxo
+				if (strapiError.response?.status !== 404) {
+					throw strapiError // Re-lança se for outro tipo de erro
+				}
+				console.log('Produto já não existia no Strapi ou foi removido automaticamente.')
 			}
 
-			// 2. Desativar na API externa (WordPress)
-			await axios.post( `/api/rbx/${ session?.user?.email }/produtos`, {
-				salvar: true,
-				dados: {
-					indice: productToDelete.prodId,
-					ativo: "0"
-				}
-			} )
-
-			toast( {
-				title: 'Produto excluído',
-				description: 'O produto foi removido do sistema comercial e desativado no legado.',
+			toast({
+				title: 'Produto removido com sucesso',
 				status: 'success',
 				duration: 3000,
-			} )
-			
+				isClosable: true,
+			})
+
 			onDeleteClose()
 			fetchProducts()
-		} catch ( error ) {
-			console.error( 'Erro ao excluir produto:', error )
-			toast( {
+		} catch (error) {
+			console.error('Erro ao excluir produto:', error)
+			toast({
 				title: 'Erro ao excluir',
-				description: 'Não foi possível completar a exclusão.',
+				description: 'Ocorreu uma falha ao tentar remover o produto.',
 				status: 'error',
-			} )
+				duration: 5000,
+				isClosable: true,
+			})
 		} finally {
-			setIsDeleting( false )
+			setIsDeleting(false)
 		}
-	}, [ productToDelete, session, selectedCompany, toast, onDeleteClose, fetchProducts ] )
+	}, [productToDelete, session, selectedCompany, toast, onDeleteClose, fetchProducts])
 
-	useEffect( () => {
-		if ( selectedCompany ) {
-			const tablecalc = parseFloat( selectedCompany.attributes.tablecalc ) || 0
+	useEffect(() => {
+		if (selectedCompany) {
+			const tablecalc = parseFloat(selectedCompany.attributes.tablecalc) || 0
 			// Find exact match or just set the value
-			setSelectedTable( tablecalc.toFixed( 2 ) )
+			setSelectedTable(tablecalc.toFixed(2))
 		}
-	}, [ selectedCompany ] )
+	}, [selectedCompany])
 
-	const handleSearch = useCallback( async ( value: string ) => {
-		setSelectedCompanyName( value )
-		if ( value.length < 3 ) {
-			setCompanies( [] )
+	const handleSearch = useCallback(async (value: string) => {
+		setSelectedCompanyName(value)
+		if (value.length < 3) {
+			setCompanies([])
 			return
 		}
 
 		try {
-			const url = `/api/refactory/companies?searchString=${ value }`
-			const response = await axios( url )
-			setCompanies( response.data.data )
-		} catch ( error ) {
-			console.error( 'Erro na busca:', error )
+			// Adicionado populate=businesses para garantir que os negócios sejam carregados na busca
+			const url = `/api/refactory/companies?searchString=${value}&populate=businesses`
+			const response = await axios(url)
+			setCompanies(response.data.data)
+		} catch (error) {
+			console.error('Erro na busca:', error)
 		}
-	}, [] )
+	}, [])
 
-	const handleKeyDown = ( e: React.KeyboardEvent<HTMLInputElement> ) => {
-		if ( e.key === 'Escape' ) {
+	const handleClearCompany = useCallback(() => {
+		setSelectedCompany(null)
+		setSelectedCompanyName('')
+		setSelectedTable(null)
+		setCompanies([])
+		setProducts([])
+		setSelectedItems([])
+
+		// Remove everything from URL
+		router.push({
+			pathname: router.pathname,
+			query: {},
+		}, undefined, { shallow: true })
+
+		// Focus back on the input
+		setTimeout(() => {
+			companyInputRef.current?.focus()
+		}, 100)
+	}, [router])
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Escape') {
 			e.preventDefault()
-			setSelectedCompany( null )
-			setSelectedTable( null )
-			setSelectedCompanyName( '' )
-			setCompanies( [] )
+			handleClearCompany()
 			return
 		}
 
-		if ( companies.length === 0 ) return
+		if (companies.length === 0) return
 
 		const currentIndex = companies.findIndex(
-			( company: Company ) => company.attributes.nome === selectedCompanyName
+			(company: Company) => company.attributes.nome === selectedCompanyName
 		)
 
-		if ( e.key === 'ArrowDown' ) {
+		if (e.key === 'ArrowDown') {
 			e.preventDefault()
-			const nextIndex = ( currentIndex + 1 ) % companies.length
-			const nextCompany: Company = companies[ nextIndex ]
-			setSelectedCompanyName( nextCompany.attributes.nome )
-		} else if ( e.key === 'ArrowUp' ) {
+			const nextIndex = (currentIndex + 1) % companies.length
+			const nextCompany: Company = companies[nextIndex]
+			setSelectedCompanyName(nextCompany.attributes.nome)
+		} else if (e.key === 'ArrowUp') {
 			e.preventDefault()
 			const prevIndex = currentIndex <= 0 ? companies.length - 1 : currentIndex - 1
-			const prevCompany: Company = companies[ prevIndex ]
-			setSelectedCompanyName( prevCompany.attributes.nome )
-		} else if ( e.key === 'Enter' ) {
+			const prevCompany: Company = companies[prevIndex]
+			setSelectedCompanyName(prevCompany.attributes.nome)
+		} else if (e.key === 'Enter') {
 			e.preventDefault()
-			const companyToSelect = currentIndex === -1 ? companies[ 0 ] : companies[ currentIndex ]
-			if ( companyToSelect ) {
-				setSelectedCompany( companyToSelect )
-				setSelectedCompanyName( companyToSelect.attributes.nome )
-				setCompanies( [] )
+			const companyToSelect = currentIndex === -1 ? companies[0] : companies[currentIndex]
+			if (companyToSelect) {
+				const companyUser = companyToSelect.attributes.user?.data
+				const isOtherVendedor = companyUser && String(companyUser.id) !== String(session?.user?.id)
+				const isAdmin = session?.user?.pemission === 'Adm'
+				const isBlocked = isOtherVendedor && !isAdmin
+
+				if (isBlocked) return
+
+				setSelectedCompany(companyToSelect)
+				setSelectedCompanyName(companyToSelect.attributes.nome)
+				setCompanies([])
 			}
 		}
 	}
 
-	const handleSaveTable = useCallback( () => {
-		if ( selectedCompany && selectedTable ) {
-			axios.put( `/api/refactory/companies`, {
+	const handleSaveTable = useCallback(() => {
+		if (selectedCompany && selectedTable) {
+			axios.put(`/api/refactory/companies`, {
 				id: selectedCompany.id,
 				tablecalc: selectedTable,
-			} )
-				.then( () => {
-					toast( {
+			})
+				.then(() => {
+					toast({
 						title: 'Tabela salva com sucesso',
 						status: 'success',
 						duration: 3000,
 						isClosable: true,
-					} )
+					})
 					fetchProducts() // Refresh prices
-				} )
-				.catch( ( error ) => {
-					console.error( 'Error saving table:', error )
-				} )
+				})
+				.catch((error) => {
+					console.error('Error saving table:', error)
+				})
 		}
-	}, [ selectedCompany, selectedTable, toast, fetchProducts ] )
+	}, [selectedCompany, selectedTable, toast, fetchProducts])
 
-	useEffect( () => {
+	useEffect(() => {
 		fetchProducts()
-	}, [ fetchProducts ] )
+	}, [fetchProducts])
 
-	const handleRefreshProduct = useCallback( async ( product: Product ) => {
-		try {
-			// 1. Atualizar no WordPress (API externa)
-			await axios.get( `/api/rbx/${ session?.user?.email }/produtos?refreshCx=${ product.prodId }` )
-			
-			// 2. Obter os dados atualizados do WordPress
-			const res = await axios.get( `/api/rbx/${ session?.user?.email }/produtos?prodId=${ product.prodId }` )
-			const updatedProduct = res.data
+	const handleSyncCompanyProducts = useCallback(async () => {
+		if (!selectedCompany?.id || !selectedCompany?.attributes?.CNPJ || !session?.user?.email) return
 
-			// 3. Sincronizar para o Strapi
-			if ( selectedCompany?.id ) {
-				await axios.post( `/api/db/produtos/sync`, {
-					empresaId: selectedCompany.id,
-					produtos: [ updatedProduct ]
-				} )
-			}
-
-			toast( {
-				title: 'Produto atualizado',
-				status: 'success',
-				duration: 2000,
-			} )
-			fetchProducts()
-		} catch ( error ) {
-			console.error( 'Erro ao atualizar produto:', error )
-		}
-	}, [ session, fetchProducts, toast, selectedCompany ] )
-
-	const handleUpdateAllExpired = async () => {
-		const expiredOnes = products.filter( p => p.expired )
-		if ( expiredOnes.length === 0 ) return
-
-		setIsUpdatingAll( true )
-		toast( {
-			id: 'update-all-toast',
-			title: 'Atualizando produtos',
-			description: `Processando ${ expiredOnes.length } produtos...`,
+		setIsSyncing(true)
+		toast({
+			id: 'sync-company-prod',
+			title: 'Sincronizando produtos',
+			description: 'Buscando dados no sistema legado...',
 			status: 'info',
 			duration: null,
-		} )
+		})
 
 		try {
-			for ( let i = 0; i < expiredOnes.length; i++ ) {
-				const product = expiredOnes[ i ]
-				toast.update( 'update-all-toast', {
-					description: `Atualizando (${ i + 1 }/${ expiredOnes.length }): ${ product.nomeProd }`
-				} )
-				
-				// 1. Atualizar no WordPress
-				await axios.get( `/api/rbx/${ session?.user?.email }/produtos?refreshCx=${ product.prodId }` )
-				
-				// 2. Obter dados atualizados
-				const res = await axios.get( `/api/rbx/${ session?.user?.email }/produtos?prodId=${ product.prodId }` )
-				const updatedProduct = res.data
+			// 1. Buscar todos os produtos da empresa na API externa
+			const cnpj = selectedCompany.attributes.CNPJ
+			const prodRes = await axios.get(`/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=1000`)
+			const allProducts = prodRes.data || []
 
-				// 3. Sincronizar para o Strapi
-				if ( selectedCompany?.id ) {
-					await axios.post( `/api/db/produtos/sync`, {
-						empresaId: selectedCompany.id,
-						produtos: [ updatedProduct ]
-					} )
-				}
+			// 2. Filtrar apenas ativos
+			const activeProducts = allProducts.filter((p: any) => p.ativo === "1")
 
-				// Small delay to prevent rate limiting
-				await new Promise( resolve => setTimeout( resolve, 300 ) )
+			if (activeProducts.length > 0) {
+				toast.update('sync-company-prod', {
+					description: `Enviando ${activeProducts.length} produtos para o sistema comercial...`,
+				})
+
+				// 3. Enviar para sincronização no Strapi via proxy
+				const syncRes = await axios.post(`/api/db/produtos/sync`, {
+					empresaId: selectedCompany.id,
+					produtos: activeProducts,
+					deleteMissing: true
+				})
+
+				toast.close('sync-company-prod')
+				toast({
+					title: 'Sincronização concluída',
+					description: `${syncRes.data.created} novos e ${syncRes.data.updated} atualizados.`,
+					status: 'success',
+					duration: 5000,
+					isClosable: true,
+				})
+				fetchProducts()
+			} else {
+				toast.close('sync-company-prod')
+				toast({
+					title: 'Nenhum produto ativo',
+					description: 'Não foram encontrados produtos ativos para sincronizar.',
+					status: 'warning',
+					duration: 5000,
+				})
 			}
-			toast.close( 'update-all-toast' )
-			toast( {
-				title: 'Sucesso',
-				description: 'Todos os produtos foram atualizados e sincronizados.',
-				status: 'success',
-				duration: 5000,
-			} )
-			fetchProducts()
-		} catch ( error ) {
-			console.error( 'Erro na atualização em massa:', error )
-			toast.update( 'update-all-toast', {
-				title: 'Erro',
-				description: 'Ocorreu um erro ao atualizar alguns produtos.',
+		} catch (error: any) {
+			console.error('Erro na sincronização individual:', error)
+			toast.close('sync-company-prod')
+			toast({
+				title: 'Erro na sincronização',
+				description: error.response?.data?.error || error.message || 'Falha ao sincronizar produtos.',
+				status: 'error',
+				duration: 7000,
+				isClosable: true,
+			})
+		} finally {
+			setIsSyncing(false)
+		}
+	}, [selectedCompany, session, toast, fetchProducts])
+
+	const handleRefreshProduct = useCallback(async (product: Product) => {
+		try {
+			toast({
+				title: 'Atualizando produto',
+				description: 'Buscando dados atualizados no sistema legado...',
+				status: 'info',
+				duration: 2000,
+			})
+
+			// 1. Buscar dados atualizados na API externa (WordPress)
+			const prodRes = await axios.get(`/api/rbx/${session?.user?.email}/produtos?prodId=${product.prodId}`)
+			const updatedProduct = prodRes.data
+
+			if (updatedProduct && !updatedProduct.error) {
+				// 2. Sincronizar com o sistema comercial
+				await axios.post(`/api/db/produtos/sync`, {
+					empresaId: selectedCompany?.id,
+					produtos: [updatedProduct]
+				})
+
+				fetchProducts()
+
+				toast({
+					title: 'Sucesso',
+					description: 'Produto atualizado com sucesso.',
+					status: 'success',
+					duration: 3000,
+				})
+			} else {
+				throw new Error(updatedProduct?.error || 'Produto não encontrado no sistema legado.')
+			}
+		} catch (error: any) {
+			console.error('Erro ao atualizar produto:', error)
+			toast({
+				title: 'Erro ao atualizar',
+				description: error.message || 'Não foi possível atualizar os dados do produto.',
 				status: 'error',
 				duration: 5000,
-			} )
+			})
+		}
+	}, [session?.user?.email, selectedCompany?.id, fetchProducts, toast])
+
+	const handleUpdateAllExpired = async () => {
+		const expiredOnes = products.filter(p => p.expired)
+		if (expiredOnes.length === 0) return
+
+		setIsUpdatingAll(true)
+		toast({
+			id: 'update-all-toast',
+			title: 'Sincronizando produtos',
+			description: `Processando ${expiredOnes.length} produtos expirados...`,
+			status: 'info',
+			duration: null,
+		})
+
+		try {
+			// Para atualizar expirados de forma consistente, fazemos um sync completo dos produtos ativos da empresa
+			const cnpj = selectedCompany?.attributes.CNPJ
+			const prodRes = await axios.get(`/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=1000`)
+			const allProducts = prodRes.data || []
+			const activeProducts = allProducts.filter((p: any) => p.ativo === "1")
+
+			if (activeProducts.length > 0) {
+				await axios.post(`/api/db/produtos/sync`, {
+					empresaId: selectedCompany?.id,
+					produtos: activeProducts
+				})
+			}
+
+			await fetchProducts()
+
+			toast.close('update-all-toast')
+			toast({
+				title: 'Sucesso',
+				description: 'Os produtos foram atualizados com sucesso.',
+				status: 'success',
+				duration: 5000,
+			})
+		} catch (error: any) {
+			console.error('Erro na atualização em massa:', error)
+			toast.close('update-all-toast')
+			toast({
+				title: 'Erro na atualização',
+				description: error.message || 'Ocorreu um erro ao tentar atualizar os produtos.',
+				status: 'error',
+				duration: 5000,
+				isClosable: true
+			})
 		} finally {
-			setIsUpdatingAll( false )
+			setIsUpdatingAll(false)
 		}
 	}
 
-	const filteredProducts = useMemo( () => {
-		if ( !searchTerm ) return products
-		const term = searchTerm.toLowerCase()
-		return products.filter( p => 
-			p.nomeProd?.toLowerCase().includes( term ) || 
-			p.modelo?.toLowerCase().includes( term ) ||
-			p.codigo?.toLowerCase().includes( term )
+	const filteredProducts = useMemo(() => {
+		if (!searchTerm) return products
+		const term = searchTerm.toLowerCase().trim()
+		const normalizedTerm = term.replace(/\s+/g, '').replace(/x/g, 'x') // ensure we use 'x'
+
+		return products.filter(p => {
+			// Nome, Modelo, Código e prodId
+			if (
+				p.nomeProd?.toLowerCase().includes(term) ||
+				p.modelo?.toLowerCase().includes(term) ||
+				p.codigo?.toLowerCase().includes(term) ||
+				p.prodId.toString().includes(term)
+			) return true
+
+			// Medidas: {comprimento}x{largura}x{altura}
+			const dimString = `${p.comprimento}x${p.largura}x${p.altura}`
+			if (dimString.startsWith(normalizedTerm)) return true
+
+			return false
+		})
+	}, [products, searchTerm])
+
+	const totalPages = useMemo(() => Math.ceil(filteredProducts.length / pageSize), [filteredProducts, pageSize])
+
+	// Normalized Set for O(1) lookup; handles prodId as number or string from API
+	const selectedIdsSet = useMemo(() => {
+		const set = new Set<number>()
+		selectedItems.forEach(id => set.add(Number(id)))
+		return set
+	}, [selectedItems])
+
+	const isProductSelected = useCallback((prodId: number | string) =>
+		selectedIdsSet.has(Number(prodId)), [selectedIdsSet])
+
+	// Sync selectedItems to localStorage when toggling (so proposal page and cart stay in sync)
+	useEffect(() => {
+		if (!effectiveProposta || typeof localStorage === 'undefined') return
+
+		let existingItems: any[] = []
+		try {
+			const stored = localStorage.getItem(`proposal_items_${effectiveProposta}`)
+			if (stored) {
+				const parsed = JSON.parse(stored)
+				if (Array.isArray(parsed)) existingItems = parsed
+			}
+		} catch {
+			/* ignore */
+		}
+
+		// Do not overwrite localStorage before load effect has populated selectedItems.
+		// When selectedIdsSet is empty but localStorage has items, we are in initial load.
+		if (selectedIdsSet.size === 0 && existingItems.length > 0) return
+
+		const selectedIdsArr = Array.from(selectedIdsSet)
+		const existingFiltered = existingItems.filter((item: any) => {
+			const pid = Number(item.prodId ?? item.codg)
+			return !isNaN(pid) && selectedIdsSet.has(pid)
+		})
+		const existingIds = new Set(existingFiltered.map((item: any) => Number(item.prodId ?? item.codg)))
+		const newSelectedIds = selectedIdsArr.filter(id => !existingIds.has(id))
+		const newProducts = products.filter(p => newSelectedIds.includes(Number(p.prodId)))
+
+		const existingByProdId = new Map<number, { Qtd: number | string; mont: boolean; expo: boolean }>()
+		existingFiltered.forEach((item: any) => {
+			const pid = Number(item.prodId ?? item.codg)
+			if (!isNaN(pid)) {
+				existingByProdId.set(pid, {
+					Qtd: item.Qtd ?? 1,
+					mont: Boolean(item.mont),
+					expo: Boolean(item.expo),
+				})
+			}
+		})
+
+		const newItems = newProducts.map((product, index) => {
+			const codigo = product.codigo || `rbx-${product.prodId}`
+			const nomeProd = codigo.substr(0, 3) === 'rbx'
+				? product.nomeProd
+				: `${product.nomeProd} | ref: rbx-${product.prodId}`
+
+			const existing = existingByProdId.get(Number(product.prodId))
+			const Qtd = existing?.Qtd ?? '1'
+			const mont = existing?.mont ?? false
+			const expo = existing?.expo ?? false
+
+			const unitPrice = parseCurrency(product.vFinal)
+			const aditionalService = Math.round(unitPrice * 10) / 100
+			const priceWithServices = unitPrice + (mont ? aditionalService : 0) + (expo ? aditionalService : 0)
+			const qty = typeof Qtd === 'number' ? Qtd : parseFloat(String(Qtd).replace(',', '.')) || 1
+			const total = (priceWithServices * qty).toLocaleString('pt-BR', {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2,
+			})
+
+			return {
+				id: existingFiltered.length + index + 1,
+				nomeProd,
+				codigo,
+				Qtd,
+				ncm: product.ncm,
+				codg: product.prodId,
+				comprimento: product.comprimento,
+				largura: product.largura,
+				altura: product.altura,
+				expo,
+				mont,
+				ativo: '1',
+				preco: product.preco,
+				total,
+				modelo: product.modelo,
+				pesoCx: product.pesoCx,
+				prodId: product.prodId,
+				tabela: product.tabela,
+				titulo: product.titulo,
+				vFinal: product.vFinal,
+				empresa: product.empresa,
+				lastChange: product.lastChange,
+				created_from: product.created_from || null,
+			}
+		})
+
+		const itemsToSave = [...existingFiltered, ...newItems]
+		localStorage.setItem(`proposal_items_${effectiveProposta}`, JSON.stringify(itemsToSave))
+	}, [effectiveProposta, selectedIdsSet, products])
+
+	const paginatedProducts = useMemo(() => {
+		const start = (currentPage - 1) * pageSize
+		return filteredProducts.slice(start, start + pageSize)
+	}, [filteredProducts, currentPage, pageSize])
+
+	// Reset page when search term changes
+	useEffect(() => {
+		setCurrentPage(1)
+		setInputPage('1')
+	}, [searchTerm])
+
+	// Update input page when current page changes
+	useEffect(() => {
+		setInputPage(currentPage.toString())
+	}, [currentPage])
+
+	const expiredCount = useMemo(() => products.filter(p => p.expired).length, [products])
+
+	const currentTableName = useMemo(() => {
+		if (!selectedCompany?.attributes.tablecalc) return null
+		const margin = parseFloat(selectedCompany.attributes.tablecalc)
+		const table = marginTables.find(t => t.profitMargin.toFixed(2) === margin.toFixed(2))
+		return table ? table.name : `${(margin * 100).toFixed(0)}%`
+	}, [selectedCompany])
+
+	const ongoingBusinesses = useMemo(() => {
+		if (!selectedCompany?.attributes.businesses?.data) return []
+		const currentUserId = session?.user?.id != null ? String(session.user.id) : null
+		return selectedCompany.attributes.businesses.data
+			.filter((b: Business) => {
+				const andamento = parseInt(String(b.attributes.andamento ?? ''), 10)
+				const etapa = parseInt(String(b.attributes.etapa ?? ''), 10)
+				if (andamento !== 3 || etapa === 6) return false
+				if (currentUserId) {
+					const vendedorId = b.attributes.vendedor?.data?.id
+					return vendedorId != null && String(vendedorId) === currentUserId
+				}
+				return true
+			})
+			.map((b: Business) => {
+				const rawBudget = (b.attributes as any).Budget ?? b.attributes.budget
+				return {
+					...b,
+					attributes: {
+						...b.attributes,
+						budget: typeof rawBudget === 'string' ? parseFloat(rawBudget) : (rawBudget || 0)
+					}
+				}
+			})
+			.sort((a, b) => new Date(b.attributes.createdAt).getTime() - new Date(a.attributes.createdAt).getTime())
+	}, [selectedCompany, session?.user?.id])
+
+	const handleSelectProposta = useCallback((id: number) => {
+		router.push({
+			pathname: router.pathname,
+			query: { ...router.query, proposta: id },
+		}, undefined, { shallow: true })
+	}, [router])
+
+	const toggleItem = useCallback((product: Product) => {
+		const prodIdNum = Number(product.prodId)
+		const isRemoving = selectedIdsSet.has(prodIdNum)
+
+		setSelectedItems(prev =>
+			isRemoving
+				? prev.filter(id => Number(id) !== prodIdNum)
+				: [...prev, prodIdNum]
 		)
-	}, [ products, searchTerm ] )
 
-	const expiredCount = useMemo( () => products.filter( p => p.expired ).length, [ products ] )
+		toast({
+			title: isRemoving ? 'Removido da proposta' : 'Adicionado à proposta',
+			description: product.nomeProd,
+			status: isRemoving ? 'info' : 'success',
+			duration: 2000,
+			isClosable: true,
+			position: 'bottom-left'
+		})
+	}, [selectedIdsSet, toast])
 
-	const currentTableName = useMemo( () => {
-		if ( !selectedCompany?.attributes.tablecalc ) return null
-		const margin = parseFloat( selectedCompany.attributes.tablecalc )
-		const table = marginTables.find( t => t.profitMargin.toFixed( 2 ) === margin.toFixed( 2 ) )
-		return table ? table.name : `${ ( margin * 100 ).toFixed( 0 ) }%`
-	}, [ selectedCompany ] )
+	const handleSaveProposalItems = useCallback(() => {
+		if (!effectiveProposta) {
+			toast({
+				title: 'Nenhuma proposta selecionada',
+				status: 'warning',
+				duration: 3000,
+				isClosable: true,
+			})
+			return
+		}
+
+		// Load existing items to preserve Mont., Expo., QTD when merging
+		const existingByProdId = new Map<number, { Qtd: number | string; mont: boolean; expo: boolean }>()
+		if (typeof localStorage !== 'undefined') {
+			try {
+				const stored = localStorage.getItem(`proposal_items_${effectiveProposta}`)
+				if (stored) {
+					const existing = JSON.parse(stored)
+					if (Array.isArray(existing)) {
+						existing.forEach((item: any) => {
+							const pid = Number(item.prodId ?? item.codg)
+							if (!isNaN(pid)) {
+								existingByProdId.set(pid, {
+									Qtd: item.Qtd ?? 1,
+									mont: Boolean(item.mont),
+									expo: Boolean(item.expo),
+								})
+							}
+						})
+					}
+				}
+			} catch {
+				/* ignore */
+			}
+		}
+
+		// Filtrar os produtos completos que foram selecionados
+		const selectedProducts = products.filter(p => selectedIdsSet.has(Number(p.prodId)))
+
+		// Mapear para o formato esperado pela página de proposta (preserve Mont., Expo., QTD)
+		const itemsToSave = selectedProducts.map((product, index) => {
+			const codigo = product.codigo || `rbx-${product.prodId}`
+			const nomeProd = codigo.substr(0, 3) === "rbx"
+				? product.nomeProd
+				: `${product.nomeProd} | ref: rbx-${product.prodId}`
+
+			const existing = existingByProdId.get(Number(product.prodId))
+			const Qtd = existing?.Qtd ?? "1"
+			const mont = existing?.mont ?? false
+			const expo = existing?.expo ?? false
+
+			const unitPrice = parseCurrency(product.vFinal)
+			const aditionalService = Math.round(unitPrice * 10) / 100
+			const priceWithServices = unitPrice + (mont ? aditionalService : 0) + (expo ? aditionalService : 0)
+			const qty = typeof Qtd === 'number' ? Qtd : parseFloat(String(Qtd).replace(',', '.')) || 1
+			const total = (priceWithServices * qty).toLocaleString('pt-BR', {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2,
+			})
+
+			return {
+				id: index + 1,
+				nomeProd,
+				codigo,
+				Qtd,
+				ncm: product.ncm,
+				codg: product.prodId,
+				comprimento: product.comprimento,
+				largura: product.largura,
+				altura: product.altura,
+				expo,
+				mont,
+				ativo: "1",
+				preco: product.preco,
+				total,
+				modelo: product.modelo,
+				pesoCx: product.pesoCx,
+				prodId: product.prodId,
+				tabela: product.tabela,
+				titulo: product.titulo,
+				vFinal: product.vFinal,
+				empresa: product.empresa,
+				lastChange: product.lastChange,
+				created_from: product.created_from || null
+			}
+		})
+
+		// Armazenar no localStorage para que a página da proposta possa ler
+		localStorage.setItem(`proposal_items_${effectiveProposta}`, JSON.stringify(itemsToSave))
+
+		toast({
+			title: 'Seleção salva!',
+			description: `${itemsToSave.length} itens adicionados à proposta.`,
+			status: 'success',
+			duration: 2000,
+			isClosable: true,
+		})
+
+		// Redirecionar para a página da proposta
+		router.push(`/negocios/proposta/${effectiveProposta}`)
+	}, [effectiveProposta, selectedIdsSet, products, router, toast])
 
 	return (
-		<Box display="flex" flexDirection="column" gap={ 6 } p={ 10 } bg="gray.800" minH="100vh" color="white">
-			<Flex justifyContent="space-between" alignItems="center">
-				<Heading size="lg">Produtos</Heading>
-				<HStack spacing={4}>
+		<Box pb={20} >
+			<Box
+				display="flex"
+				flexDirection="column"
+				gap={6}
+				p={10}
+				bg="gray.800"
+				minH="100vh"
+				color="white"
+				overflowX={{ base: 'hidden', md: 'visible' }}
+			>
+				<Flex
+					flexDirection={{ base: 'column', md: 'column', lg: 'row' }}
+					justifyContent="space-between"
+					alignItems={{ base: 'stretch', lg: 'center' }}
+					gap={4}
+				>
+					<Heading size="lg" flexShrink={0}>Produtos</Heading>
 					{selectedCompany && (
-						<HStack spacing={4}>
-							<Link href={{
-								pathname: '/produtos/novo',
-								query: { 
-									cnpj: selectedCompany.attributes.CNPJ,
-									email: selectedCompany.attributes.email || selectedCompany.attributes.emailNfe || session?.user?.email 
-								}
-							}} passHref>
-								<Button leftIcon={<FaFileInvoiceDollar />} colorScheme="green" size="sm">
-									Novo Produto
-								</Button>
-							</Link>
-							<Link href={{
-								pathname: '/produtos/historico',
-								query: { 
-									cnpj: selectedCompany.attributes.CNPJ,
-									email: selectedCompany.attributes.email || selectedCompany.attributes.emailNfe || session?.user?.email 
-								}
-							}} passHref>
-								<Button leftIcon={<FaSearch />} colorScheme="blue" size="sm">
-									Histórico de Orçamentos
-								</Button>
-							</Link>
-						</HStack>
-					)}
-				</HStack>
-			</Flex>
-
-			<Box bg="gray.700" p={ 6 } borderRadius="xl" shadow="xl">
-				<Flex direction={{ base: 'column', md: 'row' }} gap={ 6 } align={{ base: 'center', md: 'flex-end' }} justify="center">
-					<Box w={{ base: 'full', md: '320px' }} minW="250px">
-						<Text fontSize="sm" fontWeight="bold" mb={ 2 } color="gray.300" textAlign="left">Empresa</Text>
-						<Box position="relative">
-							<InputGroup size="sm">
-								<InputLeftElement pointerEvents="none">
-									<FaSearch color="gray.400" />
-								</InputLeftElement>
-								<Input
-									placeholder="Pesquisar empresa por nome ou CNPJ..."
-									onChange={ ( e ) => handleSearch( e.target.value ) }
-									value={ selectedCompanyName || '' }
-									borderRadius="md"
-									onKeyDown={ handleKeyDown }
-									bg="gray.800"
-									border="none"
-									_focus={{ ring: 2, ringColor: 'blue.500' }}
-								/>
-							</InputGroup>
-							{ companies.length > 0 && (
-								<Box
-									position="absolute"
-									top="100%"
-									left={ 0 }
-									right={ 0 }
-									bg="gray.800"
-									boxShadow="2xl"
-									zIndex={ 10 }
-									maxH="200px"
-									overflowY="auto"
-									borderRadius="md"
-									mt={ 1 }
-									border="1px"
-									borderColor="gray.600"
-								>
-									{ companies.map( ( company: Company, index: number ) => (
-										<Box
-											key={ `${company.id}-${index}` }
-											p={ 3 }
-											cursor="pointer"
-											bg={ selectedCompanyName === company.attributes.nome ? 'blue.900' : 'transparent' }
-											_hover={ { bg: 'blue.700' } }
-											onClick={ () => {
-												setSelectedCompany( company )
-												setSelectedCompanyName( company.attributes.nome )
-												setCompanies( [] )
-											} }
-										>
-											<Text fontWeight="bold" pointerEvents="none">{ company.attributes.nome }</Text>
-											<Text fontSize="xs" color="gray.400" pointerEvents="none">{ formatCNPJ( company.attributes.CNPJ ) }</Text>
-										</Box>
-									) ) }
-								</Box>
-							) }
-						</Box>
-					</Box>
-
-					{ selectedCompany && (
-						<>
-							<Box w={{ base: 'full', md: '320px' }} minW="250px">
-								<Text fontSize="sm" fontWeight="bold" mb={ 2 } color="gray.300" textAlign="left">
-									Tabela
-								</Text>
-								<Select
-									size="sm"
-									borderRadius="md"
-									value={ selectedTable || '' }
-									onChange={ ( e ) => setSelectedTable( e.target.value ) }
-									bg="gray.800"
-									border="none"
-								>
-									<option value="" style={{ background: '#1A202C' }}>Selecione uma tabela</option>
-									{marginTables.map(table => (
-										<option key={table.id} value={table.profitMargin.toFixed(2)} style={{ background: '#1A202C' }}>
-											{table.name} ({ (table.profitMargin * 100).toFixed(0) }%)
-										</option>
-									))}
-								</Select>
-							</Box>
-
+						<Flex
+							flexDirection={{ base: 'column', md: 'row' }}
+							justifyContent="space-between"
+							gap={4}
+							w={{ base: 'full', lg: 'auto' }}
+							alignItems={{ base: 'stretch', md: 'center' }}
+						>
+							<Select
+								size="sm"
+								width={{ base: 'full', md: '200px' }}
+								borderRadius="md"
+								value={selectedTable || ''}
+								onChange={(e) => setSelectedTable(e.target.value)}
+								bg="gray.700"
+								border="none"
+							>
+								<option value="" style={{ background: '#1A202C' }}>Tabela</option>
+								{marginTables.map(table => (
+									<option key={table.id} value={table.profitMargin.toFixed(2)} style={{ background: '#1A202C' }}>
+										{table.name} ({(table.profitMargin * 100).toFixed(0)}%)
+									</option>
+								))}
+							</Select>
 							<Button
 								size="sm"
-								colorScheme="green"
-								onClick={ handleSaveTable }
-								isDisabled={ !selectedCompany || !selectedTable }
-								w={{ base: 'full', md: '320px' }}
-								minW="250px"
+								colorScheme="blue"
+								variant="solid"
+								onClick={handleSaveTable}
+								isDisabled={!selectedTable}
+								w={{ base: 'full', md: 'auto' }}
 							>
 								Aplicar Margem
 							</Button>
-						</>
-					) }
-				</Flex>
-			</Box>
-
-			{ selectedCompany && (
-				<Box bg="gray.700" p={ 6 } borderRadius="xl" shadow="xl">
-					<Flex justifyContent="space-between" alignItems="center" mb={ 6 }>
-						<HStack spacing={4}>
-							<Heading size="md">Produtos Vinculados</Heading>
-							<Badge colorScheme="blue" borderRadius="full" px={2}>{ products.length }</Badge>
-						</HStack>
-						
-						<HStack spacing={4}>
-							<InputGroup size="sm" w="300px">
-								<InputLeftElement pointerEvents="none">
-									<FaSearch color="gray.400" />
-								</InputLeftElement>
-								<Input 
-									placeholder="Filtrar nesta lista..." 
-									value={searchTerm} 
-									onChange={(e) => setSearchTerm(e.target.value)}
-									bg="gray.800"
-									border="none"
-								/>
-							</InputGroup>
-							{ expiredCount > 0 && (
-								<Button 
-									size="sm" 
-									leftIcon={<FaSync />} 
-									colorScheme="orange" 
-									onClick={handleUpdateAllExpired}
-									isLoading={isUpdatingAll}
-									loadingText="Atualizando..."
+							<Box w={{ base: 'full', md: 'auto' }}>
+								<Link
+									href={{
+										pathname: '/produtos/novo',
+										query: { cnpj: selectedCompany.attributes.CNPJ },
+									}}
+									passHref
 								>
-									Atualizar {expiredCount} Expirados
-								</Button>
-							)}
-						</HStack>
-					</Flex>
+									<Button
+										leftIcon={<FaFileInvoiceDollar />}
+										colorScheme="green"
+										size="sm"
+										w={{ base: 'full', md: 'auto' }}
+									>
+										Novo Produto
+									</Button>
+								</Link>
+							</Box>
+						</Flex>
+					)}
+				</Flex>
 
-					{ isLoadingProducts ? (
-						<Box overflowX="auto">
-							<Table variant="simple" size="sm">
-								<Thead>
-									<Tr>
-										<Th color="gray.400">Código</Th>
-										<Th color="gray.400">Produto</Th>
-										<Th color="gray.400" textAlign="center">Preço Final</Th>
-										<Th color="gray.400" textAlign="center">Histórico</Th>
-										<Th color="gray.400" textAlign="right">Ações</Th>
-									</Tr>
-								</Thead>
-								<Tbody>
-									{[1, 2, 3, 4, 5].map((i) => (
-										<Tr key={i}>
-											<Td><Skeleton h="20px" w="60px" /><Skeleton h="12px" w="40px" mt={1} /></Td>
-											<Td><Skeleton h="20px" w="200px" /><Skeleton h="12px" w="150px" mt={1} /></Td>
-											<Td><VStack align="center"><Skeleton h="20px" w="80px" /><Skeleton h="15px" w="50px" /></VStack></Td>
-											<Td><VStack align="center"><Skeleton h="20px" w="80px" /><Skeleton h="12px" w="60px" /></VStack></Td>
-											<Td textAlign="right"><Skeleton h="25px" w="80px" ml="auto" /></Td>
-										</Tr>
-									))}
-								</Tbody>
-							</Table>
-						</Box>
-					) : products.length === 0 ? (
-						<Text textAlign="center" py={10} color="gray.400">Nenhum produto encontrado para esta empresa.</Text>
-					) : (
-						<Box overflowX="auto">
-							<Table variant="simple" size="sm">
-								<Thead>
-									<Tr>
-										<Th color="gray.400">Código</Th>
-										<Th color="gray.400">Produto</Th>
-										<Th color="gray.400" textAlign="center">Preço Final</Th>
-										<Th color="gray.400" textAlign="center">Histórico</Th>
-										<Th color="gray.400" textAlign="center">Ações</Th>
-									</Tr>
-								</Thead>
-								<Tbody>
-									{ filteredProducts.map( ( product: Product, index: number ) => (
-										<Tr key={ index } _hover={{ bg: 'gray.600' }} transition="0.2s">
-											<Td fontWeight="bold" color="blue.300">
-												<VStack align="start" spacing={1}>
-													<Text>{ product.codigo }</Text>
-													<Badge colorScheme="gray" variant="subtle" fontSize="9px">
-														rbx-{ product.prodId }
-													</Badge>
-												</VStack>
-											</Td>
-											<Td>
-												<Box>
-													<Text fontWeight="bold">{ product.nomeProd }</Text>
-													<Flex gap={2} mb={1} alignItems="center">
-														<Text fontSize="xs" color="gray.400">{ product.titulo }</Text>
-													</Flex>
-													<HStack spacing={2}>
-														{product.pesoCx > 0 && (
-															<Badge variant="subtle" colorScheme="orange" fontSize="10px">
-																{product.pesoCx}kg
+				<Box
+					bg="gray.700"
+					p={6}
+					borderRadius={{ base: 0, md: 'xl' }}
+					shadow="xl"
+					w={{ base: '100vw', md: 'full' }}
+					position={{ base: 'relative', md: 'static' }}
+					left={{ base: '50%', md: 'auto' }}
+					transform={{ base: 'translateX(-50%)', md: 'none' }}
+				>
+					<Flex direction={{ base: 'column', lg: 'row' }} gap={6} align={{ base: 'center', lg: 'center' }} justify="space-between">
+						<Box w={{ base: 'full', lg: '320px' }} minW="250px">
+							<Text fontSize="sm" fontWeight="bold" mb={2} color="gray.300" textAlign="left">Empresa</Text>
+							<Box position="relative">
+								<InputGroup size="sm">
+									<InputLeftElement pointerEvents="none">
+										<FaSearch color="gray.400" />
+									</InputLeftElement>
+									<Input
+										ref={companyInputRef}
+										placeholder="Pesquisar empresa por nome ou CNPJ..."
+										onChange={(e) => handleSearch(e.target.value)}
+										value={selectedCompanyName || ''}
+										borderRadius="md"
+										onKeyDown={handleKeyDown}
+										bg="gray.800"
+										border="none"
+										_focus={{ ring: 2, ringColor: 'blue.500' }}
+										pr={selectedCompanyName ? "2.5rem" : "0.75rem"}
+									/>
+									{selectedCompanyName && (
+										<InputRightElement width="2.5rem">
+											<IconButton
+												aria-label="Limpar busca"
+												icon={<FaTimes />}
+												size="xs"
+												colorScheme="red"
+												variant="ghost"
+												onClick={handleClearCompany}
+												_hover={{ bg: "red.500", color: "white" }}
+											/>
+										</InputRightElement>
+									)}
+								</InputGroup>
+								{companies.length > 0 && (
+									<Box
+										position="absolute"
+										top="100%"
+										left={0}
+										right={0}
+										bg="gray.800"
+										boxShadow="2xl"
+										zIndex={10}
+										maxH="200px"
+										overflowY="auto"
+										borderRadius="md"
+										mt={1}
+										border="1px"
+										borderColor="gray.600"
+									>
+										{companies.map((company: Company, index: number) => {
+											const companyUser = company.attributes.user?.data
+											const isOtherVendedor = companyUser && String(companyUser.id) !== String(session?.user?.id)
+											const isAdmin = session?.user?.pemission === 'Adm'
+											const isBlocked = isOtherVendedor && !isAdmin
+
+											return (
+												<Box
+													key={`${company.id}-${index}`}
+													p={3}
+													cursor={isBlocked ? "not-allowed" : "pointer"}
+													bg={selectedCompanyName === company.attributes.nome ? 'blue.900' : 'transparent'}
+													_hover={!isBlocked ? { bg: 'blue.700' } : {}}
+													opacity={isBlocked ? 0.7 : 1}
+													onClick={() => {
+														if (isBlocked) return
+														setSelectedCompany(company)
+														setSelectedCompanyName(company.attributes.nome)
+														setCompanies([])
+													}}
+												>
+													<Flex justifyContent="space-between" alignItems="center">
+														<Box pointerEvents="none">
+															<Text fontWeight="bold" color="white">{company.attributes.nome}</Text>
+															<Text fontSize="xs" color="gray.400">{formatCNPJ(company.attributes.CNPJ)}</Text>
+														</Box>
+														{isOtherVendedor && (
+															<Badge colorScheme="orange" ml={2}>
+																{companyUser.attributes.username}
 															</Badge>
 														)}
-														<Badge variant="outline" colorScheme="gray" textTransform="lowercase" fontSize="10px">
-															{ `${product.altura} x ${product.largura} x ${product.comprimento} cm (alt.)` }
-														</Badge>
-													</HStack>
+													</Flex>
 												</Box>
-											</Td>
-											<Td fontWeight="bold" color="green.300">
-												<VStack align="center" spacing={1}>
-													<Text fontSize="sm">
-														{ new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.vFinal) }
-													</Text>
-													{product.tablecalc !== undefined && (
-														<Badge 
-															fontSize="10px" 
-															colorScheme={getTableBadgeColor(getTableNameInPortuguese(product.tablecalc))} 
-															variant="solid"
-														>
-															{getTableNameInPortuguese(product.tablecalc)}
-														</Badge>
-													)}
-													{ session?.user?.pemission === 'Adm' && product.custoMp && (
-														<Badge fontSize="10px" colorScheme="orange" variant="subtle">
-															Custo MP: { new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.custoMp) }
-														</Badge>
-													) }
-												</VStack>
-											</Td>
-											<Td textAlign="center">
-												<VStack spacing={1}>
-													{product.expiresIn && product.expiresIn !== '-' && (
-														<Badge colorScheme={product.expired ? "red" : "green"} variant={product.expired ? "solid" : "subtle"}>
-															{ formatDate( product.expiresIn ) }
-														</Badge>
-													)}
-													<Box fontSize="10px" color="gray.400" textAlign="center">
-														<Text>Última alteração em { formatDate( product.lastChange ) }</Text>
-														{ product.lastUser && <Text>Por {product.lastUser}</Text> }
-													</Box>
-												</VStack>
-											</Td>
-											<Td textAlign="center">
-												<HStack spacing={1} justify="center">
-													<Button
-														size="xs" 
-														leftIcon={<FaInfoCircle />}
-														colorScheme="blue" 
-														variant="ghost"
-														onClick={ () => {
-															setProductToDetails( product )
-															onOpenDetails()
-														} }
-													>
-														Detalhes
-													</Button>
-													{ session?.user?.pemission === 'Adm' && (
-														<>
-															<Button
-																size="xs" 
-																leftIcon={<FaSync />}
-																colorScheme="blue" 
-																variant="ghost"
-																onClick={ () => handleRefreshProduct( product ) }
-															>
-																Atualizar
-															</Button>
-															<Link href={{
-																pathname: '/produtos/novo',
-																query: { 
-																	cnpj: selectedCompany?.attributes.CNPJ, 
-																	email: selectedCompany?.attributes.email || selectedCompany?.attributes.emailNfe || session?.user?.email,
-																	prodId: product.prodId
-																}
-															}} passHref>
-																<Button
-																	size="xs" 
-																	leftIcon={<FaFileInvoiceDollar />}
-																	colorScheme="green" 
-																	variant="ghost"
-																>
-																	Orçar
-																</Button>
-															</Link>
-															<Button
-																size="xs" 
-																leftIcon={<FaTrash />}
-																colorScheme="red" 
-																variant="ghost"
-																onClick={ () => {
-																	setProductToDelete( product )
-																	onOpenDelete()
-																} }
-															>
-																Excluir
-															</Button>
-														</>
-													) }
-												</HStack>
-											</Td>
-										</Tr>
-									) ) }
-								</Tbody>
-							</Table>
+											)
+										})}
+									</Box>
+								)}
+							</Box>
 						</Box>
-					) }
+
+						{selectedCompany && ongoingBusinesses.length > 0 && (
+							<Box w={{ base: 'full', lg: 'auto' }} minW="250px" bg="gray.800" p={3} borderRadius="md" border="1px" borderColor="gray.600">
+								<Text fontSize="xs" fontWeight="bold" mb={2} color="white" textTransform="uppercase">
+									Negócios em andamento
+								</Text>
+								<VStack align="stretch" spacing={1} maxH="120px" overflowY="auto">
+									{ongoingBusinesses.map((b: Business) => {
+										const isSelected = String(effectiveProposta) === String(b.id)
+										return (
+											<Flex
+												key={b.id}
+												align="center"
+												gap={2}
+												justify="space-between"
+												cursor="pointer"
+												_hover={{ color: 'yellow.200' }}
+												onClick={() => handleSelectProposta(b.id)}
+												color={isSelected ? 'yellow.300' : 'yellow.400'}
+												transition="0.2s"
+											>
+												<Flex align="center" gap={2} flex={1}>
+													<FaMoneyBillWave size="14px" color="green" />
+													<Text fontSize="13px" fontWeight={isSelected ? 'bold' : 'medium'}>
+														{new Date(b.attributes.createdAt).toLocaleDateString('pt-BR')} - {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(b.attributes.budget || 0)}
+													</Text>
+												</Flex>
+												{isSelected && (
+													<IconButton
+														aria-label="Salvar Proposta"
+														icon={<FaSave />}
+														size="xs"
+														colorScheme="blue"
+														variant="solid"
+														isDisabled={isLoadingProducts}
+														onClick={(e) => {
+															e.stopPropagation()
+															handleSaveProposalItems()
+														}}
+													/>
+												)}
+											</Flex>
+										)
+									})}
+								</VStack>
+							</Box>
+						)}
+					</Flex>
 				</Box>
-			)}
+
+				{selectedCompany && (
+					<Box
+						bg="gray.700"
+						p={6}
+						borderRadius={{ base: 0, md: 'xl' }}
+						shadow="xl"
+						w={{ base: '100vw', md: 'full' }}
+						position={{ base: 'relative', md: 'static' }}
+						left={{ base: '50%', md: 'auto' }}
+						transform={{ base: 'translateX(-50%)', md: 'none' }}
+					>
+						<Flex
+							direction={{ base: 'column', lg: 'row' }}
+							gap={4}
+							alignItems="center"
+							mb={6}
+							w="full"
+						>
+							{ /* Título: Sempre à esquerda */}
+							<Box w={{ base: 'full', lg: 'auto' }} textAlign="left">
+								<HStack spacing={{ base: 2, md: 4 }} flexWrap="wrap">
+									<Heading
+										size={{ base: 'sm', md: 'md' }}
+										whiteSpace="normal"
+									>
+										Produtos Vinculados
+									</Heading>
+									<Badge
+										colorScheme="blue"
+										borderRadius="full"
+										px={2}
+										fontSize={{ base: 'xs', md: 'sm' }}
+									>
+										{products.length}
+									</Badge>
+									<IconButton
+										aria-label="Sincronizar Produtos"
+										icon={<FaSync size="10px" />}
+										size={{ base: 'xs', md: 'sm' }}
+										colorScheme="blue"
+										onClick={handleSyncCompanyProducts}
+										isLoading={isSyncing}
+										variant="solid"
+									/>
+								</HStack>
+							</Box>
+
+							{ /* Filtro: Sempre centralizado */}
+							<Box flex={1} display="flex" justifyContent="center" w="full">
+								<InputGroup size="sm" w={{ base: 'full', md: '300px' }}>
+									<InputLeftElement pointerEvents="none">
+										<FaSearch color="gray.400" />
+									</InputLeftElement>
+									<Input
+										placeholder="Filtrar nesta lista..."
+										value={searchTerm}
+										onChange={(e) => setSearchTerm(e.target.value)}
+										bg="gray.800"
+										border="none"
+										borderRadius="md"
+									/>
+								</InputGroup>
+							</Box>
+
+							{ /* Paginação e Ações: Direita em LG, Centralizada em bases menores */}
+							<Flex
+								direction={{ base: 'column', md: 'row' }}
+								gap={4}
+								alignItems="center"
+								justifyContent={{ base: 'center', lg: 'flex-end' }}
+								w={{ base: 'full', lg: 'auto' }}
+							>
+								{totalPages > 1 && (
+									<HStack spacing={2}>
+										<Button
+											size="xs"
+											bg="#2b6cb0"
+											color="white"
+											_hover={{ bg: '#2c5282' }}
+											_active={{ bg: '#2a4365' }}
+											_disabled={{ bg: '#1a365d', opacity: 0.5, cursor: 'not-allowed' }}
+											onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+											isDisabled={currentPage === 1}
+										>
+											<FaAngleDoubleLeft />
+										</Button>
+										<Text fontSize="xs" whiteSpace="nowrap">Página:</Text>
+										<Input
+											type="number"
+											min={1}
+											max={totalPages}
+											size="xs"
+											width="45px"
+											textAlign="center"
+											borderRadius="md"
+											bg="gray.800"
+											border="none"
+											value={inputPage}
+											onChange={(e) => setInputPage(e.target.value)}
+											onKeyDown={(e) => {
+												if (e.key === 'Enter') {
+													const num = parseInt(inputPage, 10)
+													if (!isNaN(num) && num >= 1 && num <= totalPages) {
+														setCurrentPage(num)
+													} else {
+														setInputPage(currentPage.toString())
+													}
+												}
+											}}
+											onBlur={() => {
+												const num = parseInt(inputPage, 10)
+												if (isNaN(num) || num < 1 || num > totalPages) {
+													setInputPage(currentPage.toString())
+												} else {
+													setCurrentPage(num)
+												}
+											}}
+										/>
+										<Text fontSize="xs" whiteSpace="nowrap">de {totalPages}</Text>
+										<Button
+											size="xs"
+											bg="#2b6cb0"
+											color="white"
+											_hover={{ bg: '#2c5282' }}
+											_active={{ bg: '#2a4365' }}
+											_disabled={{ bg: '#1a365d', opacity: 0.5, cursor: 'not-allowed' }}
+											onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+											isDisabled={currentPage === totalPages}
+										>
+											<FaAngleDoubleRight />
+										</Button>
+									</HStack>
+								)}
+
+								{expiredCount > 0 && (
+									<Button
+										size="sm"
+										leftIcon={<FaSync />}
+										colorScheme="orange"
+										onClick={handleUpdateAllExpired}
+										isLoading={isUpdatingAll}
+										loadingText="Atualizando..."
+										w={{ base: 'full', md: 'auto' }}
+									>
+										Atualizar {expiredCount} Expirados
+									</Button>
+								)}
+							</Flex>
+						</Flex>
+
+						{isLoadingProducts ? (
+							<Box overflowX="auto">
+								<Table variant="simple" size="sm">
+									<Thead>
+										<Tr>
+											<Th color="gray.400" textAlign="center">Código</Th>
+											<Th color="gray.400">Produto</Th>
+											<Th color="gray.400" textAlign="center">Preço Final</Th>
+											<Th color="gray.400" textAlign="center">Histórico</Th>
+											<Th color="gray.400" textAlign="center">AÇÕES</Th>
+										</Tr>
+									</Thead>
+									<Tbody>
+										{[1, 2, 3, 4, 5].map((i) => (
+											<Tr key={i}>
+												<Td textAlign="center"><VStack align="center" spacing={1}><Skeleton h="20px" w="60px" /><Skeleton h="12px" w="40px" /></VStack></Td>
+												<Td><Skeleton h="20px" w="200px" /><Skeleton h="12px" w="150px" mt={1} /></Td>
+												<Td><VStack align="center"><Skeleton h="20px" w="80px" /><Skeleton h="15px" w="50px" /></VStack></Td>
+												<Td><VStack align="center"><Skeleton h="20px" w="80px" /><Skeleton h="12px" w="60px" /></VStack></Td>
+												<Td textAlign="right"><Skeleton h="25px" w="80px" ml="auto" /></Td>
+											</Tr>
+										))}
+									</Tbody>
+								</Table>
+							</Box>
+						) : products.length === 0 ? (
+							<Text textAlign="center" py={10} color="gray.400">Nenhum produto encontrado para esta empresa.</Text>
+						) : (
+							<Box overflowX="auto">
+								<Table variant="simple" size="sm">
+									<Thead>
+										<Tr>
+											<Th color="gray.400" textAlign="center">Código</Th>
+											<Th color="gray.400">Produto</Th>
+											<Th color="gray.400" textAlign="center">Preço Final</Th>
+											<Th color="gray.400" textAlign="center">Histórico</Th>
+											<Th color="gray.400" textAlign="center">AÇÕES</Th>
+										</Tr>
+									</Thead>
+									<Tbody>
+										{paginatedProducts.map((product: Product, index: number) => (
+											<Tr key={index} _hover={{ bg: 'gray.600' }} transition="0.2s">
+												<Td fontWeight="bold" color="blue.300" py={4} textAlign="center">
+													<VStack align="center" spacing={1}>
+														<Text>{product.codigo}</Text>
+														<Badge colorScheme="gray" variant="subtle" fontSize="9px">
+															rbx-{product.prodId}
+														</Badge>
+													</VStack>
+												</Td>
+												<Td py={4}>
+													<Box>
+														<Text fontWeight="bold">{product.nomeProd}</Text>
+														<Flex gap={2} mb={1} alignItems="center">
+															<Text fontSize="xs" color="gray.400">{product.titulo}</Text>
+														</Flex>
+														<HStack spacing={2}>
+															{product.pesoCx > 0 && (
+																<Badge variant="subtle" colorScheme="orange" fontSize="10px">
+																	{product.pesoCx}kg
+																</Badge>
+															)}
+															<Badge variant="outline" colorScheme="gray" textTransform="lowercase" fontSize="10px">
+																{`${product.comprimento} x ${product.largura} x ${product.altura} cm (alt.)`}
+															</Badge>
+														</HStack>
+													</Box>
+												</Td>
+												<Td fontWeight="bold" color="green.300" py={4}>
+													<VStack align="center" spacing={1}>
+														<Text fontSize="sm">
+															{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.vFinal)}
+														</Text>
+														{(selectedCompany?.attributes.tablecalc || product.tablecalc) !== undefined && (
+															<Badge
+																fontSize="10px"
+																colorScheme={getTableBadgeColor(getTableNameInPortuguese(selectedCompany?.attributes.tablecalc || product.tablecalc))}
+																color={getTableBadgeColor(getTableNameInPortuguese(selectedCompany?.attributes.tablecalc || product.tablecalc)) === 'yellow' ? 'black' : undefined}
+																variant="solid"
+															>
+																{getTableNameInPortuguese(selectedCompany?.attributes.tablecalc || product.tablecalc)}
+															</Badge>
+														)}
+														{session?.user?.pemission === 'Adm' && product.custoMp && (
+															<Badge fontSize="10px" colorScheme="orange" variant="subtle">
+																Custo MP: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.custoMp)}
+															</Badge>
+														)}
+													</VStack>
+												</Td>
+												<Td textAlign="center" py={4}>
+													<VStack spacing={1}>
+														{product.expiresIn && product.expiresIn !== '-' && (
+															<Badge colorScheme={product.expired ? "red" : "green"} variant={product.expired ? "solid" : "subtle"}>
+																{formatDate(product.expiresIn)}
+															</Badge>
+														)}
+														<Box fontSize="10px" color="gray.400" textAlign="center">
+															<Text>Alterado em {formatDate(product.lastChange)}</Text>
+															{product.lastUser && <Text>Por {product.lastUser}</Text>}
+														</Box>
+													</VStack>
+												</Td>
+												<Td textAlign="center" py={4}>
+													<HStack spacing={2} justify="center">
+														{effectiveProposta && (
+															<IconButton
+																aria-label="Adicionar à proposta"
+																icon={<FaShoppingCart color={isProductSelected(product.prodId) ? "white" : undefined} />}
+																size="sm"
+																variant={isProductSelected(product.prodId) ? "solid" : "ghost"}
+																bg={isProductSelected(product.prodId) ? "green.500" : "transparent"}
+																colorScheme={isProductSelected(product.prodId) ? "green" : "gray"}
+																color={isProductSelected(product.prodId) ? "white" : "gray.400"}
+																_hover={{
+																	bg: isProductSelected(product.prodId) ? "green.600" : "whiteAlpha.100",
+																	color: "white"
+																}}
+																onClick={() => toggleItem(product)}
+															/>
+														)}
+														<IconButton
+															aria-label="Detalhes"
+															icon={<FaInfoCircle />}
+															size="sm"
+															colorScheme="blue"
+															variant="ghost"
+															color="blue.300"
+															_hover={{ bg: "blue.900" }}
+															onClick={() => {
+																setProductToDetails(product)
+																onOpenDetails()
+															}}
+														/>
+														{session?.user?.pemission === 'Adm' && (
+															<>
+																<IconButton
+																	aria-label="Atualizar"
+																	icon={<FaSync />}
+																	size="sm"
+																	colorScheme="cyan"
+																	variant="ghost"
+																	color="cyan.300"
+																	_hover={{ bg: "cyan.900" }}
+																	onClick={() => handleRefreshProduct(product)}
+																/>
+																<IconButton
+																	aria-label="Excluir"
+																	icon={<FaTrash />}
+																	size="sm"
+																	colorScheme="red"
+																	variant="ghost"
+																	color="red.300"
+																	_hover={{ bg: "red.900" }}
+																	onClick={() => {
+																		setProductToDelete(product)
+																		onOpenDelete()
+																	}}
+																/>
+															</>
+														)}
+													</HStack>
+												</Td>
+											</Tr>
+										))}
+									</Tbody>
+								</Table>
+							</Box>
+						)}
+					</Box>
+				)}
+
+				{/* Modal de Detalhes */}
+				<Modal isOpen={isDetailsOpen} onClose={onDetailsClose} size="xl">
+					<ModalOverlay backdropFilter="blur(4px)" />
+					<ModalContent bg="gray.800" color="white" borderRadius="xl">
+						<ModalHeader borderBottom="1px" borderColor="gray.700">
+							Detalhes do Produto: {productToShow?.nomeProd}
+						</ModalHeader>
+						<ModalCloseButton />
+						<ModalBody py={6}>
+							{productToShow && (
+								<VStack align="stretch" spacing={6}>
+									<Box>
+										<Text color="gray.400" fontSize="xs" fontWeight="bold" mb={2}>Medidas externas da caixa DESMONTADA:</Text>
+										<Text fontWeight="bold" fontSize="lg">
+											{parseFloat(String(productToShow.comprimento)) + 5} x {parseFloat(String(productToShow.largura)) + 5} x 20cm (alt.)
+										</Text>
+									</Box>
+
+									<Divider borderColor="gray.700" />
+
+									<Box>
+										<Text color="gray.400" fontSize="xs" fontWeight="bold" mb={2}>Medidas externas da caixa MONTADA:</Text>
+										<Text fontWeight="bold" fontSize="lg">
+											{parseFloat(String(productToShow.comprimento)) + 5} x {parseFloat(String(productToShow.largura)) + 5} x {parseFloat(String(productToShow.altura)) + 15}cm (alt.)
+										</Text>
+									</Box>
+
+									<Divider borderColor="gray.700" />
+
+									<Box>
+										<Text color="gray.400" fontSize="xs" fontWeight="bold" mb={2}>Peso da embalagem:</Text>
+										<Text fontWeight="bold" fontSize="lg">
+											{productToShow.pesoCx}kg
+										</Text>
+									</Box>
+								</VStack>
+							)}
+						</ModalBody>
+						<ModalFooter borderTop="1px" borderColor="gray.700">
+							<Button colorScheme="blue" onClick={onDetailsClose}>Fechar</Button>
+						</ModalFooter>
+					</ModalContent>
+				</Modal>
+
+				{/* Confirmação de Exclusão */}
+				<AlertDialog
+					isOpen={isDeleteOpen}
+					leastDestructiveRef={cancelRef}
+					onClose={onDeleteClose}
+				>
+					<AlertDialogOverlay>
+						<AlertDialogContent bg="gray.800" color="white">
+							<AlertDialogHeader fontSize="lg" fontWeight="bold">
+								Excluir Produto
+							</AlertDialogHeader>
+
+							<AlertDialogBody>
+								Tem certeza que deseja excluir o produto <strong>{productToDelete?.nomeProd}</strong>?
+							</AlertDialogBody>
+
+							<AlertDialogFooter>
+								<Button ref={cancelRef} onClick={onDeleteClose} variant="ghost" colorScheme="whiteAlpha">
+									Cancelar
+								</Button>
+								<Button colorScheme="red" onClick={handleDeleteProduct} ml={3} isLoading={isDeleting}>
+									Excluir
+								</Button>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialogOverlay>
+				</AlertDialog>
+
+				{effectiveProposta && (
+					<Box
+						position="fixed"
+						bottom="20px"
+						right={{ base: "auto", md: "20px" }}
+						left={{ base: "50%", md: "auto" }}
+						transform={{ base: "translateX(-50%)", md: "none" }}
+						zIndex={100}
+					>
+						<Button
+							colorScheme="blue"
+							size="lg"
+							leftIcon={<FaSave />}
+							boxShadow="2xl"
+							onClick={handleSaveProposalItems}
+							borderRadius="full"
+							px={8}
+							isDisabled={isLoadingProducts}
+							_hover={{ transform: 'scale(1.05)', bg: 'blue.600' }}
+							_active={{ transform: 'scale(0.95)' }}
+							transition="0.2s"
+						>
+							Finalizar Seleção ({selectedItems.length})
+						</Button>
+					</Box>
+				)}
+			</Box>
 		</Box>
 	)
 }

@@ -1,18 +1,61 @@
 import { ObjContato } from "@/components/data/objetivo"
 import { TipoContato } from "@/components/data/tipo"
-import { BtmRetorno } from "@/components/elements/btmRetorno"
 import Loading from "@/components/elements/loading"
 import { MaskCep } from "@/function/Mask/cep"
 import { MaskCnpj } from "@/function/Mask/cnpj"
 import { formatarTelefone } from "@/function/Mask/telefone-whatsapp"
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso"
-import { Box, Divider, Flex, chakra, Heading, IconButton, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, Button, useDisclosure, FormControl, FormLabel, GridItem, Input, SimpleGrid, Textarea, Select, Link, Switch } from "@chakra-ui/react"
+import { 
+	Box, 
+	Divider, 
+	Flex, 
+	chakra, 
+	Heading, 
+	IconButton, 
+	useToast, 
+	Modal, 
+	ModalOverlay, 
+	ModalContent, 
+	ModalHeader, 
+	ModalBody, 
+	Button, 
+	useDisclosure, 
+	FormControl, 
+	FormLabel, 
+	GridItem, 
+	Input, 
+	SimpleGrid, 
+	Textarea, 
+	Select, 
+	Link, 
+	Switch, 
+	Badge, 
+	Text, 
+	VStack, 
+	HStack, 
+	Icon, 
+	Table, 
+	Thead, 
+	Tbody, 
+	Tr, 
+	Th, 
+	Td, 
+	TableContainer,
+	Avatar,
+	Tooltip,
+	Card,
+	CardHeader,
+	CardBody,
+	Stack,
+	StackDivider
+} from "@chakra-ui/react"
 import axios from "axios"
 import { parseISO, differenceInDays } from "date-fns"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import { FiEdit3, FiPlusCircle } from "react-icons/fi"
+import { FiEdit3, FiPlusCircle, FiPhone, FiMail, FiMapPin, FiUser, FiCalendar, FiDollarSign, FiClock, FiFileText } from "react-icons/fi"
+import { FaWhatsapp } from "react-icons/fa"
 
 export default function Infos () {
 	const { data: session } = useSession()
@@ -218,7 +261,7 @@ export default function Infos () {
 	}
 
 	const Alert = encontrarObjetoMaisProximoComCor( Interacoes, vendedor )
-	const letra = Alert?.cor === 'yellow' ? 'black' : 'white'
+	const letra = 'white'
 
 	const handleMouseEnter = ( i: any ) => {
 		setIsHovered( true )
@@ -232,716 +275,465 @@ export default function Infos () {
 
 	return (
 		<>
-			<Box minW={ '100%' } minH={ '100vh' } overflow={ 'auto' } bg={ 'gray.800' } p={ 5 } fontSize={ '0.9rem' }>
-				<Flex flexDir={ 'row' } w={ '100%' } h={ '10%' } p={ 5 } justifyContent={ 'space-between' } alignItems={ 'center' }>
-					<Flex gap={ 5 } alignItems={ 'center' }>
-						<Box><BtmRetorno Url="/empresas" /></Box>
-						<Heading>{ Nome }</Heading>
-					</Flex>
-					<IconButton
-						color={ 'white' }
-						onClick={ () => router.push( `/empresas/atualizar/${ ID }` ) }
-						colorScheme='messenger'
-						aria-label='Editar Empresa'
-						icon={ <FiEdit3 size={ '27px' } /> }
-					/>
+			<Box minW="100%" minH="100vh" bg="gray.900" color="white" p={{ base: 4, md: 8 }}>
+				{/* Header Section */}
+				<Flex 
+					flexDir={{ base: 'column', md: 'row' }} 
+					justifyContent="space-between" 
+					alignItems="center" 
+					mb={8} 
+					gap={{ base: 6, md: 4 }}
+				>
+					<HStack spacing={4} align="center" justify={{ base: 'center', md: 'flex-start' }} w="full">
+						<VStack align={{ base: 'center', md: 'flex-start' }} spacing={0}>
+							<Heading size="lg" color="blue.300" textAlign={{ base: 'center', md: 'left' }}>{Nome}</Heading>
+							<HStack mt={1} justify={{ base: 'center', md: 'flex-start' }}>
+								<Badge colorScheme="blue" variant="subtle" fontSize="0.7rem" rounded="full" px={2}>
+									{MaskCnpj(CNPJ)}
+								</Badge>
+								{purchaseFrequency && (
+									<Badge colorScheme="purple" variant="outline" fontSize="0.7rem" rounded="full" px={2}>
+										{purchaseFrequency}
+									</Badge>
+								)}
+							</HStack>
+						</VStack>
+					</HStack>
+					<Button
+						leftIcon={<FiEdit3 />}
+						colorScheme="blue"
+						variant="solid"
+						size="sm"
+						px={8}
+						onClick={() => router.push(`/empresas/atualizar/${ID}`)}
+						shadow="md"
+					>
+						Editar Empresa
+					</Button>
 				</Flex>
-				{ session?.user.pemission === 'Adm' && (
-					<FormControl my={ 3 }>
-						<Flex 
-							flexDir={ { base: 'column', md: 'row' } } 
-							gap={ { base: 4, md: 5 } } 
-							alignItems={ { base: 'stretch', md: 'flex-start' } }
-							justifyContent={ { base: 'flex-start', md: 'space-around' } }
-							flexWrap="wrap"
-						>
-							<Box flex={ { base: '1 1 100%', md: '1 1 0' } } minW={ { base: '100%', md: '200px' } }>
-								<FormLabel 
-									color={ 'white' } 
-									fontSize={ '0.8rem' } 
-									fontWeight="md"
-									mb={ 2 }
-								>
-									Vendedor
-								</FormLabel>
-								<Select
-									size='sm'
-									rounded={ 8 }
-									color="white"
-									bg='gray.800'
-									borderColor="gray.600"
-									focusBorderColor="blue.400"
-									defaultValue={ vendedorId }
-									onChange={ ( e ) => {
-										const selectedUser: any = users.find( ( user: any ) => user.id === Number( e.target.value ) )
-										setVendedor( selectedUser?.username || '' )
-										setCurrentCompanyUser( selectedUser || null )
-										setVendedorId( e.target.value )
-									} }
-								>
-									<option value="" style={ { backgroundColor: "#1A202C" } }>Nenhum</option>
-									{ users.map( ( user: any ) => (
-										<option
-											style={ { backgroundColor: "#1A202C" } }
-											key={ user.id }
-											value={ user.id }
-										>
-											{ user.username }
-										</option>
-									) ) }
-								</Select>
-							</Box>
-							<Box flex={ { base: '1 1 100%', md: '1 1 0' } } minW={ { base: '100%', md: '200px' } }>
-								<FormLabel 
-									color={ 'white' } 
-									fontSize={ '0.8rem' } 
-									fontWeight="md"
-									mb={ 2 }
-								>
-									Máximo prazo de pagamento (dias)
-								</FormLabel>
-								<Input
-									size='sm'
-									rounded={ 8 }
-									color="white"
-									bg='gray.800'
-									borderColor="gray.600"
-									focusBorderColor="blue.400"
-									value={ maxPg || '' }
-									onChange={ ( e ) => setMaxPg( e.target.value ) }
-									type="number"
-								/>
-							</Box>
-							<Box flex={ { base: '1 1 100%', md: '1 1 0' } } minW={ { base: '100%', md: '200px' } }>
-								<FormLabel 
-									color={ 'white' } 
-									fontSize={ '0.8rem' } 
-									fontWeight="md"
-									mb={ 2 }
-								>
-									Frequência de compra
-								</FormLabel>
-								<Select
-									size='sm'
-									rounded={ 8 }
-									color="white"
-									bg='gray.800'
-									borderColor="gray.600"
-									focusBorderColor="blue.400"
-									value={ purchaseFrequency || '' }
-									onChange={ ( e ) => setPurchaseFrequency( e.target.value ) }
-								>
-									<option value="" style={ { backgroundColor: "#1A202C" } }>Selecione</option>
-									<option value="Mensalmente" style={ { backgroundColor: "#1A202C" } }>Mensalmente</option>
-									<option value="Eventualmente" style={ { backgroundColor: "#1A202C" } }>Eventualmente</option>
-									<option value="Raramente" style={ { backgroundColor: "#1A202C" } }>Raramente</option>
-								</Select>
-							</Box>
-						</Flex>
-						<Flex 
-							justifyContent={ { base: 'stretch', md: 'flex-end' } } 
-							mt={ { base: 4, md: 6 } }
-							w="100%"
-						>
-							<Button
-								size='md'
-								rounded={ 8 }
-								colorScheme='messenger'
-								w={ { base: '100%', md: 'auto' } }
-								minW={ { base: '100%', md: '150px' } }
-								onClick={ async () => {
-									try {
-										const request = await axios.put( `/api/refactory/companies`, {
-											id: ID,
-											user: vendedorId ? {
-												id: parseInt( vendedorId )
-											} : null,
-											vendedor: vendedor,
-											maxPg: maxPg,
-											purchaseFrequency: purchaseFrequency || null
-										} )
-										if ( request.status === 200 ) {
-											toast( {
-												title: 'Sucesso.',
-												description: "Dados atualizados com sucesso",
-												status: 'success',
-												duration: 9000,
-												isClosable: true,
-											} )
-										}
-									} catch ( error ) {
-										console.error( error )
-										toast( {
-											title: 'Erro.',
-											description: "Erro ao atualizar dados",
-											status: 'error',
-											duration: 9000,
-											isClosable: true,
-										} )
-									}
-								} }
-							>
-								Atualizar
-							</Button>
-						</Flex>
-					</FormControl>
-				) }
 
-				{/* colunas */ }
-				<Flex w={ '100%' } h={ '90%' } flexDir={ 'column' } gap={ 3 }>
-					{/* Últimos Negócios e Últimas Interações lado a lado */ }
-					<Flex w={ '100%' } gap={ 3 }>
-					{/* últimos negocios - esquerda 50% */ }
-					<Box w={ '50%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
-						<Box><Heading size={ 'md' } mb={ 4 } color="white">Últimos Negocios</Heading></Box>
-						<Box
-							overflowX="auto"
-							overflowY="auto"
-							maxH="400px"
-							sx={ {
-								'&::-webkit-scrollbar': {
-									width: '8px',
-									height: '8px',
-								},
-								'&::-webkit-scrollbar-track': {
-									background: '#1A202C',
-									borderRadius: '4px',
-								},
-								'&::-webkit-scrollbar-thumb': {
-									background: '#4A5568',
-									borderRadius: '4px',
-								},
-								'&::-webkit-scrollbar-thumb:hover': {
-									background: '#718096',
-								},
-							} }
-						>
-							<table style={ { width: '100%', borderCollapse: 'separate', borderSpacing: 0 } }>
-								<thead style={ { position: 'sticky', top: 0, zIndex: 10, background: '#2d3748' } }>
-									<tr>
-										<th style={ {
-											textAlign: 'center',
-											fontWeight: 'bold',
-											fontSize: '0.875rem',
-											padding: '0.75rem 0.5rem',
-											borderBottom: '2px solid #4A5568',
-											color: 'white',
-											textTransform: 'uppercase',
-											letterSpacing: '0.05em'
-										} }>Data</th>
-										<th style={ {
-											textAlign: 'center',
-											fontWeight: 'bold',
-											fontSize: '0.875rem',
-											padding: '0.75rem 0.5rem',
-											borderBottom: '2px solid #4A5568',
-											color: 'white',
-											textTransform: 'uppercase',
-											letterSpacing: '0.05em'
-										} }>Vendedor</th>
-										<th style={ {
-											textAlign: 'center',
-											fontWeight: 'bold',
-											fontSize: '0.875rem',
-											padding: '0.75rem 0.5rem',
-											borderBottom: '2px solid #4A5568',
-											color: 'white',
-											textTransform: 'uppercase',
-											letterSpacing: '0.05em'
-										} }>Duração</th>
-										<th style={ {
-											textAlign: 'center',
-											fontWeight: 'bold',
-											fontSize: '0.875rem',
-											padding: '0.75rem 0.5rem',
-											borderBottom: '2px solid #4A5568',
-											color: 'white',
-											textTransform: 'uppercase',
-											letterSpacing: '0.05em'
-										} }>Valor</th>
-									</tr>
-								</thead>
-								<tbody>
-									{ Negocio && Negocio.length > 0 ? Negocio.map( ( i: any, index: number ) => {
-										if ( !i || !i.attributes ) return null
-
-										// Busca vendedor
-										const vendedor = i.attributes.vendedor?.data?.attributes?.username
-											|| i.attributes.vendedor_name
-											|| '-'
-
-										// Busca dados dos pedidos para o valor
-										const pedidos = i.attributes.pedidos?.data || []
-										const primeiroPedido = pedidos.length > 0 ? pedidos[ 0 ] : null
-
-										// Valor pode vir de Budget ou totalGeral do pedido
-										const valorBudget = i.attributes?.Budget
-											? i.attributes.Budget.toString().replace( /\./g, '' ).replace( ',', '.' )
-											: null
-
-										const valorPedido = primeiroPedido?.attributes?.totalGeral
-											? primeiroPedido.attributes.totalGeral.toString().replace( /\./g, '' ).replace( ',', '.' )
-											: null
-
-										const valor = valorBudget
-											? parseFloat( valorBudget )
-											: valorPedido
-												? parseFloat( valorPedido )
-												: null
-
-										// Data de conclusão
-										const dataConclusao = i.attributes?.date_conclucao
-											? parseISO( i.attributes.date_conclucao ).toLocaleDateString( 'pt-BR' )
-											: '-'
-
-										// Calcula duração em dias entre criação e conclusão (inclusivo)
-										let duracao = '-'
-										if ( i.attributes?.date_conclucao && i.attributes?.createdAt ) {
-											try {
-												const dataCriacao = parseISO( i.attributes.createdAt )
-												const dataConclucao = parseISO( i.attributes.date_conclucao )
-												const dias = differenceInDays( dataConclucao, dataCriacao )
-												// Adiciona 1 para contagem inclusiva (mesmo dia = 1, dia seguinte = 2, etc)
-												const duracaoInclusiva = dias >= 0 ? dias + 1 : 0
-												duracao = duracaoInclusiva > 0
-													? `${ duracaoInclusiva } ${ duracaoInclusiva === 1 ? 'dia' : 'dias' }`
-													: '-'
-											} catch ( error ) {
-												duracao = '-'
-											}
-										}
-
-										const color = i.attributes?.etapa === 6 && i.attributes?.andamento === 1
-											? '#FC8181'
-											: i.attributes?.etapa === 6 && i.attributes?.andamento === 5
-												? '#68D391'
-												: '#F6E05E'
-
-										const IndexLista = `${ index }`
-										const isRowHovered = isHovered && ItenIndex === IndexLista
-
-										return (
-											<tr
-												key={ `negocio-${ i.id }` }
-												style={ {
-													backgroundColor: isRowHovered ? '#ffffff15' : 'transparent',
-													cursor: 'pointer',
-													transition: 'background-color 0.2s ease',
-													borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-												} }
-												onMouseEnter={ () => handleMouseEnter( index ) }
-												onMouseLeave={ handleMouseLeave }
-												onClick={ () => router.push( `/negocios/${ i.id }` ) }
-											>
-												<td style={ {
-													textAlign: 'center',
-													color: color,
-													padding: '0.75rem 0.5rem',
-													fontSize: '0.875rem'
-												} }>{ dataConclusao }</td>
-												<td style={ {
-													textAlign: 'center',
-													color: vendedor !== '-' ? color : '#9CA3AF',
-													padding: '0.75rem 0.5rem',
-													fontSize: '0.875rem'
-												} }>{ vendedor }</td>
-												<td style={ {
-													textAlign: 'center',
-													color: duracao !== '-' ? color : '#9CA3AF',
-													padding: '0.75rem 0.5rem',
-													fontSize: '0.875rem'
-												} }>{ duracao }</td>
-												<td style={ {
-													textAlign: 'center',
-													color: valor ? color : '#9CA3AF',
-													padding: '0.75rem 0.5rem',
-													fontSize: '0.875rem',
-													fontWeight: '600'
-												} }>{ valor ? valor.toLocaleString( 'pt-BR', { style: 'currency', currency: 'BRL' } ) : '-' }</td>
-											</tr>
-										)
-									} ) : (
-										<tr>
-											<td colSpan={ 4 } style={ {
-												textAlign: 'center',
-												padding: '2rem',
-												color: '#9CA3AF',
-												fontSize: '0.875rem'
-											} }>
-												Nenhum negócio encontrado
-											</td>
-										</tr>
-									) }
-								</tbody>
-							</table>
-						</Box>
-					</Box>
-
-					{/* interações - direita 50% */ }
-					<Flex flexDir={ 'column' } justifyContent={ 'space-between' } w={ '50%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
-						<Flex flexDir={ 'row' } justifyContent={ 'space-between' } alignItems={ 'center' } pb={ 3 }>
-							<Heading size={ 'md' }>
-								Últimas Interações
+				{/* Admin Controls */}
+				{session?.user.pemission === 'Adm' && (
+					<Card bg="gray.800" borderColor="gray.700" borderWidth="1px" mb={8} shadow="xl" overflow="hidden">
+						<CardHeader bg="gray.750" py={3} borderBottomWidth="1px" borderColor="gray.700">
+							<Heading size="xs" textTransform="uppercase" letterSpacing="wider" color="gray.400">
+								Controles de Administrador
 							</Heading>
-							<IconButton
-								rounded={ 20 }
-								colorScheme='whatsapp'
-								aria-label='Adicionar Interação'
-								icon={ <FiPlusCircle size={ '27px' } /> }
-								onClick={ onOpen }
-							/>
-						</Flex>
-						<Flex flex={ 1 } overflowY={ 'auto' } flexDir={ 'column' } gap={ 3 } maxH="350px">
-							{ Interacoes && Interacoes.map( ( i: any ) => {
-								if ( !i || !i.attributes ) return null
+						</CardHeader>
+						<CardBody>
+							<SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} alignItems="flex-end" textAlign="center">
+								<FormControl>
+									<FormLabel fontSize="xs" fontWeight="bold" color="gray.100" textAlign="center">Vendedor Responsável</FormLabel>
+									<Select
+										size="sm"
+										bg="gray.700"
+										borderColor="gray.600"
+										color="white"
+										defaultValue={vendedorId}
+										textAlign="center"
+										onChange={(e) => {
+											const selectedUser: any = users.find((user: any) => user.id === Number(e.target.value))
+											setVendedor(selectedUser?.username || '')
+											setCurrentCompanyUser(selectedUser || null)
+											setVendedorId(e.target.value)
+										}}
+									>
+										<option value="" style={{ backgroundColor: "#2D3748", color: "white" }}>Nenhum</option>
+										{users.map((user: any) => (
+											<option key={user.id} value={user.id} style={{ backgroundColor: "#2D3748", color: "white" }}>
+												{user.username}
+											</option>
+										))}
+									</Select>
+								</FormControl>
 
-								const [ obj ] = ObjContato.filter( ( o: any ) => o.id == i.attributes?.objetivo ).map( ( d: any ) => d.title ) || [ "Sem objetivo" ]
-								const [ tipo ] = TipoContato.filter( ( t: any ) => t.id == i.attributes?.tipo ).map( ( d: any ) => d.title ) || [ "Sem tipo" ]
-								const date = i.attributes?.proxima ? new Date( parseISO( i.attributes.proxima ) ) : new Date()
+								<FormControl>
+									<FormLabel fontSize="xs" fontWeight="bold" color="gray.100" textAlign="center">Prazo Máximo (dias)</FormLabel>
+									<Input
+										size="sm"
+										bg="gray.700"
+										borderColor="gray.600"
+										color="white"
+										value={maxPg || ''}
+										textAlign="center"
+										onChange={(e) => setMaxPg(e.target.value)}
+										type="number"
+									/>
+								</FormControl>
 
-								// Verificar se o objeto vendedor e seus atributos existem antes de acessá-los
-								const vendedorNome = i.attributes?.vendedor?.data?.attributes?.nome || "Vendedor não definido"
+								<FormControl>
+									<FormLabel fontSize="xs" fontWeight="bold" color="gray.100" textAlign="center">Frequência de Compra</FormLabel>
+									<Select
+										size="sm"
+										bg="gray.700"
+										borderColor="gray.600"
+										color="white"
+										value={purchaseFrequency || ''}
+										textAlign="center"
+										onChange={(e) => setPurchaseFrequency(e.target.value)}
+									>
+										<option value="" style={{ backgroundColor: "#2D3748", color: "white" }}>Selecione</option>
+										<option value="Mensalmente" style={{ backgroundColor: "#2D3748", color: "white" }}>Mensalmente</option>
+										<option value="Eventualmente" style={{ backgroundColor: "#2D3748", color: "white" }}>Eventualmente</option>
+										<option value="Raramente" style={{ backgroundColor: "#2D3748", color: "white" }}>Raramente</option>
+									</Select>
+								</FormControl>
+							</SimpleGrid>
+							<Flex justifyContent="center" mt={6}>
+								<Button
+									size="sm"
+									colorScheme="green"
+									px={8}
+									onClick={async () => {
+										try {
+											const request = await axios.put(`/api/refactory/companies`, {
+												id: ID,
+												user: vendedorId ? { id: parseInt(vendedorId) } : null,
+												vendedor: vendedor,
+												maxPg: maxPg,
+												purchaseFrequency: purchaseFrequency || null
+											})
+											if (request.status === 200) {
+												toast({ title: 'Sucesso.', description: "Dados atualizados com sucesso", status: 'success', duration: 5000, isClosable: true })
+											}
+										} catch (error) {
+											console.error(error)
+											toast({ title: 'Erro.', description: "Erro ao atualizar dados", status: 'error', duration: 5000, isClosable: true })
+										}
+									}}
+								>
+									Salvar Alterações
+								</Button>
+							</Flex>
+						</CardBody>
+					</Card>
+				)}
 
-								return (
-									<div key={ i.id }>
-										<Box bg={ 'gray.100' } rounded={ 10 } px={ 5 } py={ 2 } color={ 'black' } fontSize={ '0.7rem' }>
-											<Heading size={ 'sm' }>{ obj }</Heading>
-											<chakra.p fontSize={ '0.8rem' }>{ i.attributes?.descricao }</chakra.p>
-											<Flex justifyContent={ 'space-between' } mt={ 1 }>
-												<chakra.span p={ '0.1rem' } px={ '0.3rem' } color={ 'white' } bg={ 'blue.400' }>{ tipo }</chakra.span>
-												{ session?.user.pemission === 'Adm' && ( <chakra.p>{ vendedorNome }</chakra.p> ) }
-												<chakra.p textDecor={ 'underline' }>{ date.toLocaleDateString() }</chakra.p>
-											</Flex>
-										</Box>
-									</div>
-								)
-							} ) }
+				{/* Main Content Grid */}
+				<SimpleGrid columns={{ base: 1, xl: 2 }} spacing={8}>
+					{/* Left Column: Businesses and Interactions */}
+					<Stack spacing={8}>
+						{/* Negócios Card */}
+						<Card bg="gray.800" borderColor="gray.700" borderWidth="1px" shadow="xl">
+							<CardHeader borderBottomWidth="1px" borderColor="gray.700" py={4}>
+								<Flex justify="space-between" align="center">
+									<Heading size="md" color="white">Últimos Negócios</Heading>
+									<Icon as={FiDollarSign} color="green.400" />
+								</Flex>
+							</CardHeader>
+							<CardBody p={0}>
+								<TableContainer>
+									<Table variant="simple" size="sm">
+										<Thead bg="gray.750">
+											<Tr>
+												<Th color="gray.200">Data</Th>
+												<Th color="gray.200">Vendedor</Th>
+												<Th color="gray.200" textAlign="center">Duração</Th>
+												<Th color="gray.200" isNumeric>Valor</Th>
+											</Tr>
+										</Thead>
+										<Tbody>
+											{Negocio && Negocio.length > 0 ? Negocio.map((i: any) => {
+												if (!i || !i.attributes) return null
+												const vend = i.attributes.vendedor?.data?.attributes?.username || i.attributes.vendedor_name || '-'
+												const pedidos = i.attributes.pedidos?.data || []
+												const pPedido = pedidos.length > 0 ? pedidos[0] : null
+												const valBudget = i.attributes?.Budget ? parseFloat(i.attributes.Budget.toString().replace(/\./g, '').replace(',', '.')) : null
+												const valPedido = pPedido?.attributes?.totalGeral ? parseFloat(pPedido.attributes.totalGeral.toString().replace(/\./g, '').replace(',', '.')) : null
+												const valor = valBudget || valPedido || null
+												const dConclucao = i.attributes?.date_conclucao ? parseISO(i.attributes.date_conclucao).toLocaleDateString('pt-BR') : '-'
+												
+												let duracao = '-'
+												if (i.attributes?.date_conclucao && i.attributes?.createdAt) {
+													const dCriacao = parseISO(i.attributes.createdAt)
+													const dias = differenceInDays(parseISO(i.attributes.date_conclucao), dCriacao)
+													const dur = dias >= 0 ? dias + 1 : 0
+													duracao = dur > 0 ? `${dur} ${dur === 1 ? 'dia' : 'dias'}` : '-'
+												}
 
-						</Flex>
-						<Box mx={ 'auto' } mt={ 3 }>
-							{ !!Alert && (
-								<>
-									<Box bg={ Alert?.cor } p={ 1 }>
-										<chakra.p color={ letra }>{ Alert?.info } { Alert?.data?.toLocaleDateString() }</chakra.p>
-									</Box>
-								</>
-							) }
-						</Box>
-					</Flex>
-					</Flex>
+												const statusColor = i.attributes?.etapa === 6 && i.attributes?.andamento === 1 ? 'red.400' : 
+																   i.attributes?.etapa === 6 && i.attributes?.andamento === 5 ? 'green.400' : 'yellow.400'
 
-					<Flex w={ '100%' } h={ '100%' } justifyContent={ 'space-between' }>
-						<Flex h={ '100%' } w={ '50%' } flexDir={ 'column' } gap={ 3 } px={ 3 }>
+												return (
+													<Tr 
+														key={i.id} 
+														_hover={{ bg: 'whiteAlpha.50' }} 
+														cursor="pointer" 
+														onClick={() => router.push(`/negocios/${i.id}`)}
+													>
+														<Td fontSize="xs" color="white">{dConclucao}</Td>
+														<Td fontSize="xs" fontWeight="medium" color="white">{vend}</Td>
+														<Td fontSize="xs" textAlign="center" color="white">{duracao}</Td>
+														<Td fontSize="xs" isNumeric fontWeight="bold" color={statusColor}>
+															{valor ? valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-'}
+														</Td>
+													</Tr>
+												)
+											}) : (
+												<Tr><Td colSpan={4} textAlign="center" py={8} color="gray.400">Nenhum negócio encontrado</Td></Tr>
+											)}
+										</Tbody>
+									</Table>
+								</TableContainer>
+							</CardBody>
+						</Card>
 
-							{/* constato */ }
-							<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ [ 3, 3, 5 ] }>
-								<Box><Heading size={ 'md' }>Contatos</Heading></Box>
-								<Box px={ [ 1, 2, 3, 5 ] } py={ 3 }>
-
-									{ !!Representantes && Representantes.map( ( item: any, index: number ) => {
-										const telefone = !item.attributes?.whatsapp ? item.attributes?.telefone : item.attributes?.whatsapp
+						{/* Interações Card */}
+						<Card bg="gray.800" borderColor="gray.700" borderWidth="1px" shadow="xl">
+							<CardHeader borderBottomWidth="1px" borderColor="gray.700" py={4}>
+								<Flex justify="space-between" align="center">
+									<Heading size="md" color="white">Últimas Interações</Heading>
+									<Button
+										leftIcon={<FiPlusCircle />}
+										colorScheme="green"
+										size="sm"
+										rounded="md"
+										onClick={onOpen}
+									>
+										Nova
+									</Button>
+								</Flex>
+							</CardHeader>
+							<CardBody maxH="500px" overflowY="auto" sx={{
+								'&::-webkit-scrollbar': { width: '6px' },
+								'&::-webkit-scrollbar-track': { background: 'transparent' },
+								'&::-webkit-scrollbar-thumb': { background: 'gray.600', borderRadius: '3px' },
+							}}>
+								<Stack divider={<StackDivider borderColor="gray.700" />} spacing={4}>
+									{Interacoes && Interacoes.length > 0 ? Interacoes.map((i: any) => {
+										if (!i || !i.attributes) return null
+										const obj = ObjContato.find(o => o.id == i.attributes?.objetivo)?.title || "Sem objetivo"
+										const tipo = TipoContato.find(t => t.id == i.attributes?.tipo)?.title || "Sem tipo"
+										const date = i.attributes?.proxima ? new Date(parseISO(i.attributes.proxima)) : new Date()
+										const vName = i.attributes?.vendedor?.data?.attributes?.nome || i.attributes?.vendedor_name || "Vendedor"
 
 										return (
-											<Box key={ `representante-${ index }` }>
-												<Box>
-													<Heading size={ 'sm' }>{ item.attributes?.nome }</Heading>
-													<Flex w={ '100%' } p={ 1 }>
-														<Box w={ '50%' }>
-															<Flex gap={ 3 }>
-																<chakra.p>Cargo:</chakra.p>
-																<chakra.p>{ item.attributes?.cargo }</chakra.p>
-															</Flex>
-															<Flex gap={ 3 }>
-																<chakra.p>Departamento:</chakra.p>
-																<chakra.p>{ item.attributes?.departamento }</chakra.p>
-															</Flex>
-														</Box>
-														<Box w={ '50%' }>
-															<Flex gap={ 3 }>
-																<chakra.p>Telefone:</chakra.p>
-																{ telefone?.length === 11 && ( <chakra.a onClick={ () => window.open( `https://wa.me//55${ item.attributes?.whatsapp }?text=Ola%20${ item.attributes?.nome }.%20%20Tudo%20bem?!`, '_blank' ) } color={ 'blue.100' } cursor={ 'pointer' } _hover={ { color: 'blue.500' } } textDecor={ 'underline' }>{ formatarTelefone( telefone ) }</chakra.a> ) }
-																{ telefone?.length < 11 && ( <chakra.p>{ telefone?.length }{ formatarTelefone( telefone ) }</chakra.p> ) }
-															</Flex>
-															<Flex gap={ 3 }>
-																<chakra.p>E-mail:</chakra.p>
-																<Link href={ `mailto:${ item.attributes?.email }` } _hover={ { color: 'blue.500' } } textDecor={ 'underline' } color={ 'blue.100' }>{ item.attributes?.email }</Link>
-															</Flex>
-														</Box>
-													</Flex>
-												</Box>
-												{ Representantes.length > 1 && (
-													<>
-														<Divider mb={ 5 } />
-													</>
-												) }
+											<Box key={i.id} p={2}>
+												<Flex justify="space-between" align="flex-start" mb={2}>
+													<VStack align="flex-start" spacing={0}>
+														<Text fontWeight="bold" color="blue.300" fontSize="sm">{obj}</Text>
+														<Text fontSize="xs" color="gray.400">{vName}</Text>
+													</VStack>
+													<Badge colorScheme="blue" variant="subtle" fontSize="2xs">{tipo}</Badge>
+												</Flex>
+												<Text fontSize="xs" color="gray.300" mb={2} noOfLines={3}>{i.attributes?.descricao}</Text>
+												<Flex justify="flex-end">
+													<HStack spacing={1} color="gray.400">
+														<Icon as={FiCalendar} size={10} />
+														<Text fontSize="2xs">{date.toLocaleDateString()}</Text>
+													</HStack>
+												</Flex>
 											</Box>
 										)
-									} ) }
-
+									}) : (
+										<Text textAlign="center" py={8} color="gray.400">Nenhuma interação registrada</Text>
+									)}
+								</Stack>
+							</CardBody>
+							{Alert && (
+								<Box bg={Alert.cor === 'yellow' ? 'yellow.500' : Alert.cor} p={2} textAlign="center">
+									<Text fontSize="xs" fontWeight="bold" color="white">
+										{Alert.info} {Alert.data?.toLocaleDateString()}
+									</Text>
 								</Box>
-							</Box>
+							)}
+						</Card>
+					</Stack>
 
-							{/* dados cadastrais */ }
-							<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ [ 3, 3, 5 ] }>
-								<Box><Heading size={ 'md' }>Dados Cadastrais</Heading></Box>
-								<Flex w={ '100%' } px={ [ 1, 2, 3, 5 ] } py={ [ 0, 3, 1, 0, 5, 5 ] } fontSize={ '15px' }>
-									<table style={ { width: '100%' } }>
-										<tbody>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>Razão Social: </td>
-												<td> { Razao }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>CNPJ: </td>
-												<td>{ MaskCnpj( CNPJ ) }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>Logradouro: </td>
-												<td>{ Endereço }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>N°: </td>
-												<td>{ Numero }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>Bairro: </td>
-												<td>{ Bairro }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>Cep; </td>
-												<td>{ MaskCep( CEP ) }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>Cidade: </td>
-												<td>{ Cidade }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>Uf: </td>
-												<td>{ Uf }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>Telefone: </td>
-												<td>{ formatarTelefone( Telefone ) }</td>
-											</tr>
-											<tr>
-												<td style={ { fontWeight: 'bold' } }>E-mail: </td>
-												<td>{ Email }</td>
-											</tr>
-										</tbody>
-									</table>
+					{/* Right Column: Contacts and Registration Info */}
+					<Stack spacing={8}>
+						{/* Contatos Card */}
+						<Card bg="gray.800" borderColor="gray.700" borderWidth="1px" shadow="xl">
+							<CardHeader borderBottomWidth="1px" borderColor="gray.700" py={4}>
+								<Flex justify="space-between" align="center">
+									<Heading size="md" color="white">Contatos</Heading>
+									<Icon as={FiUser} color="blue.400" />
 								</Flex>
-							</Box>
+							</CardHeader>
+							<CardBody p={0}>
+								<Stack divider={<StackDivider borderColor="gray.700" />} spacing={0}>
+									{Representantes && Representantes.length > 0 ? Representantes.map((item: any, index: number) => {
+										const tel = item.attributes?.whatsapp || item.attributes?.telefone
+										return (
+											<Box key={index} p={4} _hover={{ bg: 'whiteAlpha.50' }}>
+												<Flex align="center" gap={4} mb={3}>
+													<Avatar size="sm" name={item.attributes?.nome} bg="blue.600" />
+													<VStack align="flex-start" spacing={0}>
+														<Text fontWeight="bold" fontSize="sm" color="white">{item.attributes?.nome}</Text>
+														<Text fontSize="xs" color="gray.400">{item.attributes?.cargo} • {item.attributes?.departamento}</Text>
+													</VStack>
+												</Flex>
+												<SimpleGrid columns={{ base: 1, sm: 2 }} spacing={2}>
+													<HStack spacing={2} color="blue.200">
+														<Icon as={tel?.length === 11 ? FaWhatsapp : FiPhone} />
+														{tel?.length === 11 ? (
+															<Link 
+																fontSize="xs" 
+																onClick={() => window.open(`https://wa.me//55${tel}`, '_blank')}
+																_hover={{ color: 'blue.400' }}
+															>
+																{formatarTelefone(tel)}
+															</Link>
+														) : (
+															<Text fontSize="xs">{formatarTelefone(tel) || 'Não informado'}</Text>
+														)}
+													</HStack>
+													<HStack spacing={2} color="blue.200">
+														<Icon as={FiMail} />
+														<Link 
+															href={`mailto:${item.attributes?.email}`} 
+															fontSize="xs"
+															isTruncated
+															_hover={{ color: 'blue.400' }}
+														>
+															{item.attributes?.email || 'Não informado'}
+														</Link>
+													</HStack>
+												</SimpleGrid>
+											</Box>
+										)
+									}) : (
+										<Text textAlign="center" py={8} color="gray.400">Nenhum contato cadastrado</Text>
+									)}
+								</Stack>
+							</CardBody>
+						</Card>
 
-							{/* historico */ }
-							<Box w={ '100%' } bg={ '#2d3748' } rounded={ 16 } p={ 5 }>
-								<Box><Heading size={ 'md' }>Historico</Heading></Box>
-								<Flex w={ '100%' } h={ '80%' } overflowY={ 'auto' } gap={ 3 } flexDir={ 'column' }>
-									{/* {Historico.map((item: any) => {
-
-                  const Data = new Date(item.date)
-                  return (
-                    <>
-                      <Box>
-                        <Box>{Data.toLocaleDateString()}</Box>
-                        <Box>Vendedor: {item.vendedor}</Box>
-                        <Box>Mensagem: {item.msg}</Box>
-                      </Box>
-
-                    </>
-                  )
-                })} */}
+						{/* Dados Cadastrais Card */}
+						<Card bg="gray.800" borderColor="gray.700" borderWidth="1px" shadow="xl">
+							<CardHeader borderBottomWidth="1px" borderColor="gray.700" py={4}>
+								<Flex justify="space-between" align="center">
+									<Heading size="md" color="white">Dados Cadastrais</Heading>
+									<Icon as={FiFileText} color="orange.400" />
 								</Flex>
-							</Box>
-
-						</Flex>
-					</Flex>
-				</Flex>
+							</CardHeader>
+							<CardBody>
+								<Stack spacing={3}>
+									<HStack justify="space-between" wrap="wrap">
+										<Text color="gray.400" fontSize="xs" fontWeight="bold" textTransform="uppercase">Razão Social</Text>
+										<Text fontSize="xs" textAlign="right" maxW="70%" color="white">{Razao}</Text>
+									</HStack>
+									<Divider borderColor="gray.700" />
+									<HStack justify="space-between">
+										<Text color="gray.400" fontSize="xs" fontWeight="bold" textTransform="uppercase">CNPJ</Text>
+										<Text fontSize="xs" color="white">{MaskCnpj(CNPJ)}</Text>
+									</HStack>
+									<Divider borderColor="gray.700" />
+									<HStack justify="space-between" align="flex-start">
+										<Text color="gray.400" fontSize="xs" fontWeight="bold" textTransform="uppercase">Endereço</Text>
+										<VStack align="flex-end" spacing={0}>
+											<Text fontSize="xs" textAlign="right" color="white">{Endereço}, {Numero}</Text>
+											<Text fontSize="xs" color="gray.400">{Bairro} • {MaskCep(CEP)}</Text>
+											<Text fontSize="xs" color="gray.400">{Cidade} - {Uf}</Text>
+										</VStack>
+									</HStack>
+									<Divider borderColor="gray.700" />
+									<HStack justify="space-between">
+										<Text color="gray.400" fontSize="xs" fontWeight="bold" textTransform="uppercase">Telefone Principal</Text>
+										<Text fontSize="xs" color="white">{formatarTelefone(Telefone)}</Text>
+									</HStack>
+									<Divider borderColor="gray.700" />
+									<HStack justify="space-between">
+										<Text color="gray.400" fontSize="xs" fontWeight="bold" textTransform="uppercase">E-mail Principal</Text>
+										<Text fontSize="xs" color="blue.300">{Email}</Text>
+									</HStack>
+								</Stack>
+							</CardBody>
+						</Card>
+					</Stack>
+				</SimpleGrid>
 			</Box>
-			<Modal closeOnOverlayClick={ false } isOpen={ isOpen } onClose={ onClose }>
-				<ModalOverlay
-					bg='blackAlpha.300'
-					backdropFilter='blur(10px) hue-rotate(90deg)'
-				/>
-				<ModalContent bg={ 'gray.600' }>
-					<ModalHeader>Nova Interação</ModalHeader>
-					<Divider />
-					<ModalBody mt={ 3 } pb={ 6 }>
 
-						<SimpleGrid
-							w={ '100%' }
-							columns={ 1 }
-							spacing={ 6 }
-						>
-
-							<SimpleGrid columns={ 12 } spacing={ 3 }>
-
-								<FormControl as={ GridItem } colSpan={ [ 12 ] }>
-									<FormLabel fontSize="xs" fontWeight="md">
-										Tipo de interação
-									</FormLabel>
+			<Modal closeOnOverlayClick={ false } isOpen={ isOpen } onClose={ onClose } size="lg">
+				<ModalOverlay backdropFilter='blur(4px)' />
+				<ModalContent bg="gray.800" color="white" borderRadius="xl">
+					<ModalHeader borderBottomWidth="1px" borderColor="gray.700">Nova Interação</ModalHeader>
+					<ModalBody py={6}>
+						<VStack spacing={6}>
+							<SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="100%">
+								<FormControl>
+									<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Tipo de Interação</FormLabel>
 									<Select
-										focusBorderColor="#ffff"
-										bg={ 'gray.600' }
-										shadow="sm"
-										size="xs"
-										w="full"
+										size="sm"
+										bg="gray.700"
+										borderColor="gray.600"
 										rounded="md"
-										onChange={ ( e ) => setTipo( e.target.value ) }
-										value={ Tipo }
+										onChange={(e) => setTipo(e.target.value)}
+										value={Tipo}
 									>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '1' }
-										>
-											Notas
-										</chakra.option>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '2' }
-										>
-											Mensagem de texto
-										</chakra.option>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '3' }
-										>
-											Chamada por voz
-										</chakra.option>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '4' }
-										>
-											Mensagem por e-mail
-										</chakra.option>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '5' }
-										>
-											Contato presencial
-										</chakra.option>
+										<option value="1" style={{ backgroundColor: '#2D3748' }}>Notas</option>
+										<option value="2" style={{ backgroundColor: '#2D3748' }}>Mensagem de texto</option>
+										<option value="3" style={{ backgroundColor: '#2D3748' }}>Chamada por voz</option>
+										<option value="4" style={{ backgroundColor: '#2D3748' }}>Mensagem por e-mail</option>
+										<option value="5" style={{ backgroundColor: '#2D3748' }}>Contato presencial</option>
 									</Select>
 								</FormControl>
 
-								<FormControl as={ GridItem } colSpan={ 12 }>
-									<FormLabel
-										fontSize="xs"
-										fontWeight="md"
-									>
-										Objetivo
-									</FormLabel>
+								<FormControl>
+									<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Objetivo</FormLabel>
 									<Select
-										focusBorderColor="#ffff"
-										bg={ 'gray.600' }
-										shadow="sm"
-										size="xs"
-										w="full"
+										size="sm"
+										bg="gray.700"
+										borderColor="gray.600"
 										rounded="md"
-										onChange={ ( e ) => setObjetivo( e.target.value ) }
-										value={ Objetivo }
+										onChange={(e) => setObjetivo(e.target.value)}
+										value={Objetivo}
 									>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '1' }
-										>
-											Sondar decisores
-										</chakra.option>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '2' }
-										>
-											Aproximação
-										</chakra.option>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '3' }
-										>
-											Sondar interesses
-										</chakra.option>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '4' }
-										>
-											Gerar negócio
-										</chakra.option>
-										<chakra.option
-											style={ { backgroundColor: '#4A5568' } }
-											value={ '5' }
-										>
-											Resolver problemas
-										</chakra.option>
+										<option value="1" style={{ backgroundColor: '#2D3748' }}>Sondar decisores</option>
+										<option value="2" style={{ backgroundColor: '#2D3748' }}>Aproximação</option>
+										<option value="3" style={{ backgroundColor: '#2D3748' }}>Sondar interesses</option>
+										<option value="4" style={{ backgroundColor: '#2D3748' }}>Gerar negócio</option>
+										<option value="5" style={{ backgroundColor: '#2D3748' }}>Resolver problemas</option>
 									</Select>
 								</FormControl>
-
-								<FormControl as={ GridItem } colSpan={ 12 }>
-									<Heading as={ GridItem } colSpan={ 12 } size="sd">
-										Resumo
-									</Heading>
-									<Box as={ GridItem } colSpan={ 12 } >
-										<Textarea
-											borderColor="white"
-											bg={ '#ffffff12' }
-											placeholder="Especifique aqui, todos os detalhes do cliente"
-											size="sm"
-											resize={ "none" }
-											rounded="md"
-											onChange={ ( e: any ) => setDescricao( e.target.value ) }
-											value={ Descricao }
-										/>
-									</Box>
-								</FormControl>
-
-								<FormControl as={ GridItem } colSpan={ 12 }>
-									<Heading as={ GridItem } colSpan={ 12 } size="sd">
-										Status de Contato
-									</Heading>
-									<Box as={ GridItem } colSpan={ 12 } >
-										<Switch
-											colorScheme='blue'
-											size='sm'
-											isChecked={ StatusAt }
-											onChange={ ( e ) => setStatusAt( e.target.checked ) }
-										/>
-									</Box>
-								</FormControl>
-
-								<FormControl as={ GridItem } colSpan={ 12 }>
-									<Flex w={ '100%' } alignItems={ 'flex-end' } justifyContent={ 'space-between' }>
-										<Box>
-											<FormLabel
-												htmlFor="cep"
-												fontSize="xs"
-												fontWeight="md"
-											>
-												Proximo Contato
-											</FormLabel>
-											<Input
-												type="date"
-												focusBorderColor="white"
-												shadow="sm"
-												size="xs"
-												w="full"
-												rounded="md"
-												onChange={ ( e ) => setProximo( e.target.value ) }
-												value={ Proximo }
-											/>
-										</Box>
-										<Flex h={ '100%' } gap={ 5 }>
-											<Button colorScheme='blue' onClick={ Save }>
-												Save
-											</Button>
-											<Button onClick={ onClose }>Cancel</Button>
-										</Flex>
-
-									</Flex>
-								</FormControl>
-
 							</SimpleGrid>
 
+							<FormControl>
+								<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Resumo da Interação</FormLabel>
+								<Textarea
+									size="sm"
+									bg="gray.700"
+									borderColor="gray.600"
+									placeholder="Especifique aqui os detalhes do contato..."
+									rows={4}
+									rounded="md"
+									onChange={(e) => setDescricao(e.target.value)}
+									value={Descricao}
+								/>
+							</FormControl>
 
-						</SimpleGrid>
+							<Flex w="100%" justify="space-between" align="center">
+								<FormControl w="auto">
+									<HStack>
+										<FormLabel mb="0" fontSize="xs" fontWeight="bold" color="gray.400">Status de Atendimento</FormLabel>
+										<Switch
+											colorScheme="blue"
+											isChecked={StatusAt}
+											onChange={(e) => setStatusAt(e.target.checked)}
+										/>
+									</HStack>
+								</FormControl>
 
+								<FormControl w="200px">
+									<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Próximo Contato</FormLabel>
+									<Input
+										type="date"
+										size="sm"
+										bg="gray.700"
+										borderColor="gray.600"
+										rounded="md"
+										onChange={(e) => setProximo(e.target.value)}
+										value={Proximo}
+									/>
+								</FormControl>
+							</Flex>
+
+							<HStack w="100%" spacing={4} pt={4} borderTopWidth="1px" borderColor="gray.700" justify="flex-end">
+								<Button variant="ghost" onClick={onClose} size="sm">Cancelar</Button>
+								<Button colorScheme="blue" onClick={Save} size="sm" px={8}>Salvar Interação</Button>
+							</HStack>
+						</VStack>
 					</ModalBody>
-
 				</ModalContent>
 			</Modal>
 		</>

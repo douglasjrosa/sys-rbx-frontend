@@ -1,14 +1,17 @@
-import { RenderCalendar } from '@/components/painel/calendario/render'
-import { SelectUser } from '@/components/painel/calendario/select/SelecUser'
+import { CalendarSkeleton, RenderCalendar } from '@/components/painel/calendario/render'
 import { SelectMonth } from '@/components/painel/calendario/select/selectMont'
 import { getAllDaysOfMonth } from '@/function/Datearray'
-import { Box, Flex, FormLabel, Heading, chakra } from '@chakra-ui/react'
+import { Box, Flex, FormLabel, Heading, chakra, Skeleton } from '@chakra-ui/react'
 import axios from 'axios'
 import { isSameDay, parseISO } from 'date-fns'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { getEffectiveUser } from '@/utils/pseudoUser'
+import { formatCompanyDisplayName } from '@/utils/formatCompanyName'
 
 const Painel: React.FC = () => {
+	const router = useRouter()
 	const { data: session } = useSession()
 	const [ date, setDate ] = useState<number>()
 	const [ User, setUser ] = useState<string>( '' )
@@ -25,14 +28,29 @@ const Painel: React.FC = () => {
 
 	const DateAtual = new Date()
 
-	if ( !User && session?.user.name ) {
-		setUser( session?.user.name )
-		setMes( DateAtual.getMonth() + 1 )
-		setYear( DateAtual.getFullYear() )
-	}
+	useEffect(() => {
+		if (router.isReady && session?.user) {
+			const { mes, ano } = router.query
+			if (mes) setMes(parseInt(mes as string))
+			else if (!Mes) setMes(DateAtual.getMonth() + 1)
+			if (ano) setYear(parseInt(ano as string))
+			else if (!Year) setYear(DateAtual.getFullYear())
+			setUser(getEffectiveUser(session.user))
+		}
+	}, [router.isReady, router.query, session?.user])
+
+	useEffect(() => {
+		const handler = () => {
+			if (session?.user) setUser(getEffectiveUser(session.user))
+		}
+		window.addEventListener('pseudoUserChange', handler)
+		return () => window.removeEventListener('pseudoUserChange', handler)
+	}, [session?.user])
 
 
 	useEffect( () => {
+		if ( !session?.user || !Mes || !Year ) return;
+
 		( async () => {
 			const daysOfMonth = await getAllDaysOfMonth( Mes, Year )
 			setCalendar( daysOfMonth.Dias )
@@ -54,8 +72,7 @@ const Painel: React.FC = () => {
 				}
 			}
 		} )()
-	}, [ Mes, User, Year, date ] )
-
+	}, [ Mes, User, Year, date, session?.user ] )
 
 
 	useEffect( () => {
@@ -105,73 +122,146 @@ const Painel: React.FC = () => {
 	}, [ calendar, data ] )
 
 	function handleDateChange ( month: any ) {
-		const data = month
-		setMes( data.month )
-		setYear( data.year )
+		router.push({
+			pathname: router.pathname,
+			query: { ...router.query, mes: month.month, ano: month.year }
+		}, undefined, { shallow: true })
 	}
 
-	function handleUserChange ( user: string ) {
-		setUser( user )
+	const parseCurrencyToNumber = (value: string) => {
+		if (!value) return 0;
+		const num = parseFloat(value.replace(/[^0-9,]/g, '').replace(',', '.'));
+		return isNaN(num) ? 0 : num;
 	}
+
+	const badgeWidth = { base: '100%', sm: '10rem', md: '12rem' }
+	const badgeHeight = '40px'
 
 	return (
-		<>
-			<Box h={ '100%' } bg={ 'gray.800' }>
-				<Flex px={ 5 } pt={ 2 } justifyContent={ 'space-between' } w={ '100%' }>
-					<Flex gap={ 16 }>
-						{ session?.user.pemission === 'Adm' && (
-							<>
-								<Box>
-									<SelectUser onValue={ handleUserChange } user={ User } />
-								</Box>
-							</>
-						) }
-						{ session?.user.pemission !== 'Adm' && (
-							<>
-								<Box>
-									<Heading pt={ 5 } size={ 'lg' }>{ session?.user.name }</Heading>
-								</Box>
-							</>
-						) }
-						<Box>
-							<SelectMonth onValue={ handleDateChange } />
-						</Box>
-					</Flex>
-					<Flex alignItems={ 'center' } gap={ 5 }>
-						<Flex flexDirection={ 'column' } justifyContent={ 'center' }>
-							<FormLabel textAlign={ 'center' } color={ 'white' }>Em Andamento</FormLabel>
-							<Flex w={ '8rem' } h={ '2rem' } py={ 1 } bg={ 'orange.400' } color={ 'white' } justifyContent={ 'center' } alignItems={ 'center' } rounded={ '1rem' }>
-								{/* <chakra.span>{somaCreate.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span> */ }
-								<chakra.span>{ Andamento }</chakra.span>
-
-							</Flex>
-						</Flex>
-						<Flex flexDirection={ 'column' } justifyContent={ 'center' }>
-							<FormLabel textAlign={ 'center' } color={ 'white' }>Ganhos</FormLabel>
-							<Flex w={ '8rem' } h={ '2rem' } py={ 1 } bg={ 'green.500' } color={ 'white' } justifyContent={ 'center' } alignItems={ 'center' } rounded={ '1rem' }>
-								{/* <chakra.span>{somaConcluido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</chakra.span> */ }
-								<chakra.span>{ Concluido }</chakra.span>
-							</Flex>
-						</Flex>
-						<Flex flexDirection={ 'column' } justifyContent={ 'center' }>
-							<FormLabel textAlign={ 'center' } color={ 'white' }>Perdidos</FormLabel>
-							<Flex w={ '8rem' } h={ '2rem' } py={ 1 } bg={ 'red' } color={ 'white' } justifyContent={ 'center' } alignItems={ 'center' } rounded={ '1rem' }>
-								{/* <chakra.span>{
-                    somaPerca.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                  }</chakra.span> */}
-								<chakra.span>{ Perdido }</chakra.span>
-							</Flex>
-						</Flex>
-					</Flex>
-
+		<Box minH="100%" bg="gray.800" w="100%">
+			<Flex
+				px={{ base: 4, md: 6 }}
+				pt={4}
+				pb={4}
+				w="100%"
+				maxW="1400px"
+				mx="auto"
+				flexDirection={{ base: 'column', md: 'row' }}
+				justifyContent="space-between"
+				alignItems={{ base: 'center', md: 'flex-end' }}
+				gap={{ base: 8, md: 0 }}
+				flexWrap="wrap"
+			>
+				<Flex alignItems="flex-end">
+					<Heading
+						size={{ base: 'lg', md: 'xl' }}
+						color="white"
+						title={User}
+					>
+						{ formatCompanyDisplayName( User ) }
+					</Heading>
 				</Flex>
-				<Box w='100%' bg="gray.800" color={ 'gray.800' }>
-					<Flex direction="column" gap={ 5 } p={ 5 }>
+				<Flex
+					display="grid"
+					gridTemplateColumns={{ base: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }}
+					alignItems="flex-end"
+					gap={{ base: 4, sm: 5 }}
+					w={{ base: '100%', sm: 'auto' }}
+					justifyContent="center"
+					justifyItems={{ base: 'stretch', sm: 'center', lg: 'center' }}
+				>
+					<SelectMonth onValue={ handleDateChange } />
+					{ isLoading ? (
+						<>
+							<Flex flexDirection="column" alignItems="center" w={{ base: '100%', sm: 'auto' }}>
+								<FormLabel textAlign="center" color="white" mb={1} fontSize="sm">
+									Perdidos
+								</FormLabel>
+								<Skeleton w={badgeWidth} h={badgeHeight} rounded="5px" />
+							</Flex>
+							<Flex flexDirection="column" alignItems="center" w={{ base: '100%', sm: 'auto' }}>
+								<FormLabel textAlign="center" color="white" mb={1} fontSize="sm">
+									Em Andamento
+								</FormLabel>
+								<Skeleton w={badgeWidth} h={badgeHeight} rounded="5px" />
+							</Flex>
+							<Flex flexDirection="column" alignItems="center" w={{ base: '100%', sm: 'auto' }}>
+								<FormLabel textAlign="center" color="white" mb={1} fontSize="sm">
+									Ganhos
+								</FormLabel>
+								<Skeleton w={badgeWidth} h={badgeHeight} rounded="5px" />
+							</Flex>
+						</>
+					) : (
+						<>
+							{parseCurrencyToNumber(Perdido) > 0 && (
+								<Flex flexDirection="column" alignItems="center" w={{ base: '100%', sm: 'auto' }}>
+									<FormLabel textAlign="center" color="white" mb={1} fontSize="sm">
+										Perdidos
+									</FormLabel>
+									<Flex
+										w={badgeWidth}
+										h={badgeHeight}
+										bg="red"
+										color="white"
+										justifyContent="center"
+										alignItems="center"
+										rounded="5px"
+									>
+										<chakra.span fontWeight="bold">{ Perdido }</chakra.span>
+									</Flex>
+								</Flex>
+							)}
+							{parseCurrencyToNumber(Andamento) > 0 && (
+								<Flex flexDirection="column" alignItems="center" w={{ base: '100%', sm: 'auto' }}>
+									<FormLabel textAlign="center" color="white" mb={1} fontSize="sm">
+										Em Andamento
+									</FormLabel>
+									<Flex
+										w={badgeWidth}
+										h={badgeHeight}
+										bg="orange.400"
+										color="white"
+										justifyContent="center"
+										alignItems="center"
+										rounded="5px"
+									>
+										<chakra.span fontWeight="bold">{ Andamento }</chakra.span>
+									</Flex>
+								</Flex>
+							)}
+							{parseCurrencyToNumber(Concluido) > 0 && (
+								<Flex flexDirection="column" alignItems="center" w={{ base: '100%', sm: 'auto' }}>
+									<FormLabel textAlign="center" color="white" mb={1} fontSize="sm">
+										Ganhos
+									</FormLabel>
+									<Flex
+										w={badgeWidth}
+										h={badgeHeight}
+										bg="green.500"
+										color="white"
+										justifyContent="center"
+										alignItems="center"
+										rounded="5px"
+									>
+										<chakra.span fontWeight="bold">{ Concluido }</chakra.span>
+									</Flex>
+								</Flex>
+							)}
+						</>
+					) }
+				</Flex>
+			</Flex>
+			<Box w="100%" maxW="1400px" mx="auto" px={{ base: 4, md: 6 }} pb={6}>
+				<Flex direction="column" gap={5} alignItems="center">
+					{ isLoading ? (
+						<CalendarSkeleton />
+					) : (
 						<RenderCalendar data={ calendarData } />
-					</Flex>
-				</Box>
+					) }
+				</Flex>
 			</Box>
-		</>
+		</Box>
 	)
 }
 

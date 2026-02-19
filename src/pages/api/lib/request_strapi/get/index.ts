@@ -24,7 +24,11 @@ export const GET_Strapi = async ( url: string ) => {
 		const response = await STRAPI.get( url )
 		return response.data
 	} catch ( err: any ) {
-		console.error( err.response.data )
-		return err.response.data
+		if ( err.response ) {
+			console.error( "GET_Strapi error:", url, err.response?.status, err.response?.data )
+			return err.response.data
+		}
+		console.error( "GET_Strapi network error:", url, err?.message )
+		throw err
 	}
 }

@@ -13,15 +13,18 @@ const AditionalDiscount: React.FC<AditionalDiscountProps> = ( { setAditionalDisc
 			<FormLabel
 				fontSize="xs"
 				fontWeight="md"
+				textAlign="center"
+				w="full"
 			>
 				Desconto no pedido
 			</FormLabel>
 			<CustomCurrencyInput
 				onCurrencyChange={ setAditionalDiscountOnChange }
 				value={ aditionalDiscount }
-				textAlign={ "end" }
+				textAlign={ "center" }
 				size="xs"
-				w={ 24 }
+				py={1}
+				w="full"
 				fontSize="xs"
 				rounded="md"
 			/>

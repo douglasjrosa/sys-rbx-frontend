@@ -24,8 +24,32 @@ const SendOrderModal = ( props: any ) => {
 
 			const { propostaId, orderValue, vendedor, vendedorId, businessId } = orderData
 
-			const order = await fetchOrderData( propostaId )
-			const fullOrderData = order.data
+			if ( !propostaId || !businessId ) {
+				toast( {
+					title: "Erro",
+					description: "Dados incompletos. Verifique se o negócio possui uma proposta.",
+					status: "error",
+					isClosable: true,
+					duration: 5000,
+					position: "bottom",
+				} )
+				return false
+			}
+
+			const order = await fetchOrderData( String( propostaId ) )
+			const fullOrderData = order?.data
+
+			if ( !fullOrderData?.attributes ) {
+				toast( {
+					title: "Erro ao carregar pedido",
+					description: "Não foi possível obter os dados da proposta.",
+					status: "error",
+					isClosable: true,
+					duration: 5000,
+					position: "bottom",
+				} )
+				return false
+			}
 
 			const orderStatus: OrderStatusType = fullOrderData.attributes?.orderStatus
 				? JSON.parse( fullOrderData.attributes.orderStatus )
@@ -122,11 +146,17 @@ const SendOrderModal = ( props: any ) => {
 				position: "bottom",
 			} )
 
-			const { dataEntrega, prazo, totalGeral } = fullOrderData.attributes
+			const { dataEntrega, prazo, totalGeral, cliente_pedido, obs } = fullOrderData.attributes
 			const dataPrevista = dataEntrega
 			const totalOrderValue = parseCurrency( totalGeral )
 			const today = getFormattedDate()
 			const installments = await handleInstallments( blingAccountCnpj, dataPrevista, prazo, totalOrderValue )
+
+			const orderNumber = cliente_pedido ?? ""
+			const obsText = obs ?? ""
+			let observacoes = !!orderNumber ? `Pedido: ${ orderNumber }` : ""
+			observacoes += !!orderNumber && !!obsText ? " | " : ""
+			observacoes += !!obsText ? obsText : ""
 
 			const blingOrderData: BlingOrderDataType = {
 				numero: +propostaId,
@@ -136,7 +166,7 @@ const SendOrderModal = ( props: any ) => {
 				contato: { id: clientId },
 				itens: blingItems,
 				parcelas: installments,
-				numeroPedidoCompra: fullOrderData.attributes.cliente_pedido,
+				numeroPedidoCompra: orderNumber,
 				outrasDespesas: parseCurrency( fullOrderData.attributes.custoAdicional ),
 				desconto: {
 					valor: parseCurrency( fullOrderData.attributes.descontoTotal )
@@ -144,7 +174,8 @@ const SendOrderModal = ( props: any ) => {
 				transporte: {
 					fretePorConta: fullOrderData.attributes.frete === "CIF" ? 0 : 1, // 0 = CIF, 1 = FOB
 					frete: parseCurrency( fullOrderData.attributes.valorFrete )
-				}
+				},
+				observacoes
 			}
 			const blingOrder = await sendBlingOrder( blingAccountCnpj, blingOrderData )
 
@@ -194,7 +225,7 @@ const SendOrderModal = ( props: any ) => {
 				position: "bottom",
 			} )
 			const blingOrderId = String( blingOrder.data.id )
-			const updateNegocio = await updateBusinessInStrapi( businessId, blingOrderId )
+			const updateNegocio = await updateBusinessInStrapi( String( businessId ), blingOrderId )
 
 			if ( !updateNegocio.data?.id ) {
 

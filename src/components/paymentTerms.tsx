@@ -46,10 +46,12 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 
 	return (
 		<>
-			<Box>
+			<Box textAlign="center">
 				<FormLabel
 					fontSize="xs"
 					fontWeight="md"
+					textAlign="center"
+					w="full"
 				>
 					Prazo p/ pagamento
 				</FormLabel>
@@ -57,9 +59,11 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 					<Select
 						shadow="sm"
 						size="xs"
-						w="178px"
+						py={1}
+						w="full"
 						fontSize="xs"
 						rounded="md"
+						textAlign="center"
 						onChange={ ( e ) => {
 							setPaymentTermsOnChange( e.target.value )
 						} }
@@ -78,7 +82,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ( { maxPrazoPagto, paymentTerm
 						} ) }
 					</Select>
 					||
-					<Skeleton height='28px' startColor='gray.600' endColor='gray.700' rounded={ "md" } w="178px" />
+					<Skeleton height='28px' startColor='gray.600' endColor='gray.700' rounded={ "md" } w="full" />
 				}
 			</Box>
 		</>

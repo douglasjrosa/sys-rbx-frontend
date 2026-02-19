@@ -13,15 +13,18 @@ const FreightCost: React.FC<FreightCostProps> = ( { setFreightCostOnChange, frei
 			<FormLabel
 				fontSize="xs"
 				fontWeight="md"
+				textAlign="center"
+				w="full"
 			>
 				Valor de Frete
 			</FormLabel>
 			<CustomCurrencyInput
 				onCurrencyChange={ setFreightCostOnChange }
 				value={ freightCost }
-				textAlign={ "end" }
+				textAlign={ "center" }
 				size="xs"
-				w={ 24 }
+				py={1}
+				w="full"
 				fontSize="xs"
 				rounded="md"
 			/>

@@ -1,7 +1,7 @@
-import { Box, Button, Badge, Flex, HStack, Input, Text, Tooltip, Skeleton } from "@chakra-ui/react"
-import { FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa"
+import { Box, Button, Badge, Flex, HStack, Input, Text, Tooltip, Skeleton, Table, Thead, Tbody, Tr, Th, Td, TableContainer } from "@chakra-ui/react"
+import { FaAngleDoubleLeft, FaAngleDoubleRight, FaInfoCircle } from "react-icons/fa"
 import Link from "next/link"
-import { memo, useMemo, useState } from "react"
+import { memo, useMemo } from "react"
 import { FaMoneyBillAlt } from "react-icons/fa"
 import { useRouter } from "next/router"
 import { HiChatBubbleLeftRight } from "react-icons/hi2"
@@ -29,52 +29,19 @@ type CarteiraAusenteProps = {
 export const CarteiraAusente = memo( ( {
 	filtro,
 	isLoading,
-	paginaAtual,
-	totalPaginas,
-	onChangePagina,
 	onFilterByCNAE,
 	onFilterByCidade
 }: CarteiraAusenteProps ) => {
 	const { data: session } = useSession()
 	const router = useRouter()
-	const [ paginaInput, setPaginaInput ] = useState<string>( paginaAtual.toString() )
-
-	// Função para lidar com a navegação manual por input
-	const handlePaginaInputChange = ( e: React.ChangeEvent<HTMLInputElement> ) => {
-		setPaginaInput( e.target.value )
-	}
-
-	// Função para validar e navegar para a página digitada
-	const handlePaginaInputSubmit = () => {
-		const numeroPagina = parseInt( paginaInput, 10 )
-		if ( !isNaN( numeroPagina ) && numeroPagina >= 1 && numeroPagina <= totalPaginas ) {
-			onChangePagina( numeroPagina )
-		} else {
-			// Resetar para a página atual se o valor for inválido
-			setPaginaInput( paginaAtual.toString() )
-		}
-	}
-
-	// Atualizar o input quando a página atual mudar
-	useMemo( () => {
-		setPaginaInput( paginaAtual.toString() )
-	}, [ paginaAtual ] )
 
 	// Função para calcular luminosidade e determinar cor do texto
 	const getTextColor = ( bgColor: string ): string => {
-		// Para verde (negócio ganho), sempre usar branco
-		if ( bgColor === '#22C55E' || bgColor === '#16a34a' ) {
-			return '#FFFFFF'
-		}
+		if ( !bgColor ) return 'white'
+		if ( bgColor === '#22C55E' || bgColor === '#16a34a' ) return '#FFFFFF'
+		if ( bgColor === '#EAB308' || bgColor === 'yellow' || bgColor?.toLowerCase()?.includes( 'yellow' ) ) return '#000000'
 
-		// Para amarelo (negócio em andamento), sempre usar preto para melhor contraste
-		if ( bgColor === '#EAB308' || bgColor === 'yellow' || bgColor?.toLowerCase()?.includes( 'yellow' ) ) {
-			return '#000000'
-		}
-
-		// Converter hex para RGB
 		let r: number, g: number, b: number
-
 		if ( bgColor.startsWith( '#' ) ) {
 			r = parseInt( bgColor.slice( 1, 3 ), 16 )
 			g = parseInt( bgColor.slice( 3, 5 ), 16 )
@@ -85,101 +52,58 @@ export const CarteiraAusente = memo( ( {
 				r = parseInt( match[ 0 ] )
 				g = parseInt( match[ 1 ] )
 				b = parseInt( match[ 2 ] )
-			} else {
-				return 'white'
-			}
-		} else {
-			return 'white'
-		}
+			} else return 'white'
+		} else return 'white'
 
-		// Calcular luminosidade relativa
 		const luminance = ( 0.299 * r + 0.587 * g + 0.114 * b ) / 255
-
-		// Retornar preto para fundos claros, branco para fundos escuros
 		return luminance > 0.5 ? '#000000' : '#FFFFFF'
 	}
 
-	// Função para ajustar a cor do fundo verde para melhor contraste
 	const getBackgroundColor = ( originalColor: string ): string => {
-		// Para verde, usar um tom mais escuro para melhor contraste com branco e fundo escuro
-		if ( originalColor === '#22C55E' ) {
-			return '#16a34a' // Verde mais escuro (green-600)
-		}
+		if ( originalColor === '#22C55E' ) return '#16a34a'
 		return originalColor
 	}
 
-	// Renderizar tabela apenas quando os dados estiverem disponíveis
 	const tabelaContent = useMemo( () => {
-		// #region agent log
-		fetch('http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'CarteiraAusente:112',message:'Renderizando tabelaContent',data:{filtroCount:filtro?.length,isLoading},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H6'})}).catch(()=>{});
-		// #endregion
-
 		if ( isLoading ) {
-			// Gerar 8 linhas de skeleton para simular a tabela
-			return Array.from( { length: 8 } ).map( ( _, index ) => (
-				<tr key={ `skeleton-${ index }` } style={ { borderBottom: '1px solid #ffff' } }>
-					<td style={ { padding: '0.3rem 1.2rem' } }>
-						<Skeleton height="20px" startColor="gray.600" endColor="gray.700" width="80%" />
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						<Skeleton height="20px" startColor="gray.600" endColor="gray.700" width="60px" mx="auto" />
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						<Skeleton height="24px" startColor="gray.600" endColor="gray.700" width="24px" borderRadius="full" mx="auto" />
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						<Skeleton height="24px" startColor="gray.600" endColor="gray.700" width="24px" borderRadius="full" mx="auto" />
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						<Skeleton height="20px" startColor="gray.600" endColor="gray.700" width="80px" mx="auto" />
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						<Skeleton height="20px" startColor="gray.600" endColor="gray.700" width="100px" mx="auto" />
-					</td>
-				</tr>
+			return Array.from( { length: 10 } ).map( ( _, index ) => (
+				<Tr key={ `skeleton-${ index }` }>
+					<Td><Skeleton height="20px" width="80%" /></Td>
+					<Td><Skeleton height="20px" width="60px" mx="auto" /></Td>
+					<Td><Skeleton height="24px" width="24px" borderRadius="full" mx="auto" /></Td>
+					<Td><Skeleton height="24px" width="24px" borderRadius="full" mx="auto" /></Td>
+					<Td><Skeleton height="20px" width="80px" mx="auto" /></Td>
+					<Td><Skeleton height="20px" width="100px" mx="auto" /></Td>
+				</Tr>
 			) )
 		}
 
 		if ( !filtro || filtro.length === 0 ) {
 			return (
-				<tr>
-					<td colSpan={ 6 } style={ { textAlign: 'center', padding: '1rem' } }>
-						Nenhuma empresa encontrada
-					</td>
-				</tr>
+				<Tr>
+					<Td colSpan={ 6 } textAlign="center" py={ 10 } color="gray.500">
+						<Flex direction="column" align="center" gap={ 2 }>
+							<FaInfoCircle size={ 24 } />
+							<Text>Nenhuma empresa encontrada</Text>
+						</Flex>
+					</Td>
+				</Tr>
 			)
 		}
 
-		// Função auxiliar para acessar campos que podem estar em attributes ou diretamente no objeto
 		const getField = ( obj: any, field: string ) => {
 			if ( !obj ) return undefined
-			// Se tem attributes, usar attributes, senão usar diretamente
 			return obj.attributes ? obj.attributes[ field ] : obj[ field ]
 		}
 
 		return filtro.map( ( empresa ) => {
 			const negocio = empresa.attributes?.businesses?.data || []
-			// Normalizar interacao: pode vir como objeto único (após processamento) ou array
 			const interacaoRaw = empresa.attributes?.interacaos?.data || null
 			let interacao: any = null
-			
-			// Determinar o formato da interação
-			if ( !interacaoRaw ) {
-				interacao = null
-			} else if ( Array.isArray( interacaoRaw ) ) {
-				// Se é array vazio, null
-				if ( interacaoRaw.length === 0 ) {
-					interacao = null
-				} else {
-					// Array com elementos, usar o último
-					interacao = interacaoRaw
-				}
-			} else if ( typeof interacaoRaw === 'object' ) {
-				// Objeto único (pode ser processado ou não)
-				interacao = interacaoRaw
-			}
+			if ( !interacaoRaw ) interacao = null
+			else if ( Array.isArray( interacaoRaw ) ) interacao = interacaoRaw.length === 0 ? null : interacaoRaw
+			else interacao = interacaoRaw
 
-			// Filtrar negócios concluídos (etapa === 6) e ordenar por data_conclucao (mais recente primeiro)
 			const negociosConcluidos = negocio
 				.filter( ( n: any ) => getField( n, 'etapa' ) === 6 )
 				.sort( ( a: any, b: any ) => {
@@ -189,7 +113,6 @@ export const CarteiraAusente = memo( ( {
 				} )
 			const ultimoNegocioConcluido = negociosConcluidos[ 0 ]
 
-			// Filtrar negócios em andamento (andamento === 3 e etapa !== 6)
 			const negociosAtivos = negocio.filter( ( n: any ) =>
 				getField( n, 'andamento' ) === 3 &&
 				getField( n, 'etapa' ) !== 6 &&
@@ -198,406 +121,149 @@ export const CarteiraAusente = memo( ( {
 			const temNegocioAtivo = negociosAtivos.length > 0
 			const primeiroNegocioAtivo = negociosAtivos[ 0 ]
 
-			// Determinar cor do ícone de histórico
-			let corHistorico = '#9CA3AF' // Cinza padrão
+			let corHistorico = '#4A5568'
 			let dadosHistorico: any = null
 
 			if ( temNegocioAtivo ) {
-				// Amarelo = Há negócio em andamento
 				corHistorico = '#EAB308'
-				const vendedorObj = primeiroNegocioAtivo?.vendedor || primeiroNegocioAtivo?.attributes?.vendedor
-				const vendedorNome = vendedorObj?.username || vendedorObj?.data?.attributes?.username || 
-					getField( primeiroNegocioAtivo, 'vendedor_name' ) ||
-					"Não informado"
-				dadosHistorico = {
-					data: getField( primeiroNegocioAtivo, 'deadline' ) || getField( primeiroNegocioAtivo, 'createdAt' ),
-					valor: getField( primeiroNegocioAtivo, 'Budget' ) || null,
-					vendedor: vendedorNome
-				}
+				const vObj = primeiroNegocioAtivo?.vendedor || primeiroNegocioAtivo?.attributes?.vendedor
+				const vName = vObj?.username || vObj?.data?.attributes?.username || getField( primeiroNegocioAtivo, 'vendedor_name' ) || "Não informado"
+				dadosHistorico = { data: getField( primeiroNegocioAtivo, 'deadline' ) || getField( primeiroNegocioAtivo, 'createdAt' ), valor: getField( primeiroNegocioAtivo, 'Budget' ) || null, vendedor: vName }
 			} else if ( ultimoNegocioConcluido ) {
-				// Determinar cor baseado no último negócio concluído
 				const andamento = getField( ultimoNegocioConcluido, 'andamento' )
-				if ( andamento === 5 ) {
-					// Verde = Ganho (usar verde mais escuro para melhor contraste)
-					corHistorico = '#16a34a'
-				} else if ( andamento === 1 ) {
-					// Vermelho = Perdido
-					corHistorico = '#EF4444'
-				}
+				if ( andamento === 5 ) corHistorico = '#16a34a'
+				else if ( andamento === 1 ) corHistorico = '#EF4444'
 
-				// Buscar valor do negócio (Budget ou totalGeral do primeiro pedido)
 				const pedidos = ultimoNegocioConcluido?.pedidos || ultimoNegocioConcluido?.attributes?.pedidos || []
-				const pedidosArray = Array.isArray( pedidos ) ? pedidos : pedidos?.data || []
-				const valor = getField( ultimoNegocioConcluido, 'Budget' ) ||
-					( pedidosArray.length > 0 ? ( pedidosArray[ 0 ]?.totalGeral || pedidosArray[ 0 ]?.attributes?.totalGeral ) : null )
-
-				const vendedorObj = ultimoNegocioConcluido?.vendedor || ultimoNegocioConcluido?.attributes?.vendedor
-				const vendedorNome = vendedorObj?.username || vendedorObj?.data?.attributes?.username ||
-					getField( ultimoNegocioConcluido, 'vendedor_name' ) ||
-					"Não informado"
-
-				dadosHistorico = {
-					data: getField( ultimoNegocioConcluido, 'date_conclucao' ) || getField( ultimoNegocioConcluido, 'createdAt' ),
-					valor: valor,
-					vendedor: vendedorNome
-				}
+				const pArray = Array.isArray( pedidos ) ? pedidos : pedidos?.data || []
+				const valor = getField( ultimoNegocioConcluido, 'Budget' ) || ( pArray.length > 0 ? ( pArray[ 0 ]?.totalGeral || pArray[ 0 ]?.attributes?.totalGeral ) : null )
+				const vObj = ultimoNegocioConcluido?.vendedor || ultimoNegocioConcluido?.attributes?.vendedor
+				const vName = vObj?.username || vObj?.data?.attributes?.username || getField( ultimoNegocioConcluido, 'vendedor_name' ) || "Não informado"
+				dadosHistorico = { data: getField( ultimoNegocioConcluido, 'date_conclucao' ) || getField( ultimoNegocioConcluido, 'createdAt' ), valor, vendedor: vName }
 			}
 
-			// Verificar se há interação e obter dados para tooltip
 			let corInteracao = 'rgb(0,100,255)'
 			let mostrarIconeInteracao = false
 			let dadosInteracao: any = null
-
 			if ( interacao ) {
-				// Se é array vazio, não mostrar
-				if ( Array.isArray( interacao ) && interacao.length === 0 ) {
-					mostrarIconeInteracao = false
-				} else if ( typeof interacao === 'object' && 'cor' in interacao ) {
-					// Se interacao é um objeto processado (formato após processamento)
-					corInteracao = interacao.cor || 'rgb(0,100,255)'
-					mostrarIconeInteracao = true
-					// Usar o objeto processado que agora tem descricao
-					dadosInteracao = interacao
-				} else if ( Array.isArray( interacao ) && interacao.length > 0 ) {
-					// Se interacao é um array com elementos
+				if ( Array.isArray( interacao ) && interacao.length > 0 ) {
 					mostrarIconeInteracao = true
 					const ultima = interacao[ interacao.length - 1 ]
-					if ( ultima ) {
-						// Normalizar acesso aos campos (pode estar em attributes ou diretamente)
-						dadosInteracao = ultima.attributes || ultima
-					}
+					dadosInteracao = ultima.attributes || ultima
 				} else if ( typeof interacao === 'object' && interacao !== null ) {
-					// Se interacao é um objeto único (não array)
 					mostrarIconeInteracao = true
+					corInteracao = interacao.cor || 'rgb(0,100,255)'
 					dadosInteracao = interacao.attributes || interacao
 				}
 			}
 
 			return (
-				<tr
-					key={ empresa.id }
-					style={ { borderBottom: '1px solid #ffff' } }
-				>
-					<td style={ { padding: '0.3rem 1.2rem' } }>
-						<Link
-							href={ `/empresas/CNPJ/${ empresa.id }` }
-							style={ { color: '#bee3f8', textDecoration: 'none', fontWeight: 700, textTransform: 'uppercase' } }
-							onMouseEnter={ ( e ) => { e.currentTarget.style.textDecoration = 'underline' } }
-							onMouseLeave={ ( e ) => { e.currentTarget.style.textDecoration = 'none' } }
-						>
-							{ empresa.attributes.nome }
+				<Tr key={ empresa.id } _hover={{ bg: 'whiteAlpha.50' }} transition="background 0.2s">
+					<Td maxW="200px">
+						<Link href={ `/empresas/CNPJ/${ empresa.id }` }>
+							<Text color="blue.300" fontWeight="bold" fontSize="xs" isTruncated textTransform="uppercase" _hover={{ textDecoration: 'underline' }}>
+								{ empresa.attributes.nome }
+							</Text>
 						</Link>
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
+					</Td>
+					<Td textAlign="center">
 						{ empresa.attributes.CNAE && (
-							<Flex justifyContent="center">
-								<Badge
-									colorScheme="blue"
-									cursor="pointer"
-									onClick={ ( e: React.MouseEvent<HTMLSpanElement> ) => {
-										e.stopPropagation()
-										if ( onFilterByCNAE ) {
-											onFilterByCNAE( empresa.attributes.CNAE )
-										}
-									} }
-									_hover={ { opacity: 0.8 } }
-								>
-									{ formatCNAE( empresa.attributes.CNAE ) }
-								</Badge>
-							</Flex>
+							<Badge colorScheme="blue" variant="subtle" cursor="pointer" fontSize="2xs" onClick={ () => onFilterByCNAE?.( empresa.attributes.CNAE ) }>
+								{ formatCNAE( empresa.attributes.CNAE ) }
+							</Badge>
 						) }
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
+					</Td>
+					<Td textAlign="center">
 						{ dadosHistorico && (
-							<Flex w={ '100%' } justifyContent={ 'center' } onClick={ ( e ) => e.stopPropagation() }>
-								<Tooltip
-									label={ ( () => {
-										const purchaseFrequency = empresa.attributes.purchaseFrequency || null
-										const valorFormatado = dadosHistorico.valor ? ( () => {
-											// Converter para número se for string
-											const valor = typeof dadosHistorico.valor === 'string'
-												? parseFloat( dadosHistorico.valor.replace( /\./g, '' ).replace( ',', '.' ) )
-												: parseFloat( dadosHistorico.valor )
-
-											if ( isNaN( valor ) ) return dadosHistorico.valor
-
-											return new Intl.NumberFormat( 'pt-BR', {
-												style: 'currency',
-												currency: 'BRL'
-											} ).format( valor )
-										} )() : null
-
-										const textColor = getTextColor( corHistorico )
-
-										return (
-											<Box p={ 3 } bg={ corHistorico } borderRadius="md">
-												{ dadosHistorico.vendedor && (
-													<Text fontSize="xs" fontWeight="bold" mb={ 1 } color={ textColor }>
-														{ dadosHistorico.vendedor }
-													</Text>
-												) }
-												{ valorFormatado && (
-													<Text fontSize="md" mb={ 1 } color={ textColor }>
-														{ valorFormatado }
-													</Text>
-												) }
-												{ dadosHistorico.data && (
-													<Text fontSize="xs" mb={ 1 } color={ textColor }>
-														{ new Date( dadosHistorico.data ).toLocaleDateString( 'pt-BR' ) }
-													</Text>
-												) }
-												{ purchaseFrequency && (
-													<Text fontSize="xs" mt={ 1 } color={ textColor }>
-														Compra { purchaseFrequency }
-													</Text>
-												) }
-											</Box>
-										)
-									} )()
-									}
-									hasArrow
-									bg={ getBackgroundColor( corHistorico ) }
-									color={ getTextColor( getBackgroundColor( corHistorico ) ) }
-									fontSize="xs"
-									placement="top"
-								>
-									<span style={ { display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' } }>
-										<FaMoneyBillAlt color={ getBackgroundColor( corHistorico ) } fontSize={ '1.5rem' } />
-									</span>
-								</Tooltip>
-							</Flex>
+							<Tooltip label={ ( () => {
+								const pf = empresa.attributes.purchaseFrequency || null
+								const vF = dadosHistorico.valor ? new Intl.NumberFormat( 'pt-BR', { style: 'currency', currency: 'BRL' } ).format( parseFloat( String( dadosHistorico.valor ).replace( /[^\d,-]/g, '' ).replace( ',', '.' ) ) ) : null
+								const tC = getTextColor( corHistorico )
+								return (
+									<Box p={ 1 }>
+										<Text fontWeight="bold" color={ tC } fontSize="xs">{ dadosHistorico.vendedor }</Text>
+										{ vF && <Text color={ tC } fontSize="sm">{ vF }</Text> }
+										<Text color={ tC } fontSize="2xs">{ new Date( dadosHistorico.data ).toLocaleDateString( 'pt-BR' ) }</Text>
+										{ pf && <Text color={ tC } fontSize="2xs" mt={ 1 }>Compra { pf }</Text> }
+									</Box>
+								)
+							} )() } bg={ getBackgroundColor( corHistorico ) } hasArrow>
+								<Box display="inline-block"><FaMoneyBillAlt color={ getBackgroundColor( corHistorico ) } size={ 20 } /></Box>
+							</Tooltip>
 						) }
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
+					</Td>
+					<Td textAlign="center">
 						{ mostrarIconeInteracao && (
-							<Flex w={ '100%' } justifyContent={ 'center' } onClick={ ( e ) => e.stopPropagation() }>
-								<Tooltip
-									label={
-										dadosInteracao ? ( () => {
-											// Buscar objetivo e tipo
-											const objetivoId = dadosInteracao.objetivo?.toString() || dadosInteracao.objetivo
-											const tipoId = dadosInteracao.tipo?.toString() || dadosInteracao.tipo
-
-											const objetivoObj = ObjContato.find( ( o: any ) => o.id === objetivoId )
-											const tipoObj = TipoContato.find( ( t: any ) => t.id === tipoId )
-
-											const objetivoTexto = objetivoObj?.title || "Sem objetivo"
-											const tipoTexto = tipoObj?.title || "Sem tipo"
-											const descricao = dadosInteracao.descricao || ""
-
-											const vendedorNome = dadosInteracao.vendedor_name || "Sem vendedor"
-											const dataCriacao = dadosInteracao.createdAt ? new Date( dadosInteracao.createdAt ).toLocaleDateString( 'pt-BR' ) : null
-											const dataProxima = dadosInteracao.proxima ? new Date( dadosInteracao.proxima ).toLocaleDateString( 'pt-BR' ) : null
-
-											const textColorInteracao = getTextColor( corInteracao )
-
-											return (
-												<Box p={ 3 } pb={ 6 } minW="300px" maxW="400px" position="relative" bg={ corInteracao } borderRadius="md">
-													{ dataCriacao && (
-														<Text fontSize="xs" position="absolute" top={ 3 } right={ 3 } opacity={ 0.7 } color={ textColorInteracao }>
-															{ dataCriacao }
-														</Text>
-													) }
-													{ objetivoTexto && (
-														<Text fontSize="sm" fontWeight="bold" mb={ 1 } color={ textColorInteracao }>
-															{ objetivoTexto }
-														</Text>
-													) }
-													{ vendedorNome && (
-														<Text fontSize="xs" mb={ 2 } opacity={ 0.6 } color={ textColorInteracao }>
-															{ vendedorNome }
-														</Text>
-													) }
-													{ descricao && (
-														<Text fontSize="xs" mb={ 2 } whiteSpace="pre-wrap" color={ textColorInteracao }>
-															{ descricao }
-														</Text>
-													) }
-													{ tipoTexto && (
-														<Text fontSize="xs" position="absolute" bottom={ 3 } left={ 3 } opacity={ 0.8 } color={ textColorInteracao }>
-															{ tipoTexto }
-														</Text>
-													) }
-													{ dataProxima && (
-														<Text fontSize="xs" position="absolute" bottom={ 3 } right={ 3 } opacity={ 0.7 } color={ textColorInteracao }>
-															{ dataProxima }
-														</Text>
-													) }
-												</Box>
-											)
-										} )() : "Sem interações"
-									}
-									hasArrow
-									bg={ corInteracao }
-									color={ getTextColor( corInteracao ) }
-									fontSize="xs"
-									placement="top"
-									maxW="500px"
-								>
-									<span style={ { display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' } }>
-										<HiChatBubbleLeftRight color={ corInteracao } fontSize={ '1.5rem' } />
-									</span>
-								</Tooltip>
-							</Flex>
+							<Tooltip label={ dadosInteracao ? ( () => {
+								const obj = ObjContato.find( ( o ) => o.id === dadosInteracao.objetivo?.toString() )?.title || "Sem objetivo"
+								const tipo = TipoContato.find( ( t ) => t.id === dadosInteracao.tipo?.toString() )?.title || "Sem tipo"
+								const tC = getTextColor( corInteracao )
+								return (
+									<Box p={ 1 } maxW="250px">
+										<Text fontWeight="bold" color={ tC } fontSize="xs">{ obj }</Text>
+										<Text color={ tC } fontSize="2xs" opacity={ 0.8 }>{ dadosInteracao.vendedor_name }</Text>
+										<Text color={ tC } fontSize="xs" mt={ 1 } noOfLines={ 3 }>{ dadosInteracao.descricao }</Text>
+										<Flex justify="space-between" mt={ 2 }>
+											<Text color={ tC } fontSize="2xs" fontStyle="italic">{ tipo }</Text>
+											{ dadosInteracao.proxima && <Text color={ tC } fontSize="2xs">Próxima: { new Date( dadosInteracao.proxima ).toLocaleDateString( 'pt-BR' ) }</Text> }
+										</Flex>
+									</Box>
+								)
+							} )() : "Sem interações" } bg={ corInteracao } hasArrow>
+								<Box display="inline-block"><HiChatBubbleLeftRight color={ corInteracao } size={ 20 } /></Box>
+							</Tooltip>
 						) }
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
+					</Td>
+					<Td textAlign="center">
 						{ ( () => {
 							const expiresIn = empresa.attributes.expiresIn
-							if ( !expiresIn ) {
-								return <Text textAlign="center">-</Text>
-							}
-
+							if ( !expiresIn ) return "-"
 							try {
-								const dataExpiracao = parseISO( expiresIn )
-								const agora = new Date()
-								const diasRestantes = differenceInDays( dataExpiracao, agora )
-								const dataFormatada = dataExpiracao.toLocaleDateString( 'pt-BR' )
-
-								let corTexto = 'white'
-								let opacidade = 1
-
-								if ( diasRestantes < 0 ) {
-									// Já expirado - branco com opacidade menor
-									opacidade = 0.6
-								} else if ( diasRestantes <= 5 ) {
-									// Últimos 5 dias - vermelho
-									corTexto = '#EF4444'
-								} else if ( diasRestantes <= 15 ) {
-									// Próximos 15 dias - amarelo
-									corTexto = '#EAB308'
-								}
-
-								return (
-									<Text color={ corTexto } opacity={ opacidade } textAlign="center">
-										{ dataFormatada }
-									</Text>
-								)
-							} catch ( error ) {
-								return <Text textAlign="center">-</Text>
-							}
+								const dE = parseISO( expiresIn )
+								const dR = differenceInDays( dE, new Date() )
+								let color = "gray.300"
+								if ( dR < 0 ) color = "whiteAlpha.400"
+								else if ( dR <= 5 ) color = "red.400"
+								else if ( dR <= 15 ) color = "yellow.400"
+								return <Text fontSize="xs" color={ color }>{ dE.toLocaleDateString( 'pt-BR' ) }</Text>
+							} catch { return "-" }
 						} )() }
-					</td>
-					<td style={ { padding: '0.3rem 1.2rem', textAlign: 'center' } }>
-						<Flex justifyContent="center" alignItems="center" w="100%">
-							{ empresa.attributes.cidade ? (
-								<Badge
-									colorScheme="purple"
-									cursor="pointer"
-									fontSize="0.65rem"
-									onClick={ ( e: React.MouseEvent<HTMLSpanElement> ) => {
-										e.stopPropagation()
-										if ( onFilterByCidade ) {
-											onFilterByCidade( empresa.attributes.cidade )
-										}
-									} }
-									_hover={ { opacity: 0.8 } }
-									textTransform="none"
-								>
-									{ `${ empresa.attributes.cidade } - ${ empresa.attributes.uf || '' }` }
-								</Badge>
-							) : '-' }
-						</Flex>
-					</td>
-				</tr>
+					</Td>
+					<Td textAlign="center">
+						{ empresa.attributes.cidade ? (
+							<Badge colorScheme="purple" variant="outline" fontSize="2xs" cursor="pointer" onClick={ () => onFilterByCidade?.( empresa.attributes.cidade ) }>
+								{ `${ empresa.attributes.cidade } - ${ empresa.attributes.uf || '' }` }
+							</Badge>
+						) : '-' }
+					</Td>
+				</Tr>
 			)
 		} )
-	}, [ filtro, isLoading, router, session?.user?.name, onFilterByCNAE, onFilterByCidade ] )
-
-	// Renderizar controles de paginação
-	const paginacao = useMemo( () => {
-		if ( totalPaginas <= 1 ) return null
-
-		return (
-			<Flex alignItems="center" mt={ 4 } justifyContent="center">
-				<HStack spacing={ 2 }>
-					<Button
-						size="xs"
-						bg="#2b6cb0"
-						color="white"
-						_hover={ { bg: '#2c5282' } }
-						_active={ { bg: '#2a4365' } }
-						_disabled={ { bg: '#1a365d', opacity: 0.5, cursor: 'not-allowed' } }
-						onClick={ () => onChangePagina( Math.max( 1, paginaAtual - 1 ) ) }
-						isDisabled={ paginaAtual === 1 || isLoading }
-					>
-						<FaAngleDoubleLeft />
-					</Button>
-					<Text fontSize="xs">Ir para página:</Text>
-					<Input
-						size="xs"
-						width="50px"
-						textAlign="center"
-						borderRadius="md"
-						value={ paginaInput }
-						onChange={ handlePaginaInputChange }
-						onBlur={ handlePaginaInputSubmit }
-						onKeyPress={ ( e ) => {
-							if ( e.key === 'Enter' ) {
-								handlePaginaInputSubmit()
-							}
-						} }
-					/>
-					<Text fontSize="xs">de { totalPaginas }</Text>
-					<Button
-						size="xs"
-						bg="#2b6cb0"
-						color="white"
-						_hover={ { bg: '#2c5282' } }
-						_active={ { bg: '#2a4365' } }
-						_disabled={ { bg: '#1a365d', opacity: 0.5, cursor: 'not-allowed' } }
-						onClick={ () => onChangePagina( Math.min( totalPaginas, paginaAtual + 1 ) ) }
-						isDisabled={ paginaAtual === totalPaginas || isLoading }
-					>
-						<FaAngleDoubleRight />
-					</Button>
-				</HStack>
-			</Flex>
-		)
-	}, [ paginaAtual, totalPaginas, isLoading, onChangePagina, paginaInput ] )
+	}, [ filtro, isLoading, session?.user?.name, onFilterByCNAE, onFilterByCidade ] )
 
 	return (
-		<Box color={ 'white' } w={ '100%' } h={ '100%' } display="flex" flexDirection="column">
-			<Box
-				mt={ 0 }
-				pe={ 3 }
-				flex="1"
-				overflowY="auto"
-				minH={ 0 }
-				sx={ {
-					'&::-webkit-scrollbar': {
-						width: '8px',
-					},
-					'&::-webkit-scrollbar-track': {
-						background: '#1A202C',
-						borderRadius: '4px',
-					},
-					'&::-webkit-scrollbar-thumb': {
-						background: '#4A5568',
-						borderRadius: '4px',
-					},
-					'&::-webkit-scrollbar-thumb:hover': {
-						background: '#718096',
-					},
-				} }
-			>
-				<table style={ { width: '100%', borderCollapse: 'separate', borderSpacing: 0 } }>
-					<thead style={ { position: 'sticky', top: 0, zIndex: 10, background: '#1A202C' } }>
-						<tr style={ { background: '#ffffff12', borderBottom: '1px solid #ffff' } }>
-							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'start', width: '30%', textTransform: 'uppercase' } }>Nome</th>
-							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '10%', textTransform: 'uppercase' } }>CNAE</th>
-							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '15%', textTransform: 'uppercase' } }>Negócios</th>
-							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '6%', textTransform: 'uppercase' } }>Interações</th>
-							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '15%', textTransform: 'uppercase' } }>Expira em</th>
-							<th style={ { padding: '0.6rem 1.2rem', textAlign: 'center', width: '15%', textTransform: 'uppercase' } }>Cidade</th>
-						</tr>
-					</thead>
-					<tbody>
-						{ tabelaContent }
-					</tbody>
-				</table>
-			</Box>
-		</Box>
+		<TableContainer h={{ base: 'auto', md: '100%' }} overflowY={{ base: 'visible', md: 'auto' }} sx={{
+			'&::-webkit-scrollbar': { width: '8px' },
+			'&::-webkit-scrollbar-track': { background: 'gray.800' },
+			'&::-webkit-scrollbar-thumb': { background: 'gray.700', borderRadius: '4px' },
+			'&::-webkit-scrollbar-thumb:hover': { background: 'gray.600' },
+		}}>
+			<Table variant="simple" size="sm">
+				<Thead position="sticky" top={0} bg="gray.800" zIndex={1} boxShadow="0 1px 0 rgba(255,255,255,0.1)">
+					<Tr>
+						<Th color="gray.400" py={4} w="200px" maxW="200px">Nome</Th>
+						<Th color="gray.400" textAlign="center">CNAE</Th>
+						<Th color="gray.400" textAlign="center">Histórico</Th>
+						<Th color="gray.400" textAlign="center">Interação</Th>
+						<Th color="gray.400" textAlign="center">Expiração</Th>
+						<Th color="gray.400" textAlign="center">Cidade</Th>
+					</Tr>
+				</Thead>
+				<Tbody>
+					{ tabelaContent }
+				</Tbody>
+			</Table>
+		</TableContainer>
 	)
 } )
 

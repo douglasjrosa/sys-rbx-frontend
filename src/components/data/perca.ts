@@ -17,15 +17,15 @@ export const StatusPerca = [
   },
   {
     id: '5',
-    title: 'Perca do time da negociação',
+    title: 'Perda do ritmo da negociação',
   },
   {
     id: '6',
-    title: 'Produto/Modelo não atende',
+    title: 'Produto ou Modelo não atende',
   },
   {
     id: '7',
-    title: 'Condições de pagamento não atende',
+    title: 'Condições de pagamento não atendem',
   },
   {
     id: '8',
@@ -34,5 +34,13 @@ export const StatusPerca = [
   {
     id: '9',
     title: 'Cliente Pertence a outro vendedor',
-  }
+  },
+  {
+    id: '10',
+    title: 'Cliente parou de responder',
+  },
+  {
+    id: '11',
+    title: 'Outros motivos...',
+  },
 ];

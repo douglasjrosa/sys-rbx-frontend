@@ -48,6 +48,10 @@ export default async function GetEmpresaAusente (
 
 			const response = await GET_Strapi( url )
 
+			if ( response?.error ) {
+				return res.status( response.error?.status ?? 400 ).json( response )
+			}
+
 			// Log simplificado para análise de ordenação
 			if ( response?.data && Array.isArray( response.data ) && response.data.length > 0 && sortOrder === 'relevancia' ) {
 				const logData = response.data.map( ( empresa: any ) => {

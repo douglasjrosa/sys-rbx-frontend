@@ -18,6 +18,6 @@ export const RegCompra = async ( id: number, valor: string ) => {
 		},
 	} )
 		.catch( ( err ) => {
-			console.error( err.response.data )
+			console.error( "Erro ao registrar compra:", err.response?.data || err.message )
 		} )
 }

@@ -23,13 +23,13 @@ export default async function GetEmpresa (
 		const consulta = await axiosRequet.get(
 			"/businesses?fields[0]=id&fields[1]=nBusiness&sort=id%3Adesc"
 		)
-		const [ respostaConsulta ] = !consulta.data.data ? null : consulta.data.data
+		const consultaData = consulta.data?.data || []
+		const respostaConsulta = consultaData.length > 0 ? consultaData[ 0 ] : null
+
 		const resposta =
 			respostaConsulta === null
 				? "001"
-				: respostaConsulta === undefined
-					? "001"
-					: respostaConsulta.attributes.nBusiness
+				: respostaConsulta.attributes.nBusiness
 		const dateNow = new Date()
 		const anoVigente = dateNow.getFullYear()
 		const resto = resposta.toString().replace( anoVigente, "" )
@@ -49,11 +49,22 @@ export default async function GetEmpresa (
 			? Number( anoVigente + "000" + 1 )
 			: newBusinesses
 
-		const getVendedor = await axiosRequet.get( "/users/" + data.vendedor )
-		const respVendedor = getVendedor.data.username
+		let respVendedor = ""
+		let respCliente = ""
 
-		const getCliente = await axiosRequet.get( "/empresas/" + data.empresa )
-		const respCliente = getCliente.data.data.attributes.nome
+		try {
+			const getVendedor = await axiosRequet.get( "/users/" + data.vendedor )
+			respVendedor = getVendedor.data.username
+
+			const getCliente = await axiosRequet.get( "/empresas/" + data.empresa )
+			respCliente = getCliente.data.data.attributes.nome
+		} catch ( error: any ) {
+			console.error( "Erro ao buscar vendedor ou cliente:", error.response?.data || error.message )
+			return res.status( 400 ).json( {
+				message: "Erro ao buscar vendedor ou cliente. Verifique se os IDs estão corretos.",
+				error: error.response?.data || error.message
+			} )
+		}
 
 		const dataAtualizado = {
 			data: {
@@ -61,7 +72,7 @@ export default async function GetEmpresa (
 				statusAnd: "Ativo",
 				DataRetorno: data.DataRetorno,
 				nBusiness: nBusiness.toString(),
-				Budget: data.Budget,
+				Budget: String( data.Budget ),
 				Approach: data.Approach,
 				history: [ data.history ],
 				incidentRecord: data.incidentRecord,
@@ -96,7 +107,7 @@ export default async function GetEmpresa (
 				} )
 			} )
 			.catch( async ( error ) => {
-
+				console.error( "Erro ao criar business no Strapi:", error.response?.data || error.message )
 
 				const isoDateTime = new Date().toISOString()
 
@@ -104,15 +115,15 @@ export default async function GetEmpresa (
 					date: isoDateTime,
 					vendedor: data.vendedor,
 					msg: "Proposta não foi criada devido a erro",
-					error: error.response,
+					error: error.response?.data || error.message,
 				}
 				const url = `empresas/${ data.empresa }`
 				const Register = await Historico( txt, url )
 
 				res.status( 500 ).json( {
 					historico: Register,
-					error: error.response,
-					message: error.response,
+					error: error.response?.data || error.message,
+					message: error.response?.data || error.message,
 				} )
 			} )
 	} else {

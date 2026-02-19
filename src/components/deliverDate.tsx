@@ -15,6 +15,8 @@ const DeliverDate: React.FC<TableItemsProps> = ({ deliverDate, setDeliverDateOnC
 			<FormLabel
 				fontSize="xs"
 				fontWeight="md"
+				textAlign="center"
+				w="full"
 			>
 				Data Entrega
 			</FormLabel>
@@ -23,9 +25,11 @@ const DeliverDate: React.FC<TableItemsProps> = ({ deliverDate, setDeliverDateOnC
 				type={ "date" }
 				color={ 'white' }
 				size="xs"
-				w="28"
+				py={1}
+				w="full"
 				fontSize="xs"
 				rounded="md"
+				textAlign="center"
 				onChange={ ( e ) => {
 					const chosenDate = new Date( e.target.value )
 					const today = new Date()

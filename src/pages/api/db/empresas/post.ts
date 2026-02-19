@@ -69,7 +69,6 @@ export default async function PostEmpresa (
 				IE: bodyData.Ie,
 				IM: "",
 				fone: bodyData.cidade,
-				indIEDest: "",
 				CNAE: bodyData.CNAE,
 				xLgr: bodyData.endereco,
 				nro: bodyData.numero,

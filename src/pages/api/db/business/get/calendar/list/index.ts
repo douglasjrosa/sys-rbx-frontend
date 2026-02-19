@@ -9,9 +9,10 @@ export default async function GetEmpresa (
 		try {
 			const token = process.env.ATORIZZATION_TOKEN
 			const { DataIncicio, DataFim, Vendedor } = req.query
+			const vendedorFilter = Vendedor ? `filters[vendedor][username][$eq]=${ Vendedor }&` : ''
 
 			const conclucaoResponse = await axios.get(
-				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?filters[vendedor][username][$eq]=${ Vendedor }&filters[status][$eq]=true&filters[date_conclucao][$between]=${ DataIncicio }&filters[date_conclucao][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
+				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?${ vendedorFilter }filters[status][$eq]=true&filters[date_conclucao][$between]=${ DataIncicio }&filters[date_conclucao][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
 				{
 					headers: {
 						Authorization: `Bearer ${ token }`,
@@ -21,7 +22,7 @@ export default async function GetEmpresa (
 			)
 
 			const dataRetornoResponse = await axios.get(
-				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?filters[vendedor][username][$eq]=${ Vendedor }&filters[status][$eq]=true&filters[DataRetorno][$between]=${ DataIncicio }&filters[DataRetorno][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
+				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?${ vendedorFilter }filters[status][$eq]=true&filters[DataRetorno][$between]=${ DataIncicio }&filters[DataRetorno][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
 				{
 					headers: {
 						Authorization: `Bearer ${ token }`,
@@ -31,7 +32,7 @@ export default async function GetEmpresa (
 			)
 
 			const deadlineResponse = await axios.get(
-				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?filters[vendedor][username][$eq]=${ Vendedor }&filters[status][$eq]=true&filters[deadline][$between]=${ DataIncicio }&filters[deadline][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
+				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?${ vendedorFilter }filters[status][$eq]=true&filters[deadline][$between]=${ DataIncicio }&filters[deadline][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
 				{
 					headers: {
 						Authorization: `Bearer ${ token }`,
@@ -41,7 +42,7 @@ export default async function GetEmpresa (
 			)
 
 			const createdAtResponse = await axios.get(
-				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?filters[vendedor][username][$eq]=${ Vendedor }&filters[status][$eq]=true&filters[createdAt][$between]=${ DataIncicio }&filters[createdAt][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
+				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?${ vendedorFilter }filters[status][$eq]=true&filters[createdAt][$between]=${ DataIncicio }&filters[createdAt][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,
 				{
 					headers: {
 						Authorization: `Bearer ${ token }`,

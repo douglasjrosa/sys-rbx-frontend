@@ -2,21 +2,31 @@ import { Center, Flex, Text } from '@chakra-ui/layout'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 import { GiHamburgerMenu } from 'react-icons/gi'
+import { BsArrowLeftCircleFill } from 'react-icons/bs'
+import { CloseIcon } from '@chakra-ui/icons'
 import ProfilePopover from './profile-popover'
 
+import React from 'react'
 import {
+	Button,
+	Drawer,
+	DrawerBody,
+	DrawerContent,
+	DrawerHeader,
+	DrawerOverlay,
 	IconButton,
-	Menu,
-	MenuButton,
-	MenuItem,
-	MenuList,
 	ResponsiveArray,
 	Spacer,
+	useDisclosure,
 } from '@chakra-ui/react'
 import { Property } from 'csstype'
 import NavMenuItems from './nav-menu-items'
+import { Z_INDEX } from '@/utils/zIndex'
+
+const DRAWER_CLOSE_BLOCK_MS = 500
 
 const MobileNavbar = () => {
+	const drawerJustClosedRef = React.useRef( false )
 	let fontColor:
 		| string
 		| ResponsiveArray<
@@ -392,92 +402,160 @@ const MobileNavbar = () => {
 				| 'telegram.700'
 				| 'telegram.800'
 				| 'telegram.900'
-				| 'chakra-body-text'
-				| 'chakra-body-bg'
-				| 'chakra-border-color'
-				| 'chakra-placeholder-color'
-			>
-		>,
-		pageTitle
+		| 'chakra-body-text'
+			| 'chakra-body-bg'
+			| 'chakra-border-color'
+			| 'chakra-placeholder-color'
+		>
+		>
 	const router = useRouter()
+	const { isOpen, onOpen, onClose } = useDisclosure()
+	const MENU_ITEM_FONT_SIZE = '1.5rem'
+	const MENU_ITEM_ICON_SIZE = '1.75rem'
+
+	const isPrimaryRoute = NavMenuItems.some( ( item ) => router.asPath === item.url )
+	const matchedPrimaryItem = NavMenuItems.find( ( item ) => router.asPath === item.url )
+
+	const handleDrawerClose = ( e?: React.MouseEvent ) => {
+		e?.stopPropagation()
+		e?.preventDefault()
+		drawerJustClosedRef.current = true
+		onClose()
+		setTimeout( () => {
+			drawerJustClosedRef.current = false
+		}, DRAWER_CLOSE_BLOCK_MS )
+	}
+
 	return (
 		<Flex
 			flexDir="row"
 			h="60px"
+			minH="60px"
 			w="100%"
+			p="10px"
+			bg="gray.700"
+			flexShrink={ 0 }
+			overflow="hidden"
 			display={ [ 'flex', 'flex', 'none', 'none', 'none' ] }
 		>
 			<Center>
-				<Menu>
-					<MenuButton
-						as={ IconButton }
-						h="100%"
-						w="60px"
-						color="greenyellow"
-						aria-label="Options"
-						icon={ <GiHamburgerMenu /> }
-						fontSize="30px"
-						ml="10px"
-						bg="transparent"
-						transition="all 0.2s"
-						border="none"
-						_hover={ { bg: 'gray.600' } }
-						_expanded={ { bg: 'gray.600' } }
-					/>
-					<MenuList
+				<IconButton
+					h="36px"
+					w="36px"
+					minW="36px"
+					p="6px"
+					color="#00dc00"
+					aria-label="Options"
+					icon={ <GiHamburgerMenu /> }
+					fontSize="22px"
+					ml="0"
+					bg="transparent"
+					borderRadius="md"
+					transition="all 0.2s"
+					border="1px solid"
+					borderColor="#00dc00"
+					_hover={ { bg: '#00dc00', color: 'white', borderColor: '#00dc00' } }
+					_active={ { bg: '#00dc00', color: 'white', borderColor: '#00dc00' } }
+					onClick={ onOpen }
+				/>
+				<Drawer
+					isOpen={ isOpen }
+					onClose={ handleDrawerClose }
+					placement="left"
+					size="full"
+					closeOnOverlayClick={ false }
+				>
+					<DrawerOverlay zIndex={ Z_INDEX.MOBILE_NAVBAR_OVERLAY } bg="blackAlpha.700" />
+					<DrawerContent
 						bg="gray.700"
-						borderColor="gray.600"
-						sx={ {
-							'& .chakra-menu__menu-item': {
-								backgroundColor: '#4A5568 !important',
-								color: 'white !important',
-							},
-							'& .chakra-menu__menu-item:hover': {
-								backgroundColor: '#718096 !important',
-								color: 'white !important',
-							},
-							'& .chakra-menu__menu-item:focus': {
-								backgroundColor: '#718096 !important',
-								color: 'white !important',
-							}
-						} }
+						maxW="100vw"
+						zIndex={ Z_INDEX.MOBILE_NAVBAR_CONTENT }
+						sx={ { position: 'fixed' } }
 					>
-						{ NavMenuItems.map( ( item ) => {
-							if ( router.asPath === item.url ) {
-								fontColor = 'greenyellow'
-								pageTitle = item.text
-							} else {
-								fontColor = 'whiteAlpha.800'
-							}
+						<DrawerHeader
+							bg="gray.600"
+							borderBottom="1px"
+							borderColor="gray.600"
+							display="flex"
+							alignItems="center"
+							justifyContent="space-between"
+							px="24px"
+							py="20px"
+						>
+							<Text color="white" fontSize="1.25rem">
+								Menu
+							</Text>
+							<IconButton
+								aria-label="Fechar menu"
+								icon={ <CloseIcon /> }
+								color="white"
+								bg="transparent"
+								_hover={ { bg: 'gray.500' } }
+								onClick={ ( e ) => handleDrawerClose( e ) }
+							/>
+						</DrawerHeader>
+						<DrawerBody p="0">
+							<Flex flexDir="column" h="100%">
+								{ NavMenuItems.map( ( item ) => {
+									if ( router.asPath === item.url ) {
+										fontColor = '#00dc00'
+									} else {
+										fontColor = 'whiteAlpha.800'
+									}
 
-							return (
-								<NextLink
-									href={ item.url }
-									key={ `mobile-nav-link-${ item.id }` }
-									target={ item.url.includes( 'https' ) ? '_blank' : '_self' }
-								>
-									<MenuItem
-										bg="gray.600"
-										_hover={ { bg: 'gray.500', color: 'white' } }
-										_focus={ { bg: 'gray.500', color: 'white' } }
-										key={ `mobile-nav-${ item.id }` }
-										icon={ item.iconComponent }
-										color={ fontColor }
-									>
-										{ item.text }
-									</MenuItem>
-								</NextLink>
-							)
-						} ) }
-					</MenuList>
-				</Menu>
-				<Text ml="15px" color="whiteAlpha.800" fontSize="2xl">
-					{ pageTitle }
-				</Text>
+									return (
+										<NextLink
+											href={ item.url }
+											key={ `mobile-nav-link-${ item.id }` }
+											target={ item.url.includes( 'https' ) ? '_blank' : '_self' }
+											onClick={ onClose }
+										>
+											<Flex
+												alignItems="center"
+												gap="4"
+												px="24px"
+												py="20px"
+												minH="64px"
+												bg="gray.600"
+												color={ fontColor }
+												fontSize={ MENU_ITEM_FONT_SIZE }
+												_hover={ { bg: 'gray.500', color: 'white' } }
+												_focus={ { bg: 'gray.500', color: 'white' } }
+												sx={ { '& svg': { fontSize: MENU_ITEM_ICON_SIZE, flexShrink: 0 } } }
+												cursor="pointer"
+											>
+												{ item.iconComponent }
+												{ item.text }
+											</Flex>
+										</NextLink>
+									)
+								} ) }
+							</Flex>
+						</DrawerBody>
+					</DrawerContent>
+				</Drawer>
+				{ isPrimaryRoute && matchedPrimaryItem ? (
+					<Text ml="15px" color="whiteAlpha.800" fontSize="2xl">
+						{ matchedPrimaryItem.text }
+					</Text>
+				) : (
+					<Button
+						ml="15px"
+						h="36px"
+						leftIcon={ <BsArrowLeftCircleFill size={ 20 } /> }
+						variant="outline"
+						color="#00dc00"
+						borderColor="#00dc00"
+						_hover={ { bg: '#00dc00', color: 'white', borderColor: '#00dc00' } }
+						onClick={ () => router.back() }
+					>
+						Voltar
+					</Button>
+				) }
 			</Center>
 			<Spacer />
-			<Center px="10px">
-				<ProfilePopover />
+			<Center px="0">
+				<ProfilePopover isMobile blockOpenRef={ drawerJustClosedRef } />
 			</Center>
 		</Flex>
 	)

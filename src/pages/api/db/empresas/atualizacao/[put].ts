@@ -79,7 +79,6 @@ export default async function GetEmpresa (
 				IE: bodyData.Ie,
 				IM: "",
 				fone: bodyData.cidade,
-				indIEDest: "",
 				CNAE: bodyData.CNAE,
 				xLgr: bodyData.endereco,
 				nro: bodyData.numero,

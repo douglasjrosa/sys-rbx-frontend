@@ -14,10 +14,6 @@ export default async function GetEmpresa (
 		const etapa = data?.data?.etapa
 		const andamento = data?.data?.andamento
 		const date_conclucao = data?.data?.date_conclucao
-		// #region agent log
-		fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: '[id].ts:12', message: 'API PUT request received', data: { id, dataKeys: Object.keys( data?.data || {} ), etapa: data?.data?.etapa, andamento: data?.data?.andamento }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C' } ) } ).catch( () => { } )
-		// #endregion
-
 
 		await axios( {
 			method: 'PUT',
@@ -29,10 +25,6 @@ export default async function GetEmpresa (
 			data: data,
 		} )
 			.then( async ( Response ) => {
-				// #region agent log
-				fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: '[id].ts:24', message: 'Strapi PUT successful', data: { status: Response.status, responseId: Response.data?.data?.id }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C' } ) } ).catch( () => { } )
-				// #endregion
-
 				// If business was won (etapa=6 and andamento=5), update empresa purchase data
 				if ( etapa === 6 && andamento === 5 ) {
 					try {
@@ -79,9 +71,6 @@ export default async function GetEmpresa (
 
 			} )
 			.catch( ( err ) => {
-				// #region agent log
-				fetch( 'http://127.0.0.1:7244/ingest/9b56e505-01d3-49e7-afde-e83171883b39', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( { location: '[id].ts:28', message: 'Strapi PUT failed', data: { status: err.response?.status, errorMessage: err.message, errorDetails: err.response?.data?.error, strapiError: JSON.stringify( err.response?.data ) }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'B,C' } ) } ).catch( () => { } )
-				// #endregion
 				console.error( 'Error updating business:', err )
 
 				const statusCode = err.response?.status || 500

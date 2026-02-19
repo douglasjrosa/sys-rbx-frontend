@@ -9,7 +9,7 @@ export default async function GetEmpresa(
     const token = process.env.ATORIZZATION_TOKEN;
     await axios
       .get(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/users?filters[confirmed][$eq]=true&sort[0]=username%3Adesc&fields[0]=username`,
+        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/users?filters[confirmed][$eq]=true&sort[0]=username%3Adesc&fields[0]=id&fields[1]=username`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
