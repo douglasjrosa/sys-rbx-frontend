@@ -10,10 +10,13 @@ export default async function SyncProdutos (
 	}
 
 	try {
-		const { empresaId, produtos } = req.body
+		const { empresaId, produtos, deleteMissing, keepProdIds } = req.body
 		const url = `/produtos/sync`
+		const payload: Record<string, unknown> = { empresaId, produtos: produtos || [] }
+		if ( deleteMissing !== undefined ) payload.deleteMissing = deleteMissing
+		if ( Array.isArray( keepProdIds ) ) payload.keepProdIds = keepProdIds
 
-		const response = await POST_Strapi( { empresaId, produtos }, url )
+		const response = await POST_Strapi( payload, url )
 
 		res.status( 200 ).json( response )
 	} catch ( error: any ) {

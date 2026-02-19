@@ -48,10 +48,20 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
 		} )
 
-		const responseData = await response.json()
+		const responseText = await response.text()
+		let responseData: unknown
+		try {
+			responseData = responseText ? JSON.parse( responseText ) : {}
+		} catch {
+			responseData = { error: 'Invalid JSON response from legacy API', raw: responseText.substring( 0, 500 ) }
+		}
 
 		if ( !response.ok ) {
+			const errMsg = ( responseData as { message?: string } )?.message
+				|| ( responseData as { error?: string } )?.error
+				|| response.statusText
 			res.status( response.status ).json( {
+				error: errMsg,
 				errorMessage: `Request failed: ${ response.statusText }`,
 				responseError: responseData
 			} )

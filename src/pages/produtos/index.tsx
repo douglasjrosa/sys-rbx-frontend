@@ -497,21 +497,46 @@ function Produtos() {
 			const activeProducts = allProducts.filter((p: any) => p.ativo === "1")
 
 			if (activeProducts.length > 0) {
-				toast.update('sync-company-prod', {
-					description: `Enviando ${activeProducts.length} produtos para o sistema comercial...`,
-				})
+				const BATCH_SIZE = 5
+				let totalCreated = 0
+				let totalUpdated = 0
+				const syncedProdIds: number[] = []
 
-				// 3. Enviar para sincronização no Strapi via proxy
-				const syncRes = await axios.post(`/api/db/produtos/sync`, {
-					empresaId: selectedCompany.id,
-					produtos: activeProducts,
-					deleteMissing: true
-				})
+				for (let i = 0; i < activeProducts.length; i += BATCH_SIZE) {
+					const batch = activeProducts.slice(i, i + BATCH_SIZE)
+					const lastInBatch = batch[batch.length - 1]
+					const productName = lastInBatch?.nomeProd || lastInBatch?.codigo || `rbx-${lastInBatch?.prodId}` || ''
+					const current = Math.min(i + BATCH_SIZE, activeProducts.length)
+
+					toast.update('sync-company-prod', {
+						description: `Processando ${current}/${activeProducts.length}: ${productName}`,
+					})
+
+					const syncRes = await axios.post(`/api/db/produtos/sync`, {
+						empresaId: selectedCompany.id,
+						produtos: batch,
+					})
+					totalCreated += syncRes.data.created || 0
+					totalUpdated += syncRes.data.updated || 0
+					batch.forEach((p: any) => syncedProdIds.push(Number(p.prodId)))
+				}
+
+				if (activeProducts.length > 0) {
+					toast.update('sync-company-prod', {
+						description: 'Removendo produtos não encontrados no legado...',
+					})
+					await axios.post(`/api/db/produtos/sync`, {
+						empresaId: selectedCompany.id,
+						produtos: [],
+						deleteMissing: true,
+						keepProdIds: syncedProdIds,
+					})
+				}
 
 				toast.close('sync-company-prod')
 				toast({
 					title: 'Sincronização concluída',
-					description: `${syncRes.data.created} novos e ${syncRes.data.updated} atualizados.`,
+					description: `${totalCreated} novos e ${totalUpdated} atualizados.`,
 					status: 'success',
 					duration: 5000,
 					isClosable: true,
