@@ -1,9 +1,10 @@
 import { CarteiraAusente } from "@/components/empresa/component/empresas_ausente"
+import { CarteiraOutrosVendedores } from "@/components/empresa/component/empresas_outros_vendedores"
 import { CarteiraVendedor } from "@/components/empresa/component/empresas_vendedor"
 import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa"
 import { FiltroCNAE, FiltroCNAERef } from "@/components/empresa/component/fitro/cnae"
 import { FiltroCidade, FiltroCidadeRef } from "@/components/empresa/component/fitro/cidade"
-import { Box, Button, Flex, Heading, useToast, Select, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Text, Tabs, TabList, TabPanels, Tab, TabPanel, HStack, Input } from "@chakra-ui/react"
+import { Badge, Box, Button, Flex, Heading, useToast, Select, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Text, Tabs, TabList, TabPanels, Tab, TabPanel, HStack, Input } from "@chakra-ui/react"
 import { FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa"
 import axios from "axios"
 import { parseISO, startOfDay } from "date-fns"
@@ -20,6 +21,7 @@ function Empresas () {
 	// Estados separados para cada tipo de empresa
 	const [ empresasComVendedor, setEmpresasComVendedor ] = useState<any[]>( [] )
 	const [ empresasSemVendedor, setEmpresasSemVendedor ] = useState<any[]>( [] )
+	const [ empresasOutrosVendedores, setEmpresasOutrosVendedores ] = useState<any[]>( [] )
 
 	// Estados para filtro e paginação
 	const [ filtroTexto, setFiltroTexto ] = useState( "" )
@@ -35,6 +37,12 @@ function Empresas () {
 	const [ carregandoSemVendedor, setCarregandoSemVendedor ] = useState( false )
 	const [ totalPaginasSemVendedor, setTotalPaginasSemVendedor ] = useState( 1 )
 	const [ totalPaginasComVendedor, setTotalPaginasComVendedor ] = useState( 1 )
+	const [ paginaAtualOutrosVendedores, setPaginaAtualOutrosVendedores ] = useState( 1 )
+	const [ carregandoOutrosVendedores, setCarregandoOutrosVendedores ] = useState( false )
+	const [ totalPaginasOutrosVendedores, setTotalPaginasOutrosVendedores ] = useState( 1 )
+	const [ totalEmpresasComVendedor, setTotalEmpresasComVendedor ] = useState( 0 )
+	const [ totalEmpresasSemVendedor, setTotalEmpresasSemVendedor ] = useState( 0 )
+	const [ totalEmpresasOutrosVendedores, setTotalEmpresasOutrosVendedores ] = useState( 0 )
 	const [ tabIndex, setTabIndex ] = useState( 0 )
 	const prevTotalPaginasComVendedor = useRef( 1 )
 	const prevTotalPaginasSemVendedor = useRef( 1 )
@@ -299,7 +307,7 @@ function Empresas () {
 			const novoTotal = total > 0 ? Math.ceil( total / pageSizeMeta ) : 1
 
 			setEmpresasComVendedor( processados )
-			// Atualizar total de páginas apenas após atualizar os dados
+			setTotalEmpresasComVendedor( total )
 			setTotalPaginasComVendedor( novoTotal )
 		} catch ( error ) {
 			console.error( "Erro ao carregar empresas com vendedor:", error )
@@ -342,6 +350,7 @@ function Empresas () {
 			const novoTotal = total > 0 ? Math.ceil( total / pageSizeMeta ) : 1
 
 			setEmpresasSemVendedor( processados )
+			setTotalEmpresasSemVendedor( total )
 			setTotalPaginasSemVendedor( novoTotal )
 		} catch ( error ) {
 			console.error( "Erro ao carregar empresas sem vendedor:", error )
@@ -356,6 +365,38 @@ function Empresas () {
 			setCarregandoSemVendedor( false )
 		}
 	}, [ session?.user.id, session?.user.name, session?.user.pemission, processarEmpresasSemVendedor, toast, filtroCNAE, filtroCidade, filtroVendedorId ] )
+
+	// Carregar empresas de outros vendedores (apenas para vendedores, não admin)
+	const carregarEmpresasOutrosVendedores = useCallback( async ( pagina = 1 ) => {
+		if ( !session?.user.id || isAdmin ) return
+
+		setCarregandoOutrosVendedores( true )
+		try {
+			const res = await axios.get(
+				`/api/db/empresas/empresalist/outros-vendedores?page=${ pagina }&filtro=${ encodeURIComponent( filtroTexto ) }&filtroCNAE=${ encodeURIComponent( filtroCNAE ) }&filtroCidade=${ encodeURIComponent( filtroCidade ) }`
+			)
+			const empresasData = Array.isArray( res.data?.data ) ? res.data.data : []
+			const pagination = res.data?.meta?.pagination
+			const total = pagination?.total ?? empresasData.length
+			const pageSizeMeta = pagination?.pageSize ?? 50
+			const novoTotal = total > 0 ? Math.ceil( total / pageSizeMeta ) : 1
+
+			setEmpresasOutrosVendedores( empresasData )
+			setTotalEmpresasOutrosVendedores( total )
+			setTotalPaginasOutrosVendedores( novoTotal )
+		} catch ( error ) {
+			console.error( "Erro ao carregar empresas de outros vendedores:", error )
+			toast( {
+				title: "Erro",
+				description: "Erro ao carregar empresas de outros vendedores",
+				status: "error",
+				duration: 5000,
+				isClosable: true,
+			} )
+		} finally {
+			setCarregandoOutrosVendedores( false )
+		}
+	}, [ session?.user.id, isAdmin, toast, filtroTexto, filtroCNAE, filtroCidade ] )
 
 	// Carregar dados iniciais - apenas carregar vendedores e marcar como inicializado
 	useEffect( () => {
@@ -385,6 +426,27 @@ function Empresas () {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ paginaAtualSemVendedor, filtroTexto, filtroCNAE, filtroCidade, filtroVendedorId, session?.user.id ] )
+
+	// Carregar empresas de outros vendedores (apenas para vendedores)
+	// Lista vazia no carregamento inicial - só reage quando o campo de pesquisa é alterado
+	useEffect( () => {
+		if ( !session?.user.id || isAdmin ) return
+
+		const hasFilter = Boolean(
+			( filtroTexto && filtroTexto.trim() ) ||
+			( filtroCNAE && filtroCNAE.trim() ) ||
+			( filtroCidade && filtroCidade.trim() )
+		)
+
+		if ( hasFilter ) {
+			carregarEmpresasOutrosVendedores( paginaAtualOutrosVendedores )
+		} else {
+			setEmpresasOutrosVendedores( [] )
+			setTotalEmpresasOutrosVendedores( 0 )
+			setTotalPaginasOutrosVendedores( 1 )
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ paginaAtualOutrosVendedores, filtroTexto, filtroCNAE, filtroCidade, session?.user.id, isAdmin ] )
 
 	// Usar dados diretamente da API - ordenação já aplicada no backend
 	const empresasComVendedorFiltradas = useMemo( () => {
@@ -524,6 +586,7 @@ function Empresas () {
 			if ( prev === searchText ) return prev
 			setPaginaAtualSemVendedor( 1 )
 			setPaginaAtualComVendedor( 1 )
+			setPaginaAtualOutrosVendedores( 1 )
 			return searchText
 		} )
 	}, [] )
@@ -558,6 +621,7 @@ function Empresas () {
 			if ( prev === cnaeText ) return prev
 			setPaginaAtualSemVendedor( 1 )
 			setPaginaAtualComVendedor( 1 )
+			setPaginaAtualOutrosVendedores( 1 )
 			return cnaeText
 		} )
 		// Atualizar o valor do input quando chamado externamente (ex: ao clicar no badge)
@@ -572,12 +636,18 @@ function Empresas () {
 			if ( prev === cidadeText ) return prev
 			setPaginaAtualSemVendedor( 1 )
 			setPaginaAtualComVendedor( 1 )
+			setPaginaAtualOutrosVendedores( 1 )
 			return cidadeText
 		} )
 		// Atualizar o valor do input quando chamado externamente (ex: ao clicar no badge)
 		if ( filtroCidadeRef.current ) {
 			filtroCidadeRef.current.setValue( cidadeText )
 		}
+	}, [] )
+
+	// Função para mudar de página para empresas de outros vendedores
+	const handlePaginacaoOutrosVendedores = useCallback( ( novaPagina: number ) => {
+		setPaginaAtualOutrosVendedores( novaPagina )
 	}, [] )
 
 	// Estado local para inputs de paginação (para evitar resets durante digitação)
@@ -1074,15 +1144,35 @@ function Empresas () {
 				</Flex>
 				<Tabs colorScheme="blue" w={ '100%' } flex="1" display="flex" flexDirection="column" overflowY="auto" variant="unstyled" index={ tabIndex } onChange={ setTabIndex }>
 					<Flex justifyContent="space-between" alignItems="flex-end" mb={ 0 } borderBottom="2px solid #ffffff">
-						<TabList flex="1" borderBottom="none">
+						<TabList pt={2} flex="1" borderBottom="none">
 							<Tab
 								fontWeight="semibold"
 								bg="transparent"
 								borderColor="rgba(255, 255, 255, 0.5)"
 								borderBottom="none"
 								_selected={ { bg: 'blue.600', color: 'white', borderTop: '2px solid #ffffff', borderLeft: '2px solid #ffffff', borderRight: '2px solid #ffffff', borderBottom: 'none' } }
+								position="relative"
 							>
 								Todas as empresas com vendedor
+								{ totalEmpresasComVendedor > 0 && (
+									<Badge
+										position="absolute"
+										top="-5px"
+										right="-5px"
+										bg="orange.500"
+										color="white"
+										borderRadius="full"
+										border="1px solid white"
+										fontSize="xs"
+										minW="18px"
+										h="18px"
+										display="flex"
+										alignItems="center"
+										justifyContent="center"
+									>
+										{ totalEmpresasComVendedor }
+									</Badge>
+								) }
 							</Tab>
 							<Tab
 								fontWeight="semibold"
@@ -1090,9 +1180,60 @@ function Empresas () {
 								borderColor="rgba(255, 255, 255, 0.5)"
 								borderBottom="none"
 								_selected={ { bg: 'blue.600', color: 'white', borderTop: '2px solid #ffffff', borderLeft: '2px solid #ffffff', borderRight: '2px solid #ffffff', borderBottom: 'none' } }
+								position="relative"
 							>
 								Empresas sem carteira definida
+								{ totalEmpresasSemVendedor > 0 && (
+									<Badge
+										position="absolute"
+										top="-5px"
+										right="-5px"
+										bg="orange.500"
+										color="white"
+										borderRadius="full"
+										border="1px solid white"
+										fontSize="xs"
+										minW="18px"
+										h="18px"
+										display="flex"
+										alignItems="center"
+										justifyContent="center"
+									>
+										{ totalEmpresasSemVendedor }
+									</Badge>
+								) }
 							</Tab>
+							{ !isAdmin && (
+								<Tab
+									fontWeight="semibold"
+									bg="transparent"
+									borderColor="rgba(255, 255, 255, 0.5)"
+									borderBottom="none"
+									_selected={ { bg: 'blue.600', color: 'white', borderTop: '2px solid #ffffff', borderLeft: '2px solid #ffffff', borderRight: '2px solid #ffffff', borderBottom: 'none' } }
+									position="relative"
+								>
+									Outros vendedores
+									{ totalEmpresasOutrosVendedores > 0 && (
+										<Badge
+											position="absolute"
+											top="-5px"
+											right="-5px"
+											bg="orange.500"
+											color="white"
+											borderRadius="full"
+											border="1px solid white"
+											fontSize="xs"
+											minW="18px"
+											h="18px"
+											display="flex"
+											alignItems="center"
+											justifyContent="center"
+										>
+											{ totalEmpresasOutrosVendedores }
+										</Badge>
+									) }
+								</Tab>
+							) }
 						</TabList>
 						<Box pb={ 2 }>
 							{ tabIndex === 0 ? (
@@ -1156,6 +1297,38 @@ function Empresas () {
 												_disabled={ { bg: '#1a365d', opacity: 0.5, cursor: 'not-allowed' } }
 												onClick={ () => handlePaginacaoComVendedor( Math.min( totalPaginasComVendedor, paginaAtualComVendedor + 1 ) ) }
 												isDisabled={ paginaAtualComVendedor === totalPaginasComVendedor || carregandoVendedor }
+											>
+												<FaAngleDoubleRight />
+											</Button>
+										</HStack>
+									</Flex>
+								)
+							) : tabIndex === 2 ? (
+								totalPaginasOutrosVendedores <= 1 ? null : (
+									<Flex alignItems="flex-end" justifyContent="flex-end">
+										<HStack spacing={ 2 }>
+											<Button
+												size="xs"
+												bg="#2b6cb0"
+												color="white"
+												_hover={ { bg: '#2c5282' } }
+												_active={ { bg: '#2a4365' } }
+												_disabled={ { bg: '#1a365d', opacity: 0.5, cursor: 'not-allowed' } }
+												onClick={ () => handlePaginacaoOutrosVendedores( Math.max( 1, paginaAtualOutrosVendedores - 1 ) ) }
+												isDisabled={ paginaAtualOutrosVendedores === 1 || carregandoOutrosVendedores }
+											>
+												<FaAngleDoubleLeft />
+											</Button>
+											<Text fontSize="xs">Página { paginaAtualOutrosVendedores } de { totalPaginasOutrosVendedores }</Text>
+											<Button
+												size="xs"
+												bg="#2b6cb0"
+												color="white"
+												_hover={ { bg: '#2c5282' } }
+												_active={ { bg: '#2a4365' } }
+												_disabled={ { bg: '#1a365d', opacity: 0.5, cursor: 'not-allowed' } }
+												onClick={ () => handlePaginacaoOutrosVendedores( Math.min( totalPaginasOutrosVendedores, paginaAtualOutrosVendedores + 1 ) ) }
+												isDisabled={ paginaAtualOutrosVendedores === totalPaginasOutrosVendedores || carregandoOutrosVendedores }
 											>
 												<FaAngleDoubleRight />
 											</Button>
@@ -1267,10 +1440,20 @@ function Empresas () {
 								paginaAtual={ paginaAtualSemVendedor }
 								totalPaginas={ totalPaginasSemVendedor }
 								onChangePagina={ handlePaginacaoSemVendedor }
-								onFilterByCNAE={ handleFiltroCNAE }
-								onFilterByCidade={ handleFiltroCidade }
 							/>
 						</TabPanel>
+						{ !isAdmin && (
+							<TabPanel px={ 0 } py={ 4 } flex="1" display="flex" flexDirection="column" minH={ 0 }>
+								<CarteiraOutrosVendedores
+									filtro={ empresasOutrosVendedores }
+									isLoading={ carregandoOutrosVendedores }
+									paginaAtual={ paginaAtualOutrosVendedores }
+									totalPaginas={ totalPaginasOutrosVendedores }
+									onChangePagina={ handlePaginacaoOutrosVendedores }
+									hasSearched={ Boolean( filtroTexto?.trim() || filtroCNAE?.trim() || filtroCidade?.trim() ) }
+								/>
+							</TabPanel>
+						) }
 					</TabPanels>
 				</Tabs>
 
