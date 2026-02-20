@@ -16,7 +16,8 @@ function Layout ( { children }: { children: React.ReactNode } ): JSX.Element {
 	useEffect( () => {
 		const container = document.createElement( 'div' )
 		container.id = 'navbar-portal-root'
-		container.style.cssText = `position:fixed;top:0;left:0;right:0;height:60px;z-index:${Z_INDEX.MOBILE_NAVBAR_LAYER};`
+		container.style.cssText =
+			`position:fixed;top:0;left:0;right:0;height:60px;z-index:${Z_INDEX.MOBILE_NAVBAR_LAYER};pointer-events:none;`
 		document.body.appendChild( container )
 		setNavbarContainer( container )
 		return () => {
@@ -135,6 +136,7 @@ function Layout ( { children }: { children: React.ReactNode } ): JSX.Element {
 					left={ 0 }
 					right={ 0 }
 					display={ [ 'block', 'block', 'none', 'none', 'none' ] }
+					pointerEvents="auto"
 				>
 					<PortalManager zIndex={Z_INDEX.MOBILE_NAVBAR_LAYER}>
 						<MobileNavbar />

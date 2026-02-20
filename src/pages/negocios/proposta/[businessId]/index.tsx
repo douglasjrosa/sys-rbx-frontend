@@ -28,6 +28,7 @@ import { FaShoppingCart } from "react-icons/fa";
 import { formatCurrency, parseCurrency } from "@/utils/customNumberFormats";
 import { formatCompanyDisplayName } from "@/utils/formatCompanyName";
 import { emitentes } from "@/components/data/emitentes";
+import { Z_INDEX } from "@/utils/zIndex";
 
 const Proposta = () => {
   const router = useRouter();
@@ -582,25 +583,30 @@ const Proposta = () => {
         <Box
           position="sticky"
           top={0}
-          zIndex={1000}
+          zIndex={10}
           bg={"gray.800"}
           py={3}
+          pr={{ base: "100px", md: "120px" }}
           borderBottom="1px solid"
           borderColor="gray.700"
         >
-          <Flex justifyContent="space-between" alignItems="center">
-            <Heading size="lg" fontWeight="bold" noOfLines={1}>
-              {formatCompanyDisplayName( companyData?.attributes?.nome ) || "Carregando..."}
-            </Heading>
-            <Button
-              colorScheme="whatsapp"
-              onClick={handleSaveOrder}
-              isDisabled={loading}
-              position="relative"
-            >
-              Salvar
-            </Button>
-          </Flex>
+          <Heading size="lg" fontWeight="bold" noOfLines={1}>
+            {formatCompanyDisplayName( companyData?.attributes?.nome ) || "Carregando..."}
+          </Heading>
+        </Box>
+        <Box
+          position="fixed"
+          top={{ base: "76px", md: "16px" }}
+          right="24px"
+          zIndex={Z_INDEX.MOBILE_NAVBAR_LAYER - 1}
+        >
+          <Button
+            colorScheme="whatsapp"
+            onClick={handleSaveOrder}
+            isDisabled={loading}
+          >
+            Salvar
+          </Button>
         </Box>
         <Box w="100%">
           <Flex gap={4} flexDir={{ base: "column", lg: "row" }} alignItems="stretch" pt={4}>
