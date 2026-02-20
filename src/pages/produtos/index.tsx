@@ -227,6 +227,14 @@ function Produtos() {
 
 	// Refs
 	const companyInputRef = useRef<HTMLInputElement>(null)
+	const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const searchAbortRef = useRef<AbortController | null>(null)
+	const searchTermRef = useRef<string>('')
+
+	// Company search: loading state for skeleton and race-condition handling
+	const [isSearchingCompanies, setIsSearchingCompanies] = useState(false)
+
+	const SEARCH_DEBOUNCE_MS = 350
 
 	// Pagination State
 	const [currentPage, setCurrentPage] = useState(1)
@@ -351,7 +359,6 @@ function Produtos() {
 				if (strapiError.response?.status !== 404) {
 					throw strapiError // Re-lança se for outro tipo de erro
 				}
-				console.log('Produto já não existia no Strapi ou foi removido automaticamente.')
 			}
 
 			toast({
@@ -385,24 +392,74 @@ function Produtos() {
 		}
 	}, [selectedCompany])
 
-	const handleSearch = useCallback(async (value: string) => {
+	useEffect(() => () => {
+		if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+		if (searchAbortRef.current) searchAbortRef.current.abort()
+	}, [])
+
+	const handleSearch = useCallback((value: string) => {
+		searchTermRef.current = value
 		setSelectedCompanyName(value)
 		if (value.length < 3) {
 			setCompanies([])
+			setIsSearchingCompanies(false)
+			if (searchDebounceRef.current) {
+				clearTimeout(searchDebounceRef.current)
+				searchDebounceRef.current = null
+			}
+			if (searchAbortRef.current) {
+				searchAbortRef.current.abort()
+				searchAbortRef.current = null
+			}
 			return
 		}
 
-		try {
-			// Adicionado populate=businesses para garantir que os negócios sejam carregados na busca
-			const url = `/api/refactory/companies?searchString=${value}&populate=businesses`
-			const response = await axios(url)
-			setCompanies(response.data.data)
-		} catch (error) {
-			console.error('Erro na busca:', error)
-		}
+		setIsSearchingCompanies(true)
+		if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+
+		searchDebounceRef.current = setTimeout(async () => {
+			searchDebounceRef.current = null
+			const searchFor = searchTermRef.current?.trim() ?? ''
+			if (searchFor.length < 3) {
+				setIsSearchingCompanies(false)
+				return
+			}
+
+			if (searchAbortRef.current) {
+				searchAbortRef.current.abort()
+			}
+			const controller = new AbortController()
+			searchAbortRef.current = controller
+
+			try {
+				const url = `/api/refactory/companies?searchString=${encodeURIComponent(searchFor)}&populate=businesses`
+				const response = await axios(url, { signal: controller.signal })
+				if (controller.signal.aborted) return
+				const data = response.data?.data ?? []
+				if (searchTermRef.current?.trim() !== searchFor) return
+				setCompanies(data)
+			} catch (err: unknown) {
+				const errObj = err as { code?: string; name?: string }
+				if (errObj?.code === 'ERR_CANCELED' || errObj?.name === 'CanceledError' || errObj?.name === 'AbortError') return
+				console.error('Erro na busca:', err)
+			} finally {
+				if (searchAbortRef.current === controller) searchAbortRef.current = null
+				if (searchTermRef.current?.trim() === searchFor) setIsSearchingCompanies(false)
+			}
+		}, SEARCH_DEBOUNCE_MS)
 	}, [])
 
 	const handleClearCompany = useCallback(() => {
+		searchTermRef.current = ''
+		setIsSearchingCompanies(false)
+		if (searchDebounceRef.current) {
+			clearTimeout(searchDebounceRef.current)
+			searchDebounceRef.current = null
+		}
+		if (searchAbortRef.current) {
+			searchAbortRef.current.abort()
+			searchAbortRef.current = null
+		}
 		setSelectedCompany(null)
 		setSelectedCompanyName('')
 		setSelectedTable(null)
@@ -456,6 +513,7 @@ function Produtos() {
 
 				if (isBlocked) return
 
+				setIsSearchingCompanies(false)
 				setSelectedCompany(companyToSelect)
 				setSelectedCompanyName(companyToSelect.attributes.nome)
 				setCompanies([])
@@ -507,19 +565,36 @@ function Produtos() {
 			const allProducts: any[] = []
 			let offset = 0
 			let hasMore = true
+			const MAX_RETRIES = 2
+			const RETRY_DELAY_MS = 1500
 			while ( hasMore ) {
-				const prodRes = await axios.get(
-					`/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=${FETCH_PAGE_SIZE}&offset=${offset}`
-				)
-				const page = Array.isArray( prodRes.data ) ? prodRes.data : []
-				allProducts.push( ...page )
-				hasMore = page.length >= FETCH_PAGE_SIZE
-				offset += FETCH_PAGE_SIZE
-				if ( hasMore ) {
-					toast.update( 'sync-company-prod', {
-						description: `Buscando produtos... ${allProducts.length} carregados.`,
-					} )
+				const url = `/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=${FETCH_PAGE_SIZE}&offset=${offset}`
+				let lastErr: unknown = null
+				for ( let attempt = 0; attempt <= MAX_RETRIES; attempt++ ) {
+					try {
+						if ( attempt > 0 ) {
+							await new Promise( ( r ) => setTimeout( r, RETRY_DELAY_MS ) )
+						}
+						const prodRes = await axios.get( url )
+						const page = Array.isArray( prodRes.data ) ? prodRes.data : []
+						allProducts.push( ...page )
+						hasMore = page.length >= FETCH_PAGE_SIZE
+						offset += FETCH_PAGE_SIZE
+						if ( hasMore ) {
+							toast.update( 'sync-company-prod', {
+								description: `Buscando produtos... ${allProducts.length} carregados.`,
+							} )
+						}
+						lastErr = null
+						break
+					} catch ( pageErr: unknown ) {
+						lastErr = pageErr
+						const ax = pageErr as { response?: { status?: number }; message?: string }
+						const is504 = ax?.response?.status === 504
+						if ( !is504 || attempt >= MAX_RETRIES ) throw pageErr
+					}
 				}
+				if ( lastErr ) throw lastErr
 			}
 
 			// 2. Filtrar apenas ativos
@@ -1124,7 +1199,7 @@ function Produtos() {
 										</InputRightElement>
 									)}
 								</InputGroup>
-								{companies.length > 0 && (
+								{((selectedCompanyName?.length ?? 0) >= 3 && (companies.length > 0 || isSearchingCompanies)) && (
 									<Box
 										position="absolute"
 										top="100%"
@@ -1140,7 +1215,16 @@ function Produtos() {
 										border="1px"
 										borderColor="gray.600"
 									>
-										{companies.map((company: Company, index: number) => {
+										{isSearchingCompanies && companies.length === 0 ? (
+											<Box p={3}>
+												<Flex justifyContent="space-between" alignItems="center" gap={2}>
+													<Box flex={1}>
+														<Skeleton height="16px" width="80%" mb={2} borderRadius="md" />
+														<Skeleton height="12px" width="50%" borderRadius="md" />
+													</Box>
+												</Flex>
+											</Box>
+										) : companies.map((company: Company, index: number) => {
 											const companyUser = company.attributes.user?.data
 											const isOtherVendedor = companyUser && String(companyUser.id) !== String(session?.user?.id)
 											const isAdmin = session?.user?.pemission === 'Adm'
@@ -1156,6 +1240,7 @@ function Produtos() {
 													opacity={isBlocked ? 0.7 : 1}
 													onClick={() => {
 														if (isBlocked) return
+														setIsSearchingCompanies(false)
 														setSelectedCompany(company)
 														setSelectedCompanyName(company.attributes.nome)
 														setCompanies([])
