@@ -561,7 +561,7 @@ function Produtos() {
 		try {
 			// 1. Buscar todos os produtos da empresa na API externa (paginado para evitar 504 em produção)
 			const cnpj = selectedCompany.attributes.CNPJ
-			const FETCH_PAGE_SIZE = 200
+			const FETCH_PAGE_SIZE = 50
 			const allProducts: any[] = []
 			let offset = 0
 			let hasMore = true
@@ -728,7 +728,7 @@ function Produtos() {
 		try {
 			// Para atualizar expirados de forma consistente, fazemos um sync completo dos produtos ativos (paginado)
 			const cnpj = selectedCompany?.attributes.CNPJ
-			const FETCH_PAGE_SIZE = 200
+			const FETCH_PAGE_SIZE = 50
 			const allProducts: any[] = []
 			let offset = 0
 			let hasMore = true
@@ -1171,7 +1171,11 @@ function Produtos() {
 							<Box position="relative">
 								<InputGroup size="sm">
 									<InputLeftElement pointerEvents="none">
-										<FaSearch color="gray.400" />
+										{isSearchingCompanies ? (
+											<Spinner size="sm" color="gray.400" />
+										) : (
+											<FaSearch color="gray.400" />
+										)}
 									</InputLeftElement>
 									<Input
 										ref={companyInputRef}
