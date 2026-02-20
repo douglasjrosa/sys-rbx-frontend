@@ -1,5 +1,7 @@
 import axios from "axios"
+import { getServerSession } from "next-auth/next"
 import { NextApiRequest, NextApiResponse } from "next"
+import { authOptions } from "@/pages/api/auth/[...nextauth]"
 
 export default async function GetEmpresa (
 	req: NextApiRequest,
@@ -9,7 +11,19 @@ export default async function GetEmpresa (
 		try {
 			const token = process.env.ATORIZZATION_TOKEN
 			const { DataIncicio, DataFim, Vendedor } = req.query
-			const vendedorFilter = Vendedor ? `filters[vendedor][username][$eq]=${ Vendedor }&` : ''
+			const session = await getServerSession( req, res, authOptions )
+			if ( !session?.user ) {
+				return res.status( 401 ).json( { error: "Unauthorized" } )
+			}
+			const isAdmin = session.user.pemission === "Adm"
+			// Non-admin must always filter by their username; never return all deals
+			const effectiveVendedor = ( isAdmin && ( !Vendedor || String( Vendedor ).trim() === "" ) )
+				? ""
+				: ( String( Vendedor || "" ).trim() || session.user.name || "" )
+			if ( !isAdmin && !effectiveVendedor ) {
+				return res.status( 403 ).json( { error: "Vendor filter required" } )
+			}
+			const vendedorFilter = effectiveVendedor ? `filters[vendedor][username][$eq]=${ encodeURIComponent( effectiveVendedor ) }&` : ""
 
 			const conclucaoResponse = await axios.get(
 				`${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/businesses?${ vendedorFilter }filters[status][$eq]=true&filters[date_conclucao][$between]=${ DataIncicio }&filters[date_conclucao][$between]=${ DataFim }&sort[0]=id%3Adesc&fields[0]=deadline&fields[1]=createdAt&fields[2]=DataRetorno&fields[3]=date_conclucao&fields[4]=nBusiness&fields[5]=andamento&fields[6]=Budget&fields[7]=etapa&populate[empresa][fields][0]=nome&populate[vendedor][fields][0]=username&populate[pedidos][fields][0]=totalGeral`,

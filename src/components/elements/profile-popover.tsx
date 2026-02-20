@@ -152,7 +152,7 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
   const { data: session } = useSession();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  if (!session) return null;
+  if (!session?.user) return null;
 
   const isAdmin = session.user.pemission === 'Adm';
 
@@ -161,9 +161,9 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
   }, []);
 
   const handleSignOut = () => {
+    onClose();
     setPseudoUser(null);
     signOut({ redirect: false, callbackUrl: '/auth/signin' });
-    onClose();
   };
 
   if (isMobile) {
@@ -341,9 +341,9 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
                     rightIcon={<ExternalLinkIcon />}
                     _hover={{ bg: MOBILE_MODAL_THEME.signOutHover }}
                     onClick={() => {
+                      onClose();
                       setPseudoUser(null);
                       signOut({ redirect: false, callbackUrl: '/auth/signin' });
-                      onClose();
                     }}
                   >
                     Sair

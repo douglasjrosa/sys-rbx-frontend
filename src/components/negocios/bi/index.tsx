@@ -93,14 +93,17 @@ export const PowerBi = () => {
 
 	useEffect( () => {
 		if ( !session?.user ) return
+		const effectiveUser = getEffectiveUser( session.user )
+		// Non-admin must always filter by vendor; never fetch all deals for vendors
+		if ( session.user.pemission !== 'Adm' && !effectiveUser ) return
 		setLoad( true )
 		const fetchData = async () => {
 			const dataAtual = new Date()
 			const primeiroDiaTresMesesAtras = new Date( dataAtual.getFullYear(), dataAtual.getMonth() - 3, 1 )
 			const ultimoDiaMesAtual = new Date( dataAtual.getFullYear(), dataAtual.getMonth() + 3, 0 )
-
+			const vendedor = getEffectiveUser( session.user )
 			try {
-				const response = await axios.get( `/api/db/business/get/calendar/list?DataIncicio=${ primeiroDiaTresMesesAtras.toISOString() }&DataFim=${ ultimoDiaMesAtual.toISOString() }&Vendedor=${ User }` )
+				const response = await axios.get( `/api/db/business/get/calendar/list?DataIncicio=${ primeiroDiaTresMesesAtras.toISOString() }&DataFim=${ ultimoDiaMesAtual.toISOString() }&Vendedor=${ vendedor }` )
 				setData( response.data )
 			} catch ( error ) {
 				console.error( error )
