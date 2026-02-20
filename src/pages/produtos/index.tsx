@@ -17,12 +17,25 @@ import {
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import Link from 'next/link'
 import { FaSearch, FaSync, FaFileInvoiceDollar, FaTrash, FaInfoCircle, FaTimes, FaAngleDoubleLeft, FaAngleDoubleRight, FaMoneyBillWave, FaSave, FaShoppingCart } from 'react-icons/fa'
 import { marginTables } from '@/components/data/marginTables'
 import { getTableBadgeColor, getTableNameInPortuguese } from '@/utils/tableUtils'
 import { parseCurrency } from '@/utils/customNumberFormats'
+
+/** Extracts a safe string from axios/API errors. Prevents React #31 (object as child). */
+function getToastErrorMessage ( err: unknown, fallback: string ): string {
+	const ax = err as { response?: { status?: number; data?: unknown }; message?: string }
+	if ( ax?.response?.status === 504 ) return 'Tempo limite excedido. Tente novamente em alguns instantes.'
+	const d = ax?.response?.data
+	if ( typeof d === 'string' ) return d
+	if ( typeof ( d as { error?: unknown } )?.error === 'string' ) return ( d as { error: string } ).error
+	const errObj = ( d as { error?: { message?: string }; message?: string } )?.error
+	if ( errObj && typeof errObj === 'object' && typeof errObj.message === 'string' ) return errObj.message
+	if ( typeof ( d as { message?: string } )?.message === 'string' ) return ( d as { message: string } ).message
+	return ax?.message || fallback
+}
 
 interface Pedido {
 	id: number
@@ -551,12 +564,12 @@ function Produtos() {
 					duration: 5000,
 				})
 			}
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error('Erro na sincronização individual:', error)
 			toast.close('sync-company-prod')
 			toast({
 				title: 'Erro na sincronização',
-				description: error.response?.data?.error || error.message || 'Falha ao sincronizar produtos.',
+				description: getToastErrorMessage( error, 'Falha ao sincronizar produtos.' ),
 				status: 'error',
 				duration: 7000,
 				isClosable: true,
@@ -597,11 +610,11 @@ function Produtos() {
 			} else {
 				throw new Error(updatedProduct?.error || 'Produto não encontrado no sistema legado.')
 			}
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error('Erro ao atualizar produto:', error)
 			toast({
 				title: 'Erro ao atualizar',
-				description: error.message || 'Não foi possível atualizar os dados do produto.',
+				description: getToastErrorMessage( error, 'Não foi possível atualizar os dados do produto.' ),
 				status: 'error',
 				duration: 5000,
 			})
@@ -644,12 +657,12 @@ function Produtos() {
 				status: 'success',
 				duration: 5000,
 			})
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error('Erro na atualização em massa:', error)
 			toast.close('update-all-toast')
 			toast({
 				title: 'Erro na atualização',
-				description: error.message || 'Ocorreu um erro ao tentar atualizar os produtos.',
+				description: getToastErrorMessage( error, 'Ocorreu um erro ao tentar atualizar os produtos.' ),
 				status: 'error',
 				duration: 5000,
 				isClosable: true
