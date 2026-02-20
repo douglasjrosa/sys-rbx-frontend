@@ -501,10 +501,26 @@ function Produtos() {
 		})
 
 		try {
-			// 1. Buscar todos os produtos da empresa na API externa
+			// 1. Buscar todos os produtos da empresa na API externa (paginado para evitar 504 em produção)
 			const cnpj = selectedCompany.attributes.CNPJ
-			const prodRes = await axios.get(`/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=1000`)
-			const allProducts = prodRes.data || []
+			const FETCH_PAGE_SIZE = 200
+			const allProducts: any[] = []
+			let offset = 0
+			let hasMore = true
+			while ( hasMore ) {
+				const prodRes = await axios.get(
+					`/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=${FETCH_PAGE_SIZE}&offset=${offset}`
+				)
+				const page = Array.isArray( prodRes.data ) ? prodRes.data : []
+				allProducts.push( ...page )
+				hasMore = page.length >= FETCH_PAGE_SIZE
+				offset += FETCH_PAGE_SIZE
+				if ( hasMore ) {
+					toast.update( 'sync-company-prod', {
+						description: `Buscando produtos... ${allProducts.length} carregados.`,
+					} )
+				}
+			}
 
 			// 2. Filtrar apenas ativos
 			const activeProducts = allProducts.filter((p: any) => p.ativo === "1")
@@ -635,10 +651,21 @@ function Produtos() {
 		})
 
 		try {
-			// Para atualizar expirados de forma consistente, fazemos um sync completo dos produtos ativos da empresa
+			// Para atualizar expirados de forma consistente, fazemos um sync completo dos produtos ativos (paginado)
 			const cnpj = selectedCompany?.attributes.CNPJ
-			const prodRes = await axios.get(`/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=1000`)
-			const allProducts = prodRes.data || []
+			const FETCH_PAGE_SIZE = 200
+			const allProducts: any[] = []
+			let offset = 0
+			let hasMore = true
+			while ( hasMore ) {
+				const prodRes = await axios.get(
+					`/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=${FETCH_PAGE_SIZE}&offset=${offset}`
+				)
+				const page = Array.isArray( prodRes.data ) ? prodRes.data : []
+				allProducts.push( ...page )
+				hasMore = page.length >= FETCH_PAGE_SIZE
+				offset += FETCH_PAGE_SIZE
+			}
 			const activeProducts = allProducts.filter((p: any) => p.ativo === "1")
 
 			if (activeProducts.length > 0) {
