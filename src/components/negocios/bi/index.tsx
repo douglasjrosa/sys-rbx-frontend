@@ -53,14 +53,21 @@ export const PowerBi = () => {
 	}
 
 	useEffect( () => {
-		if ( session?.user ) {
-			setUser( getEffectiveUser( session.user ) )
-		}
+		if ( !session?.user ) return
+		const effective = getEffectiveUser( session.user )
+		const isAdmin = session.user.pemission === 'Adm'
+		// For vendor, never overwrite User with '' - would trigger fetch of all deals
+		if ( !isAdmin && !effective ) return
+		setUser( effective )
 	}, [ session?.user ] )
 
 	useEffect( () => {
 		const handler = () => {
-			if ( session?.user ) setUser( getEffectiveUser( session.user ) )
+			if ( !session?.user ) return
+			const effective = getEffectiveUser( session.user )
+			const isAdmin = session.user.pemission === 'Adm'
+			if ( !isAdmin && !effective ) return
+			setUser( effective )
 		}
 		window.addEventListener( 'pseudoUserChange', handler )
 		return () => window.removeEventListener( 'pseudoUserChange', handler )
@@ -93,6 +100,11 @@ export const PowerBi = () => {
 
 	useEffect( () => {
 		if ( !session?.user ) return
+		const isAdmin = session.user.pemission === 'Adm'
+		// Vendors must have User set (their username) before fetching. Skip fetch until
+		// User is set to avoid race: initial run with User='' would return all deals.
+		if ( !isAdmin && !User ) return
+
 		setLoad( true )
 		const fetchData = async () => {
 			const dataAtual = new Date()
