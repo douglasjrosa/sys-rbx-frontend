@@ -312,21 +312,33 @@ function Produtos() {
 
 	const fetchProducts = useCallback(async () => {
 		if (!selectedCompany?.id || !session?.user?.email) {
-			// Only clear loading when we are not expecting to load (no empresaId in URL)
 			if (!effectiveEmpresaId) setIsLoadingProducts(false)
 			return
 		}
 
 		setIsLoadingProducts(true)
-		try {
-			const empresaId = selectedCompany.id
-			const response = await axios.get(`/api/db/produtos/list?empresaId=${empresaId}`)
-			setProducts(response.data || [])
-		} catch (error) {
-			console.error('Erro ao buscar produtos:', error)
-		} finally {
-			setIsLoadingProducts(false)
+		const empresaId = selectedCompany.id
+		const url = `/api/db/produtos/list?empresaId=${empresaId}`
+		const MAX_RETRIES = 2
+		const RETRY_DELAY = 2000
+		for ( let attempt = 0; attempt <= MAX_RETRIES; attempt++ ) {
+			try {
+				if ( attempt > 0 ) {
+					await new Promise( r => setTimeout( r, RETRY_DELAY ) )
+				}
+				const response = await axios.get( url )
+				setProducts( response.data || [] )
+				setIsLoadingProducts( false )
+				return
+			} catch ( error: unknown ) {
+				const ax = error as { response?: { status?: number }; message?: string }
+				if ( ax?.response?.status !== 504 || attempt >= MAX_RETRIES ) {
+					setIsLoadingProducts( false )
+					return
+				}
+			}
 		}
+		setIsLoadingProducts( false )
 	}, [session?.user?.email, selectedCompany?.id, effectiveEmpresaId])
 
 	const handleDeleteProduct = useCallback(async () => {
