@@ -324,6 +324,7 @@ function Produtos() {
 		for ( let attempt = 0; attempt <= MAX_RETRIES; attempt++ ) {
 			try {
 				if ( attempt > 0 ) {
+					console.debug( '[Produtos List] Retry', { attempt, empresaId } )
 					await new Promise( r => setTimeout( r, RETRY_DELAY ) )
 				}
 				const response = await axios.get( url )
@@ -332,7 +333,9 @@ function Produtos() {
 				return
 			} catch ( error: unknown ) {
 				const ax = error as { response?: { status?: number }; message?: string }
+				console.debug( '[Produtos List] Error', { attempt, status: ax?.response?.status, msg: ax?.message, willRetry: ax?.response?.status === 504 && attempt < MAX_RETRIES } )
 				if ( ax?.response?.status !== 504 || attempt >= MAX_RETRIES ) {
+					console.error( 'Erro ao buscar produtos:', error )
 					setIsLoadingProducts( false )
 					return
 				}
