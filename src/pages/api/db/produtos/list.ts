@@ -1,6 +1,8 @@
 import { GET_Strapi } from "@/pages/api/lib/request_strapi/get"
 import { NextApiRequest, NextApiResponse } from "next"
 
+export const config = { maxDuration: 60 }
+
 export default async function ListProdutos (
 	req: NextApiRequest,
 	res: NextApiResponse

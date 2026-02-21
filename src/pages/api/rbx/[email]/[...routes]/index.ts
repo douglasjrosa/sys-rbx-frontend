@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
-const FETCH_TIMEOUT_MS = 8000
+export const config = { maxDuration: 60 }
+
+const FETCH_TIMEOUT_MS = 55000
 
 export default async function handler ( req: NextApiRequest, res: NextApiResponse ) {
 	const t0 = Date.now()
