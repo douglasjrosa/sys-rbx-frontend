@@ -66,25 +66,16 @@ export default async function GetEmpresa (
 			infos.fornecedor.data.cnpj = infos.fornecedor.data.cnpj.replace( /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "00.000.000/0000-00" )
 		}
 
-		const imagePath2 = path.join(
+		const imagePath = path.join(
 			process.cwd(),
 			"public",
 			"img",
 			"logomarca-efect.jpg"
 		)
-		const imageContent2 = fs.readFileSync( imagePath2 ).toString( "base64" )
-		const dataUrl2 = `data:image/jpeg;base64,${ imageContent2 }`
-
-		const imagePath = path.join(
-			process.cwd(),
-			"public",
-			"img",
-			"Bragheto - Logomarca com nome (Fundo transparente).png"
-		)
 		const imageContent = fs.readFileSync( imagePath ).toString( "base64" )
-		const dataUrl = `data:image/jpeg;base64,${ imageContent }`
+		const logo = `data:image/jpeg;base64,${ imageContent }`
 
-		const date = new Date().toLocaleDateString( "pt-BR" )
+		const date = new Date( infos.datePop ).toLocaleDateString( "pt-BR" )
 		const fonts = {
 			Helvetica: {
 				normal: "Helvetica",
@@ -101,8 +92,6 @@ export default async function GetEmpresa (
 		let valorSubTotal = 0
 		const valorDesconto = normalizarValorMonetario( infos.Desconto )
 		const valorCustoAdicional = normalizarValorMonetario( infos.custoAdicional )
-
-		const logo = infos.fornecedor.data.cnpj === "04.586.593/0001-70" ? dataUrl : dataUrl2
 
 		const Product = infos.itens
 		const products = Product.map( ( i: any ) => {

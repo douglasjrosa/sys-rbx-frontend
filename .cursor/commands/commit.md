@@ -1,0 +1,1 @@
+Comite o projeto atual, ou se este comando vier acompanhado de "tudo", ou "todos", ou "all", então todos os projetos do workspace devem ser comitados.

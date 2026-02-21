@@ -54,8 +54,8 @@ import { parseISO, differenceInDays } from "date-fns"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import { FiEdit3, FiPlusCircle, FiPhone, FiMail, FiMapPin, FiUser, FiCalendar, FiDollarSign, FiClock, FiFileText } from "react-icons/fi"
-import { FaWhatsapp } from "react-icons/fa"
+import { FiEdit3, FiPlusCircle, FiPhone, FiMail, FiMapPin, FiUser, FiCalendar, FiDollarSign, FiClock, FiFileText, FiList } from "react-icons/fi"
+import { FaWhatsapp, FaTimes } from "react-icons/fa"
 
 export default function Infos () {
 	const { data: session } = useSession()
@@ -90,6 +90,7 @@ export default function Infos () {
 	const [ maxPg, setMaxPg ] = useState( "" )
 	const [ purchaseFrequency, setPurchaseFrequency ] = useState( "" )
 	const [ load, setload ] = useState( true )
+	const [ tabelasPreco, setTabelasPreco ] = useState<any[]>( [] )
 	const toast = useToast()
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
@@ -164,6 +165,15 @@ export default function Infos () {
 				} catch ( error ) {
 					console.error( "Erro ao buscar interações:", error )
 					setInteracoes( [] )
+				}
+				try {
+					const reqTabelas = await axios.get(
+						`/api/db/tabela-preco/get/empresa/${ ID }`
+					)
+					setTabelasPreco( Array.isArray( reqTabelas.data ) ? reqTabelas.data : [] )
+				} catch ( error ) {
+					console.error( "Erro ao buscar tabelas de preço:", error )
+					setTabelasPreco( [] )
 				}
 				setload( false )
 			} catch ( error: any ) {
@@ -538,6 +548,91 @@ export default function Infos () {
 								</Box>
 							)}
 						</Card>
+
+						{/* Tabelas de Preços Card */}
+						<Card bg="gray.800" borderColor="gray.700" borderWidth="1px" shadow="xl">
+							<CardHeader borderBottomWidth="1px" borderColor="gray.700" py={4}>
+								<Flex justify="space-between" align="center">
+									<Heading size="md" color="white">Tabelas de Preços</Heading>
+									<Button
+										leftIcon={<FiPlusCircle />}
+										colorScheme="green"
+										size="sm"
+										rounded="md"
+										onClick={() => router.push(
+											`/produtos?empresaId=${ ID }&tabelaPrecos=true`
+										)}
+									>
+										Nova
+									</Button>
+								</Flex>
+							</CardHeader>
+							<CardBody maxH="350px" overflowY="auto" p={0} sx={{
+								'&::-webkit-scrollbar': { width: '6px' },
+								'&::-webkit-scrollbar-track': { background: 'transparent' },
+								'&::-webkit-scrollbar-thumb': {
+									background: 'gray.600',
+									borderRadius: '3px',
+								},
+							}}>
+								{tabelasPreco.length > 0 ? (
+									<TableContainer>
+										<Table variant="simple" size="sm">
+											<Thead bg="gray.750">
+												<Tr>
+													<Th color="gray.200">Data</Th>
+													<Th color="gray.200" textAlign="center">Itens</Th>
+													<Th color="gray.200">Vendedor</Th>
+												</Tr>
+											</Thead>
+											<Tbody>
+												{tabelasPreco.map( ( tab: any ) => (
+													<Tr
+														key={tab.id}
+														_hover={{ bg: 'whiteAlpha.50' }}
+														cursor="pointer"
+														onClick={() => window.open(
+															`/api/db/tabela-preco/pdf/${ tab.id }`,
+															'_blank'
+														)}
+													>
+														<Td fontSize="xs" color="white">
+															<HStack spacing={1}>
+																<Icon as={FiList} color="green.400" boxSize={3} />
+																<Text>
+																	{new Date( tab.createdAt )
+																		.toLocaleDateString( 'pt-BR' )}
+																</Text>
+															</HStack>
+														</Td>
+														<Td
+															fontSize="xs"
+															textAlign="center"
+															color="white"
+														>
+															<Badge colorScheme="green" variant="subtle">
+																{tab.itensCount}
+															</Badge>
+														</Td>
+														<Td fontSize="xs" color="white">
+															{tab.vendedor}
+														</Td>
+													</Tr>
+												) )}
+											</Tbody>
+										</Table>
+									</TableContainer>
+								) : (
+									<Text
+										textAlign="center"
+										py={8}
+										color="gray.400"
+									>
+										Nenhuma tabela de preços gerada
+									</Text>
+								)}
+							</CardBody>
+						</Card>
 					</Stack>
 
 					{/* Right Column: Contacts and Registration Info */}
@@ -646,47 +741,57 @@ export default function Infos () {
 
 			<Modal closeOnOverlayClick={ false } isOpen={ isOpen } onClose={ onClose } size="lg">
 				<ModalOverlay backdropFilter='blur(4px)' />
-				<ModalContent bg="gray.800" color="white" borderRadius="xl">
-					<ModalHeader borderBottomWidth="1px" borderColor="gray.700">Nova Interação</ModalHeader>
+				<ModalContent bg="gray.800" color="white" borderRadius="xl" position="relative">
+					<IconButton
+						aria-label="Fechar"
+						icon={ <FaTimes size={ 18 } /> }
+						position="absolute"
+						top="8px"
+						right="8px"
+						zIndex={ 1 }
+						size="sm"
+						variant="solid"
+						bg="red.500"
+						color="white"
+						rounded="md"
+						_hover={ { bg: "red.600" } }
+						onClick={ onClose }
+					/>
+					<ModalHeader borderBottomWidth="1px" borderColor="gray.700" pr="48px">
+						Nova Interação
+					</ModalHeader>
 					<ModalBody py={6}>
 						<VStack spacing={6}>
-							<SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="100%">
-								<FormControl>
-									<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Tipo de Interação</FormLabel>
-									<Select
-										size="sm"
-										bg="gray.700"
-										borderColor="gray.600"
-										rounded="md"
-										onChange={(e) => setTipo(e.target.value)}
-										value={Tipo}
-									>
-										<option value="1" style={{ backgroundColor: '#2D3748' }}>Notas</option>
-										<option value="2" style={{ backgroundColor: '#2D3748' }}>Mensagem de texto</option>
-										<option value="3" style={{ backgroundColor: '#2D3748' }}>Chamada por voz</option>
-										<option value="4" style={{ backgroundColor: '#2D3748' }}>Mensagem por e-mail</option>
-										<option value="5" style={{ backgroundColor: '#2D3748' }}>Contato presencial</option>
-									</Select>
-								</FormControl>
+							<FormControl w={{ base: "100%", md: "auto" }}>
+								<HStack justify={{ base: "center", md: "flex-start" }}>
+									<Switch
+										colorScheme="blue"
+										isChecked={StatusAt}
+										onChange={(e) => setStatusAt(e.target.checked)}
+									/>
+									<FormLabel mb="0" fontSize="xs" fontWeight="bold" color="gray.400">
+										Cliente qualificado
+									</FormLabel>
+								</HStack>
+							</FormControl>
 
-								<FormControl>
-									<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Objetivo</FormLabel>
-									<Select
-										size="sm"
-										bg="gray.700"
-										borderColor="gray.600"
-										rounded="md"
-										onChange={(e) => setObjetivo(e.target.value)}
-										value={Objetivo}
-									>
-										<option value="1" style={{ backgroundColor: '#2D3748' }}>Sondar decisores</option>
-										<option value="2" style={{ backgroundColor: '#2D3748' }}>Aproximação</option>
-										<option value="3" style={{ backgroundColor: '#2D3748' }}>Sondar interesses</option>
-										<option value="4" style={{ backgroundColor: '#2D3748' }}>Gerar negócio</option>
-										<option value="5" style={{ backgroundColor: '#2D3748' }}>Resolver problemas</option>
-									</Select>
-								</FormControl>
-							</SimpleGrid>
+							<FormControl>
+								<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Objetivo</FormLabel>
+								<Select
+									size="sm"
+									bg="gray.700"
+									borderColor="gray.600"
+									rounded="md"
+									onChange={(e) => setObjetivo(e.target.value)}
+									value={Objetivo}
+								>
+									<option value="1" style={{ backgroundColor: '#2D3748' }}>Sondar decisores</option>
+									<option value="2" style={{ backgroundColor: '#2D3748' }}>Aproximação</option>
+									<option value="3" style={{ backgroundColor: '#2D3748' }}>Sondar interesses</option>
+									<option value="4" style={{ backgroundColor: '#2D3748' }}>Gerar negócio</option>
+									<option value="5" style={{ backgroundColor: '#2D3748' }}>Resolver problemas</option>
+								</Select>
+							</FormControl>
 
 							<FormControl>
 								<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Resumo da Interação</FormLabel>
@@ -702,34 +807,22 @@ export default function Infos () {
 								/>
 							</FormControl>
 
-							<Flex w="100%" justify="space-between" align="center">
-								<FormControl w="auto">
-									<HStack>
-										<FormLabel mb="0" fontSize="xs" fontWeight="bold" color="gray.400">Status de Atendimento</FormLabel>
-										<Switch
-											colorScheme="blue"
-											isChecked={StatusAt}
-											onChange={(e) => setStatusAt(e.target.checked)}
-										/>
-									</HStack>
-								</FormControl>
+							<FormControl w={{ base: "100%", md: "200px" }}>
+								<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">
+									Próximo Contato
+								</FormLabel>
+								<Input
+									type="date"
+									size="sm"
+									bg="gray.700"
+									borderColor="gray.600"
+									rounded="md"
+									onChange={(e) => setProximo(e.target.value)}
+									value={Proximo}
+								/>
+							</FormControl>
 
-								<FormControl w="200px">
-									<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Próximo Contato</FormLabel>
-									<Input
-										type="date"
-										size="sm"
-										bg="gray.700"
-										borderColor="gray.600"
-										rounded="md"
-										onChange={(e) => setProximo(e.target.value)}
-										value={Proximo}
-									/>
-								</FormControl>
-							</Flex>
-
-							<HStack w="100%" spacing={4} pt={4} borderTopWidth="1px" borderColor="gray.700" justify="flex-end">
-								<Button variant="ghost" onClick={onClose} size="sm">Cancelar</Button>
+							<HStack w="100%" spacing={4} pt={4} borderTopWidth="1px" borderColor="gray.700" justify="center">
 								<Button colorScheme="blue" onClick={Save} size="sm" px={8}>Salvar Interação</Button>
 							</HStack>
 						</VStack>

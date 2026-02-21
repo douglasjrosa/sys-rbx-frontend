@@ -1,13 +1,39 @@
 import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
 import { parseCurrency } from "@/utils/customNumberFormats"
-import { Button, Modal, Text, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
+import { Button, Flex, IconButton, Modal, Text, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
+import { useRouter } from "next/router"
 import { useCallback, useState } from "react"
+import { FaTimes } from "react-icons/fa"
 
+
+const WEEKDAYS_PT = [
+	'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira',
+	'Quinta-feira', 'Sexta-feira', 'Sábado'
+]
+
+const formatDeliveryDateDisplay = ( dateStr: string ) => {
+	if ( !dateStr ) return ''
+	const datePart = dateStr.split( 'T' )[ 0 ]
+	const [ year, month, day ] = datePart.split( '-' ).map( Number )
+	if ( !year || !month || !day ) return dateStr
+	const date = new Date( year, month - 1, day )
+	const weekday = WEEKDAYS_PT[ date.getDay() ]
+	const formatted =
+		`${ String( day ).padStart( 2, '0' ) }/${ String( month ).padStart( 2, '0' ) }/${ year }`
+	return `${ weekday } dia ${ formatted }`
+}
 
 const SendOrderModal = ( props: any ) => {
 
-	const { isOpen, onClose, onchat, orderData } = props
+	const {
+		isOpen, onClose, onchat, orderData,
+		mode = 'resend',
+		deliveryDate = '',
+		saveBusiness,
+		businessId,
+	} = props
 
+	const router = useRouter()
 	const toast = useToast()
 	const [ load, setload ] = useState<boolean>( false )
 
@@ -403,6 +429,98 @@ const SendOrderModal = ( props: any ) => {
 		[ makeOrder, toast, onClose, setload, onchat ]
 	)
 
+	const handleConfirm = useCallback(
+		async () => {
+			setload( true )
+			try {
+				if ( saveBusiness ) {
+					await saveBusiness()
+				}
+				await finalResponse()
+			} catch ( error ) {
+				console.error( 'Error confirming order:', error )
+				toast( {
+					title: 'Erro ao confirmar pedido',
+					description: 'Tente novamente.',
+					status: 'error',
+					duration: 5000,
+					isClosable: true,
+					position: 'bottom',
+				} )
+				setload( false )
+			}
+		},
+		[ saveBusiness, finalResponse, toast ]
+	)
+
+	const handleAlter = useCallback(
+		() => {
+			onClose()
+			if ( businessId ) {
+				router.push( `/negocios/proposta/${ businessId }` )
+			}
+		},
+		[ onClose, businessId, router ]
+	)
+
+	if ( mode === 'confirm' ) {
+		return (
+			<Modal
+				isCentered
+				closeOnOverlayClick={ false }
+				isOpen={ isOpen }
+				onClose={ onClose }
+			>
+				<ModalOverlay
+					bg='blackAlpha.300'
+					backdropFilter='blur(10px) hue-rotate(90deg)'
+				/>
+				<ModalContent bg={ 'gray.600' } position="relative">
+					<IconButton
+						aria-label="Fechar"
+						icon={ <FaTimes size={ 20 } /> }
+						position="absolute"
+						top="8px"
+						right="8px"
+						zIndex={ 1 }
+						size="sm"
+						variant="solid"
+						bg="red.500"
+						color="white"
+						rounded="md"
+						_hover={ { bg: "red.600" } }
+						onClick={ onClose }
+					/>
+					<ModalHeader>CONFIRME A DATA DE ENTREGA</ModalHeader>
+					<ModalBody pb={ 6 }>
+						<Text mb={ 6 }>
+							Este pedido será programado para entrega em:{' '}
+							<Text as="span" fontWeight="bold">
+								{ formatDeliveryDateDisplay( deliveryDate ) }
+							</Text>.
+						</Text>
+						<Flex gap={ 3 } justify="flex-end">
+							<Button
+								colorScheme="blue"
+								onClick={ handleAlter }
+								isDisabled={ load }
+							>
+								Alterar
+							</Button>
+							<Button
+								colorScheme="green"
+								onClick={ handleConfirm }
+								isDisabled={ load }
+								isLoading={ load }
+							>
+								Confirmar
+							</Button>
+						</Flex>
+					</ModalBody>
+				</ModalContent>
+			</Modal>
+		)
+	}
 
 	return (
 		<Modal isCentered closeOnOverlayClick={ false } isOpen={ isOpen } onClose={ onClose }>

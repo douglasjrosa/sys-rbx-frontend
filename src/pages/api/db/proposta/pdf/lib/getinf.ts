@@ -12,7 +12,7 @@ export const getData = async ( proposta: any ) => {
 		},
 	}
 
-	const converterData = ( data: string ) => {
+	const converterData = ( data: string, dataReferencia: string ) => {
 		if ( !data ) return ""
 
 		const dataObjeto = new Date( data )
@@ -22,11 +22,11 @@ export const getData = async ( proposta: any ) => {
 			dataObjeto.getTime() + fusoHorario * 3600000
 		)
 		dataBrasilia.setDate( dataBrasilia.getDate() + 1 )
-		const hoje = new Date()
+		const referencia = new Date( dataReferencia )
 		const diferenca = Math.ceil(
-			( dataBrasilia.getTime() - hoje.getTime() ) / ( 1000 * 60 * 60 * 24 )
+			( dataBrasilia.getTime() - referencia.getTime() ) / ( 1000 * 60 * 60 * 24 )
 		)
-		const resultado = diferenca + " Dias"
+		const resultado = diferenca + " Dias após oficialização do pedido"
 
 		return resultado
 	}
@@ -40,7 +40,7 @@ export const getData = async ( proposta: any ) => {
 		const telefoneVendedor = inf.user.data.attributes.tel
 		const empresaFornec = inf.fornecedorId.data.attributes
 		const dataEntrega1 = !inf.dataEntrega ? '' : inf.dataEntrega
-		const dataEntrega = converterData( dataEntrega1 )
+		const dataEntrega = converterData( dataEntrega1, inf.dataPedido )
 
 		const dadosFornecedor = {
 			data: {

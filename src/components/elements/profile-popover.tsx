@@ -152,19 +152,19 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
   const { data: session } = useSession();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  if (!session?.user) return null;
-
-  const isAdmin = session.user.pemission === 'Adm';
-
   const handlePseudoUserSelect = useCallback((closeFn?: () => void) => {
     closeFn?.();
   }, []);
 
-  const handleSignOut = () => {
+  const handleSignOut = useCallback(() => {
     onClose();
     setPseudoUser(null);
     signOut({ redirect: false, callbackUrl: '/auth/signin' });
-  };
+  }, [onClose]);
+
+  if (!session?.user) return null;
+
+  const isAdmin = session.user.pemission === 'Adm';
 
   if (isMobile) {
     return (

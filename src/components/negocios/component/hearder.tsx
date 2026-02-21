@@ -72,6 +72,7 @@ export const NegocioHeader = (props: {
 
   const [pedido, setPedido] = useState<any>({ attributes: {} });
   const [orderData, setOrderData] = useState<any | null>();
+  const [modalMode, setModalMode] = useState<'confirm' | 'resend'>('confirm');
 
   useEffect(() => {
     if (props.onData) {
@@ -174,6 +175,12 @@ export const NegocioHeader = (props: {
         position: "top-right",
       });
     } else {
+      if (propostaId && Etapa === 6 && Status === 5) {
+        setModalMode('confirm');
+        onOpen();
+        return;
+      }
+
       const mpercaValue =
         Mperca !== "" && Mperca != null && !Number.isNaN(Number(Mperca))
           ? Number(Mperca)
@@ -217,10 +224,7 @@ export const NegocioHeader = (props: {
         data: data,
       })
         .then((res) => {
-          if (propostaId && Etapa === 6 && Status === 5) {
-            onOpen();
-            setBlocksave(true);
-          } else if (Etapa === 6 && Status === 1) {
+          if (Etapa === 6 && Status === 1) {
             toast({
               title: "Atualização feita",
               description: "Infelizmente esse negocio foi perdido",
@@ -257,6 +261,34 @@ export const NegocioHeader = (props: {
     } else {
       setBudget(valorformat);
     }
+  };
+
+  const saveBusinessAsWon = async () => {
+    const mpercaValue =
+      Mperca !== "" && Mperca != null && !Number.isNaN(Number(Mperca))
+        ? Number(Mperca)
+        : null;
+
+    await axios({
+      url: "/api/db/business/put/id/" + ID,
+      method: "PUT",
+      data: {
+        data: {
+          deadline: Deadline,
+          nBusiness: Busines,
+          Budget: SetValue(Budget),
+          Approach: Approach,
+          history: history,
+          etapa: Etapa,
+          andamento: Status,
+          Mperca: mpercaValue,
+          incidentRecord: [...props.chat, ChatConcluido],
+          DataRetorno: DataRetorno,
+          date_conclucao: DataAtual,
+        },
+      },
+    });
+    setBlocksave(true);
   };
 
   function getStatus(statusinf: SetStateAction<any>) {
@@ -328,7 +360,7 @@ export const NegocioHeader = (props: {
                 size="sm"
                 minW="110px"
                 h="36px"
-                onClick={() => onOpen()}
+                onClick={() => { setModalMode('resend'); onOpen(); }}
               >
                 Reenviar Pedido
               </Button>
@@ -487,6 +519,10 @@ export const NegocioHeader = (props: {
             onClose={onClose}
             onchat={props.onchat}
             orderData={orderData}
+            mode={modalMode}
+            deliveryDate={pedido?.attributes?.dataEntrega || ''}
+            saveBusiness={saveBusinessAsWon}
+            businessId={String(ID)}
           />
         )}
       </>
@@ -604,7 +640,7 @@ export const NegocioHeader = (props: {
             </Button>
           )}
           {session?.user.pemission === "Adm" && Etapa === 6 && Status === 5 && (
-            <Button isDisabled={!propostaId} colorScheme="linkedin" onClick={() => onOpen()}>
+            <Button isDisabled={!propostaId} colorScheme="linkedin" onClick={() => { setModalMode('resend'); onOpen(); }}>
               Reenviar Pedido
             </Button>
           )}
@@ -626,7 +662,16 @@ export const NegocioHeader = (props: {
           )}
         </Flex>
         {orderData && (
-          <SendOrderModal isOpen={isOpen} onClose={onClose} onchat={props.onchat} orderData={orderData} />
+          <SendOrderModal
+            isOpen={isOpen}
+            onClose={onClose}
+            onchat={props.onchat}
+            orderData={orderData}
+            mode={modalMode}
+            deliveryDate={pedido?.attributes?.dataEntrega || ''}
+            saveBusiness={saveBusinessAsWon}
+            businessId={String(ID)}
+          />
         )}
       </Flex>
     </>

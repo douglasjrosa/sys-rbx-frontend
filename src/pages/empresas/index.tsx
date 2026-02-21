@@ -4,8 +4,8 @@ import { CarteiraVendedor } from "@/components/empresa/component/empresas_vended
 import { FiltroEmpresa } from "@/components/empresa/component/fitro/empresa"
 import { FiltroCNAE, FiltroCNAERef } from "@/components/empresa/component/fitro/cnae"
 import { FiltroCidade, FiltroCidadeRef } from "@/components/empresa/component/fitro/cidade"
-import { Badge, Box, Button, Flex, Heading, useToast, Select, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Text, Tabs, TabList, TabPanels, Tab, TabPanel, HStack, Input } from "@chakra-ui/react"
-import { FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa"
+import { Badge, Box, Button, Collapse, Flex, Heading, IconButton, useToast, Select, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Text, Tabs, TabList, TabPanels, Tab, TabPanel, HStack, Input } from "@chakra-ui/react"
+import { FaAngleDoubleLeft, FaAngleDoubleRight, FaFilter, FaChevronUp } from "react-icons/fa"
 import axios from "axios"
 import { parseISO, startOfDay } from "date-fns"
 import { useSession } from "next-auth/react"
@@ -471,6 +471,12 @@ function Empresas () {
 		prevTotalPaginasSemVendedor.current = totalPaginasSemVendedor
 	}, [ totalPaginasSemVendedor ] )
 
+	useEffect( () => {
+		if ( tabIndex === 2 && ( isAdmin || totalEmpresasOutrosVendedores === 0 ) ) {
+			setTabIndex( 0 )
+		}
+	}, [ tabIndex, isAdmin, totalEmpresasOutrosVendedores ] )
+
 	// Função para lidar com mudança de ordenação
 	const handleOrdemClassificacaoChange = useCallback( ( novaOrdem: "relevancia" | "expiracao" ) => {
 		setOrdemClassificacao( novaOrdem )
@@ -653,6 +659,7 @@ function Empresas () {
 	// Estado local para inputs de paginação (para evitar resets durante digitação)
 	const [ inputPaginaComVendedor, setInputPaginaComVendedor ] = useState<string>( "1" )
 	const [ inputPaginaSemVendedor, setInputPaginaSemVendedor ] = useState<string>( "1" )
+	const [ showExtraFilters, setShowExtraFilters ] = useState( false )
 
 	// Sincronizar inputs locais com estado de paginação
 	useEffect( () => {
@@ -985,30 +992,127 @@ function Empresas () {
 
 	return (
 		<>
-			<Box w={ '100%' } h={ '100%' } bg={ 'gray.800' } color={ 'white' } px={ 5 } py={ 2 } fontSize={ '0.8rem' } display="flex" flexDirection="column">
-				<Heading size={ 'lg' }>Empresas</Heading>
-				<Flex w={ '100%' } py={ '1rem' } justifyContent={ 'space-between' } flexDir={ 'row' } alignItems={ 'self-end' } px={ 6 } gap={ 6 } borderBottom={ '1px' } borderColor={ 'white' } mb={ '1rem' } flexWrap="wrap">
-					<Flex gap={ 4 } alignItems={ 'flex-end' } flexWrap="wrap">
-						<Box minW="150px" flexShrink={ 0 }>
+			<Box
+				w="100%"
+				h={{ base: 'auto', md: '100%' }}
+				minH={{ base: '100vh', md: 'auto' }}
+				bg="gray.800"
+				color="white"
+				px={{ base: 3, md: 5 }}
+				py={ 2 }
+				fontSize="0.8rem"
+				display="flex"
+				flexDirection="column"
+				overflowX="hidden"
+			>
+				<Flex justify="space-between" align="center">
+					<Heading size="lg">Empresas</Heading>
+					<Button
+						display={{ base: 'flex', md: 'none' }}
+						size="sm"
+						onClick={ () => router.push( '/empresas/cadastro' ) }
+						colorScheme="green"
+					>
+						+ Nova Empresa
+					</Button>
+				</Flex>
+				<Flex
+					w="100%"
+					py="1rem"
+					justifyContent={{ base: 'center', md: 'space-between' }}
+					flexDir={{ base: 'column', md: 'row' }}
+					alignItems={{ base: 'stretch', md: 'self-end' }}
+					px={{ base: 0, md: 6 }}
+					gap={{ base: 3, md: 6 }}
+					borderBottom="1px"
+					borderColor="white"
+					mb="1rem"
+					flexWrap="wrap"
+				>
+					<Flex
+						gap={{ base: 3, md: 4 }}
+						alignItems={{ base: 'stretch', md: 'flex-end' }}
+						flexWrap="wrap"
+						flexDir={{ base: 'column', md: 'row' }}
+						w={{ base: '100%', md: 'auto' }}
+					>
+						<Box w={{ base: '100%', md: 'auto' }} minW={{ base: 'unset', md: '150px' }}>
 							<FormLabel fontSize="xs" fontWeight="md">
 								Empresa
 							</FormLabel>
 							<FiltroEmpresa empresa={ handleFiltroEmpresa } isLoading={ carregandoVendedor || carregandoSemVendedor } />
 						</Box>
-						<Box minW="150px" flexShrink={ 0 }>
+						<Button
+							display={{ base: 'flex', md: 'none' }}
+							size="xs"
+							variant="outline"
+							borderColor="whiteAlpha.400"
+							color="white"
+							w="100%"
+							leftIcon={ showExtraFilters ? <FaChevronUp /> : <FaFilter /> }
+							onClick={ () => setShowExtraFilters( prev => !prev ) }
+							_hover={{ bg: 'whiteAlpha.100' }}
+						>
+							{ showExtraFilters ? 'Ocultar filtros' : 'Mais filtros' }
+						</Button>
+						<Collapse
+							in={ showExtraFilters }
+							animateOpacity
+							style={{ width: '100%' }}
+						>
+							<Flex
+								display={{ base: 'flex', md: 'none' }}
+								flexDir="column"
+								gap={ 3 }
+								w="100%"
+							>
+								<Box w="100%">
+									<FormLabel fontSize="xs" fontWeight="md">
+										CNAE
+									</FormLabel>
+									<FiltroCNAE ref={ filtroCNAERef } cnae={ handleFiltroCNAE } />
+								</Box>
+								<Box w="100%">
+									<FormLabel fontSize="xs" fontWeight="md">
+										Cidade
+									</FormLabel>
+									<FiltroCidade ref={ filtroCidadeRef } cidade={ handleFiltroCidade } />
+								</Box>
+								{ tabIndex === 0 && (
+									<Box w="100%">
+										<FormLabel fontSize="xs" fontWeight="md">
+											Ordenar por
+										</FormLabel>
+										<Select
+											size="sm"
+											borderColor="white"
+											focusBorderColor="white"
+											rounded="md"
+											value={ ordemClassificacao }
+											onChange={ ( e ) => handleOrdemClassificacaoChange( e.target.value as "relevancia" | "expiracao" ) }
+											w="100%"
+										>
+											<option value="relevancia" style={ { backgroundColor: "#1A202C", color: 'white' } }>Relevância</option>
+											<option value="expiracao" style={ { backgroundColor: "#1A202C", color: 'white' } }>Data de expiração</option>
+										</Select>
+									</Box>
+								) }
+							</Flex>
+						</Collapse>
+						<Box display={{ base: 'none', md: 'block' }} w="auto" minW="150px">
 							<FormLabel fontSize="xs" fontWeight="md">
 								CNAE
 							</FormLabel>
 							<FiltroCNAE ref={ filtroCNAERef } cnae={ handleFiltroCNAE } />
 						</Box>
-						<Box minW="150px" flexShrink={ 0 }>
+						<Box display={{ base: 'none', md: 'block' }} w="auto" minW="150px">
 							<FormLabel fontSize="xs" fontWeight="md">
 								Cidade
 							</FormLabel>
 							<FiltroCidade ref={ filtroCidadeRef } cidade={ handleFiltroCidade } />
 						</Box>
 						{ tabIndex === 0 && (
-							<Box minW="150px" flexShrink={ 0 }>
+							<Box display={{ base: 'none', md: 'block' }} w="auto" minW="150px">
 								<FormLabel fontSize="xs" fontWeight="md">
 									Ordenar por
 								</FormLabel>
@@ -1028,7 +1132,7 @@ function Empresas () {
 							</Box>
 						) }
 						{ isAdmin && (
-							<Box minW="200px" flexShrink={ 0 }>
+							<Box w={{ base: '100%', md: 'auto' }} minW={{ base: 'unset', md: '200px' }}>
 								<FormLabel fontSize="xs" fontWeight="md">
 									Filtrar por Vendedor
 								</FormLabel>
@@ -1039,8 +1143,8 @@ function Empresas () {
 									rounded="md"
 									value={ filtroVendedorId || '' }
 									onChange={ ( e ) => handleFiltroVendedorChange( e.target.value ) }
-									w="200px"
-									minW="200px"
+									w={{ base: '100%', md: '200px' }}
+									minW={{ base: 'unset', md: '200px' }}
 									sx={ {
 										'& option': {
 											backgroundColor: '#1A202C !important',
@@ -1081,93 +1185,136 @@ function Empresas () {
 							</Button>
 						) }
 					</Flex>
-					<Flex gap={ 2 } alignItems={ 'flex-end' } flexWrap="wrap">
+					<Flex
+						gap={ 2 }
+						alignItems={{ base: 'stretch', md: 'flex-end' }}
+						flexWrap="wrap"
+						w={{ base: '100%', md: 'auto' }}
+						justifyContent={{ base: 'center', md: 'flex-end' }}
+						flexDir={{ base: 'column', md: 'row' }}
+					>
 						{ isAdmin && (
-							<>
+							<Flex
+								gap={ 2 }
+								flexWrap="wrap"
+								justifyContent="center"
+								display={{ base: 'grid', md: 'flex' }}
+								gridTemplateColumns={{ base: '1fr 1fr', md: 'unset' }}
+								w={{ base: '100%', md: 'auto' }}
+							>
 								<Button
-									size={ 'sm' }
+									size="sm"
 									onClick={ handleRefatorarPurchaseFrequency }
 									colorScheme="purple"
 									whiteSpace="normal"
 									wordBreak="break-word"
 									minW="fit-content"
-									flexShrink={ 0 }
 									isLoading={ refatorandoPurchaseFrequency }
 									loadingText="Refatorando..."
 								>
 									Refatorar Frequência
 								</Button>
 								<Button
-									size={ 'sm' }
+									size="sm"
 									onClick={ handleChecarExpiradas }
 									colorScheme="orange"
 									whiteSpace="normal"
 									wordBreak="break-word"
 									minW="fit-content"
-									flexShrink={ 0 }
 									isLoading={ checandoExpiradas }
 									loadingText="Verificando..."
 								>
 									Checar Expiradas
 								</Button>
 								<Button
-									size={ 'sm' }
+									size="sm"
 									onClick={ handleRecalcularTabelas }
 									colorScheme="blue"
 									whiteSpace="normal"
 									wordBreak="break-word"
 									minW="fit-content"
-									flexShrink={ 0 }
 									isLoading={ recalculandoTabelas }
 									loadingText="Recalculando..."
 								>
 									Recalcular Tabelas
 								</Button>
 								<Button
-									size={ 'sm' }
+									size="sm"
 									onClick={ handleSincronizarProdutos }
 									colorScheme="teal"
 									whiteSpace="normal"
 									wordBreak="break-word"
 									minW="fit-content"
-									flexShrink={ 0 }
 									isLoading={ sincronizandoProdutos }
 									loadingText="Sincronizando..."
 								>
 									Sincronizar Produtos
 								</Button>
-							</>
+							</Flex>
 						) }
 						<Button
-							size={ 'sm' }
+							size="sm"
 							onClick={ () => router.push( '/empresas/cadastro' ) }
 							colorScheme="green"
 							whiteSpace="normal"
 							wordBreak="break-word"
+							display={{ base: 'none', md: 'flex' }}
 							minW="fit-content"
-							flexShrink={ 0 }
 						>
 							+ Nova Empresa
 						</Button>
 					</Flex>
 				</Flex>
-				<Tabs colorScheme="blue" w={ '100%' } flex="1" display="flex" flexDirection="column" overflowY="auto" variant="unstyled" index={ tabIndex } onChange={ setTabIndex }>
-					<Flex justifyContent="space-between" alignItems="flex-end" mb={ 0 } borderBottom="2px solid #ffffff">
-						<TabList pt={2} flex="1" borderBottom="none">
+				<Tabs
+				colorScheme="blue"
+				w="100%"
+				flex={{ base: 'unset', md: '1' }}
+				display="flex"
+				flexDirection="column"
+				overflowY={{ base: 'visible', md: 'auto' }}
+				variant="unstyled"
+				index={ tabIndex }
+				onChange={ setTabIndex }
+			>
+					<Flex
+						justifyContent="space-between"
+						alignItems={{ base: 'stretch', md: 'flex-end' }}
+						mb={ 0 }
+						borderBottom="2px solid #ffffff"
+						flexDir={{ base: 'column', md: 'row' }}
+						gap={{ base: 2, md: 0 }}
+					>
+						<TabList
+							pt={2}
+							flex="1"
+							borderBottom="none"
+							flexDir={{ base: 'column', md: 'row' }}
+						>
 							<Tab
 								fontWeight="semibold"
 								bg="transparent"
 								borderColor="rgba(255, 255, 255, 0.5)"
-								borderBottom="none"
-								_selected={ { bg: 'blue.600', color: 'white', borderTop: '2px solid #ffffff', borderLeft: '2px solid #ffffff', borderRight: '2px solid #ffffff', borderBottom: 'none' } }
+								borderBottom={{ base: '1px solid rgba(255,255,255,0.2)', md: 'none' }}
+								_selected={{
+									bg: 'blue.600',
+									color: 'white',
+									borderTop: { base: 'none', md: '2px solid #ffffff' },
+									borderLeft: { base: '3px solid #ffffff', md: '2px solid #ffffff' },
+									borderRight: { base: 'none', md: '2px solid #ffffff' },
+									borderBottom: 'none',
+								}}
 								position="relative"
+								justifyContent={{ base: 'space-between', md: 'center' }}
+								py={{ base: 3, md: 2 }}
+								fontSize={{ base: 'sm', md: 'inherit' }}
 							>
-								Todas as empresas com vendedor
+								{ isAdmin ? 'Com vendedor' : 'Meus clientes' }
 								{ totalEmpresasComVendedor > 0 && (
 									<Badge
-										position="absolute"
-										top="-5px"
-										right="-5px"
+										position={{ base: 'static', md: 'absolute' }}
+										top={{ md: '-5px' }}
+										right={{ md: '-5px' }}
+										ml={{ base: 2, md: 0 }}
 										bg="orange.500"
 										color="white"
 										borderRadius="full"
@@ -1187,16 +1334,27 @@ function Empresas () {
 								fontWeight="semibold"
 								bg="transparent"
 								borderColor="rgba(255, 255, 255, 0.5)"
-								borderBottom="none"
-								_selected={ { bg: 'blue.600', color: 'white', borderTop: '2px solid #ffffff', borderLeft: '2px solid #ffffff', borderRight: '2px solid #ffffff', borderBottom: 'none' } }
+								borderBottom={{ base: '1px solid rgba(255,255,255,0.2)', md: 'none' }}
+								_selected={{
+									bg: 'blue.600',
+									color: 'white',
+									borderTop: { base: 'none', md: '2px solid #ffffff' },
+									borderLeft: { base: '3px solid #ffffff', md: '2px solid #ffffff' },
+									borderRight: { base: 'none', md: '2px solid #ffffff' },
+									borderBottom: 'none',
+								}}
 								position="relative"
+								justifyContent={{ base: 'space-between', md: 'center' }}
+								py={{ base: 3, md: 2 }}
+								fontSize={{ base: 'sm', md: 'inherit' }}
 							>
-								Empresas sem carteira definida
+								Sem vendedor
 								{ totalEmpresasSemVendedor > 0 && (
 									<Badge
-										position="absolute"
-										top="-5px"
-										right="-5px"
+										position={{ base: 'static', md: 'absolute' }}
+										top={{ md: '-5px' }}
+										right={{ md: '-5px' }}
+										ml={{ base: 2, md: 0 }}
 										bg="orange.500"
 										color="white"
 										borderRadius="full"
@@ -1212,42 +1370,54 @@ function Empresas () {
 									</Badge>
 								) }
 							</Tab>
-							{ !isAdmin && (
+							{ !isAdmin && totalEmpresasOutrosVendedores > 0 && (
 								<Tab
 									fontWeight="semibold"
 									bg="transparent"
 									borderColor="rgba(255, 255, 255, 0.5)"
-									borderBottom="none"
-									_selected={ { bg: 'blue.600', color: 'white', borderTop: '2px solid #ffffff', borderLeft: '2px solid #ffffff', borderRight: '2px solid #ffffff', borderBottom: 'none' } }
+									borderBottom={{ base: '1px solid rgba(255,255,255,0.2)', md: 'none' }}
+									_selected={{
+										bg: 'blue.600',
+										color: 'white',
+										borderTop: { base: 'none', md: '2px solid #ffffff' },
+										borderLeft: { base: '3px solid #ffffff', md: '2px solid #ffffff' },
+										borderRight: { base: 'none', md: '2px solid #ffffff' },
+										borderBottom: 'none',
+									}}
 									position="relative"
+									justifyContent={{ base: 'space-between', md: 'center' }}
+									py={{ base: 3, md: 2 }}
+									fontSize={{ base: 'sm', md: 'inherit' }}
 								>
 									Outros vendedores
-									{ totalEmpresasOutrosVendedores > 0 && (
-										<Badge
-											position="absolute"
-											top="-5px"
-											right="-5px"
-											bg="orange.500"
-											color="white"
-											borderRadius="full"
-											border="1px solid white"
-											fontSize="xs"
-											minW="18px"
-											h="18px"
-											display="flex"
-											alignItems="center"
-											justifyContent="center"
-										>
-											{ totalEmpresasOutrosVendedores }
-										</Badge>
-									) }
+									<Badge
+										position={{ base: 'static', md: 'absolute' }}
+										top={{ md: '-5px' }}
+										right={{ md: '-5px' }}
+										ml={{ base: 2, md: 0 }}
+										bg="orange.500"
+										color="white"
+										borderRadius="full"
+										border="1px solid white"
+										fontSize="xs"
+										minW="18px"
+										h="18px"
+										display="flex"
+										alignItems="center"
+										justifyContent="center"
+									>
+										{ totalEmpresasOutrosVendedores }
+									</Badge>
 								</Tab>
 							) }
 						</TabList>
-						<Box pb={ 2 }>
+						<Box pb={ 2 } w={{ base: '100%', md: 'auto' }}>
 							{ tabIndex === 0 ? (
 								totalPaginasComVendedor <= 1 ? null : (
-									<Flex alignItems="flex-end" justifyContent="flex-end">
+									<Flex
+										alignItems="center"
+										justifyContent={{ base: 'center', md: 'flex-end' }}
+									>
 										<HStack spacing={ 2 }>
 											<Button
 												size="xs"
@@ -1314,7 +1484,10 @@ function Empresas () {
 								)
 							) : tabIndex === 2 ? (
 								totalPaginasOutrosVendedores <= 1 ? null : (
-									<Flex alignItems="flex-end" justifyContent="flex-end">
+									<Flex
+										alignItems="center"
+										justifyContent={{ base: 'center', md: 'flex-end' }}
+									>
 										<HStack spacing={ 2 }>
 											<Button
 												size="xs"
@@ -1346,7 +1519,10 @@ function Empresas () {
 								)
 							) : (
 								totalPaginasSemVendedor <= 1 ? null : (
-									<Flex alignItems="flex-end" justifyContent="flex-end">
+									<Flex
+										alignItems="center"
+										justifyContent={{ base: 'center', md: 'flex-end' }}
+									>
 										<HStack spacing={ 2 }>
 											<Button
 												size="xs"
@@ -1451,7 +1627,7 @@ function Empresas () {
 								onChangePagina={ handlePaginacaoSemVendedor }
 							/>
 						</TabPanel>
-						{ !isAdmin && (
+						{ !isAdmin && totalEmpresasOutrosVendedores > 0 && (
 							<TabPanel px={ 0 } py={ 4 } flex="1" display="flex" flexDirection="column" minH={ 0 }>
 								<CarteiraOutrosVendedores
 									filtro={ empresasOutrosVendedores }

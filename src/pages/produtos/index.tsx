@@ -19,7 +19,7 @@ import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react'
 import axios from 'axios'
 import Link from 'next/link'
-import { FaSearch, FaSync, FaFileInvoiceDollar, FaTrash, FaInfoCircle, FaTimes, FaAngleDoubleLeft, FaAngleDoubleRight, FaMoneyBillWave, FaSave, FaShoppingCart } from 'react-icons/fa'
+import { FaSearch, FaSync, FaFileInvoiceDollar, FaTrash, FaInfoCircle, FaTimes, FaAngleDoubleLeft, FaAngleDoubleRight, FaMoneyBillWave, FaSave, FaShoppingCart, FaTable } from 'react-icons/fa'
 import { marginTables } from '@/components/data/marginTables'
 import { getTableBadgeColor, getTableNameInPortuguese } from '@/utils/tableUtils'
 import { parseCurrency } from '@/utils/customNumberFormats'
@@ -142,11 +142,12 @@ const formatDate = (dateString?: string) => {
 
 function Produtos() {
 	const router = useRouter()
-	const { empresaId, pagina, proposta } = router.query
+	const { empresaId, pagina, proposta, tabelaPrecos } = router.query
 	// Fallback when router.query not ready (Next.js hydration)
 	const queryFromPath = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
 	const effectiveEmpresaId = (Array.isArray(empresaId) ? empresaId[0] : empresaId) ?? queryFromPath?.get('empresaId') ?? ''
 	const effectiveProposta = (Array.isArray(proposta) ? proposta[0] : proposta) ?? queryFromPath?.get('proposta') ?? ''
+	const isPriceTableMode = tabelaPrecos !== undefined || queryFromPath?.get('tabelaPrecos') === 'true'
 	const [companies, setCompanies] = useState<Company[]>([])
 	const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
 	const [selectedCompanyName, setSelectedCompanyName] = useState<string | null>(null)
@@ -974,15 +975,18 @@ function Produtos() {
 				: [...prev, prodIdNum]
 		)
 
+		const label = isPriceTableMode ? 'tabela de preços' : 'proposta'
 		toast({
-			title: isRemoving ? 'Removido da proposta' : 'Adicionado à proposta',
+			title: isRemoving
+				? `Removido da ${ label }`
+				: `Adicionado à ${ label }`,
 			description: product.nomeProd,
 			status: isRemoving ? 'info' : 'success',
 			duration: 2000,
 			isClosable: true,
 			position: 'bottom-left'
 		})
-	}, [selectedIdsSet, toast])
+	}, [selectedIdsSet, isPriceTableMode, toast])
 
 	const handleSaveProposalItems = useCallback(() => {
 		if (!effectiveProposta) {
@@ -1085,6 +1089,64 @@ function Produtos() {
 		// Redirecionar para a página da proposta
 		router.push(`/negocios/proposta/${effectiveProposta}`)
 	}, [effectiveProposta, selectedIdsSet, products, router, toast])
+
+	const handleSavePriceTable = useCallback(async () => {
+		if (selectedItems.length === 0) {
+			toast({
+				title: 'Nenhum produto selecionado',
+				status: 'warning',
+				duration: 3000,
+				isClosable: true,
+			})
+			return
+		}
+
+		const selectedProducts = products.filter(
+			p => selectedIdsSet.has(Number(p.prodId))
+		)
+
+		const itens = selectedProducts.map(product => ({
+			nomeProd: product.nomeProd,
+			codigo: product.codigo || `rbx-${product.prodId}`,
+			comprimento: product.comprimento,
+			largura: product.largura,
+			altura: product.altura,
+			vFinal: product.vFinal,
+			prodId: product.prodId,
+			tabela: product.tabela,
+			modelo: product.modelo,
+		}))
+
+		try {
+			await axios.post('/api/db/tabela-preco/post', {
+				itens,
+				empresaId: selectedCompany?.id,
+				userId: session?.user?.id,
+			})
+
+			toast({
+				title: 'Tabela de preços criada!',
+				description: `${itens.length} produtos incluídos.`,
+				status: 'success',
+				duration: 3000,
+				isClosable: true,
+			})
+
+			router.push(`/empresas/CNPJ/${selectedCompany?.id}`)
+		} catch ( error ) {
+			console.error('Error creating price table:', error)
+			toast({
+				title: 'Erro ao criar tabela de preços',
+				description: getToastErrorMessage(error, 'Tente novamente.'),
+				status: 'error',
+				duration: 5000,
+				isClosable: true,
+			})
+		}
+	}, [
+		selectedItems, selectedIdsSet, products,
+		selectedCompany, session, router, toast,
+	])
 
 	return (
 		<Box pb={20} >
@@ -1275,7 +1337,7 @@ function Produtos() {
 							</Box>
 						</Box>
 
-						{selectedCompany && ongoingBusinesses.length > 0 && (
+						{selectedCompany && ongoingBusinesses.length > 0 && !isPriceTableMode && (
 							<Box w={{ base: 'full', lg: 'auto' }} minW="250px" bg="gray.800" p={3} borderRadius="md" border="1px" borderColor="gray.600">
 								<Text fontSize="xs" fontWeight="bold" mb={2} color="white" textTransform="uppercase">
 									Negócios em andamento
@@ -1579,10 +1641,26 @@ function Produtos() {
 												</Td>
 												<Td textAlign="center" py={4}>
 													<HStack spacing={2} justify="center">
-														{effectiveProposta && (
+														{effectiveProposta && !isPriceTableMode && (
 															<IconButton
 																aria-label="Adicionar à proposta"
 																icon={<FaShoppingCart color={isProductSelected(product.prodId) ? "white" : undefined} />}
+																size="sm"
+																variant={isProductSelected(product.prodId) ? "solid" : "ghost"}
+																bg={isProductSelected(product.prodId) ? "green.500" : "transparent"}
+																colorScheme={isProductSelected(product.prodId) ? "green" : "gray"}
+																color={isProductSelected(product.prodId) ? "white" : "gray.400"}
+																_hover={{
+																	bg: isProductSelected(product.prodId) ? "green.600" : "whiteAlpha.100",
+																	color: "white"
+																}}
+																onClick={() => toggleItem(product)}
+															/>
+														)}
+														{isPriceTableMode && (
+															<IconButton
+																aria-label="Adicionar à tabela de preços"
+																icon={<FaTable color={isProductSelected(product.prodId) ? "white" : undefined} />}
 																size="sm"
 																variant={isProductSelected(product.prodId) ? "solid" : "ghost"}
 																bg={isProductSelected(product.prodId) ? "green.500" : "transparent"}
@@ -1718,7 +1796,7 @@ function Produtos() {
 					</AlertDialogOverlay>
 				</AlertDialog>
 
-				{effectiveProposta && (
+				{effectiveProposta && !isPriceTableMode && (
 					<Box
 						position="fixed"
 						bottom="20px"
@@ -1741,6 +1819,36 @@ function Produtos() {
 							transition="0.2s"
 						>
 							Finalizar Seleção ({selectedItems.length})
+						</Button>
+					</Box>
+				)}
+
+				{isPriceTableMode && selectedItems.length > 0 && (
+					<Box
+						position="fixed"
+						bottom="20px"
+						right={{ base: "auto", md: "20px" }}
+						left={{ base: "50%", md: "auto" }}
+						transform={{ base: "translateX(-50%)", md: "none" }}
+						zIndex={100}
+					>
+						<Button
+							colorScheme="green"
+							size="lg"
+							leftIcon={<FaTable />}
+							boxShadow="2xl"
+							onClick={handleSavePriceTable}
+							borderRadius="full"
+							px={8}
+							isDisabled={isLoadingProducts}
+							_hover={{
+								transform: 'scale(1.05)',
+								bg: 'green.600',
+							}}
+							_active={{ transform: 'scale(0.95)' }}
+							transition="0.2s"
+						>
+							Gerar Tabela de Preços ({selectedItems.length})
 						</Button>
 					</Box>
 				)}

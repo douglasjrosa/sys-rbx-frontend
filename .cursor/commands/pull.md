@@ -1,0 +1,1 @@
+Faça-se o pull do projeto atual. Se o comando vier acompanhado de "tudo", "todos", ou "all", faça-se o pull de todos os projetos do workspace.
