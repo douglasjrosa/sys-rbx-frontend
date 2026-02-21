@@ -574,25 +574,29 @@ function Produtos() {
 		})
 
 		try {
-			// 1. Buscar todos os produtos da empresa na API externa (paginado para evitar 504 em produção)
 			const cnpj = selectedCompany.attributes.CNPJ
 			const FETCH_PAGE_SIZE = 50
 			const allProducts: any[] = []
 			let offset = 0
 			let hasMore = true
 			const MAX_RETRIES = 2
-			const RETRY_DELAY_MS = 1500
+			const RETRY_DELAY_MS = 2000
+			const syncStart = Date.now()
+			console.debug( '[Sync] Start', { cnpj: `***${cnpj?.slice( -4 )}`, pageSize: FETCH_PAGE_SIZE } )
 			while ( hasMore ) {
 				const url = `/api/rbx/${session?.user?.email}/produtos?CNPJ=${cnpj}&limit=${FETCH_PAGE_SIZE}&offset=${offset}`
 				let lastErr: unknown = null
 				for ( let attempt = 0; attempt <= MAX_RETRIES; attempt++ ) {
+					const t0 = Date.now()
 					try {
 						if ( attempt > 0 ) {
+							console.debug( `[Sync] Retry offset=${offset} attempt=${attempt}` )
 							await new Promise( ( r ) => setTimeout( r, RETRY_DELAY_MS ) )
 						}
 						const prodRes = await axios.get( url )
 						const page = Array.isArray( prodRes.data ) ? prodRes.data : []
 						allProducts.push( ...page )
+						console.debug( `[Sync] Page OK offset=${offset} count=${page.length} total=${allProducts.length} ${Date.now() - t0}ms attempt=${attempt}` )
 						hasMore = page.length >= FETCH_PAGE_SIZE
 						offset += FETCH_PAGE_SIZE
 						if ( hasMore ) {
@@ -606,11 +610,13 @@ function Produtos() {
 						lastErr = pageErr
 						const ax = pageErr as { response?: { status?: number }; message?: string }
 						const is504 = ax?.response?.status === 504
+						console.debug( `[Sync] Page FAIL offset=${offset} status=${ax?.response?.status} ${Date.now() - t0}ms attempt=${attempt} willRetry=${is504 && attempt < MAX_RETRIES}` )
 						if ( !is504 || attempt >= MAX_RETRIES ) throw pageErr
 					}
 				}
 				if ( lastErr ) throw lastErr
 			}
+			console.debug( `[Sync] Fetch complete: ${allProducts.length} products in ${Date.now() - syncStart}ms` )
 
 			// 2. Filtrar apenas ativos
 			const activeProducts = allProducts.filter((p: any) => p.ativo === "1")

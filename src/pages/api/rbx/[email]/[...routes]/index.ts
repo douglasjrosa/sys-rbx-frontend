@@ -1,6 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
+const FETCH_TIMEOUT_MS = 8000
+
 export default async function handler ( req: NextApiRequest, res: NextApiResponse ) {
+	const t0 = Date.now()
 	try {
 		const { email, routes, ...params } = req.query
 
@@ -24,7 +27,10 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		}
 
 		const queryString = queryParams.toString()
-		const externalUrl = `${ rbxApiUrl }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
+		const routePath = routes.join( '/' )
+		const externalUrl = `${ rbxApiUrl }/${ routePath }${ queryString ? '?' + queryString : '' }`
+
+		console.log( `[rbx-proxy] ${req.method} /${routePath}?${queryString}` )
 
 		let bodyData = req.body
 		if ( [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ) {
@@ -38,15 +44,27 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			}
 		}
 
-		const response = await fetch( externalUrl, {
-			method: req.method as string,
-			headers: {
-				Email: String(email),
-				Token: rbxApiToken,
-				'Content-Type': 'application/json'
-			},
-			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
-		} )
+		const controller = new AbortController()
+		const timeout = setTimeout( () => controller.abort(), FETCH_TIMEOUT_MS )
+
+		let response: Response
+		try {
+			response = await fetch( externalUrl, {
+				method: req.method as string,
+				headers: {
+					Email: String( email ),
+					Token: rbxApiToken,
+					'Content-Type': 'application/json'
+				},
+				body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null,
+				signal: controller.signal
+			} )
+		} finally {
+			clearTimeout( timeout )
+		}
+
+		const elapsed = Date.now() - t0
+		console.log( `[rbx-proxy] /${routePath} status=${response.status} ${elapsed}ms` )
 
 		const responseText = await response.text()
 		let responseData: unknown
@@ -70,7 +88,14 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 
 		res.status( response.status ).json( responseData )
 	} catch ( error: any ) {
-		console.error( 'Error in handler:', error )
+		const elapsed = Date.now() - t0
+		const isAbort = error?.name === 'AbortError'
+		if ( isAbort ) {
+			console.error( `[rbx-proxy] Timeout after ${elapsed}ms (limit=${FETCH_TIMEOUT_MS}ms)` )
+			res.status( 504 ).json( { error: 'External API timeout', elapsedMs: elapsed } )
+			return
+		}
+		console.error( `[rbx-proxy] Error after ${elapsed}ms:`, error?.message || error )
 		res.status( 500 ).json( { error: error.message || 'Internal Server Error' } )
 	}
 }
