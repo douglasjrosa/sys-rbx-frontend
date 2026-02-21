@@ -5,7 +5,6 @@ export const config = { maxDuration: 60 }
 const FETCH_TIMEOUT_MS = 55000
 
 export default async function handler ( req: NextApiRequest, res: NextApiResponse ) {
-	const t0 = Date.now()
 	try {
 		const { email, routes, ...params } = req.query
 
@@ -29,10 +28,7 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		}
 
 		const queryString = queryParams.toString()
-		const routePath = routes.join( '/' )
-		const externalUrl = `${ rbxApiUrl }/${ routePath }${ queryString ? '?' + queryString : '' }`
-
-		console.log( `[rbx-proxy] ${req.method} /${routePath}?${queryString}` )
+		const externalUrl = `${ rbxApiUrl }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
 
 		let bodyData = req.body
 		if ( [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ) {
@@ -65,9 +61,6 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			clearTimeout( timeout )
 		}
 
-		const elapsed = Date.now() - t0
-		console.log( `[rbx-proxy] /${routePath} status=${response.status} ${elapsed}ms` )
-
 		const responseText = await response.text()
 		let responseData: unknown
 		try {
@@ -90,14 +83,12 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 
 		res.status( response.status ).json( responseData )
 	} catch ( error: any ) {
-		const elapsed = Date.now() - t0
 		const isAbort = error?.name === 'AbortError'
 		if ( isAbort ) {
-			console.error( `[rbx-proxy] Timeout after ${elapsed}ms (limit=${FETCH_TIMEOUT_MS}ms)` )
-			res.status( 504 ).json( { error: 'External API timeout', elapsedMs: elapsed } )
+			res.status( 504 ).json( { error: 'External API timeout' } )
 			return
 		}
-		console.error( `[rbx-proxy] Error after ${elapsed}ms:`, error?.message || error )
+		console.error( 'Error in handler:', error )
 		res.status( 500 ).json( { error: error.message || 'Internal Server Error' } )
 	}
 }

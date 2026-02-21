@@ -1,5 +1,5 @@
 import { EtapasNegocio } from "@/components/data/etapa"
-import { Box, Flex, Text, chakra, HStack, Input, FormLabel, Select, Button, Badge, InputGroup, InputLeftElement, InputRightElement, IconButton, Skeleton } from "@chakra-ui/react"
+import { Box, Flex, Text, chakra, HStack, Input, FormLabel, Select, Button, Badge, InputGroup, InputLeftElement, InputRightElement, IconButton, Skeleton, Spinner } from "@chakra-ui/react"
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons"
 import { isToday, parseISO, isPast, isAfter } from "date-fns"
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -45,6 +45,11 @@ export const PowerBi = () => {
 	const [ selectedCompany, setSelectedCompany ] = useState<Company | null>( null )
 	const [ selectedCompanyName, setSelectedCompanyName ] = useState<string | null>( null )
 	const companyInputRef = useRef<HTMLInputElement>( null )
+	const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>( null )
+	const searchAbortRef = useRef<AbortController | null>( null )
+	const searchTermRef = useRef<string>( '' )
+	const [ isSearchingCompanies, setIsSearchingCompanies ] = useState( false )
+	const SEARCH_DEBOUNCE_MS = 350
 
 	const formatCNPJ = ( cnpj: string | undefined | null ) => {
 		if ( !cnpj ) return ''
@@ -138,23 +143,73 @@ export const PowerBi = () => {
 		updateQuery( { page: String( page ) } )
 	}
 
-	const handleSearch = useCallback( async ( value: string ) => {
+	useEffect( () => () => {
+		if ( searchDebounceRef.current ) clearTimeout( searchDebounceRef.current )
+		if ( searchAbortRef.current ) searchAbortRef.current.abort()
+	}, [] )
+
+	const handleSearch = useCallback( ( value: string ) => {
+		searchTermRef.current = value
 		setSelectedCompanyName( value )
 		if ( value.length < 3 ) {
 			setCompanies( [] )
+			setIsSearchingCompanies( false )
+			if ( searchDebounceRef.current ) {
+				clearTimeout( searchDebounceRef.current )
+				searchDebounceRef.current = null
+			}
+			if ( searchAbortRef.current ) {
+				searchAbortRef.current.abort()
+				searchAbortRef.current = null
+			}
 			return
 		}
 
-		try {
-			const url = `/api/refactory/companies?searchString=${ value }`
-			const response = await axios( url )
-			setCompanies( response.data.data )
-		} catch ( error ) {
-			console.error( 'Erro na busca:', error )
-		}
+		setIsSearchingCompanies( true )
+		if ( searchDebounceRef.current ) clearTimeout( searchDebounceRef.current )
+
+		searchDebounceRef.current = setTimeout( async () => {
+			searchDebounceRef.current = null
+			const searchFor = searchTermRef.current?.trim() ?? ''
+			if ( searchFor.length < 3 ) {
+				setIsSearchingCompanies( false )
+				return
+			}
+
+			if ( searchAbortRef.current ) searchAbortRef.current.abort()
+			const controller = new AbortController()
+			searchAbortRef.current = controller
+
+			try {
+				const url = `/api/refactory/companies?searchString=${ encodeURIComponent( searchFor ) }`
+				const response = await axios( url, { signal: controller.signal } )
+				if ( controller.signal.aborted ) return
+				const data = response.data?.data ?? []
+				if ( searchTermRef.current?.trim() !== searchFor ) return
+				setCompanies( data )
+			} catch ( err: unknown ) {
+				const errObj = err as { code?: string; name?: string }
+				if ( errObj?.code === 'ERR_CANCELED' || errObj?.name === 'CanceledError' || errObj?.name === 'AbortError' ) return
+				console.error( 'Erro na busca:', err )
+			} finally {
+				if ( searchAbortRef.current === controller ) searchAbortRef.current = null
+				if ( searchTermRef.current?.trim() === searchFor ) setIsSearchingCompanies( false )
+			}
+		}, SEARCH_DEBOUNCE_MS )
 	}, [] )
 
 	const handleClearCompany = useCallback( () => {
+		searchTermRef.current = ''
+		setIsSearchingCompanies( false )
+		if ( searchDebounceRef.current ) {
+			clearTimeout( searchDebounceRef.current )
+			searchDebounceRef.current = null
+		}
+		if ( searchAbortRef.current ) {
+			searchAbortRef.current.abort()
+			searchAbortRef.current = null
+		}
+
 		const newQuery = { ...router.query }
 		delete newQuery.empresaId
 		newQuery.status = 'andamento'
@@ -165,7 +220,6 @@ export const PowerBi = () => {
 			query: newQuery
 		}, undefined, { shallow: true } )
 
-		// Focus back on the input
 		setTimeout( () => {
 			companyInputRef.current?.focus()
 		}, 100 )
@@ -205,6 +259,7 @@ export const PowerBi = () => {
 
 				if ( isBlocked ) return
 
+				setIsSearchingCompanies( false )
 				updateQuery( { empresaId: String( companyToSelect.id ), status: 'todos', page: '1' } )
 				setCompanies( [] )
 			}
@@ -348,40 +403,21 @@ export const PowerBi = () => {
 						flexDir={ { base: 'column', md: 'row' } }
 						w={ { base: '100%', md: 'auto' } }
 					>
-						<Box w={ { base: '100%', md: '15rem' } } minW={ { base: '100%', md: '15rem' } }>
-							<FormLabel fontSize="xs" fontWeight="md" color="white" mb={1}>Filtro Status</FormLabel>
-							<Select
-								w="100%"
-								value={ filtroStatus }
-								onChange={ ( e ) => {
-									setStatus( e.target.value )
-								} }
-								color="white"
-								bg='gray.800'
-								size="md"
-								border="1px solid"
-								borderColor="whiteAlpha.300"
-								_focus={ { borderColor: "white", ring: 0 } }
-								_hover={ { borderColor: "whiteAlpha.500" } }
-							>
-								<option style={ { backgroundColor: "#1A202C" } } value="andamento">Em andamento</option>
-								<option style={ { backgroundColor: "#1A202C" } } value="ganhos">Ganhos</option>
-								<option style={ { backgroundColor: "#1A202C" } } value="perdidos">Perdidos</option>
-								<option style={ { backgroundColor: "#1A202C" } } value="todos">Todos os negócios</option>
-							</Select>
-						</Box>
-
 						<Flex gap={ 2 } alignItems="center" flexDir={ { base: 'column', md: 'row' } } w={ { base: '100%', md: 'auto' } }>
 							<Box w={ { base: '100%', md: '15rem' } } minW={ { base: '100%', md: '15rem' } }>
 								<FormLabel fontSize="xs" fontWeight="md" color="white" mb={1}>Empresa</FormLabel>
 								<Box position="relative">
 									<InputGroup size="md">
 										<InputLeftElement pointerEvents="none">
-											<FaSearch color="gray.400" />
+											{ isSearchingCompanies ? (
+												<Spinner size="sm" color="gray.400" />
+											) : (
+												<FaSearch color="gray.400" />
+											) }
 										</InputLeftElement>
 										<Input
 											ref={ companyInputRef }
-											placeholder="Pesquisar por nome ou CNPJ..."
+											placeholder="Nome ou CNPJ"
 											onChange={ ( e ) => handleSearch( e.target.value ) }
 											value={ selectedCompanyName || '' }
 											borderRadius="md"
@@ -408,7 +444,7 @@ export const PowerBi = () => {
 											</InputRightElement>
 										) }
 									</InputGroup>
-									{ companies.length > 0 && (
+									{ ( ( selectedCompanyName?.length ?? 0 ) >= 3 && ( companies.length > 0 || isSearchingCompanies ) ) && (
 										<Box
 											position="absolute"
 											top="100%"
@@ -424,7 +460,16 @@ export const PowerBi = () => {
 											border="1px"
 											borderColor="gray.600"
 										>
-											{ companies.map( ( company: Company, index: number ) => {
+											{ isSearchingCompanies && companies.length === 0 ? (
+												<Box p={ 3 }>
+													<Flex justifyContent="space-between" alignItems="center" gap={ 2 }>
+														<Box flex={ 1 }>
+															<Skeleton height="16px" width="80%" mb={ 2 } borderRadius="md" />
+															<Skeleton height="12px" width="50%" borderRadius="md" />
+														</Box>
+													</Flex>
+												</Box>
+											) : companies.map( ( company: Company, index: number ) => {
 												const companyUser = company.attributes.user?.data
 												const isOtherVendedor = companyUser && String( companyUser.id ) !== String( session?.user?.id )
 												const isAdmin = session?.user?.pemission === 'Adm'
@@ -440,6 +485,7 @@ export const PowerBi = () => {
 														opacity={ isBlocked ? 0.7 : 1 }
 														onClick={ () => {
 															if ( isBlocked ) return
+															setIsSearchingCompanies( false )
 															updateQuery( { empresaId: String( company.id ), status: 'todos', page: '1' } )
 															setCompanies( [] )
 														} }
@@ -477,6 +523,29 @@ export const PowerBi = () => {
 								</Box>
 							) }
 						</Flex>
+
+						<Box w={ { base: '100%', md: '15rem' } } minW={ { base: '100%', md: '15rem' } }>
+							<FormLabel fontSize="xs" fontWeight="md" color="white" mb={1}>Filtro Status</FormLabel>
+							<Select
+								w="100%"
+								value={ filtroStatus }
+								onChange={ ( e ) => {
+									setStatus( e.target.value )
+								} }
+								color="white"
+								bg='gray.800'
+								size="md"
+								border="1px solid"
+								borderColor="whiteAlpha.300"
+								_focus={ { borderColor: "white", ring: 0 } }
+								_hover={ { borderColor: "whiteAlpha.500" } }
+							>
+								<option style={ { backgroundColor: "#1A202C" } } value="andamento">Em andamento</option>
+								<option style={ { backgroundColor: "#1A202C" } } value="ganhos">Ganhos</option>
+								<option style={ { backgroundColor: "#1A202C" } } value="perdidos">Perdidos</option>
+								<option style={ { backgroundColor: "#1A202C" } } value="todos">Todos os negócios</option>
+							</Select>
+						</Box>
 					</Flex>
 
 				</Flex>

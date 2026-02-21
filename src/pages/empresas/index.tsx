@@ -990,12 +990,21 @@ function Empresas () {
 				<Flex w={ '100%' } py={ '1rem' } justifyContent={ 'space-between' } flexDir={ 'row' } alignItems={ 'self-end' } px={ 6 } gap={ 6 } borderBottom={ '1px' } borderColor={ 'white' } mb={ '1rem' } flexWrap="wrap">
 					<Flex gap={ 4 } alignItems={ 'flex-end' } flexWrap="wrap">
 						<Box minW="150px" flexShrink={ 0 }>
-							<FiltroEmpresa empresa={ handleFiltroEmpresa } />
+							<FormLabel fontSize="xs" fontWeight="md">
+								Empresa
+							</FormLabel>
+							<FiltroEmpresa empresa={ handleFiltroEmpresa } isLoading={ carregandoVendedor || carregandoSemVendedor } />
 						</Box>
 						<Box minW="150px" flexShrink={ 0 }>
+							<FormLabel fontSize="xs" fontWeight="md">
+								CNAE
+							</FormLabel>
 							<FiltroCNAE ref={ filtroCNAERef } cnae={ handleFiltroCNAE } />
 						</Box>
 						<Box minW="150px" flexShrink={ 0 }>
+							<FormLabel fontSize="xs" fontWeight="md">
+								Cidade
+							</FormLabel>
 							<FiltroCidade ref={ filtroCidadeRef } cidade={ handleFiltroCidade } />
 						</Box>
 						{ tabIndex === 0 && (
