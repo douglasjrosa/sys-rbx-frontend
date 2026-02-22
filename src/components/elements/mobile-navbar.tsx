@@ -1,13 +1,17 @@
-import { Center, Flex, Text } from '@chakra-ui/layout'
+import { Center, Flex, HStack, Text } from '@chakra-ui/layout'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
 import { GiHamburgerMenu } from 'react-icons/gi'
 import { BsArrowLeftCircleFill } from 'react-icons/bs'
+import { FiMessageSquare } from 'react-icons/fi'
 import { CloseIcon } from '@chakra-ui/icons'
 import ProfilePopover from './profile-popover'
+import { useUnreadDemandas } from '@/utils/useUnreadDemandas'
 
 import React from 'react'
 import {
+	Badge as ChakraBadge,
+	Box,
 	Button,
 	Drawer,
 	DrawerBody,
@@ -26,6 +30,7 @@ import { Z_INDEX } from '@/utils/zIndex'
 const DRAWER_CLOSE_BLOCK_MS = 500
 
 const MobileNavbar = () => {
+	const unreadCount = useUnreadDemandas()
 	const drawerJustClosedRef = React.useRef( false )
 	let fontColor:
 		| string
@@ -554,9 +559,51 @@ const MobileNavbar = () => {
 				) }
 			</Center>
 			<Spacer />
-			<Center px="0">
+			<HStack spacing={1} px="0">
+				<NextLink href="/demandas">
+					<Box position="relative" display="inline-block">
+						<IconButton
+							aria-label="Demandas"
+							icon={
+								<FiMessageSquare
+									size={unreadCount > 0 ? 22 : 18}
+								/>
+							}
+							variant="ghost"
+							color={
+								unreadCount > 0
+									? "orange.300"
+									: "whiteAlpha.800"
+							}
+							_hover={{
+								bg: 'gray.600',
+								color: '#00dc00',
+							}}
+							borderRadius="full"
+							size="sm"
+						/>
+						{unreadCount > 0 && (
+							<ChakraBadge
+								position="absolute"
+								top="-4px"
+								right="-6px"
+								colorScheme="orange"
+								variant="solid"
+								borderRadius="full"
+								fontSize="2xs"
+								minW="16px"
+								h="16px"
+								display="flex"
+								alignItems="center"
+								justifyContent="center"
+							>
+								{unreadCount}
+							</ChakraBadge>
+						)}
+					</Box>
+				</NextLink>
 				<ProfilePopover isMobile blockOpenRef={ drawerJustClosedRef } />
-			</Center>
+			</HStack>
 		</Flex>
 	)
 }

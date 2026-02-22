@@ -5,6 +5,7 @@ import { GetLoteProposta } from "../../lib/get_lote_nProposta"
 import { GetTrelloId } from "../../lib/get_trello_id"
 import { ErroTrello } from "../../lib/errtrello"
 import { IncidentRecord } from "../lib/businesses"
+import { buildProductDisplayName } from "@/utils/productDisplayName"
 
 
 export default async function PostTrello (
@@ -60,7 +61,7 @@ export default async function PostTrello (
 
 				const trimmedClientName = cliente.replace( /(\w+\s\w+)\s.*/, '$1' )
 				const qtde = ` - ${ i.Qtd }`
-				const trimmedProdName = " - " + i.nomeProd.replace( / - \d+ x \d+ x \d+cm\(alt.\)/g, "" )
+				const trimmedProdName = " - " + buildProductDisplayName( i )
 
 				let measures = `- Medidas: ${ i.comprimento } x ${ i.largura } x ${ i.altura ? i.altura + "cm(alt.) " : "cm(larg.) " } `
 				measures = i.comprimento ? measures : ""

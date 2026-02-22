@@ -567,7 +567,7 @@ const Proposta = () => {
         ITEMS_STORAGE_KEY(effectiveBusinessId),
         JSON.stringify(itemsList),
       );
-      router.push("/negocios");
+      router.push(`/negocios/${effectiveBusinessId}`);
       setLoading(false);
     }
   }, [orderSaveData, router, itemsList, effectiveBusinessId]);

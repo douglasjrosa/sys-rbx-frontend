@@ -37,14 +37,11 @@ const AddItemButton: React.FC<AddItemButtonProps> = ( {
 		const product = await response.json()
 
 
-		const codigo = product.codigo || `rbx-${ product.prodId }`;
-		const nomeProd = codigo.substr( 0, 3 ) === "rbx"
-			? product.nomeProd
-			: `${ product.nomeProd } | ref: rbx-${ product.prodId }`
+		const codigo = product.codigo || `rbx-${ product.prodId }`
 
 		const item = {
 			id: itemsList.length + 1,
-			nomeProd,
+			nomeProd: product.nomeProd,
 			codigo,
 			Qtd: "1",
 			ncm: product.ncm,

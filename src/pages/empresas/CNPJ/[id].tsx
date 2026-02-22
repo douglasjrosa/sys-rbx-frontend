@@ -513,8 +513,13 @@ export default function Infos () {
 									{Interacoes && Interacoes.length > 0 ? Interacoes.map((i: any) => {
 										if (!i || !i.attributes) return null
 										const obj = ObjContato.find(o => o.id == i.attributes?.objetivo)?.title || "Sem objetivo"
-										const tipo = TipoContato.find(t => t.id == i.attributes?.tipo)?.title || "Sem tipo"
-										const date = i.attributes?.proxima ? new Date(parseISO(i.attributes.proxima)) : new Date()
+										const nextDate = i.attributes?.proxima
+											? new Date(parseISO(i.attributes.proxima))
+											: new Date()
+										const createdDate = i.attributes?.createdAt
+											? new Date(i.attributes.createdAt)
+												.toLocaleDateString('pt-BR')
+											: ''
 										const vName = i.attributes?.vendedor?.data?.attributes?.nome || i.attributes?.vendedor_name || "Vendedor"
 
 										return (
@@ -524,13 +529,18 @@ export default function Infos () {
 														<Text fontWeight="bold" color="blue.300" fontSize="sm">{obj}</Text>
 														<Text fontSize="xs" color="gray.400">{vName}</Text>
 													</VStack>
-													<Badge colorScheme="blue" variant="subtle" fontSize="2xs">{tipo}</Badge>
+													<HStack spacing={1} color="gray.400">
+														<Icon as={FiCalendar} boxSize={3} />
+														<Text fontSize="xs">{createdDate}</Text>
+													</HStack>
 												</Flex>
 												<Text fontSize="xs" color="gray.300" mb={2} noOfLines={3}>{i.attributes?.descricao}</Text>
 												<Flex justify="flex-end">
 													<HStack spacing={1} color="gray.400">
-														<Icon as={FiCalendar} size={10} />
-														<Text fontSize="2xs">{date.toLocaleDateString()}</Text>
+														<Icon as={FiClock} boxSize={3} />
+														<Text fontSize="xs">
+															{nextDate.toLocaleDateString('pt-BR')}
+														</Text>
 													</HStack>
 												</Flex>
 											</Box>

@@ -66,7 +66,7 @@ const SignIn: NextPage = (): JSX.Element => {
                 onChange={(e) => setUser(e.target.value)}
               />
             </FormControl>
-            <FormControl bg={'white'} mt={{ base: 4, md: 0 }}>
+            <FormControl bg={'white'} mt={4}>
               <FormLabel bg={'white'} color={'black'} htmlFor="password">Senha</FormLabel>
               <Input
                 borderColor="gray.500"

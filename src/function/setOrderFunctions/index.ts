@@ -1,4 +1,5 @@
 import { parseCurrency } from "@/utils/customNumberFormats"
+import { buildProductDisplayName } from "@/utils/productDisplayName"
 
 
 export type BlingOrderDataType = {
@@ -283,11 +284,12 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[], toast
 		index++
 
 		// first of all, check if the product is already registered in Bling
-		const { nomeProd, ncm, expo, mont, vFinal, Qtd, codigo } = item
+		const { ncm, expo, mont, vFinal, Qtd, codigo } = item
+		const displayName = buildProductDisplayName( item )
 
 		toast( {
 			title: `Checando item ${ index }`,
-			description: nomeProd,
+			description: displayName,
 			status: "success",
 			isClosable: true,
 			duration: 7000,
@@ -300,7 +302,7 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[], toast
 
 		const productData = {
 			codigo,
-			nome: nomeProd,
+			nome: displayName,
 			tipo: "P",
 			situacao: "A",
 			formato: "S",
@@ -315,11 +317,11 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[], toast
 
 
 		if ( !getBlingProd?.id )
-			getBlingProd = await getBlingProductByName( blingAccountCnpj, nomeProd )
+			getBlingProd = await getBlingProductByName( blingAccountCnpj, displayName )
 
 		let blingProdId = getBlingProd?.id
 
-		if ( !!blingProdId && getBlingProd.nome !== nomeProd )
+		if ( !!blingProdId && getBlingProd.nome !== displayName )
 			blingProdId = await updateBlingProduct( blingAccountCnpj, blingProdId, productData )
 
 		blingProdId = blingProdId || await createBlingProduct( blingAccountCnpj, productData )
@@ -330,7 +332,7 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[], toast
 		}
 
 		respItems.push( {
-			descricao: nomeProd,
+			descricao: displayName,
 			valor: preco,
 			codigo,
 			unidade: "Un",

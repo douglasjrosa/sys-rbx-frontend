@@ -1,7 +1,15 @@
-export const parseCurrency = ( value: string | number | undefined | null ) => {
-	if ( !value ) return 0
-	if ( typeof value === "number" ) value = value.toFixed( 2 )
-	return Number( value.replace( /\D/g, "" ) ) / 100
+/**
+ * Parses numeric values from multiple formats: number, BR (1.234,56), US (23.3).
+ * Returns a number suitable for currency calculations.
+ */
+export const parseCurrency = ( value: string | number | undefined | null ): number => {
+	if ( value === undefined || value === null || value === "" ) return 0
+	if ( typeof value === "number" ) return isNaN( value ) ? 0 : value
+	const str = String( value ).trim()
+	// US/ISO decimal: "23.3" or "21.72" (dot as decimal, 1–2 digits after)
+	if ( /^\d+\.\d{1,2}$/.test( str ) ) return parseFloat( str ) || 0
+	// Brazilian or digits-only: strip non-digits, last 2 are cents
+	return Number( str.replace( /\D/g, "" ) ) / 100
 }
 
 export const formatCurrency = ( value: number | string | undefined | null ) => {

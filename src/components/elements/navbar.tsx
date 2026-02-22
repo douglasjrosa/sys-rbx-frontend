@@ -1,24 +1,31 @@
 import {
+	Badge as ChakraBadge,
+	Box,
 	Center,
 	Flex,
+	IconButton,
 	Image,
 	Link,
 	List,
 	ListIcon,
 	ListItem,
 	Text,
+	VStack,
 } from '@chakra-ui/react'
 import { useSession } from 'next-auth/react'
 import NextLink from 'next/link'
 import { useRouter } from 'next/router'
+import { FiMessageSquare } from 'react-icons/fi'
 import NavMenuItems from './nav-menu-items'
 import ProfilePopover from './profile-popover'
 import React, { useState, useEffect } from 'react'
+import { useUnreadDemandas } from '@/utils/useUnreadDemandas'
 
 function Navbar () {
 	const router = useRouter()
 	const { data: session } = useSession()
 	const [ Dados, setDados ] = useState<any>( [] )
+	const unreadCount = useUnreadDemandas()
 
 	useEffect( () => {
 		if ( session?.user.primeiro_acesso === true ) {
@@ -75,9 +82,51 @@ function Navbar () {
 				</Flex>
 			</Flex>
 
-			<Center my="15px">
+			<VStack my="15px" spacing={2}>
+				<NextLink href="/demandas">
+					<Box position="relative" display="inline-block">
+						<IconButton
+							aria-label="Demandas"
+							icon={
+								<FiMessageSquare
+									size={unreadCount > 0 ? 26 : 20}
+								/>
+							}
+							variant="ghost"
+							color={
+								unreadCount > 0
+									? "orange.300"
+									: "whiteAlpha.800"
+							}
+							_hover={{
+								bg: 'gray.600',
+								color: '#00dc00',
+							}}
+							borderRadius="full"
+							size="md"
+						/>
+						{unreadCount > 0 && (
+							<ChakraBadge
+								position="absolute"
+								top="-2px"
+								right="-4px"
+								colorScheme="orange"
+								variant="solid"
+								borderRadius="full"
+								fontSize="2xs"
+								minW="18px"
+								h="18px"
+								display="flex"
+								alignItems="center"
+								justifyContent="center"
+							>
+								{unreadCount}
+							</ChakraBadge>
+						)}
+					</Box>
+				</NextLink>
 				<ProfilePopover />
-			</Center>
+			</VStack>
 		</Flex>
 	)
 }

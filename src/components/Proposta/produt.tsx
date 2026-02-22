@@ -6,6 +6,7 @@ import {
 } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { MdOutlineAddCircleOutline } from "react-icons/md"
+import { buildProductDisplayName } from "@/utils/productDisplayName"
 
 export const ProdutiList = ( props: {
 	Lista?: any
@@ -68,7 +69,9 @@ export const ProdutiList = ( props: {
 							<option style={ { backgroundColor: "#1A202C" } }>Selecione um Produto</option>
 							{ !Produtos ? null : Produtos.map( ( item: any ) => {
 								return (
-									<option style={ { backgroundColor: "#1A202C" } } key={ item.prodId } value={ item.prodId }>{ item.nomeProd }</option>
+									<option style={ { backgroundColor: "#1A202C" } } key={ item.prodId } value={ item.prodId }>
+									{ buildProductDisplayName( item ) }
+								</option>
 								)
 							} ) }
 						</Select>

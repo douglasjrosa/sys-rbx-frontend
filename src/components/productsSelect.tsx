@@ -1,5 +1,6 @@
 import { Box, Button, Flex, InputProps, Select, Skeleton, useToast } from "@chakra-ui/react"
 import { useCallback, useEffect, useState, useRef } from "react"
+import { buildProductDisplayName } from "@/utils/productDisplayName"
 
 
 interface ProductsSelectProps extends Omit<InputProps, 'onChange' | 'value'> {
@@ -161,12 +162,9 @@ const ProductsSelect: React.FC<ProductsSelectProps> = ( { onChange, cnpj, email 
 						}
 						
 						const productInfo = []
-						if ( currentProduct.nomeProd ) productInfo.push( currentProduct.nomeProd )
+						productInfo.push( buildProductDisplayName( currentProduct ) )
 						const codigo = currentProduct.codigo || ( currentProduct.prodId ? `rbx-${ currentProduct.prodId }` : '' )
 						if ( codigo ) productInfo.push( codigo )
-						if ( currentProduct.titulo ) productInfo.push( currentProduct.titulo )
-						const dims = formatDimensions( currentProduct.comprimento, currentProduct.largura, currentProduct.altura )
-						if ( dims ) productInfo.push( dims )
 						const price = formatCurrencyValue( currentProduct.vFinal || currentProduct.preco )
 						if ( price ) productInfo.push( price )
 						

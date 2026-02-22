@@ -1,6 +1,6 @@
 import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
 import { parseCurrency } from "@/utils/customNumberFormats"
-import { Button, Flex, IconButton, Modal, Text, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
+import { Button, Flex, IconButton, Modal, Text, ModalBody, ModalContent, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
 import { useRouter } from "next/router"
 import { useCallback, useState } from "react"
 import { FaTimes } from "react-icons/fa"
@@ -491,16 +491,24 @@ const SendOrderModal = ( props: any ) => {
 						_hover={ { bg: "red.600" } }
 						onClick={ onClose }
 					/>
-					<ModalHeader>CONFIRME A DATA DE ENTREGA</ModalHeader>
-					<ModalBody pb={ 6 }>
-						<Text mb={ 6 }>
-							Este pedido será programado para entrega em:{' '}
-							<Text as="span" fontWeight="bold">
-								{ formatDeliveryDateDisplay( deliveryDate ) }
-							</Text>.
+					<ModalHeader pt="55px" textAlign="center">
+							CONFIRME A DATA DE ENTREGA
+						</ModalHeader>
+					<ModalBody pb={ 6 } textAlign="center">
+						<Text fontSize="md" mb={ 2 }>
+							Este pedido será programado para entrega em:
 						</Text>
-						<Flex gap={ 3 } justify="flex-end">
+						<Text
+							fontSize="2xl"
+							fontWeight="bold"
+							color="orange.300"
+							mb={ 6 }
+						>
+							{ formatDeliveryDateDisplay( deliveryDate ) }
+						</Text>
+						<Flex gap={ 3 } justify="center">
 							<Button
+								flex={ 1 }
 								colorScheme="blue"
 								onClick={ handleAlter }
 								isDisabled={ load }
@@ -508,6 +516,7 @@ const SendOrderModal = ( props: any ) => {
 								Alterar
 							</Button>
 							<Button
+								flex={ 1 }
 								colorScheme="green"
 								onClick={ handleConfirm }
 								isDisabled={ load }
@@ -528,22 +537,42 @@ const SendOrderModal = ( props: any ) => {
 				bg='blackAlpha.300'
 				backdropFilter='blur(10px) hue-rotate(90deg)'
 			/>
-			<ModalContent bg={ 'gray.600' }>
-				<ModalHeader>Negócio Concluido</ModalHeader>
-				<ModalBody>
-					<Text>Para finalizar é necessário gerar um pedido para produção!</Text>
+			<ModalContent bg={ 'gray.600' } position="relative">
+				<IconButton
+					aria-label="Fechar"
+					icon={ <FaTimes size={ 20 } /> }
+					position="absolute"
+					top="8px"
+					right="8px"
+					zIndex={ 1 }
+					size="sm"
+					variant="solid"
+					bg="red.500"
+					color="white"
+					rounded="md"
+					_hover={ { bg: "red.600" } }
+					onClick={ onClose }
+				/>
+				<ModalHeader pt="55px" textAlign="center">
+					REENVIAR PEDIDO
+				</ModalHeader>
+				<ModalBody pb={ 6 } textAlign="center">
+					<Text fontSize="md" mb={ 6 }>
+						Ao reenviar o pedido, confira se está tudo certo
+						no Bling e no Trello.
+					</Text>
+					<Flex justify="center">
+						<Button
+							w="full"
+							colorScheme="messenger"
+							isDisabled={ load }
+							isLoading={ load }
+							onClick={ finalResponse }
+						>
+							Reenviar
+						</Button>
+					</Flex>
 				</ModalBody>
-				<ModalFooter>
-					<Button
-						fontSize={ '0.8rem' }
-						p={ 3 }
-						colorScheme={ "messenger" }
-						isDisabled={ load }
-						onClick={ finalResponse }
-					>
-						Gerar Pedido
-					</Button>
-				</ModalFooter>
 			</ModalContent>
 		</Modal>
 	)

@@ -37,6 +37,7 @@ export const PowerBi = () => {
 
 	// Filtros e Paginação agora baseados na QueryString
 	const filtroStatus = ( router.query.status as string ) || 'andamento'
+	const isClosedFilter = filtroStatus === 'ganhos' || filtroStatus === 'perdidos'
 	const paginaAtual = parseInt( router.query.page as string ) || 1
 	const itensPorPagina = 20
 
@@ -308,6 +309,14 @@ export const PowerBi = () => {
 		}
 	}
 
+	useEffect( () => {
+		if ( isClosedFilter ) {
+			setSortConfig( { key: 'updatedAt', direction: 'desc' } )
+		} else {
+			setSortConfig( { key: 'DataRetorno', direction: 'asc' } )
+		}
+	}, [ isClosedFilter ] )
+
 	const filteredData = data.filter( ( item: any ) => {
 		const etapa = item.attributes.etapa
 		const andamento = item.attributes.andamento
@@ -366,11 +375,19 @@ export const PowerBi = () => {
 				aValue = parseFloat( a.attributes.Budget ) || 0
 				bValue = parseFloat( b.attributes.Budget ) || 0
 				break
-			case 'DataRetorno':
-				aValue = a.attributes.DataRetorno || ''
-				bValue = b.attributes.DataRetorno || ''
-				break
-			default:
+		case 'DataRetorno':
+			aValue = a.attributes.DataRetorno || ''
+			bValue = b.attributes.DataRetorno || ''
+			break
+		case 'createdAt':
+			aValue = a.attributes.createdAt || ''
+			bValue = b.attributes.createdAt || ''
+			break
+		case 'updatedAt':
+			aValue = a.attributes.updatedAt || ''
+			bValue = b.attributes.updatedAt || ''
+			break
+		default:
 				return 0
 		}
 
@@ -634,18 +651,22 @@ export const PowerBi = () => {
 										{ renderSortIcon( 'Budget' ) }
 									</Flex>
 								</Box>
-								<Box flex="0 0 17.5%" minW="90px" textAlign="center" cursor="pointer" onClick={ () => requestSort( 'DataRetorno' ) } _hover={ { bg: 'whiteAlpha.200' } } transition="background 0.2s" overflow="hidden" textOverflow="ellipsis">
-									<Flex justifyContent="center" alignItems="center" gap={ 1 }>
-										<Text color={ 'white' } fontWeight="bold" fontSize="sm" noOfLines={ 1 }>RETORNAR EM</Text>
-										{ renderSortIcon( 'DataRetorno' ) }
-									</Flex>
-								</Box>
-								<Box flex="0 0 17.5%" minW="90px" textAlign="center" cursor="pointer" onClick={ () => requestSort( 'deadline' ) } _hover={ { bg: 'whiteAlpha.200' } } transition="background 0.2s" overflow="hidden" textOverflow="ellipsis">
-									<Flex justifyContent="center" alignItems="center" gap={ 1 }>
-										<Text color={ 'white' } fontWeight="bold" fontSize="sm" noOfLines={ 1 }>EXPIRA EM</Text>
-										{ renderSortIcon( 'deadline' ) }
-									</Flex>
-								</Box>
+							<Box flex="0 0 17.5%" minW="90px" textAlign="center" cursor="pointer" onClick={ () => requestSort( isClosedFilter ? 'createdAt' : 'DataRetorno' ) } _hover={ { bg: 'whiteAlpha.200' } } transition="background 0.2s" overflow="hidden" textOverflow="ellipsis">
+								<Flex justifyContent="center" alignItems="center" gap={ 1 }>
+									<Text color={ 'white' } fontWeight="bold" fontSize="sm" noOfLines={ 1 }>
+										{ isClosedFilter ? 'CRIADO EM' : 'RETORNAR EM' }
+									</Text>
+									{ renderSortIcon( isClosedFilter ? 'createdAt' : 'DataRetorno' ) }
+								</Flex>
+							</Box>
+							<Box flex="0 0 17.5%" minW="90px" textAlign="center" cursor="pointer" onClick={ () => requestSort( isClosedFilter ? 'updatedAt' : 'deadline' ) } _hover={ { bg: 'whiteAlpha.200' } } transition="background 0.2s" overflow="hidden" textOverflow="ellipsis">
+								<Flex justifyContent="center" alignItems="center" gap={ 1 }>
+									<Text color={ 'white' } fontWeight="bold" fontSize="sm" noOfLines={ 1 }>
+										{ isClosedFilter ? 'CONCLUÍDO EM' : 'EXPIRA EM' }
+									</Text>
+									{ renderSortIcon( isClosedFilter ? 'updatedAt' : 'deadline' ) }
+								</Flex>
+							</Box>
 							</Flex>
 
 							{/* Linhas da tabela */ }
@@ -745,16 +766,22 @@ export const PowerBi = () => {
 														</Text>
 													</Flex>
 												</Box>
-												<Box flex="0 0 17.5%" minW="90px" textAlign="center" bg={ colorLine } py={ 1 } borderRadius={ colorLine ? "sm" : "none" } overflow="hidden" textOverflow="ellipsis">
-													<Text color={ textColor } fontSize={ '12px' } noOfLines={ 1 }>
-														{ dataFormatada }
-													</Text>
-												</Box>
-												<Box flex="0 0 17.5%" minW="90px" textAlign="center" overflow="hidden" textOverflow="ellipsis">
-													<Text color={ 'white' } fontSize={ '12px' } noOfLines={ 1 }>
-														{ deadline }
-													</Text>
-												</Box>
+								<Box flex="0 0 17.5%" minW="90px" textAlign="center" bg={ isClosedFilter ? undefined : colorLine } py={ 1 } borderRadius={ !isClosedFilter && colorLine ? "sm" : "none" } overflow="hidden" textOverflow="ellipsis">
+												<Text color={ isClosedFilter ? 'white' : textColor } fontSize={ '12px' } noOfLines={ 1 }>
+													{ isClosedFilter
+														? new Date( itens.attributes.createdAt )
+															.toLocaleDateString( 'pt-BR' )
+														: dataFormatada }
+												</Text>
+											</Box>
+											<Box flex="0 0 17.5%" minW="90px" textAlign="center" overflow="hidden" textOverflow="ellipsis">
+												<Text color={ 'white' } fontSize={ '12px' } noOfLines={ 1 }>
+													{ isClosedFilter
+														? new Date( itens.attributes.updatedAt )
+															.toLocaleDateString( 'pt-BR' )
+														: deadline }
+												</Text>
+											</Box>
 											</Flex>
 										</NextLink>
 									)

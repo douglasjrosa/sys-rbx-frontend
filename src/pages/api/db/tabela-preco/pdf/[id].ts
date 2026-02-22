@@ -4,6 +4,7 @@ import path from "path"
 import PDFPrinter from "pdfmake"
 import { TDocumentDefinitions, Content } from "pdfmake/interfaces"
 import axios from "axios"
+import { buildProductDisplayName } from "@/utils/productDisplayName"
 
 function normalizarValorMonetario ( valor: string | number | null | undefined ): number {
 	const str = String( valor ?? "" ).trim()
@@ -216,7 +217,7 @@ export default async function GetTabelaPrecoPdf (
 		measures = i.comprimento ? measures : ""
 
 		const stackNomeProd: any[] = [{
-			text: i.nomeProd,
+			text: buildProductDisplayName( i ),
 			alignment: "left",
 			fontSize: 10,
 			bold: true,

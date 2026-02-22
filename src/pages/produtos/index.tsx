@@ -23,6 +23,7 @@ import { FaSearch, FaSync, FaFileInvoiceDollar, FaTrash, FaInfoCircle, FaTimes, 
 import { marginTables } from '@/components/data/marginTables'
 import { getTableBadgeColor, getTableNameInPortuguese } from '@/utils/tableUtils'
 import { parseCurrency } from '@/utils/customNumberFormats'
+import { buildProductDisplayName } from '@/utils/productDisplayName'
 
 /** Extracts a safe string from axios/API errors. Prevents React #31 (object as child). */
 function getToastErrorMessage ( err: unknown, fallback: string ): string {
@@ -616,7 +617,9 @@ function Produtos() {
 				for (let i = 0; i < activeProducts.length; i += BATCH_SIZE) {
 					const batch = activeProducts.slice(i, i + BATCH_SIZE)
 					const lastInBatch = batch[batch.length - 1]
-					const productName = lastInBatch?.nomeProd || lastInBatch?.codigo || `rbx-${lastInBatch?.prodId}` || ''
+					const productName = lastInBatch
+					? buildProductDisplayName(lastInBatch)
+					: ''
 					const current = Math.min(i + BATCH_SIZE, activeProducts.length)
 
 					toast.update('sync-company-prod', {
@@ -857,9 +860,6 @@ function Produtos() {
 
 		const newItems = newProducts.map((product, index) => {
 			const codigo = product.codigo || `rbx-${product.prodId}`
-			const nomeProd = codigo.substr(0, 3) === 'rbx'
-				? product.nomeProd
-				: `${product.nomeProd} | ref: rbx-${product.prodId}`
 
 			const existing = existingByProdId.get(Number(product.prodId))
 			const Qtd = existing?.Qtd ?? '1'
@@ -877,7 +877,7 @@ function Produtos() {
 
 			return {
 				id: existingFiltered.length + index + 1,
-				nomeProd,
+				nomeProd: product.nomeProd,
 				codigo,
 				Qtd,
 				ncm: product.ncm,
@@ -980,7 +980,7 @@ function Produtos() {
 			title: isRemoving
 				? `Removido da ${ label }`
 				: `Adicionado à ${ label }`,
-			description: product.nomeProd,
+			description: buildProductDisplayName(product),
 			status: isRemoving ? 'info' : 'success',
 			duration: 2000,
 			isClosable: true,
@@ -1030,9 +1030,6 @@ function Produtos() {
 		// Mapear para o formato esperado pela página de proposta (preserve Mont., Expo., QTD)
 		const itemsToSave = selectedProducts.map((product, index) => {
 			const codigo = product.codigo || `rbx-${product.prodId}`
-			const nomeProd = codigo.substr(0, 3) === "rbx"
-				? product.nomeProd
-				: `${product.nomeProd} | ref: rbx-${product.prodId}`
 
 			const existing = existingByProdId.get(Number(product.prodId))
 			const Qtd = existing?.Qtd ?? "1"
@@ -1050,7 +1047,7 @@ function Produtos() {
 
 			return {
 				id: index + 1,
-				nomeProd,
+				nomeProd: product.nomeProd,
 				codigo,
 				Qtd,
 				ncm: product.ncm,
@@ -1588,7 +1585,9 @@ function Produtos() {
 												</Td>
 												<Td py={4}>
 													<Box>
-														<Text fontWeight="bold">{product.nomeProd}</Text>
+														<Text fontWeight="bold">
+														{buildProductDisplayName(product)}
+													</Text>
 														<Flex gap={2} mb={1} alignItems="center">
 															<Text fontSize="xs" color="gray.400">{product.titulo}</Text>
 														</Flex>
@@ -1729,7 +1728,9 @@ function Produtos() {
 					<ModalOverlay backdropFilter="blur(4px)" />
 					<ModalContent bg="gray.800" color="white" borderRadius="xl">
 						<ModalHeader borderBottom="1px" borderColor="gray.700">
-							Detalhes do Produto: {productToShow?.nomeProd}
+							Detalhes do Produto: {productToShow
+							? buildProductDisplayName(productToShow)
+							: ''}
 						</ModalHeader>
 						<ModalCloseButton />
 						<ModalBody py={6}>
@@ -1781,7 +1782,11 @@ function Produtos() {
 							</AlertDialogHeader>
 
 							<AlertDialogBody>
-								Tem certeza que deseja excluir o produto <strong>{productToDelete?.nomeProd}</strong>?
+								Tem certeza que deseja excluir o produto <strong>
+								{productToDelete
+									? buildProductDisplayName(productToDelete)
+									: ''}
+							</strong>?
 							</AlertDialogBody>
 
 							<AlertDialogFooter>

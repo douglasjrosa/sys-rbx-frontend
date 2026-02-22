@@ -2,6 +2,7 @@ import { Badge, Box, Button, Checkbox, Icon, Input, Table, TableContainer, Tbody
 import React, { Dispatch, SetStateAction } from "react"
 import { BsX } from "react-icons/bs"
 import { formatCurrency, parseCurrency } from "@/utils/customNumberFormats"
+import { buildProductDisplayName } from "@/utils/productDisplayName"
 import { getTableBadgeColor, getTableNameInPortuguese } from "@/utils/tableUtils"
 
 interface TableItemsProps {
@@ -12,18 +13,18 @@ interface TableItemsProps {
 
 const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChange, companyTablecalc } ) => {
 
-	const MIN_QTD = 1
+	const MIN_QTD = 0
 
 	const handleItemChange = ( args: { index: number, qtde?: number, mont?: boolean, expo?: boolean, deleteItem?: boolean } ) => {
 		const { index, qtde, mont, expo, deleteItem } = args
 
-		// Primeiro, mapeamos os itens para atualizar ou marcar para deletar
 		const updatedList = itemsList.map( ( item, i ) => {
 			if ( i === index ) {
 				if ( deleteItem ) return null
 
 				const rawQtde = qtde !== undefined ? qtde : item.Qtd
-				const validQtde = Math.max( MIN_QTD, Number( rawQtde ) || MIN_QTD )
+				const parsed = Number( rawQtde )
+				const validQtde = isNaN( parsed ) ? MIN_QTD : Math.max( MIN_QTD, parsed )
 				const validMont = mont !== undefined ? mont : item.mont
 				const validExp = expo !== undefined ? expo : item.expo
 				let price = parseCurrency( item.vFinal )
@@ -119,7 +120,9 @@ const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChang
 									minW={ "20rem" }
 								>
 									<VStack align="start" spacing={ 2 }>
-										<Box fontWeight="bold" fontSize="sm">{ item.nomeProd }</Box>
+										<Box fontWeight="bold" fontSize="sm">
+											{ buildProductDisplayName( item ) }
+										</Box>
 										{ ( internalMeasurements || item.codigo ) && (
 											<Box display="flex" flexWrap="wrap" gap={ 2 }>
 												{ internalMeasurements && (
@@ -233,12 +236,29 @@ const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChang
 									<Input
 										type="number"
 										min={ MIN_QTD }
-										value={ Number( item.Qtd ) }
+										value={ item.Qtd }
 										onChange={ e => {
+											const raw = e.target.value
+											if ( raw === '' ) {
+												const updated = itemsList.map( ( it, i ) =>
+													i === key ? { ...it, Qtd: '' } : it
+												)
+												setItemsListOnChange( updated )
+												return
+											}
 											handleItemChange( {
 												index: key,
-												qtde: Number( e.target.value )
+												qtde: Number( raw )
 											} )
+										} }
+										onBlur={ () => {
+											const current = item.Qtd
+											if ( current === '' || isNaN( Number( current ) ) ) {
+												handleItemChange( {
+													index: key,
+													qtde: 1
+												} )
+											}
 										} }
 										textAlign="center"
 										fontSize="xs"

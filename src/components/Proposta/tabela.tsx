@@ -8,6 +8,7 @@ import {
 	Tr,
 } from "@chakra-ui/react"
 import { ReactJSXElement } from "@emotion/react/types/jsx-namespace"
+import { buildProductDisplayName } from "@/utils/productDisplayName"
 import { useEffect, useState } from "react"
 import { BsTrash } from "react-icons/bs"
 import Loading from "../elements/loading"
@@ -100,7 +101,9 @@ export const TableConteudo = ( props: {
 			return (
 				<Tr key={ i.id }>
 					<Td isNumeric w={ '1.3rem' } px='0' py='1' textAlign={ 'center' }>{ x + 1 }</Td>
-					<Td px='1rem' bg={ 'gray.800' } color={ 'white' } fontSize={ '0.7rem' }>{ i.nomeProd }</Td>
+					<Td px='1rem' bg={ 'gray.800' } color={ 'white' } fontSize={ '0.7rem' }>
+						{ buildProductDisplayName( i ) }
+					</Td>
 					<Td px='0' py='1' fontSize={ '0.8rem' } textAlign={ "center" }>{ codig() }</Td>
 					<Td px='0' py='1' fontSize={ '0.8rem' }>
 						<Input

@@ -4,32 +4,8 @@ import path from "path"
 import PDFPrinter from "pdfmake"
 import { TDocumentDefinitions, Content } from "pdfmake/interfaces"
 import { getData } from "./lib/getinf"
-
-function normalizarValorMonetario ( valor: string | number | null | undefined ): number {
-	const str = String( valor ?? "" ).trim()
-	let valorNorm = str
-
-	// Se contém ponto e vírgula (ex: 1.234,56)
-	if ( valorNorm.includes( '.' ) && valorNorm.includes( ',' ) ) {
-		valorNorm = valorNorm.replace( /\./g, '' ) // remove pontos de milhar
-		valorNorm = valorNorm.replace( ',', '.' ) // vírgula vira decimal
-	}
-	// Se contém só vírgula (ex: 1234,56)
-	else if ( valorNorm.includes( ',' ) ) {
-		valorNorm = valorNorm.replace( ',', '.' ) // vírgula vira decimal
-	}
-	// Se contém só ponto (ex: 1.234 ou 1234.56)
-	else if ( valorNorm.includes( '.' ) ) {
-		const partes = valorNorm.split( '.' )
-		// Se o ponto está separando milhar (ex: 1.234)
-		if ( partes[ partes.length - 1 ].length !== 2 ) {
-			valorNorm = valorNorm.replace( /\./g, '' ) // remove pontos de milhar
-		}
-		// senão, assume-se que já é decimal corretamente formatado
-	}
-
-	return parseFloat( valorNorm ) || 0
-}
+import { buildProductDisplayName } from "@/utils/productDisplayName"
+import { parseCurrency, formatCurrency } from "@/utils/customNumberFormats"
 
 function formatarTelefone ( telefone: string ) {
 	const numeros = telefone.replace( /\D/g, "" )
@@ -88,15 +64,15 @@ export default async function GetEmpresa (
 
 
 		const paymentTerms = infos.prazo === "1" || infos.prazo === 1 ? "À vista" : infos.prazo
-		const valorFrete = normalizarValorMonetario( infos.Valfrete )
+		const valorFrete = parseCurrency( infos.Valfrete )
 		let valorSubTotal = 0
-		const valorDesconto = normalizarValorMonetario( infos.Desconto )
-		const valorCustoAdicional = normalizarValorMonetario( infos.custoAdicional )
+		const valorDesconto = parseCurrency( infos.Desconto )
+		const valorCustoAdicional = parseCurrency( infos.custoAdicional )
 
 		const Product = infos.itens
 		const products = Product.map( ( i: any ) => {
 
-			const ValorOriginal = normalizarValorMonetario( i.vFinal )
+			const ValorOriginal = parseCurrency( i.vFinal )
 			const valorMontagem = i.mont && !montFreeActive ? ValorOriginal * 0.1 : 0
 			const valorExportacao = i.expo && !expoFreeActive ? ValorOriginal * 0.1 : 0
 			const valorUnitario = ValorOriginal + valorMontagem + valorExportacao
@@ -110,7 +86,7 @@ export default async function GetEmpresa (
 			measures = i.comprimento ? measures : ""
 
 			const stackNomeProd: any[] = [ {
-				text: i.nomeProd,
+				text: buildProductDisplayName( i ),
 				alignment: "left",
 				fontSize: 10,
 				bold: true,

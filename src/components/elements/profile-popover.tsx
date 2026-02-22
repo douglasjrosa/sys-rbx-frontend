@@ -151,6 +151,33 @@ const UserBadges = ({
 const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps) => {
   const { data: session } = useSession();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [displayName, setDisplayName] = useState<string>('');
+
+  useEffect(() => {
+    if (!session?.user) return;
+    const pseudo = getPseudoUser();
+    const isAdm = session.user.pemission === 'Adm';
+    if (isAdm && pseudo && pseudo !== PSEUDO_USER_ALL) {
+      setDisplayName(pseudo);
+    } else {
+      setDisplayName(session.user.name ?? '');
+    }
+  }, [session?.user]);
+
+  useEffect(() => {
+    const handler = () => {
+      if (!session?.user) return;
+      const pseudo = getPseudoUser();
+      const isAdm = session.user.pemission === 'Adm';
+      if (isAdm && pseudo && pseudo !== PSEUDO_USER_ALL) {
+        setDisplayName(pseudo);
+      } else {
+        setDisplayName(session.user.name ?? '');
+      }
+    };
+    window.addEventListener('pseudoUserChange', handler);
+    return () => window.removeEventListener('pseudoUserChange', handler);
+  }, [session?.user]);
 
   const handlePseudoUserSelect = useCallback((closeFn?: () => void) => {
     closeFn?.();
@@ -184,8 +211,8 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
           }}
         >
           <Avatar
-            name={session.user.name}
-            src={session.user.image}
+            name={displayName}
+            src={undefined}
             size="sm"
           />
         </Button>
@@ -277,8 +304,8 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
               _hover={{ bg: 'gray.400' }}
             >
               <Avatar
-                name={session.user.name}
-                src={session.user.image}
+                name={displayName}
+                src={undefined}
                 size="md"
               />
             </Button>

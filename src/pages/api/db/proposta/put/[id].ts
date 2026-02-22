@@ -3,6 +3,7 @@ import axios from "axios"
 import { NextApiRequest, NextApiResponse } from "next"
 import { IncidentRecord } from "../../lib/businesses"
 import { Historico } from "../../lib/historico"
+import { buildProductDisplayName } from "@/utils/productDisplayName"
 
 export default async function PUTEmpresa (
 	req: NextApiRequest,
@@ -71,7 +72,7 @@ export default async function PUTEmpresa (
 		}
 		const ItensPropsta = data.itens
 		const mapItens = ItensPropsta.map( ( i: any ) => {
-			const prod = i.nomeProd
+			const prod = buildProductDisplayName( i )
 			const noldProd = i.modelo
 			const quant = i.Qtd
 			const text =
