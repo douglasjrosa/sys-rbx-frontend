@@ -27,6 +27,7 @@ export default async function GetTabelasPorEmpresa (
 		const tabelas = ( response.data?.data || [] ).map( ( item: any ) => ( {
 			id: item.id,
 			createdAt: item.attributes.createdAt,
+			obs: item.attributes.obs ?? "",
 			itensCount: Array.isArray( item.attributes.itens )
 				? item.attributes.itens.length
 				: 0,

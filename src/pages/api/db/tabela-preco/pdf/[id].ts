@@ -5,6 +5,7 @@ import PDFPrinter from "pdfmake"
 import { TDocumentDefinitions, Content } from "pdfmake/interfaces"
 import axios from "axios"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
+import { markdownToPdfmake } from "@/utils/markdownToPdfmake"
 
 function normalizarValorMonetario ( valor: string | number | null | undefined ): number {
 	const str = String( valor ?? "" ).trim()
@@ -291,6 +292,15 @@ export default async function GetTabelaPrecoPdf (
 		},
 	}
 
+	const obsRaw = attrs.obs ?? ""
+	const obsContent = obsRaw.trim()
+		? [
+			{ text: "OBSERVAÇÕES", fontSize: 11, bold: true, color: "#009512", margin: [0, 12, 0, 6] },
+			...markdownToPdfmake( obsRaw ),
+			{ text: "", margin: [0, 8, 0, 0] },
+		]
+		: []
+
 	const docDefinitions: TDocumentDefinitions = {
 		defaultStyle: { font: "Helvetica" },
 		content: [
@@ -305,6 +315,7 @@ export default async function GetTabelaPrecoPdf (
 				alignment: 'center',
 			},
 			tabelaProdutos,
+			...obsContent,
 		].filter( Boolean ) as Content[],
 		pageSize: "A4",
 		pageOrientation: "portrait",

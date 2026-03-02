@@ -54,8 +54,9 @@ import { parseISO, differenceInDays } from "date-fns"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import { FiEdit3, FiPlusCircle, FiPhone, FiMail, FiMapPin, FiUser, FiCalendar, FiDollarSign, FiClock, FiFileText, FiList } from "react-icons/fi"
-import { FaWhatsapp, FaTimes } from "react-icons/fa"
+import { FiEdit3, FiPlusCircle, FiPhone, FiMail, FiMapPin, FiUser, FiCalendar, FiDollarSign, FiClock, FiFileText, FiList, FiEdit2 } from "react-icons/fi"
+import { FaWhatsapp, FaTimes, FaTrash } from "react-icons/fa"
+import ReactMarkdown from "react-markdown"
 
 export default function Infos () {
 	const { data: session } = useSession()
@@ -91,9 +92,93 @@ export default function Infos () {
 	const [ purchaseFrequency, setPurchaseFrequency ] = useState( "" )
 	const [ load, setload ] = useState( true )
 	const [ tabelasPreco, setTabelasPreco ] = useState<any[]>( [] )
+	const [ obsTabela, setObsTabela ] = useState( "" )
+	const [ editingTabela, setEditingTabela ] = useState<any | null>( null )
+	const [ savingTabela, setSavingTabela ] = useState( false )
 	const toast = useToast()
 
 	const { isOpen, onOpen, onClose } = useDisclosure()
+	const { isOpen: isTabelaModalOpen, onOpen: onTabelaModalOpen, onClose: onTabelaModalClose } = useDisclosure()
+
+	const TABELA_PRECO_EDIT_DAYS = 7
+	const isTabelaEditable = ( createdAt: string ) =>
+		differenceInDays( new Date(), parseISO( createdAt ) ) <= TABELA_PRECO_EDIT_DAYS
+
+	const handleNovaTabela = () => {
+		setEditingTabela( null )
+		setObsTabela( "" )
+		onTabelaModalOpen()
+	}
+
+	const handleEditTabela = async ( tab: any ) => {
+		if ( !isTabelaEditable( tab.createdAt ) ) return
+		try {
+			const res = await axios.get( `/api/db/tabela-preco/get/${ tab.id }` )
+			setEditingTabela( res.data )
+			setObsTabela( res.data.obs ?? "" )
+			onTabelaModalOpen()
+		} catch ( err ) {
+			toast( { title: "Erro ao carregar tabela", status: "error", isClosable: true } )
+		}
+	}
+
+	const handleTabelaIncluirItens = () => {
+		const key = `tabelaPrecoObs_${ ID }`
+		sessionStorage.setItem( key, obsTabela )
+		if ( editingTabela?.id ) {
+			sessionStorage.setItem( `tabelaPrecoEditId_${ ID }`, String( editingTabela.id ) )
+		} else {
+			sessionStorage.removeItem( `tabelaPrecoEditId_${ ID }` )
+		}
+		onTabelaModalClose()
+		router.push( `/produtos?empresaId=${ ID }&tabelaPrecos=true` )
+	}
+
+	const handleTabelaSalvar = async () => {
+		setSavingTabela( true )
+		try {
+			if ( editingTabela?.id ) {
+				await axios.put( `/api/db/tabela-preco/put/${ editingTabela.id }`, { obs: obsTabela } )
+				toast( { title: "Tabela atualizada", status: "success", isClosable: true } )
+			} else {
+				await axios.post( "/api/db/tabela-preco/post", {
+					itens: [],
+					empresaId: ID,
+					userId: session?.user?.id,
+					obs: obsTabela,
+				} )
+				toast( { title: "Tabela criada. Inclua os itens.", status: "success", isClosable: true } )
+			}
+			const req = await axios.get( `/api/db/tabela-preco/get/empresa/${ ID }` )
+			setTabelasPreco( Array.isArray( req.data ) ? req.data : [] )
+			onTabelaModalClose()
+		} catch ( err: any ) {
+			toast( {
+				title: "Erro",
+				description: err?.response?.data?.error?.message || "Tente novamente",
+				status: "error",
+				isClosable: true,
+			} )
+		} finally {
+			setSavingTabela( false )
+		}
+	}
+
+	const handleTabelaExcluir = async () => {
+		if ( !editingTabela?.id ) return
+		setSavingTabela( true )
+		try {
+			await axios.delete( `/api/db/tabela-preco/delete/${ editingTabela.id }` )
+			toast( { title: "Tabela excluída", status: "success", isClosable: true } )
+			const req = await axios.get( `/api/db/tabela-preco/get/empresa/${ ID }` )
+			setTabelasPreco( Array.isArray( req.data ) ? req.data : [] )
+			onTabelaModalClose()
+		} catch ( err: any ) {
+			toast( { title: "Erro ao excluir", status: "error", isClosable: true } )
+		} finally {
+			setSavingTabela( false )
+		}
+	}
 
 	useEffect( () => {
 		( async () => {
@@ -569,9 +654,7 @@ export default function Infos () {
 										colorScheme="green"
 										size="sm"
 										rounded="md"
-										onClick={() => router.push(
-											`/produtos?empresaId=${ ID }&tabelaPrecos=true`
-										)}
+										onClick={handleNovaTabela}
 									>
 										Nova
 									</Button>
@@ -593,6 +676,7 @@ export default function Infos () {
 													<Th color="gray.200">Data</Th>
 													<Th color="gray.200" textAlign="center">Itens</Th>
 													<Th color="gray.200">Vendedor</Th>
+													<Th w="48px" px={1}></Th>
 												</Tr>
 											</Thead>
 											<Tbody>
@@ -626,6 +710,21 @@ export default function Infos () {
 														</Td>
 														<Td fontSize="xs" color="white">
 															{tab.vendedor}
+														</Td>
+														<Td onClick={(e) => e.stopPropagation()} px={1}>
+															<Tooltip label={isTabelaEditable( tab.createdAt )
+																? "Editar"
+																: `Editável somente até ${ TABELA_PRECO_EDIT_DAYS } dias após criação`}>
+																<IconButton
+																	aria-label="Editar tabela"
+																	icon={<FiEdit2 />}
+																	size="xs"
+																	variant="ghost"
+																	colorScheme="blue"
+																	isDisabled={!isTabelaEditable( tab.createdAt )}
+																	onClick={() => handleEditTabela( tab )}
+																/>
+															</Tooltip>
 														</Td>
 													</Tr>
 												) )}
@@ -748,6 +847,99 @@ export default function Infos () {
 					</Stack>
 				</SimpleGrid>
 			</Box>
+
+			<Modal closeOnOverlayClick={ false } isOpen={ isTabelaModalOpen } onClose={ onTabelaModalClose } size="xl">
+				<ModalOverlay backdropFilter='blur(4px)' />
+				<ModalContent bg="gray.800" color="white" borderRadius="xl" position="relative">
+					<IconButton
+						aria-label="Fechar"
+						icon={<FaTimes size={18} />}
+						position="absolute"
+						top="8px"
+						right="8px"
+						zIndex={1}
+						size="sm"
+						variant="solid"
+						bg="red.500"
+						color="white"
+						rounded="md"
+						_hover={{ bg: "red.600" }}
+						onClick={onTabelaModalClose}
+					/>
+					<ModalHeader borderBottomWidth="1px" borderColor="gray.700" pr="48px">
+						{editingTabela ? "Editar Tabela de Preços" : "Nova Tabela de Preços"}
+					</ModalHeader>
+					<ModalBody py={6}>
+						<VStack spacing={6} align="stretch">
+							<FormControl>
+								<FormLabel fontSize="xs" fontWeight="bold" color="gray.400">Observações (Markdown)</FormLabel>
+								<SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+									<Textarea
+										size="sm"
+										bg="gray.700"
+										borderColor="gray.600"
+										placeholder="Ex: **Negociação especial**\n\n- Prazo de 30 dias\n- Frete por conta do cliente"
+										rows={10}
+										rounded="md"
+										fontFamily="mono"
+										value={obsTabela}
+										onChange={(e) => setObsTabela(e.target.value)}
+									/>
+									<Box
+										bg="gray.700"
+										p={4}
+										rounded="md"
+										minH="120px"
+										borderWidth="1px"
+										borderColor="gray.600"
+										fontSize="sm"
+										sx={{ "& p": { mb: 2 }, "& ul": { pl: 6 }, "& strong": { fontWeight: "bold" } }}
+									>
+										<Text fontSize="xs" color="gray.400" mb={2}>Prévia:</Text>
+										{obsTabela ? (
+											<ReactMarkdown>{obsTabela}</ReactMarkdown>
+										) : (
+											<Text color="gray.500" fontStyle="italic">Nenhuma observação</Text>
+										)}
+									</Box>
+								</SimpleGrid>
+							</FormControl>
+							<Flex gap={4} flexWrap="wrap" justify="space-between" pt={4} borderTopWidth="1px" borderColor="gray.700">
+								<HStack>
+									<Button
+										leftIcon={<FiPlusCircle />}
+										colorScheme="green"
+										size="sm"
+										onClick={handleTabelaIncluirItens}
+									>
+										Incluir Itens
+									</Button>
+									{editingTabela?.id && (
+										<Button
+											leftIcon={<FaTrash />}
+											colorScheme="red"
+											variant="outline"
+											size="sm"
+											onClick={handleTabelaExcluir}
+											isLoading={savingTabela}
+										>
+											Excluir
+										</Button>
+									)}
+								</HStack>
+								<Button
+									colorScheme="blue"
+									size="sm"
+									onClick={handleTabelaSalvar}
+									isLoading={savingTabela}
+								>
+									Salvar
+								</Button>
+							</Flex>
+						</VStack>
+					</ModalBody>
+				</ModalContent>
+			</Modal>
 
 			<Modal closeOnOverlayClick={ false } isOpen={ isOpen } onClose={ onClose } size="lg">
 				<ModalOverlay backdropFilter='blur(4px)' />

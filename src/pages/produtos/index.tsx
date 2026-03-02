@@ -165,11 +165,36 @@ function Produtos() {
 		return !!(params.get('empresaId') || params.get('proposta'))
 	})
 
+	// Load existing items when editing a price table
+	useEffect(() => {
+		if (!isPriceTableMode || !effectiveEmpresaId || !router.isReady) return
+		const editIdKey = `tabelaPrecoEditId_${effectiveEmpresaId}`
+		const editId = typeof sessionStorage !== "undefined"
+			? sessionStorage.getItem(editIdKey) : null
+		if (!editId) return
+
+		let cancelled = false
+		;(async () => {
+			try {
+				const res = await axios.get(`/api/db/tabela-preco/get/${editId}`)
+				if (cancelled) return
+				const itens = Array.isArray(res.data?.itens) ? res.data.itens : []
+				const ids = itens
+					.map((i: any) => parseInt(String(i.prodId), 10))
+					.filter((id: number) => !isNaN(id))
+				setSelectedItems(ids)
+			} catch {
+				if (!cancelled) setSelectedItems([])
+			}
+		})()
+		return () => { cancelled = true }
+	}, [isPriceTableMode, effectiveEmpresaId, router.isReady])
+
 	// Efeito para carregar itens da proposta selecionada
 	useEffect(() => {
 		if (!effectiveProposta) {
 			// Only clear when router is ready (avoids clearing during hydration/navigation)
-			if (router.isReady) {
+			if (router.isReady && !isPriceTableMode) {
 				setSelectedItems([])
 			}
 			return
@@ -1102,7 +1127,7 @@ function Produtos() {
 			p => selectedIdsSet.has(Number(p.prodId))
 		)
 
-		const itens = selectedProducts.map(product => ({
+		const newItens = selectedProducts.map(product => ({
 			nomeProd: product.nomeProd,
 			codigo: product.codigo || `rbx-${product.prodId}`,
 			comprimento: product.comprimento,
@@ -1114,24 +1139,49 @@ function Produtos() {
 			modelo: product.modelo,
 		}))
 
+		const empresaId = selectedCompany?.id
+		const obsKey = typeof window !== "undefined" && empresaId
+			? `tabelaPrecoObs_${empresaId}` : null
+		const editIdKey = typeof window !== "undefined" && empresaId
+			? `tabelaPrecoEditId_${empresaId}` : null
+		const obs = (obsKey && typeof sessionStorage !== "undefined")
+			? sessionStorage.getItem(obsKey) ?? "" : ""
+		const editId = (editIdKey && typeof sessionStorage !== "undefined")
+			? sessionStorage.getItem(editIdKey) : null
+
 		try {
-			await axios.post('/api/db/tabela-preco/post', {
-				itens,
-				empresaId: selectedCompany?.id,
-				userId: session?.user?.id,
-			})
-
-			toast({
-				title: 'Tabela de preços criada!',
-				description: `${itens.length} produtos incluídos.`,
-				status: 'success',
-				duration: 3000,
-				isClosable: true,
-			})
-
+			if (editId) {
+				await axios.put(`/api/db/tabela-preco/put/${editId}`, {
+					itens: newItens,
+					obs: obs || undefined,
+				})
+				toast({
+					title: 'Tabela de preços atualizada!',
+					description: `${newItens.length} produtos na tabela.`,
+					status: 'success',
+					duration: 3000,
+					isClosable: true,
+				})
+			} else {
+				await axios.post('/api/db/tabela-preco/post', {
+					itens: newItens,
+					empresaId,
+					userId: session?.user?.id,
+					obs: obs || undefined,
+				})
+				toast({
+					title: 'Tabela de preços criada!',
+					description: `${newItens.length} produtos incluídos.`,
+					status: 'success',
+					duration: 3000,
+					isClosable: true,
+				})
+			}
+			if (obsKey) sessionStorage.removeItem(obsKey)
+			if (editIdKey) sessionStorage.removeItem(editIdKey)
 			router.push(`/empresas/CNPJ/${selectedCompany?.id}`)
 		} catch ( error ) {
-			console.error('Error creating price table:', error)
+			console.error('Error creating/updating price table:', error)
 			toast({
 				title: 'Erro ao criar tabela de preços',
 				description: getToastErrorMessage(error, 'Tente novamente.'),

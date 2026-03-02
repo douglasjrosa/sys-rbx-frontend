@@ -9,7 +9,7 @@ export default async function PostTabelaPreco (
 		return res.status( 405 ).send( { message: "Only POST requests are allowed" } )
 	}
 
-	const { itens, empresaId, userId } = req.body
+	const { itens, empresaId, userId, obs } = req.body
 	const token = process.env.ATORIZZATION_TOKEN
 
 	const axiosInstance = axios.create( {
@@ -20,13 +20,16 @@ export default async function PostTabelaPreco (
 		},
 	} )
 
+	const payload: Record<string, unknown> = {
+		itens: itens ?? [],
+		empresa: empresaId,
+		user: userId,
+	}
+	if ( obs != null && obs !== "" ) payload.obs = obs
+
 	try {
 		const response = await axiosInstance.post( "/tabela-precos", {
-			data: {
-				itens,
-				empresa: empresaId,
-				user: userId,
-			},
+			data: payload,
 		} )
 
 		res.status( 200 ).json( response.data )
