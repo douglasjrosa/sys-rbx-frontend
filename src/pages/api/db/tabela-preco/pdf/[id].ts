@@ -361,10 +361,7 @@ export default async function GetTabelaPrecoPdf (
 		.normalize( "NFD" )
 		.replace( /[\u0300-\u036f]/g, "" )
 
-	const createdDate = new Date( attrs.createdAt )
-	const mm = String( createdDate.getMonth() + 1 ).padStart( 2, "0" )
-	const yyyy = createdDate.getFullYear()
-	const filename = `Tabela Ribermax - ${ name } - ${ mm }.${ yyyy }.pdf`
+	const filename = `Tabela de precos - ${ name } - ${ date }.pdf`
 
 	pdfDoc.on( "end", () => {
 		const pdf = Buffer.concat( chunks )
