@@ -85,6 +85,8 @@ export default async function GetEmpresa (
 			measures += i.altura ? " x " + i.altura + "cm(alt.)" : "cm(largura)"
 			measures = i.comprimento ? measures : ""
 
+			const isZeroMeasures = Number( i.comprimento ) === 0 && Number( i.largura ) === 0 && Number( i.altura ) === 0
+
 			const stackNomeProd: any[] = [ {
 				text: buildProductDisplayName( i ),
 				alignment: "left",
@@ -92,7 +94,7 @@ export default async function GetEmpresa (
 				bold: true,
 				lineHeight: 1.3
 			} ]
-			if ( !!measures ) {
+			if ( !!measures && !isZeroMeasures ) {
 				stackNomeProd.push( {
 					table: {
 						body: [
