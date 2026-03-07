@@ -38,6 +38,25 @@ export default async function GetEmpresa (
 
 		const infos = await getData( proposta )
 
+		if ( !infos ) {
+			res.status( 404 ).setHeader( "Content-Type", "text/html; charset=utf-8" ).send(
+				`<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Pedido não encontrado</title>
+<style>body{font-family:system-ui;background:#1a1a1a;color:#e0e0e0;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.box{background:#2d2d2d;padding:2rem;border-radius:8px;text-align:center;max-width:400px}
+h2{color:#e06c75;margin-top:0}p{color:#9cdcfe;}</style>
+</head>
+<body><div class="box">
+<h2>Pedido não encontrado</h2>
+<p>O pedido <strong>${ proposta }</strong> não foi encontrado no sistema.</p>
+<p>Verifique o número e tente novamente.</p>
+</div></body>
+</html>`
+			)
+			return
+		}
+
 		if ( latamActive ) {
 			infos.fornecedor.data.cnpj = infos.fornecedor.data.cnpj.replace( /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "00.000.000/0000-00" )
 		}
