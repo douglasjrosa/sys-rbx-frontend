@@ -2,14 +2,30 @@ import axios from "axios";
 
 export const getData = async (proposta: any) => {
   const token = process.env.ATORIZZATION_TOKEN;
-  const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/pedidos?populate=*&filters[nPedido][$eq]=${proposta}`;
+  const baseUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
-  const config = {
-    method: "GET",
-    url,
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const fetchByFilter = async () => {
+    const url = `${baseUrl}/pedidos?populate=*&publicationState=preview&filters[nPedido][$eq]=${proposta}`;
+    const res = await axios({
+      method: "GET",
+      url,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data?.data?.[0];
+  };
+
+  const fetchById = async () => {
+    try {
+      const url = `${baseUrl}/pedidos/${proposta}?populate=*&publicationState=preview`;
+      const res = await axios({
+        method: "GET",
+        url,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data?.data ? { id: res.data.data.id, attributes: res.data.data.attributes } : null;
+    } catch {
+      return null;
+    }
   };
 
   const converterData = (data: string) => {
@@ -32,8 +48,10 @@ export const getData = async (proposta: any) => {
   };
 
   try {
-    const response = await axios(config);
-    const result = response.data?.data?.[0];
+    let result = await fetchByFilter();
+    if (!result?.attributes) {
+      result = await fetchById();
+    }
     if (!result?.attributes) {
       return null;
     }
@@ -87,6 +105,7 @@ export const getData = async (proposta: any) => {
 
     const cliente_pedido = inf.cliente_pedido;
 
+    const custoAdicional = inf.custoAdicional ?? "";
     const data = {
       nPedido,
       frete,
@@ -105,7 +124,8 @@ export const getData = async (proposta: any) => {
       cliente_pedido,
       Desconto,
       DescontoAdd,
-      dataEntrega
+      dataEntrega,
+      custoAdicional
     };
     return data;
   } catch (error) {

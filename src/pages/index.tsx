@@ -1,3 +1,4 @@
+import { CommissionGoldPot } from '@/components/painel/CommissionGoldPot'
 import { CalendarSkeleton, RenderCalendar } from '@/components/painel/calendario/render'
 import { SelectMonth } from '@/components/painel/calendario/select/selectMont'
 import { getAllDaysOfMonth } from '@/function/Datearray'
@@ -24,7 +25,7 @@ const Painel: React.FC = () => {
 	const [ data, setData ] = useState<any>( [] )
 	const [ isLoading, setIsLoading ] = useState( false )
 	const [ calendarData, setCalendarData ] = useState( [] )
-
+	const [ commissionData, setCommissionData ] = useState<any>( null )
 
 	const DateAtual = new Date()
 
@@ -120,6 +121,17 @@ const Painel: React.FC = () => {
 			setCalendarData( parts )
 		}
 	}, [ calendar, data ] )
+
+	useEffect( () => {
+		if ( !User || !Mes || !Year ) {
+			setCommissionData( null )
+			return
+		}
+		axios
+			.get( `/api/db/commission/calculate?username=${ encodeURIComponent( User ) }&mes=${ Mes }&ano=${ Year }` )
+			.then( ( r ) => setCommissionData( r.data ) )
+			.catch( () => setCommissionData( null ) )
+	}, [ User, Mes, Year ] )
 
 	function handleDateChange ( month: any ) {
 		router.push({
@@ -253,12 +265,30 @@ const Painel: React.FC = () => {
 				</Flex>
 			</Flex>
 			<Box w="100%" maxW="1400px" mx="auto" px={{ base: 4, md: 6 }} pb={6}>
-				<Flex direction="column" gap={5} alignItems="center">
-					{ isLoading ? (
-						<CalendarSkeleton />
-					) : (
-						<RenderCalendar data={ calendarData } />
+				<Flex
+					direction={{ base: 'column', lg: 'row' }}
+					gap={5}
+					alignItems={{ base: 'center', lg: 'flex-start' }}
+					justifyContent={{ base: 'center', lg: 'space-between' }}
+				>
+					{ User && (
+						<Box order={{ base: 1, lg: 2 }} flexShrink={0}>
+							<CommissionGoldPot commissionData={ commissionData } />
+						</Box>
 					) }
+					<Flex
+						direction="column"
+						gap={5}
+						alignItems="center"
+						flex={1}
+						order={{ base: 2, lg: 1 }}
+					>
+						{ isLoading ? (
+							<CalendarSkeleton />
+						) : (
+							<RenderCalendar data={ calendarData } />
+						) }
+					</Flex>
 				</Flex>
 			</Box>
 		</Box>
