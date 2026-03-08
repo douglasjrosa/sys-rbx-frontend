@@ -85,10 +85,15 @@ function Layout ( { children }: { children: React.ReactNode } ): JSX.Element {
 	}
 
 	if (
-		( session && router.asPath === '/auth/signin' ) ||
-		( status && router.asPath === '/auth/signin' )
+		session &&
+		status === 'authenticated' &&
+		router.asPath.startsWith( '/auth/signin' )
 	) {
-		router.push( '/' )
+		const callbackUrl =
+			typeof router.query.callbackUrl === 'string' && router.query.callbackUrl.startsWith( '/' )
+				? router.query.callbackUrl
+				: '/'
+		router.push( callbackUrl )
 		const UserEmail: any | null = session?.user.email
 		localStorage.setItem( "email", UserEmail )
 		return (

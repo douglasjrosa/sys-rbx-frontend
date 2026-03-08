@@ -1,4 +1,3 @@
-import { BsPeopleFill } from 'react-icons/bs';
 import { FaMoneyBillAlt } from 'react-icons/fa';
 import { GiCube } from 'react-icons/gi';
 import { MdBusiness } from 'react-icons/md';
@@ -28,22 +27,14 @@ const NavMenuItems = [
     icon: MdBusiness,
     iconComponent: <MdBusiness />,
     permission: 'User',
-	},
-	{
-		id: '5',
-		url: '/produtos',
-		text: 'Produtos',
-		icon: GiCube,
-		iconComponent: <GiCube />,
-		permission: 'User',
-	},
+  },
   {
-    id: '6',
-    url: '/vendedor',
-    text: 'Vendedores',
-    icon: BsPeopleFill,
-    iconComponent: <BsPeopleFill />,
-    permission: 'Adm',
+    id: '5',
+    url: '/produtos',
+    text: 'Produtos',
+    icon: GiCube,
+    iconComponent: <GiCube />,
+    permission: 'User',
   },
 ];
 

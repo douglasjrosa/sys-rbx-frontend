@@ -272,7 +272,17 @@ const Painel: React.FC = () => {
 					justifyContent={{ base: 'center', lg: 'space-between' }}
 				>
 					{ User && (
-						<Box order={{ base: 1, lg: 2 }} flexShrink={0}>
+						<Box
+							order={{ base: 1, lg: 2 }}
+							flexShrink={0}
+							minW={{ base: '100%', lg: '150px' }}
+							h={{ base: '50vh', lg: 'calc(100vh - 8rem)' }}
+							position={{ base: 'relative', lg: 'sticky' }}
+							top={{ base: 'auto', lg: '1rem' }}
+							alignSelf={{ base: 'auto', lg: 'flex-start' }}
+							boxShadow={{ base: 'none', lg: 'xl' }}
+							rounded="lg"
+						>
 							<CommissionGoldPot commissionData={ commissionData } />
 						</Box>
 					) }

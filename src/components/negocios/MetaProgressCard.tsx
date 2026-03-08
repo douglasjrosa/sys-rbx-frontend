@@ -15,8 +15,8 @@ import { ChevronDownIcon } from "@chakra-ui/icons"
 import axios from "axios"
 import { useEffect, useState } from "react"
 import NextLink from "next/link"
+import { DEFAULT_MILESTONES, getMilestonePercentages } from "@/utils/commissionCalculator"
 
-const MILESTONES = [ 50, 71, 86, 100 ]
 const POT_HEIGHT = 120
 const POT_WIDTH = 64
 
@@ -138,9 +138,16 @@ export const MetaProgressCard = ( props: {
 		)
 	}
 
-	const { atingimentoPercent, salarioTotal } = data || {}
-	const percent = Math.min( 100, Math.max( 0, atingimentoPercent || 0 ) )
-	const fillHeight = ( percent / 100 ) * POT_HEIGHT
+	const { atingimentoPercent, salarioTotal, milestones: dataMilestones } = data || {}
+	const percent = Math.max( 0, atingimentoPercent || 0 )
+	const milestones = dataMilestones?.length
+		? dataMilestones
+		: getMilestonePercentages( DEFAULT_MILESTONES )
+	const maxPercent = Math.max( 100, ...milestones )
+	const fillDisplayPercent = Math.min( percent, maxPercent )
+	const fillHeight = ( fillDisplayPercent / maxPercent ) * POT_HEIGHT
+	const secondTier = milestones[ 1 ] ?? 70
+	const hundredTier = milestones.find( ( m ) => m >= 100 ) ?? 100
 
 	return (
 		<Box
@@ -152,7 +159,7 @@ export const MetaProgressCard = ( props: {
 			mb={ 4 }
 			borderLeft="4px solid"
 			borderColor={
-				percent >= 100 ? "green.500" : percent >= 71 ? "blue.500" : "orange.500"
+				percent >= hundredTier ? "green.500" : percent >= secondTier ? "blue.500" : "orange.500"
 			}
 		>
 			<Flex
@@ -221,13 +228,13 @@ export const MetaProgressCard = ( props: {
 								boxShadow="inset 0 0 12px rgba(255,215,0,0.4)"
 							/>
 						</Box>
-						{ MILESTONES.map( ( m ) => (
+						{ milestones.map( ( m ) => (
 							<Box
 								key={ m }
 								position="absolute"
 								left={ 0 }
 								right={ 0 }
-								bottom={ `${ ( m / 100 ) * POT_HEIGHT }px` }
+								bottom={ `${ ( m / maxPercent ) * POT_HEIGHT }px` }
 								h="1px"
 								bg="white"
 								opacity={ 0.7 }
@@ -235,7 +242,7 @@ export const MetaProgressCard = ( props: {
 								zIndex={ 1 }
 							/>
 						) ) }
-						{ percent > 0 && percent < 100 && (
+						{ percent > 0 && fillDisplayPercent < maxPercent && (
 							<Box
 								position="absolute"
 								left={ 0 }
@@ -263,9 +270,9 @@ export const MetaProgressCard = ( props: {
 							fontSize="xl"
 							fontWeight="bold"
 							color={
-								percent >= 100
+								percent >= hundredTier
 									? "green.400"
-									: percent >= 71
+									: percent >= secondTier
 										? "blue.300"
 										: "yellow.400"
 							}

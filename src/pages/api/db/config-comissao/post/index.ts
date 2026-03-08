@@ -11,7 +11,17 @@ export default async function handler (
 
 	try {
 		const token = process.env.ATORIZZATION_TOKEN
-		const { ano, mes, meta, salario_fixo, vendedor, user } = req.body
+		const {
+			ano,
+			mes,
+			meta,
+			salario_fixo,
+			vendedor,
+			user,
+			base_rate,
+			milestones,
+			deductions,
+		} = req.body
 
 		if ( !ano || !mes || meta == null || salario_fixo == null || !user ) {
 			return res.status( 400 ).json( {
@@ -19,7 +29,7 @@ export default async function handler (
 			} )
 		}
 
-		const payload = {
+		const payload: Record<string, unknown> = {
 			data: {
 				ano: String( ano ),
 				mes: String( mes ),
@@ -28,6 +38,17 @@ export default async function handler (
 				vendedor: vendedor || "",
 				user: Number( user ),
 			},
+		}
+
+		if ( base_rate != null ) {
+			( payload.data as Record<string, unknown> ).base_rate =
+				parseFloat( String( base_rate ) )
+		}
+		if ( milestones != null && Array.isArray( milestones ) ) {
+			( payload.data as Record<string, unknown> ).milestones = milestones
+		}
+		if ( deductions != null && Array.isArray( deductions ) ) {
+			( payload.data as Record<string, unknown> ).deductions = deductions
 		}
 
 		const response = await axios.post(

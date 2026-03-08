@@ -9,7 +9,8 @@ export default async function PostUser (
 		try {
 			const id = req.query.id
 
-			const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/users/${ id }`
+			const populate = "populate[empresa_emitente][fields][0]=razao&populate[empresa_emitente][fields][1]=CNPJ&populate[empresa_emitente][fields][2]=nome"
+			const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/users/${ id }?${ populate }`
 			const Token: any = process.env.ATORIZZATION_TOKEN
 			const Response = await axios( url, {
 				method: "GET",

@@ -25,6 +25,7 @@ import {
   WrapItem,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { signOut, useSession } from 'next-auth/react';
@@ -32,7 +33,12 @@ import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 
 import { CloseIcon } from '@chakra-ui/icons';
-import { getPseudoUser, setPseudoUser, PSEUDO_USER_ALL } from '@/utils/pseudoUser';
+import {
+  getPseudoUser,
+  getPseudoUserId,
+  setPseudoUser,
+  PSEUDO_USER_ALL,
+} from '@/utils/pseudoUser';
 import { Z_INDEX } from '@/utils/zIndex';
 
 const MOBILE_MODAL_THEME = {
@@ -64,7 +70,7 @@ const UserBadges = ({
   isDark = false,
 }: {
   currentUsername: string;
-  onSelect: (username: string | null) => void;
+  onSelect: (username: string | null, userId?: number | null) => void;
   isDark?: boolean;
 }) => {
   const [users, setUsers] = useState<UserItem[]>([]);
@@ -82,9 +88,9 @@ const UserBadges = ({
   }, [currentUsername]);
 
   const handleBadgeClick = useCallback(
-    (value: string | null) => {
-      setPseudoUser(value);
-      onSelect(value);
+    (username: string | null, userId?: number | null) => {
+      setPseudoUser(username, userId);
+      onSelect(username, userId);
     },
     [onSelect]
   );
@@ -109,7 +115,7 @@ const UserBadges = ({
             px={3}
             py={1}
             borderRadius="md"
-            onClick={() => handleBadgeClick(null)}
+            onClick={() => handleBadgeClick(null, null)}
             {...(isDark ? getBadgeProps(!pseudoUser) : { colorScheme: !pseudoUser ? 'blue' : 'gray' })}
           >
             Eu
@@ -136,7 +142,7 @@ const UserBadges = ({
               px={3}
               py={1}
               borderRadius="md"
-              onClick={() => handleBadgeClick(u.username)}
+              onClick={() => handleBadgeClick(u.username, u.id)}
               {...(isDark ? getBadgeProps(pseudoUser === u.username) : { colorScheme: pseudoUser === u.username ? 'blue' : 'gray' })}
             >
               {u.username}
@@ -149,39 +155,49 @@ const UserBadges = ({
 };
 
 const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps) => {
+  const router = useRouter();
   const { data: session } = useSession();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [displayName, setDisplayName] = useState<string>('');
+  const [effectiveVendedorId, setEffectiveVendedorId] = useState<number | null>(null);
 
-  useEffect(() => {
+  const updateFromPseudo = useCallback(() => {
     if (!session?.user) return;
     const pseudo = getPseudoUser();
+    const pseudoId = getPseudoUserId();
     const isAdm = session.user.pemission === 'Adm';
-    if (isAdm && pseudo && pseudo !== PSEUDO_USER_ALL) {
+    if (isAdm && pseudo && pseudo !== PSEUDO_USER_ALL && pseudoId != null) {
       setDisplayName(pseudo);
+      setEffectiveVendedorId(pseudoId);
     } else {
       setDisplayName(session.user.name ?? '');
+      setEffectiveVendedorId(null);
     }
   }, [session?.user]);
 
   useEffect(() => {
-    const handler = () => {
-      if (!session?.user) return;
-      const pseudo = getPseudoUser();
-      const isAdm = session.user.pemission === 'Adm';
-      if (isAdm && pseudo && pseudo !== PSEUDO_USER_ALL) {
-        setDisplayName(pseudo);
-      } else {
-        setDisplayName(session.user.name ?? '');
-      }
-    };
-    window.addEventListener('pseudoUserChange', handler);
-    return () => window.removeEventListener('pseudoUserChange', handler);
-  }, [session?.user]);
+    updateFromPseudo();
+  }, [updateFromPseudo]);
 
-  const handlePseudoUserSelect = useCallback((closeFn?: () => void) => {
-    closeFn?.();
-  }, []);
+  useEffect(() => {
+    window.addEventListener('pseudoUserChange', updateFromPseudo);
+    return () => window.removeEventListener('pseudoUserChange', updateFromPseudo);
+  }, [updateFromPseudo]);
+
+  const handlePseudoUserSelect = useCallback(
+    (username: string | null, userId: number | null | undefined, closeFn?: () => void) => {
+      closeFn?.();
+      const isAdm = session?.user?.pemission === 'Adm';
+      if (!isAdm || !session?.user) return;
+      const match = router.asPath.match(/^\/vendedor\/(\d+)/);
+      if (!match) return;
+      const targetId = userId != null ? userId : (session.user as { id?: number })?.id;
+      if (targetId != null) {
+        router.push(`/vendedor/${targetId}`);
+      }
+    },
+    [router, session?.user]
+  );
 
   const handleSignOut = useCallback(() => {
     onClose();
@@ -192,6 +208,13 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
   if (!session?.user) return null;
 
   const isAdmin = session.user.pemission === 'Adm';
+  const comissoesVendedorId =
+    isAdmin && effectiveVendedorId != null
+      ? effectiveVendedorId
+      : (session.user as { id?: number })?.id ?? null;
+  const comissoesHref = comissoesVendedorId
+    ? `/vendedor/${comissoesVendedorId}`
+    : '/perfil';
 
   if (isMobile) {
     return (
@@ -257,14 +280,32 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
                   _hover={{ bg: MOBILE_MODAL_THEME.buttonHover }}
                   onClick={onClose}
                 >
-                  Meu perfil
+                  Perfil
+                </Button>
+              </NextLink>
+              <NextLink href={comissoesHref}>
+                <Button
+                  w="100%"
+                  justifyContent="flex-start"
+                  h="56px"
+                  px="20px"
+                  fontSize="1.25rem"
+                  mt={2}
+                  bg="gray.600"
+                  color="white"
+                  _hover={{ bg: MOBILE_MODAL_THEME.buttonHover }}
+                  onClick={onClose}
+                >
+                  Comissões
                 </Button>
               </NextLink>
               {isAdmin && (
                 <Flex flexDir="column" mt={6}>
                   <UserBadges
                     currentUsername={session.user.name ?? ''}
-                    onSelect={() => handlePseudoUserSelect(onClose)}
+                    onSelect={(username, userId) =>
+                      handlePseudoUserSelect(username, userId ?? null, onClose)
+                    }
                     isDark
                   />
                 </Flex>
@@ -342,14 +383,29 @@ const ProfilePopover = ({ isMobile = false, blockOpenRef }: ProfilePopoverProps)
                     _hover={{ bg: MOBILE_MODAL_THEME.buttonHover }}
                     onClick={onClose}
                   >
-                    Meu perfil
+                    Perfil
+                  </Button>
+                </NextLink>
+                <NextLink href={comissoesHref}>
+                  <Button
+                    w="100%"
+                    justifyContent="flex-start"
+                    mt={2}
+                    bg="gray.600"
+                    color="white"
+                    _hover={{ bg: MOBILE_MODAL_THEME.buttonHover }}
+                    onClick={onClose}
+                  >
+                    Comissões
                   </Button>
                 </NextLink>
                 {isAdmin && (
                   <Flex flexDir="column" mt={6}>
                     <UserBadges
                       currentUsername={session.user.name ?? ''}
-                      onSelect={() => handlePseudoUserSelect(onClose)}
+                      onSelect={(username, userId) =>
+                        handlePseudoUserSelect(username, userId ?? null, onClose)
+                      }
                       isDark
                     />
                   </Flex>

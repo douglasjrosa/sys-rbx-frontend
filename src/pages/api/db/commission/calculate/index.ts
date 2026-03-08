@@ -101,6 +101,10 @@ export default async function handler (
 
 		const meta = parseFloat( config.attributes?.meta ) || 0
 		const salarioFixo = parseFloat( config.attributes?.salario_fixo ) || 0
+		const baseRate = config.attributes?.base_rate != null
+			? parseFloat( config.attributes.base_rate ) : undefined
+		const milestones = config.attributes?.milestones ?? undefined
+		const deductions = config.attributes?.deductions ?? undefined
 
 		const vendedorFilter = `filters[vendedor][username][$eq]=${ encodeURIComponent( vendedorUsername ) }&`
 		const businessesRes = await axios.get(
@@ -118,7 +122,14 @@ export default async function handler (
 			return acc + parseBudgetToNumber( b.attributes?.Budget )
 		}, 0 )
 
-		const result = calculateCommission( vendas, meta, salarioFixo )
+		const result = calculateCommission(
+			vendas,
+			meta,
+			salarioFixo,
+			baseRate,
+			milestones,
+			deductions
+		)
 
 		return res.status( 200 ).json( result )
 	} catch ( error: any ) {

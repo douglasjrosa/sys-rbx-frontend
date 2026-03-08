@@ -3,6 +3,7 @@ import {
 	Flex,
 	Heading,
 	IconButton,
+	Link,
 	Table,
 	TableContainer,
 	Tbody,
@@ -14,11 +15,31 @@ import {
 } from "@chakra-ui/react"
 import axios from "axios"
 import { useEffect, useState } from "react"
-import { FaRegTrashCan } from "react-icons/fa6"
+import { FaFilePdf, FaRegTrashCan } from "react-icons/fa6"
 
-const formatCurrency = ( n: number ) =>
-	new Intl.NumberFormat( "pt-BR", { style: "currency", currency: "BRL" } ).format( n )
+const formatValue = ( n: number ) =>
+	new Intl.NumberFormat( "pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 } ).format( n )
 const formatPercent = ( n: number ) => `${ n.toFixed( 1 ) }%`
+
+const MONTH_SHORT = [ "", "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ" ]
+const formatPeriod = ( mes: number, ano: number ) => `${ MONTH_SHORT[ mes ] || String( mes ) }-${ ano }`
+
+function getCommissionamentoStr ( calc: any ): string {
+	if ( !calc ) return "-"
+	const baseRatePctNum = calc.vendas ? ( calc.comissaoBase / calc.vendas ) * 100 : 1
+	const baseRatePctStr = baseRatePctNum.toFixed( 1 )
+	const multiplicador = calc.multiplicador ?? 0
+	const multiplicadorPct = Math.round( multiplicador * 100 )
+	const effectivePct = ( baseRatePctNum * multiplicador ).toFixed( 2 ).replace( ".", "," )
+	return `${ multiplicadorPct }% de ${ baseRatePctStr }% = ${ effectivePct }%`
+}
+
+const isMonthBeforeCurrent = ( ano: number, mes: number ): boolean => {
+	const now = new Date()
+	const currentYear = now.getFullYear()
+	const currentMonth = now.getMonth() + 1
+	return ano < currentYear || ( ano === currentYear && mes < currentMonth )
+}
 
 export const TabelaComissao = ( props: { id: any; update: any } ) => {
 	const IDVendedor = props.id
@@ -84,55 +105,112 @@ export const TabelaComissao = ( props: { id: any; update: any } ) => {
 	}
 
 	return (
-		<Flex w="100%" flexDir="column" p={ 3 }>
-			<Box w="100%">
-				<Heading size="md" mb={ 3 }>Histórico de comissões</Heading>
+		<Flex w="100%" flexDir="column" p={ 5 }>
+			<Box w="100%" mb={ 4 }>
+				<Heading size="md" color="gray.200" fontWeight="semibold">
+					Histórico de comissões
+				</Heading>
 			</Box>
 			<TableContainer overflowY="auto">
-				<Table size="sm">
-					<Thead bg="#ffffff12" h={ 10 }>
+				<Table size="sm" variant="unstyled">
+					<Thead bg="whiteAlpha.80" h={ 10 }>
 						<Tr>
-							<Th color="white">Ano</Th>
-							<Th color="white">Mês</Th>
-							<Th color="white">Meta</Th>
-							<Th color="white">Sal. Fixo</Th>
-							<Th color="white">Vendas</Th>
-							<Th color="white">Atingimento</Th>
-							<Th color="white">Comissão</Th>
-							<Th color="white">Total</Th>
-							<Th color="white">Excluir</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Período
+							</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Meta
+							</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Fixo
+							</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Vendas
+							</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Atingimento
+							</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Comissionamento
+							</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Comissão
+							</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Deduções
+							</Th>
+							<Th color="gray.300" textAlign="center" fontWeight="medium" fontSize="xs">
+								Total
+							</Th>
+							<Th color="gray.300" textAlign="right" fontWeight="medium" fontSize="xs">
+								Ações
+							</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
 						{ configs.map( ( item ) => {
 							const key = `${ item.attributes?.ano }-${ item.attributes?.mes }`
 							const calc = calculated[ key ]
+							const itemMes = parseInt( String( item.attributes?.mes ), 10 )
+							const itemAno = parseInt( String( item.attributes?.ano ), 10 )
+							const showPdf = isMonthBeforeCurrent( itemAno, itemMes )
 							return (
-								<Tr key={ item.id }>
-									<Td color="white">{ item.attributes?.ano }</Td>
-									<Td color="white">{ item.attributes?.mes }</Td>
-									<Td color="white">{ formatCurrency( parseFloat( item.attributes?.meta ) || 0 ) }</Td>
-									<Td color="white">{ formatCurrency( parseFloat( item.attributes?.salario_fixo ) || 0 ) }</Td>
-									<Td color="white">
-										{ calc ? formatCurrency( calc.vendas ) : "-" }
+								<Tr key={ item.id } borderBottom="1px" borderColor="whiteAlpha.60">
+									<Td color="gray.300" textAlign="center">
+										{ formatPeriod( itemMes, itemAno ) }
 									</Td>
-									<Td color="white">
+									<Td color="gray.300" textAlign="center">
+										{ formatValue( parseFloat( item.attributes?.meta ) || 0 ) }
+									</Td>
+									<Td color="gray.300" textAlign="center">
+										{ formatValue( parseFloat( item.attributes?.salario_fixo ) || 0 ) }
+									</Td>
+									<Td color="gray.300" textAlign="center">
+										{ calc ? formatValue( calc.vendas ) : "-" }
+									</Td>
+									<Td color="gray.300" textAlign="center">
 										{ calc ? formatPercent( calc.atingimentoPercent ) : "-" }
 									</Td>
-									<Td color="white">
-										{ calc ? formatCurrency( calc.comissaoFinal ) : "-" }
+									<Td color="gray.300" textAlign="center">
+										{ getCommissionamentoStr( calc ) }
 									</Td>
-									<Td color="white">
-										{ calc ? formatCurrency( calc.salarioTotal ) : "-" }
+									<Td color="gray.300" textAlign="center">
+										{ calc ? formatValue( calc.comissaoFinal ) : "-" }
 									</Td>
-									<Td>
-										<IconButton
-											colorScheme="red"
-											size="xs"
-											icon={ <FaRegTrashCan /> }
-											aria-label="Excluir"
-											onClick={ () => handleDelete( item.id ) }
-										/>
+									<Td color="gray.300" textAlign="center">
+										{ calc && calc.deductionsTotal != null
+											? formatValue( calc.deductionsTotal )
+											: "-" }
+									</Td>
+									<Td color="gray.300" textAlign="center">
+										{ calc ? formatValue( calc.salarioTotal ) : "-" }
+									</Td>
+									<Td textAlign="right">
+										<Flex gap={ 1 } alignItems="center" justifyContent="flex-end">
+											{ showPdf && (
+												<Link
+													href={ `/api/db/commission/pdf?vendedorId=${ IDVendedor }&mes=${ item.attributes?.mes }&ano=${ item.attributes?.ano }` }
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													<IconButton
+														aria-label="Relatório PDF"
+														icon={ <FaFilePdf /> }
+														size="xs"
+														bg="blue.500"
+														color="white"
+														_hover={{ bg: "blue.600" }}
+													/>
+												</Link>
+											) }
+											<IconButton
+												colorScheme="red"
+												size="xs"
+												icon={ <FaRegTrashCan /> }
+												aria-label="Excluir"
+												onClick={ () => handleDelete( item.id ) }
+											/>
+										</Flex>
 									</Td>
 								</Tr>
 							)
@@ -141,7 +219,7 @@ export const TabelaComissao = ( props: { id: any; update: any } ) => {
 				</Table>
 			</TableContainer>
 			{ configs.length === 0 && (
-				<Box py={ 4 } color="gray.400" fontSize="sm">
+				<Box py={ 6 } color="gray.400" fontSize="sm">
 					Nenhuma configuração de comissão. Adicione uma acima.
 				</Box>
 			) }
