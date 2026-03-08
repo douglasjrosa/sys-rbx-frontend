@@ -41,8 +41,8 @@ const isMonthBeforeCurrent = ( ano: number, mes: number ): boolean => {
 	return ano < currentYear || ( ano === currentYear && mes < currentMonth )
 }
 
-export const TabelaComissao = ( props: { id: any; update: any } ) => {
-	const IDVendedor = props.id
+export const TabelaComissao = ( props: { id: any; update: any; isAdmin?: boolean } ) => {
+	const { id: IDVendedor, update, isAdmin = false } = props
 	const [ configs, setConfigs ] = useState<any[]>( [] )
 	const [ calculated, setCalculated ] = useState<Record<string, any>>( {} )
 	const toast = useToast()
@@ -203,13 +203,15 @@ export const TabelaComissao = ( props: { id: any; update: any } ) => {
 													/>
 												</Link>
 											) }
-											<IconButton
-												colorScheme="red"
-												size="xs"
-												icon={ <FaRegTrashCan /> }
-												aria-label="Excluir"
-												onClick={ () => handleDelete( item.id ) }
-											/>
+											{ isAdmin && (
+												<IconButton
+													colorScheme="red"
+													size="xs"
+													icon={ <FaRegTrashCan /> }
+													aria-label="Excluir"
+													onClick={ () => handleDelete( item.id ) }
+												/>
+											) }
 										</Flex>
 									</Td>
 								</Tr>

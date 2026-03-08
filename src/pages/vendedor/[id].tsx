@@ -145,7 +145,7 @@ export default function VendedorId () {
 					borderWidth="1px"
 					borderColor="whiteAlpha.100"
 				>
-					<TabelaComissao id={ id } update={ Reset } />
+					<TabelaComissao id={ id } update={ Reset } isAdmin={ isAdmin } />
 				</Box>
 			</Flex>
 		</>
