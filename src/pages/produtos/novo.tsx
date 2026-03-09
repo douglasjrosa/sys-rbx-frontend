@@ -156,8 +156,6 @@ export default function NovoProduto () {
 			} )
 			const response = await axios.get( `/api/rbx/${ session?.user?.email }/produtos?${ params.toString() }` )
 
-			console.log( "API Response:", response.data )
-
 			if ( response.data && !response.data.error ) {
 				// The WP API returns an object with "info" or direct attributes depending on the version
 				const data = response.data.info || response.data

@@ -597,7 +597,9 @@ function Produtos() {
 		})
 
 		try {
-			const cnpj = selectedCompany.attributes.CNPJ
+			// Normalize CNPJ to digits only (legacy trimCnpj expects this format)
+			const rawCnpj = selectedCompany.attributes.CNPJ ?? ""
+			const cnpj = String(rawCnpj).replace(/\D/g, "")
 			const FETCH_PAGE_SIZE = 50
 			const allProducts: any[] = []
 			let offset = 0
@@ -630,8 +632,8 @@ function Produtos() {
 				}
 				if ( lastErr ) throw lastErr
 			}
-			// 2. Filtrar apenas ativos
-			const activeProducts = allProducts.filter((p: any) => p.ativo === "1")
+			// 2. Filter active products (legacy may return ativo as "1" or 1)
+			const activeProducts = allProducts.filter((p: any) => String(p.ativo) === "1")
 
 			if (activeProducts.length > 0) {
 				const BATCH_SIZE = 5
@@ -762,7 +764,8 @@ function Produtos() {
 
 		try {
 			// Para atualizar expirados de forma consistente, fazemos um sync completo dos produtos ativos (paginado)
-			const cnpj = selectedCompany?.attributes.CNPJ
+			const rawCnpj = selectedCompany?.attributes.CNPJ ?? ""
+			const cnpj = String(rawCnpj).replace(/\D/g, "")
 			const FETCH_PAGE_SIZE = 50
 			const allProducts: any[] = []
 			let offset = 0
@@ -776,7 +779,7 @@ function Produtos() {
 				hasMore = page.length >= FETCH_PAGE_SIZE
 				offset += FETCH_PAGE_SIZE
 			}
-			const activeProducts = allProducts.filter((p: any) => p.ativo === "1")
+			const activeProducts = allProducts.filter((p: any) => String(p.ativo) === "1")
 
 			if (activeProducts.length > 0) {
 				await axios.post(`/api/db/produtos/sync`, {

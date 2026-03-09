@@ -926,7 +926,8 @@ function Empresas () {
 
 				// 2. Para cada empresa no lote, buscar produtos na Ribermax e salvar no Strapi
 				for ( const company of companies ) {
-					const cnpj = company.attributes.CNPJ
+					const rawCnpj = company.attributes.CNPJ ?? ""
+					const cnpj = String( rawCnpj ).replace( /\D/g, "" )
 					const empresaId = company.id
 					const nomeEmpresa = company.attributes.nome
 
@@ -937,12 +938,22 @@ function Empresas () {
 					} )
 
 					try {
-						// Buscar produtos na API externa via proxy - limite alto para pegar todos os produtos da empresa
-						const prodRes = await axios.get( `/api/rbx/${ session?.user?.email }/produtos?CNPJ=${ cnpj }&limit=1000` )
-						const allProducts = prodRes.data || []
-
-						// Filtrar apenas ativos
-						const activeProducts = allProducts.filter( ( p: any ) => p.ativo === "1" )
+						// Fetch all products from legacy API (paginated)
+						const FETCH_PAGE_SIZE = 50
+						const allProducts: any[] = []
+						let offset = 0
+						let hasMore = true
+						while ( hasMore ) {
+							const prodRes = await axios.get(
+								`/api/rbx/${ session?.user?.email }/produtos?CNPJ=${ cnpj }&limit=${ FETCH_PAGE_SIZE }&offset=${ offset }`
+							)
+							const page = Array.isArray( prodRes.data ) ? prodRes.data : []
+							allProducts.push( ...page )
+							hasMore = page.length >= FETCH_PAGE_SIZE
+							offset += FETCH_PAGE_SIZE
+						}
+						// Legacy filters ativo in SQL; double-check in frontend
+						const activeProducts = allProducts.filter( ( p: any ) => String( p.ativo ) === "1" )
 
 						if ( activeProducts.length > 0 ) {
 							// Enviar para sincronização no Strapi via proxy
