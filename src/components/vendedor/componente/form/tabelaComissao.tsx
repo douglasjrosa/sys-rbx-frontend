@@ -148,7 +148,16 @@ export const TabelaComissao = ( props: { id: any; update: any; isAdmin?: boolean
 						</Tr>
 					</Thead>
 					<Tbody>
-						{ configs.map( ( item ) => {
+						{ [ ...configs ]
+							.sort( ( a, b ) => {
+								const anoA = parseInt( String( a.attributes?.ano ), 10 ) || 0
+								const anoB = parseInt( String( b.attributes?.ano ), 10 ) || 0
+								if ( anoB !== anoA ) return anoB - anoA
+								const mesA = parseInt( String( a.attributes?.mes ), 10 ) || 0
+								const mesB = parseInt( String( b.attributes?.mes ), 10 ) || 0
+								return mesB - mesA
+							} )
+							.map( ( item ) => {
 							const key = `${ item.attributes?.ano }-${ item.attributes?.mes }`
 							const calc = calculated[ key ]
 							const itemMes = parseInt( String( item.attributes?.mes ), 10 )
