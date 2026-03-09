@@ -1,11 +1,14 @@
 import { Box, Badge, Checkbox, Flex, FormLabel, Heading, Tooltip } from '@chakra-ui/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { findClosestMarginTable } from '@/utils/marginUtils'
 import { discounts } from '@/components/data/marginTables'
 import { parseCurrency, formatCurrency } from '@/utils/customNumberFormats'
 import CustomCurrencyInput from '@/components/customCurrencyInput'
 
+const DISCOUNTS_STORAGE_KEY = ( id: string ) => `proposal_dynamic_discounts_${ id }`
+
 interface DynamicDiscountsProps {
+	businessId?: string
 	companyTablecalc: number | string | undefined
 	deliverDate: string
 	paymentTerms: string
@@ -15,6 +18,7 @@ interface DynamicDiscountsProps {
 	purchaseFrequency?: string
 	onDiscountChange: ( discountValue: number ) => void
 	onManualDiscountChange?: ( discountValue: number ) => void
+	forceResetAll?: boolean
 }
 
 const tableNameMap: Record<string, string> = {
@@ -60,6 +64,7 @@ const discountDescriptionMap: Record<string, string> = {
 }
 
 export const DynamicDiscounts: React.FC<DynamicDiscountsProps> = ( {
+	businessId,
 	companyTablecalc,
 	deliverDate,
 	paymentTerms,
@@ -69,9 +74,53 @@ export const DynamicDiscounts: React.FC<DynamicDiscountsProps> = ( {
 	purchaseFrequency,
 	onDiscountChange,
 	onManualDiscountChange,
+	forceResetAll = false,
 } ) => {
 	const [ selectedDiscounts, setSelectedDiscounts ] = useState<Set<string>>( new Set() )
 	const [ manualDiscount, setManualDiscount ] = useState<number>( 0 )
+	const hasLoadedFromStorageRef = useRef( false )
+
+	// Load selected discounts from localStorage when returning to proposta
+	useEffect( () => {
+		if ( !businessId || typeof localStorage === 'undefined' ) return
+		hasLoadedFromStorageRef.current = false
+		const stored = localStorage.getItem( DISCOUNTS_STORAGE_KEY( businessId ) )
+		if ( stored ) {
+			try {
+				const data = JSON.parse( stored ) as { selectedDiscountKeys?: string[], manualDiscount?: number }
+				if ( data.selectedDiscountKeys && Array.isArray( data.selectedDiscountKeys ) ) {
+					setSelectedDiscounts( new Set( data.selectedDiscountKeys ) )
+				}
+				if ( typeof data.manualDiscount === 'number' && data.manualDiscount >= 0 ) {
+					setManualDiscount( data.manualDiscount )
+				}
+			} catch {
+				/* ignore parse errors */
+			}
+		}
+		queueMicrotask( () => {
+			hasLoadedFromStorageRef.current = true
+		} )
+	}, [ businessId ] )
+
+	// Save selected discounts to localStorage when they change
+	useEffect( () => {
+		if ( !businessId || typeof localStorage === 'undefined' || !hasLoadedFromStorageRef.current ) return
+		const data = {
+			selectedDiscountKeys: Array.from( selectedDiscounts ),
+			manualDiscount,
+		}
+		localStorage.setItem( DISCOUNTS_STORAGE_KEY( businessId ), JSON.stringify( data ) )
+	}, [ businessId, selectedDiscounts, manualDiscount ] )
+
+	// Handle forceResetAll: clear selections and localStorage
+	useEffect( () => {
+		if ( forceResetAll && businessId ) {
+			setSelectedDiscounts( new Set() )
+			setManualDiscount( 0 )
+			localStorage.removeItem( DISCOUNTS_STORAGE_KEY( businessId ) )
+		}
+	}, [ forceResetAll, businessId ] )
 
 	const marginTable = useMemo( () => {
 		// Get the highest tabela value from items in the proposal

@@ -7,6 +7,7 @@ import { formatarTelefone } from "@/function/Mask/telefone-whatsapp"
 import { encontrarObjetoMaisProximoComCor } from "@/function/aviso"
 import { 
 	Box, 
+	Collapse, 
 	Divider, 
 	Flex, 
 	chakra, 
@@ -81,6 +82,10 @@ export default function Infos () {
 	const [ Historico, setHistorico ] = useState( [] )
 	const [ Negocio, setNegocio ] = useState( [] )
 	const [ Interacoes, setInteracoes ] = useState<any[]>( [] )
+	const [ interacoesPage, setInteracoesPage ] = useState( 1 )
+	const [ hasMoreInteracoes, setHasMoreInteracoes ] = useState( false )
+	const [ loadingMoreInteracoes, setLoadingMoreInteracoes ] = useState( false )
+	const [ expandedDescricaoId, setExpandedDescricaoId ] = useState<string | null>( null )
 	const [ isHovered, setIsHovered ] = useState( false )
 	const [ StatusAt, setStatusAt ] = useState( true )
 	const [ ItenIndex, setItenIndex ] = useState( '' )
@@ -239,17 +244,26 @@ export default function Infos () {
 				setPurchaseFrequency( response.attributes?.purchaseFrequency || "" )
 				try {
 					if ( session?.user.pemission === 'Adm' ) {
-						const request2 = await axios( `/api/db/empresas/interacoes/get_adm?Empresa=${ response.attributes?.nome }` )
+						const request2 = await axios( `/api/db/empresas/interacoes/get_adm?EmpresaId=${ ID }&page=1` )
 						const response2 = request2.data
-						setInteracoes( Array.isArray( response2 ) ? response2 : [] )
+						const data = response2?.data ?? response2
+						const pagination = response2?.pagination
+						setInteracoes( Array.isArray( data ) ? data : [] )
+						setInteracoesPage( 1 )
+						setHasMoreInteracoes( pagination ? pagination.page < pagination.pageCount : false )
 					} else {
-						const request2 = await axios( `/api/db/empresas/interacoes/get?Vendedor=${ session?.user.name }&Empresa=${ response.attributes?.nome }` )
+						const request2 = await axios( `/api/db/empresas/interacoes/get?Vendedor=${ session?.user.name }&EmpresaId=${ ID }&page=1` )
 						const response2 = request2.data
-						setInteracoes( Array.isArray( response2 ) ? response2 : [] )
+						const data = response2?.data ?? response2
+						const pagination = response2?.pagination
+						setInteracoes( Array.isArray( data ) ? data : [] )
+						setInteracoesPage( 1 )
+						setHasMoreInteracoes( pagination ? pagination.page < pagination.pageCount : false )
 					}
 				} catch ( error ) {
 					console.error( "Erro ao buscar interações:", error )
 					setInteracoes( [] )
+					setHasMoreInteracoes( false )
 				}
 				try {
 					const reqTabelas = await axios.get(
@@ -327,13 +341,21 @@ export default function Infos () {
 					setProximo( '' )
 					try {
 						if ( session?.user.pemission === 'Adm' ) {
-							const request2 = await axios( `/api/db/empresas/interacoes/get_adm?Empresa=${ Nome }` )
+							const request2 = await axios( `/api/db/empresas/interacoes/get_adm?EmpresaId=${ ID }&page=1` )
 							const response2 = request2.data
-							setInteracoes( response2 || [] )
+							const data = response2?.data ?? response2
+							const pagination = response2?.pagination
+							setInteracoes( Array.isArray( data ) ? data : [] )
+							setInteracoesPage( 1 )
+							setHasMoreInteracoes( pagination ? pagination.page < pagination.pageCount : false )
 						} else {
-							const request2 = await axios( `/api/db/empresas/interacoes/get?Vendedor=${ session?.user.name }&Empresa=${ Nome }` )
+							const request2 = await axios( `/api/db/empresas/interacoes/get?Vendedor=${ session?.user.name }&EmpresaId=${ ID }&page=1` )
 							const response2 = request2.data
-							setInteracoes( response2 || [] )
+							const data = response2?.data ?? response2
+							const pagination = response2?.pagination
+							setInteracoes( Array.isArray( data ) ? data : [] )
+							setInteracoesPage( 1 )
+							setHasMoreInteracoes( pagination ? pagination.page < pagination.pageCount : false )
 						}
 						setload( false )
 						onClose()
@@ -367,6 +389,36 @@ export default function Infos () {
 		setIsHovered( false )
 		setItenIndex( '' )
 	}
+
+	const loadMoreInteracoes = async () => {
+		if ( loadingMoreInteracoes || !hasMoreInteracoes || !ID ) return
+		setLoadingMoreInteracoes( true )
+		try {
+			const nextPage = interacoesPage + 1
+			const baseUrl = session?.user.pemission === 'Adm'
+				? `/api/db/empresas/interacoes/get_adm?EmpresaId=${ ID }&page=${ nextPage }`
+				: `/api/db/empresas/interacoes/get?Vendedor=${ session?.user.name }&EmpresaId=${ ID }&page=${ nextPage }`
+			const request = await axios( baseUrl )
+			const response = request.data
+			const data = response?.data ?? response
+			const pagination = response?.pagination
+			if ( Array.isArray( data ) && data.length > 0 ) {
+				setInteracoes( prev => [ ...prev, ...data ] )
+			}
+			setInteracoesPage( nextPage )
+			setHasMoreInteracoes( pagination ? pagination.page < pagination.pageCount : false )
+		} catch ( error ) {
+			console.error( "Erro ao carregar mais interações:", error )
+		} finally {
+			setLoadingMoreInteracoes( false )
+		}
+	}
+
+	const toggleDescricaoExpand = ( id: string ) => {
+		setExpandedDescricaoId( prev => prev === id ? null : id )
+	}
+
+	const DESCRICAO_PREVIEW_LENGTH = 120
 
 	return (
 		<>
@@ -606,6 +658,9 @@ export default function Infos () {
 												.toLocaleDateString('pt-BR')
 											: ''
 										const vName = i.attributes?.vendedor?.data?.attributes?.nome || i.attributes?.vendedor_name || "Vendedor"
+										const descricao = i.attributes?.descricao || ''
+										const isLong = descricao.length > DESCRICAO_PREVIEW_LENGTH
+										const isExpanded = expandedDescricaoId === String( i.id )
 
 										return (
 											<Box key={i.id} p={2}>
@@ -619,7 +674,26 @@ export default function Infos () {
 														<Text fontSize="xs">{createdDate}</Text>
 													</HStack>
 												</Flex>
-												<Text fontSize="xs" color="gray.300" mb={2} noOfLines={3}>{i.attributes?.descricao}</Text>
+												<Box mb={2}>
+													{ isLong ? (
+														<>
+															<Collapse startingHeight="3.6em" in={ isExpanded }>
+																<Text fontSize="xs" color="gray.300" whiteSpace="pre-wrap">{descricao}</Text>
+															</Collapse>
+															<Button
+																size="xs"
+																variant="link"
+																color="blue.300"
+																mt={1}
+																onClick={ () => toggleDescricaoExpand( String( i.id ) ) }
+															>
+																{ isExpanded ? "Ver menos" : "Ver mais" }
+															</Button>
+														</>
+													) : (
+														<Text fontSize="xs" color="gray.300" whiteSpace="pre-wrap">{descricao}</Text>
+													) }
+												</Box>
 												<Flex justify="flex-end">
 													<HStack spacing={1} color="gray.400">
 														<Icon as={FiClock} boxSize={3} />
@@ -633,6 +707,20 @@ export default function Infos () {
 									}) : (
 										<Text textAlign="center" py={8} color="gray.400">Nenhuma interação registrada</Text>
 									)}
+									{ hasMoreInteracoes && (
+										<Flex justify="center" py={2}>
+											<Button
+												size="sm"
+												variant="outline"
+												colorScheme="blue"
+												onClick={ loadMoreInteracoes }
+												isLoading={ loadingMoreInteracoes }
+												loadingText="Carregando..."
+											>
+												Carregar mais
+											</Button>
+										</Flex>
+									) }
 								</Stack>
 							</CardBody>
 							{Alert && (

@@ -1,15 +1,20 @@
 import axios from "axios"
 import { NextApiRequest, NextApiResponse } from "next"
 
+const PAGE_SIZE = 20
+
 export default async function GetEmpresa (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) {
 	const token = process.env.ATORIZZATION_TOKEN
-	if ( req.method === "GET" && req.query.Empresa !== "" ) {
-		const Empresa = req.query.Empresa
+	if ( req.method === "GET" && req.query.EmpresaId ) {
+		const EmpresaId = req.query.EmpresaId
+		const page = Math.max( 1, parseInt( String( req.query.page || "1" ), 10 ) )
 
-		const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/interacoes?filters[empresa][nome][$containsi]=${ Empresa }&populate=*`
+		const paginationParams = `pagination[page]=${ page }&pagination[pageSize]=${ PAGE_SIZE }&pagination[withCount]=true`
+		const sortParam = "sort[0]=createdAt:desc"
+		const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/interacoes?filters[empresa][id][$eq]=${ EmpresaId }&${ paginationParams }&${ sortParam }&populate=*`
 
 		await axios( url, {
 			headers: {
@@ -18,7 +23,18 @@ export default async function GetEmpresa (
 			},
 		} )
 			.then( ( RequestEnpresa ) => {
-				res.status( 200 ).json( RequestEnpresa.data.data )
+				const strapiData = RequestEnpresa.data
+				const data = Array.isArray( strapiData?.data ) ? strapiData.data : []
+				const meta = strapiData?.meta?.pagination || {}
+				res.status( 200 ).json( {
+					data,
+					pagination: {
+						page: meta.page ?? page,
+						pageSize: meta.pageSize ?? PAGE_SIZE,
+						pageCount: meta.pageCount ?? 1,
+						total: meta.total ?? data.length,
+					},
+				} )
 
 			} )
 			.catch( ( error ) => {
@@ -31,7 +47,7 @@ export default async function GetEmpresa (
 				.status( 405 )
 				.send( { message: "Only GET requests are allowed" } )
 		} else {
-			return res.status( 500 ).send( { message: "falta Empresa" } )
+			return res.status( 500 ).send( { message: "EmpresaId is required" } )
 		}
 	}
 }

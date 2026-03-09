@@ -107,6 +107,9 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 			setResponsavel( empresa.attributes?.representantes )
 			const IdEmpresa = empresa.id.toString()
 			setID( IdEmpresa )
+			setNome( empresa.attributes?.nome ?? '' )
+			setFantasia( empresa.attributes?.fantasia ?? '' )
+			setRazao( empresa.attributes?.razao ?? '' )
 			setCNPJ( empresa.attributes?.CNPJ )
 			setAutorize( props.data ? true : false )
 			const cnpj = empresa.attributes?.CNPJ
