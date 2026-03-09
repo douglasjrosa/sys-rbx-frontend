@@ -1,7 +1,8 @@
 import { EtapasNegocio } from "@/components/data/etapa"
+import { formatCurrency } from "@/utils/customNumberFormats"
 import { Box, Flex, Text, chakra, HStack, Input, FormLabel, Select, Button, Badge, InputGroup, InputLeftElement, InputRightElement, IconButton, Skeleton, Spinner } from "@chakra-ui/react"
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons"
-import { isToday, parseISO, isPast, isAfter } from "date-fns"
+import { isToday, parseISO, isPast, isAfter, isValid, format } from "date-fns"
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/router"
 import axios from "axios"
@@ -56,6 +57,17 @@ export const PowerBi = () => {
 		if ( !cnpj ) return ''
 		const cleaned = cnpj.replace( /\D/g, '' )
 		return cleaned.replace( /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5' )
+	}
+
+	const formatDateSafe = ( dateStr: string | undefined | null ): string => {
+		if ( !dateStr ) return '-'
+		try {
+			let d = parseISO( dateStr )
+			if ( !isValid( d ) ) d = new Date( dateStr )
+			return isValid( d ) ? format( d, 'dd/MM/yyyy' ) : '-'
+		} catch {
+			return '-'
+		}
 	}
 
 	useEffect( () => {
@@ -762,23 +774,21 @@ export const PowerBi = () => {
 													>
 														<FaMoneyBillWave />
 														<Text fontSize={ '14px' } fontWeight="bold" noOfLines={ 1 }>
-															{ new Intl.NumberFormat( 'pt-BR', { minimumFractionDigits: 2 } ).format( parseFloat( itens.attributes.Budget || 0 ) ) }
+															{ formatCurrency( itens.attributes.Budget ) }
 														</Text>
 													</Flex>
 												</Box>
 								<Box flex="0 0 17.5%" minW="90px" textAlign="center" bg={ isClosedFilter ? undefined : colorLine } py={ 1 } borderRadius={ !isClosedFilter && colorLine ? "sm" : "none" } overflow="hidden" textOverflow="ellipsis">
 												<Text color={ isClosedFilter ? 'white' : textColor } fontSize={ '12px' } noOfLines={ 1 }>
 													{ isClosedFilter
-														? new Date( itens.attributes.createdAt )
-															.toLocaleDateString( 'pt-BR' )
+														? formatDateSafe( itens.attributes.createdAt )
 														: dataFormatada }
 												</Text>
 											</Box>
 											<Box flex="0 0 17.5%" minW="90px" textAlign="center" overflow="hidden" textOverflow="ellipsis">
 												<Text color={ 'white' } fontSize={ '12px' } noOfLines={ 1 }>
 													{ isClosedFilter
-														? new Date( itens.attributes.updatedAt )
-															.toLocaleDateString( 'pt-BR' )
+														? formatDateSafe( itens.attributes.updatedAt )
 														: deadline }
 												</Text>
 											</Box>
