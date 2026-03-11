@@ -31,12 +31,14 @@ export default async function GetEmpresa (
 	if ( req.method === "GET" ) {
 		const { proposta, montFree, expoFree, cleanDefaultObs, latam, obsFree } = req.query
 
+		const propostaParam = Array.isArray( proposta ) ? proposta[ 0 ] : String( proposta ?? "" )
+
 		const latamActive = latam !== undefined
 		const montFreeActive = montFree !== undefined || latamActive
 		const expoFreeActive = expoFree !== undefined || latamActive
 		const obsFreeActive = obsFree !== undefined || latamActive
 
-		const infos = await getData( proposta )
+		const infos = await getData( propostaParam )
 
 		if ( !infos ) {
 			res.status( 404 ).setHeader( "Content-Type", "text/html; charset=utf-8" ).send(
@@ -49,7 +51,7 @@ h2{color:#e06c75;margin-top:0}p{color:#9cdcfe;}</style>
 </head>
 <body><div class="box">
 <h2>Pedido não encontrado</h2>
-<p>O pedido <strong>${ proposta }</strong> não foi encontrado no sistema.</p>
+<p>O pedido <strong>${ propostaParam }</strong> não foi encontrado no sistema.</p>
 <p>Verifique o número e tente novamente.</p>
 </div></body>
 </html>`
@@ -463,7 +465,7 @@ h2{color:#e06c75;margin-top:0}p{color:#9cdcfe;}</style>
 							],
 							[
 								{ text: 'Nº da Proposta:', bold: true, fontSize: 8, alignment: 'left', margin: [ 0, 2, 0, 0 ] },
-								{ text: proposta, fontSize: 11, lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] }
+								{ text: String( infos.propostaId ), fontSize: 11, lineHeight: 1.5, margin: [ 0, 2, 0, 0 ] }
 							],
 							[
 								{ text: 'Nº do Pedido:', bold: true, fontSize: 8, alignment: 'left', margin: [ 0, 2, 0, 0 ] },
@@ -750,7 +752,7 @@ h2{color:#e06c75;margin-top:0}p{color:#9cdcfe;}</style>
 
 		const filename =
 			"Proposta comercial -" +
-			proposta +
+			infos.propostaId +
 			" - " +
 			name +
 			"-" +

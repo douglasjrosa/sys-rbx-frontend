@@ -194,7 +194,7 @@ export const CardList = ( props: { id: string; onloading: any; desbilitar: any }
 														textTransform="uppercase"
 														color="brand.600"
 													>
-														{ i.attributes.nPedido }
+														{ i.id }
 													</chakra.span>
 												</Text>
 												<Text fontSize="0.8rem" fontWeight="bold" color="gray.700">
@@ -291,7 +291,7 @@ export const CardList = ( props: { id: string; onloading: any; desbilitar: any }
 													>
 														Editar Proposta
 													</Button>
-													<BTMPdf nPedido={ i.attributes.nPedido } empresa={ i.attributes.empresa.data.attributes.nome } />
+													<BTMPdf pedidoId={ i.id } empresa={ i.attributes.empresa.data.attributes.nome } />
 													<Button
 														isLoading={ load && IdLoad == i.id }
 														spinner={ <BeatLoader size={ 8 } color="white" /> }
@@ -301,7 +301,7 @@ export const CardList = ( props: { id: string; onloading: any; desbilitar: any }
 														onClick={ () => {
 															const totalValor = SetValue( i.attributes.totalGeral )
 															setIdLoad( i.id )
-															pedido( i.attributes.nPedido, i.attributes.empresa.data.id, totalValor )
+															pedido( String( i.id ), i.attributes.empresa.data.id, totalValor )
 														} }
 														isDisabled={ i.attributes.business.data.attributes.andamento !== 5 ? true : i.attributes.Bpedido !== null ? true : i.attributes.itens.length < 1 ? true : false }
 													>

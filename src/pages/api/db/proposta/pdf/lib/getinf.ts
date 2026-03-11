@@ -1,22 +1,14 @@
 import axios from "axios";
 
-export const getData = async (proposta: any) => {
+export const getData = async (pedidoId: any) => {
   const token = process.env.ATORIZZATION_TOKEN;
   const baseUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
-  const fetchByFilter = async () => {
-    const url = `${baseUrl}/pedidos?populate=*&publicationState=preview&filters[nPedido][$eq]=${proposta}`;
-    const res = await axios({
-      method: "GET",
-      url,
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data?.data?.[0];
-  };
+  const idStr = Array.isArray(pedidoId) ? pedidoId[0] : String(pedidoId ?? "");
 
-  const fetchById = async () => {
+  const fetchById = async (publicationState: string) => {
     try {
-      const url = `${baseUrl}/pedidos/${proposta}?populate=*&publicationState=preview`;
+      const url = `${baseUrl}/pedidos/${idStr}?populate=*&publicationState=${publicationState}`;
       const res = await axios({
         method: "GET",
         url,
@@ -28,29 +20,12 @@ export const getData = async (proposta: any) => {
     }
   };
 
-  const converterData = (data: string) => {
-    if (!data) return ""; // Verifica se a variável data não está vazia
-
-    const dataObjeto = new Date(data);
-    // Ajuste do fuso horário para o horário de Brasília (GMT-3)
-    const fusoHorario = -3; // Horário de Brasília (GMT-3)
-    const dataBrasilia = new Date(
-      dataObjeto.getTime() + fusoHorario * 3600000
-    );
-    dataBrasilia.setDate(dataBrasilia.getDate() + 1); // Adiciona um dia
-    const hoje = new Date();
-    const diferenca = Math.ceil(
-      (dataBrasilia.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const resultado = diferenca + " Dias";
-
-    return resultado;
-  };
+  const DATA_ENTREGA_FIXO = "7 dias após oficialização do pedido.";
 
   try {
-    let result = await fetchByFilter();
+    let result = await fetchById("preview");
     if (!result?.attributes) {
-      result = await fetchById();
+      result = await fetchById("live");
     }
     if (!result?.attributes) {
       return null;
@@ -58,8 +33,7 @@ export const getData = async (proposta: any) => {
     const inf = result.attributes;
     const Vendedor = inf.user.data.attributes.username
     const empresaFornec = inf.fornecedorId.data.attributes;
-    const dataEntrega1 = !inf.dataEntrega? '' : inf.dataEntrega
-    const dataEntrega = converterData(dataEntrega1)
+    const dataEntrega = DATA_ENTREGA_FIXO
 
     const dadosFornecedor = {
       data: {
@@ -76,7 +50,7 @@ export const getData = async (proposta: any) => {
         email: empresaFornec?.email,
       },
     };
-    const nPedido = inf.nPedido;
+    const propostaId = result.id;
     const frete = inf.frete;
     const Valfrete = inf.valorFrete;
     const datePop = inf.dataPedido;
@@ -107,7 +81,7 @@ export const getData = async (proposta: any) => {
 
     const custoAdicional = inf.custoAdicional ?? "";
     const data = {
-      nPedido,
+      propostaId,
       frete,
       Valfrete,
       datePop,
@@ -129,7 +103,6 @@ export const getData = async (proposta: any) => {
     };
     return data;
   } catch (error) {
-    console.error("getData error:", error);
     throw error;
   }
 };
