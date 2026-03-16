@@ -34,15 +34,26 @@ function Layout ( { children }: { children: React.ReactNode } ): JSX.Element {
 		return <Loading size="200px">Carregando...</Loading>
 	}
 
-	if ( !session && router.asPath !== '/auth/signin' ) {
+	const PUBLIC_ROUTES = [ '/auth/signin', '/calculadora-de-embalagem' ]
+	const pathname = router.pathname
+	const isPublicRoute = PUBLIC_ROUTES.some( ( r ) =>
+		pathname === r || pathname.startsWith( r + '/' )
+	)
+	const isStandaloneRoute = pathname.startsWith( '/calculadora-de-embalagem' )
+
+	if ( !session && !isPublicRoute ) {
 		router.push( '/auth/signin' )
 	}
 
-	if ( !status && router.asPath !== '/auth/signin' ) {
+	if ( !status && !isPublicRoute ) {
 		router.push( '/auth/signin' )
 	}
 
-	if ( !session && router.asPath === '/auth/signin' ) {
+	if ( !session && isPublicRoute ) {
+		return <>{ children }</>
+	}
+
+	if ( isStandaloneRoute ) {
 		return <>{ children }</>
 	}
 

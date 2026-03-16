@@ -1,0 +1,90 @@
+[
+  {
+    "name": "caixa_economica",
+    "packType": "box",
+    "prodTypes": [1, 2, 3, 4, 6, 11],
+    "sizeLimit": 2,
+    "weightLimit": 800,
+    "isExportable": "no"
+  },
+  {
+    "name": "caixa_estruturada",
+    "packType": "box",
+    "prodTypes": [1, 3, 4, 6, 9, 10, 11],
+    "sizeLimit": 4,
+    "weightLimit": 1200,
+    "isExportable": "no"
+  },
+  {
+    "name": "caixa_leve",
+    "packType": "box",
+    "prodTypes": [1, 2, 4, 5, 11],
+    "sizeLimit": 0.5,
+    "weightLimit": 30,
+    "isExportable": "no"
+  },
+  {
+    "name": "caixa_reforcada",
+    "packType": "box",
+    "prodTypes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    "sizeLimit": 10,
+    "weightLimit": 2000,
+    "isExportable": "optional"
+  },
+  {
+    "name": "caixa_resistente",
+    "packType": "box",
+    "prodTypes": [1, 2, 3, 4, 5, 6, 9, 11],
+    "sizeLimit": 1,
+    "weightLimit": 500,
+    "isExportable": "yes"
+  },
+  {
+    "name": "caixa_super_reforcada",
+    "packType": "box",
+    "prodTypes": [7, 8, 11],
+    "sizeLimit": 2,
+    "weightLimit": 2000,
+    "isExportable": "optional"
+  },
+  {
+    "name": "engradado_leve",
+    "packType": "crate",
+    "prodTypes": [2],
+    "sizeLimit": 0.5,
+    "weightLimit": 30,
+    "isExportable": "no"
+  },
+  {
+    "name": "engradado_economico",
+    "packType": "crate",
+    "prodTypes": [4],
+    "sizeLimit": 1,
+    "weightLimit": 100,
+    "isExportable": "no"
+  },
+  {
+    "name": "engradado_resistente",
+    "packType": "crate",
+    "prodTypes": [2, 3, 4, 8, 10, 11],
+    "sizeLimit": 2,
+    "weightLimit": 700,
+    "isExportable": "no"
+  },
+  {
+    "name": "engradado_reforcado",
+    "packType": "crate",
+    "prodTypes": [4, 7, 8, 11],
+    "sizeLimit": 3,
+    "weightLimit": 1500,
+    "isExportable": "optional"
+  },
+  {
+    "name": "palete_sob_medida",
+    "packType": "pallet",
+    "prodTypes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    "sizeLimit": 2,
+    "weightLimit": 2000,
+    "isExportable": "optional"
+  }
+]
