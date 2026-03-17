@@ -7,6 +7,7 @@ import {
   FormLabel,
   Heading,
   IconButton,
+  Image,
   Input,
   InputGroup,
   InputRightAddon,
@@ -18,6 +19,7 @@ import {
   Radio,
   RadioGroup,
   Select,
+  SimpleGrid,
   Stack,
   Text,
   useColorMode,
@@ -25,7 +27,7 @@ import {
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { NextPage } from "next";
 import Head from "next/head";
@@ -53,6 +55,27 @@ const PACK_TYPE_OPTIONS: { value: PackType; label: string }[] = [
   { value: "any", label: "Ajude-me a escolher" },
 ];
 
+const PACK_TYPE_IMAGES: Record<PackType, string> = {
+  box: "/img/box.jpg",
+  crate: "/img/crate.jpg",
+  pallet: "/img/pallet.jpg",
+  any: "/img/any.jpg",
+};
+
+const PRODUCT_TYPE_IMAGES: Record<number, string | null> = {
+  1: "/img/prodType-1.jpeg",
+  2: "/img/prodType-2.webp",
+  3: "/img/prodType-3.jpg",
+  4: "/img/prodType-4.webp",
+  5: "/img/prodType-5.png",
+  6: "/img/prodType-6.jpg",
+  7: "/img/prodType-7.jpg",
+  8: "/img/prodType-8.jpg",
+  9: "/img/prodType-9.jpg",
+  10: "/img/prodType-10.jpg",
+  11: "/img/prodType-11.webp",
+};
+
 const STEP_TELA1 = 1;
 const STEP_TELA2 = 2;
 const STEP_TELA3 = 3;
@@ -62,9 +85,7 @@ const STEP_TELA6 = 6;
 const STEP_RESULT = 7;
 
 const initialForm: Partial<PackagingFormData> = {
-  packType: "any",
   prodType: 0,
-  isExport: false,
   weight: 0,
   unit: "cm",
   length: 0,
@@ -96,7 +117,7 @@ const CalculadoraEmbalagem: NextPage = () => {
   const [ elegibleTemplates, setElegibleTemplates ] = useState<string[]>( [] );
 
   const isPallet = form.packType === "pallet";
-  const showProdType = form.packType && !isPallet;
+  const showProdType = !!form.packType;
 
   const bgPage = useColorModeValue( "gray.50", "gray.900" );
   const bgCard = useColorModeValue( "white", "gray.800" );
@@ -298,24 +319,42 @@ const CalculadoraEmbalagem: NextPage = () => {
 
       <Box
         minH="100vh"
-        minW="100vw"
         bg={bgPage}
         color={textColor}
-        py={{ base: 4, md: 8 }}
+        py={{ base: 6, md: 10 }}
         px={{ base: 4, md: 6 }}
+        display="flex"
+        justifyContent="center"
+        alignItems="flex-start"
       >
         <Flex
-          maxW="640px"
-          mx="auto"
+          maxW="960px"
+          w="100%"
           direction="column"
           gap={{ base: 6, md: 8 }}
-          align="stretch"
+          align="center"
         >
-          <Flex justify="space-between" align="center" wrap="wrap" gap={2}>
+          <Flex
+            justify="space-between"
+            align="center"
+            w="100%"
+            gap={4}
+          >
+            <Button
+              as="a"
+              href="https://ribermax.com.br"
+              variant="ghost"
+              size="sm"
+              leftIcon={<ArrowBackIcon />}
+            >
+              Voltar
+            </Button>
             <Heading
               size={{ base: "lg", md: "xl" }}
               color={headingColor}
               fontWeight="bold"
+              textAlign="center"
+              flex="1"
             >
               Calculadora de Embalagem
             </Heading>
@@ -336,19 +375,14 @@ const CalculadoraEmbalagem: NextPage = () => {
                 key="tela1"
                 as="form"
                 onSubmit={handleTela1Continue}
-                bg={bgCard}
-                borderRadius="xl"
-                borderWidth="1px"
-                borderColor={borderColor}
                 p={{ base: 5, md: 8 }}
-                shadow="md"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <VStack align="stretch" spacing={{ base: 6, md: 8 }}>
-                  <FormControl as="fieldset" isRequired>
+                <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
+                  <FormControl as="fieldset" isRequired alignItems="center">
                     <FormLabel
                       as="legend"
                       fontSize="lg"
@@ -358,30 +392,59 @@ const CalculadoraEmbalagem: NextPage = () => {
                     >
                       O que você quer calcular hoje?
                     </FormLabel>
-                    <RadioGroup
-                      value={form.packType || ""}
-                      onChange={handlePackTypeChange}
+                    <SimpleGrid
+                      columns={{ base: 1, md: 2, lg: 4 }}
+                      spacing={{ base: 4, md: 5 }}
+                      w="100%"
+                      justifyItems="center"
                     >
-                      <Stack
-                        direction={{ base: "column", sm: "row" }}
-                        spacing={{ base: 3, sm: 4 }}
-                        flexWrap="wrap"
-                      >
-                        {PACK_TYPE_OPTIONS.map( ( opt ) => (
-                          <Radio
+                      {PACK_TYPE_OPTIONS.map( ( opt ) => {
+                        const isActive = form.packType === opt.value;
+                        const isDimmed = form.packType && !isActive;
+                        return (
+                          <Box
                             key={opt.value}
-                            value={opt.value}
-                            colorScheme="blue"
-                            size={{ base: "md", md: "lg" }}
+                            as="button"
+                            type="button"
+                            onClick={() => handlePackTypeChange( opt.value )}
+                            borderWidth={isActive ? "2px" : "1px"}
+                            borderColor={
+                              isActive ? "blue.400" : borderColor
+                            }
+                            borderRadius="lg"
+                            p={3}
+                            boxShadow="md"
+                            w="100%"
+                            maxW="260px"
+                            minH="220px"
+                            bg={useColorModeValue( "white", "gray.700" )}
+                            _hover={{ borderColor: "blue.400" }}
+                            textAlign="center"
+                            opacity={isDimmed ? 0.6 : 1}
+                            filter={isDimmed ? "grayscale(100%)" : "none"}
                           >
-                            {opt.label}
-                          </Radio>
-                        ) )}
-                      </Stack>
-                    </RadioGroup>
+                            <Image
+                              src={PACK_TYPE_IMAGES[ opt.value ]}
+                              alt={opt.label}
+                              borderRadius="md"
+                              objectFit="cover"
+                              w="100%"
+                              h="140px"
+                              mb={2}
+                            />
+                            <Text
+                              fontSize="md"
+                              fontWeight={isActive ? "extrabold" : "semibold"}
+                            >
+                              {opt.label}
+                            </Text>
+                          </Box>
+                        );
+                      } )}
+                    </SimpleGrid>
                   </FormControl>
 
-                  <Collapse in={showProdType && tela1SubStep >= TELA1_SUB_PROD}>
+                  <Collapse in={showProdType && !isPallet && tela1SubStep >= TELA1_SUB_PROD}>
                     <FormControl as="fieldset" isRequired w="full">
                       <FormLabel
                         as="legend"
@@ -392,24 +455,73 @@ const CalculadoraEmbalagem: NextPage = () => {
                       >
                         Que tipo de produto você precisa embalar?
                       </FormLabel>
-                      <Select
-                        placeholder="Selecione o tipo de produto"
-                        value={form.prodType ? String( form.prodType ) : ""}
-                        onChange={( e ) =>
-                          handleProdTypeChange(
-                            e.target.value ? parseInt( e.target.value, 10 ) : 0
-                          )
-                        }
-                        size="lg"
-                        borderColor={borderColor}
-                        minH="44px"
+                      <Box
+                        w="100%"
+                        opacity={isPallet ? 0.4 : 1}
+                        pointerEvents={isPallet ? "none" : "auto"}
                       >
-                        {Object.entries( PRODUCT_TYPE_LABELS ).map( ( [ k, label ] ) => (
-                          <option key={k} value={k}>
-                            {k} - {label}
-                          </option>
-                        ) )}
-                      </Select>
+                        <SimpleGrid
+                          columns={{ base: 1, md: 2, lg: 4 }}
+                          spacing={{ base: 4, md: 5 }}
+                          w="100%"
+                          justifyItems="center"
+                        >
+                          {Object.entries( PRODUCT_TYPE_LABELS ).map(
+                            ( [ key, label ] ) => {
+                              const id = parseInt( key, 10 );
+                              const isActive = form.prodType === id;
+                              const imgSrc = PRODUCT_TYPE_IMAGES[ id ];
+                              const isDimmed = form.prodType && !isActive;
+                              return (
+                                <Box
+                                  key={id}
+                                  as="button"
+                                  type="button"
+                                  onClick={() => handleProdTypeChange( id )}
+                                  borderWidth={isActive ? "2px" : "1px"}
+                                  borderColor={
+                                    isActive ? "blue.400" : borderColor
+                                  }
+                                  borderRadius="lg"
+                                  p={3}
+                                  boxShadow="md"
+                                  w="100%"
+                                  maxW="260px"
+                                  minH="220px"
+                                  bg={useColorModeValue(
+                                    "white",
+                                    "gray.700"
+                                  )}
+                                  _hover={{ borderColor: "blue.400" }}
+                                  textAlign="left"
+                                  opacity={isDimmed ? 0.6 : 1}
+                                  filter={isDimmed ? "grayscale(100%)" : "none"}
+                                >
+                                  {imgSrc && (
+                                    <Image
+                                      src={imgSrc}
+                                      alt={label}
+                                      borderRadius="md"
+                                      objectFit="cover"
+                                      w="100%"
+                                      h="140px"
+                                      mb={2}
+                                    />
+                                  )}
+                                  <Text
+                                    fontSize="sm"
+                                    fontWeight={
+                                      isActive ? "extrabold" : "semibold"
+                                    }
+                                  >
+                                    {label}
+                                  </Text>
+                                </Box>
+                              );
+                            }
+                          )}
+                        </SimpleGrid>
+                      </Box>
                     </FormControl>
                   </Collapse>
 
@@ -424,26 +536,58 @@ const CalculadoraEmbalagem: NextPage = () => {
                       >
                         Para onde vai a embalagem? É exportação?
                       </FormLabel>
-                      <RadioGroup
-                        value={
-                          form.isExport === undefined ? "" : form.isExport ? "yes" : "no"
-                        }
-                        onChange={( v ) => handleIsExportChange( v === "yes" )}
+                      <SimpleGrid
+                        columns={{ base: 1, md: 2 }}
+                        spacing={{ base: 4, md: 5 }}
+                        w="100%"
+                        justifyItems="center"
                       >
-                        <Stack direction="column" spacing={3}>
-                          <Radio
-                            value="yes"
-                            colorScheme="blue"
-                            size={{ base: "md", md: "lg" }}
-                          >
-                            Sim. A embalagem transportará meu produto para outro país
-                            (Exportação)
-                          </Radio>
-                          <Radio value="no" colorScheme="blue" size={{ base: "md", md: "lg" }}>
-                            Não. A embalagem transportará meu produto somente dentro do Brasil
-                          </Radio>
-                        </Stack>
-                      </RadioGroup>
+                        {[
+                          { value: true, label: "Sim, é exportação", img: "/img/isExport.avif" },
+                          { value: false, label: "Não, apenas Brasil", img: "/img/noExport.jpg" },
+                        ].map( ( option ) => {
+                          const isActive = form.isExport === option.value;
+                          const hasSelection = form.isExport !== undefined;
+                          const isDimmed = hasSelection && !isActive;
+                          return (
+                            <Box
+                              key={String( option.value )}
+                              as="button"
+                              type="button"
+                              onClick={() => handleIsExportChange( option.value )}
+                              borderWidth={isActive ? "2px" : "1px"}
+                              borderColor={isActive ? "blue.400" : borderColor}
+                              borderRadius="lg"
+                              p={3}
+                              boxShadow="md"
+                              w="100%"
+                              maxW="260px"
+                              minH="220px"
+                              bg={useColorModeValue( "white", "gray.700" )}
+                              _hover={{ borderColor: "blue.400" }}
+                              textAlign="center"
+                              opacity={isDimmed ? 0.6 : 1}
+                              filter={isDimmed ? "grayscale(100%)" : "none"}
+                            >
+                              <Image
+                                src={option.img}
+                                alt={option.label}
+                                borderRadius="md"
+                                objectFit="cover"
+                                w="100%"
+                                h="140px"
+                                mb={2}
+                              />
+                              <Text
+                                fontSize="md"
+                                fontWeight={isActive ? "extrabold" : "semibold"}
+                              >
+                                {option.label}
+                              </Text>
+                            </Box>
+                          );
+                        } )}
+                      </SimpleGrid>
                     </FormControl>
                   </Collapse>
 
@@ -460,8 +604,9 @@ const CalculadoraEmbalagem: NextPage = () => {
                       </FormLabel>
                       <InputGroup
                         size="lg"
-                        maxW={{ base: "100%", sm: "200px" }}
+                        maxW={{ base: "100%", sm: "260px" }}
                         minH="44px"
+                        mx="auto"
                       >
                         <NumberInput
                           value={form.weight || ""}
@@ -519,67 +664,39 @@ const CalculadoraEmbalagem: NextPage = () => {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <VStack align="stretch" spacing={{ base: 6, md: 8 }}>
-                  <Text fontSize="lg" fontWeight="semibold" color={headingColor}>
+                <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
+                  <Text fontSize="lg" fontWeight="semibold" color={headingColor} textAlign="center">
                     {dimensionsIntro()}
                   </Text>
 
-                  <FormControl isRequired>
-                    <FormLabel>Unidade de medida</FormLabel>
-                    <Select
-                      value={form.unit || "cm"}
-                      onChange={( e ) =>
-                        updateForm( {
-                          unit: e.target.value as "mm" | "cm",
-                        } )
-                      }
-                      size="lg"
-                      borderColor={borderColor}
-                      minH="44px"
-                    >
-                      <option value="mm">mm</option>
-                      <option value="cm">cm</option>
-                    </Select>
-                  </FormControl>
-
-                  <FormControl isRequired>
-                    <FormLabel>Comprimento</FormLabel>
-                    <NumberInput
-                      value={form.length || ""}
-                      onChange={( _, v ) => updateForm( { length: v } )}
-                      min={0}
-                      step={0.1}
-                    >
-                      <NumberInputField borderColor={borderColor} minH="44px" />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-
-                  <FormControl isRequired>
-                    <FormLabel>Largura</FormLabel>
-                    <NumberInput
-                      value={form.width || ""}
-                      onChange={( _, v ) => updateForm( { width: v } )}
-                      min={0}
-                      step={0.1}
-                    >
-                      <NumberInputField borderColor={borderColor} minH="44px" />
-                      <NumberInputStepper>
-                        <NumberIncrementStepper />
-                        <NumberDecrementStepper />
-                      </NumberInputStepper>
-                    </NumberInput>
-                  </FormControl>
-
-                  {!isPallet && (
+                  <SimpleGrid
+                    columns={{ base: 1, md: 2, lg: 4 }}
+                    spacing={{ base: 4, md: 5 }}
+                    w="100%"
+                  >
                     <FormControl isRequired>
-                      <FormLabel>Altura</FormLabel>
+                      <FormLabel textAlign="center">Unidade de medida</FormLabel>
+                      <Select
+                        value={form.unit || "cm"}
+                        onChange={( e ) =>
+                          updateForm( {
+                            unit: e.target.value as "mm" | "cm",
+                          } )
+                        }
+                        size="lg"
+                        borderColor={borderColor}
+                        minH="44px"
+                      >
+                        <option value="mm">mm</option>
+                        <option value="cm">cm</option>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel textAlign="center">Comprimento</FormLabel>
                       <NumberInput
-                        value={form.height ?? ""}
-                        onChange={( _, v ) => updateForm( { height: v } )}
+                        value={form.length || ""}
+                        onChange={( _, v ) => updateForm( { length: v } )}
                         min={0}
                         step={0.1}
                       >
@@ -590,7 +707,41 @@ const CalculadoraEmbalagem: NextPage = () => {
                         </NumberInputStepper>
                       </NumberInput>
                     </FormControl>
-                  )}
+
+                    <FormControl isRequired>
+                      <FormLabel textAlign="center">Largura</FormLabel>
+                      <NumberInput
+                        value={form.width || ""}
+                        onChange={( _, v ) => updateForm( { width: v } )}
+                        min={0}
+                        step={0.1}
+                      >
+                        <NumberInputField borderColor={borderColor} minH="44px" />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    </FormControl>
+
+                    {!isPallet && (
+                      <FormControl isRequired>
+                        <FormLabel textAlign="center">Altura</FormLabel>
+                        <NumberInput
+                          value={form.height ?? ""}
+                          onChange={( _, v ) => updateForm( { height: v } )}
+                          min={0}
+                          step={0.1}
+                        >
+                          <NumberInputField borderColor={borderColor} minH="44px" />
+                          <NumberInputStepper>
+                            <NumberIncrementStepper />
+                            <NumberDecrementStepper />
+                          </NumberInputStepper>
+                        </NumberInput>
+                      </FormControl>
+                    )}
+                  </SimpleGrid>
 
                   <Button
                     type="submit"
@@ -618,8 +769,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <VStack align="stretch" spacing={{ base: 6, md: 8 }}>
-                  <Text fontSize="lg" fontWeight="semibold" color={headingColor}>
+                <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
+                  <Text fontSize="lg" fontWeight="semibold" color={headingColor} textAlign="center">
                     Como vai ficar o conteúdo da embalagem?
                   </Text>
                   <RadioGroup>
@@ -627,8 +778,10 @@ const CalculadoraEmbalagem: NextPage = () => {
                       <Box
                         as="label"
                         p={4}
-                        borderWidth="2px"
-                        borderColor={borderColor}
+                        borderWidth={form.isUnitizedContent === true ? "2px" : "1px"}
+                        borderColor={
+                          form.isUnitizedContent === true ? "blue.400" : borderColor
+                        }
                         borderRadius="lg"
                         cursor="pointer"
                         _hover={{ borderColor: "blue.400" }}
@@ -636,6 +789,18 @@ const CalculadoraEmbalagem: NextPage = () => {
                         minH="44px"
                         display="flex"
                         alignItems="center"
+                        opacity={
+                          form.isUnitizedContent !== undefined &&
+                          form.isUnitizedContent !== true
+                            ? 0.6
+                            : 1
+                        }
+                        filter={
+                          form.isUnitizedContent !== undefined &&
+                          form.isUnitizedContent !== true
+                            ? "grayscale(100%)"
+                            : "none"
+                        }
                       >
                         <Radio value="1" colorScheme="blue" size="lg" mr={3} />
                         <Text>
@@ -647,8 +812,10 @@ const CalculadoraEmbalagem: NextPage = () => {
                       <Box
                         as="label"
                         p={4}
-                        borderWidth="2px"
-                        borderColor={borderColor}
+                        borderWidth={form.isUnitizedContent === false ? "2px" : "1px"}
+                        borderColor={
+                          form.isUnitizedContent === false ? "blue.400" : borderColor
+                        }
                         borderRadius="lg"
                         cursor="pointer"
                         _hover={{ borderColor: "blue.400" }}
@@ -656,6 +823,18 @@ const CalculadoraEmbalagem: NextPage = () => {
                         minH="44px"
                         display="flex"
                         alignItems="center"
+                        opacity={
+                          form.isUnitizedContent !== undefined &&
+                          form.isUnitizedContent !== false
+                            ? 0.6
+                            : 1
+                        }
+                        filter={
+                          form.isUnitizedContent !== undefined &&
+                          form.isUnitizedContent !== false
+                            ? "grayscale(100%)"
+                            : "none"
+                        }
                       >
                         <Radio value="2" colorScheme="blue" size="lg" mr={3} />
                         <Text>
@@ -683,8 +862,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <VStack align="stretch" spacing={{ base: 6, md: 8 }}>
-                  <Text fontSize="lg" fontWeight="semibold" color={headingColor}>
+                <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
+                  <Text fontSize="lg" fontWeight="semibold" color={headingColor} textAlign="center">
                     O peso do produto vai ficar bem distribuído sobre o palete, ou concentrado
                     em alguns pontos?
                   </Text>
@@ -702,6 +881,18 @@ const CalculadoraEmbalagem: NextPage = () => {
                       onClick={() => handleTela4Choice( true )}
                       justifyContent="flex-start"
                       textAlign="left"
+                      opacity={
+                        form.isDistributedWeight !== undefined &&
+                        form.isDistributedWeight !== true
+                          ? 0.6
+                          : 1
+                      }
+                      filter={
+                        form.isDistributedWeight !== undefined &&
+                        form.isDistributedWeight !== true
+                          ? "grayscale(100%)"
+                          : "none"
+                      }
                     >
                       Sim. O peso vai ficar distribuído em toda a área da base.
                     </Button>
@@ -713,6 +904,18 @@ const CalculadoraEmbalagem: NextPage = () => {
                       onClick={() => handleTela4Choice( false )}
                       justifyContent="flex-start"
                       textAlign="left"
+                      opacity={
+                        form.isDistributedWeight !== undefined &&
+                        form.isDistributedWeight !== false
+                          ? 0.6
+                          : 1
+                      }
+                      filter={
+                        form.isDistributedWeight !== undefined &&
+                        form.isDistributedWeight !== false
+                          ? "grayscale(100%)"
+                          : "none"
+                      }
                     >
                       Não. O peso vai se concentrar em alguns pontos sobre a base.
                     </Button>
@@ -735,11 +938,11 @@ const CalculadoraEmbalagem: NextPage = () => {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <VStack align="stretch" spacing={{ base: 6, md: 8 }}>
-                  <Text fontSize="lg" fontWeight="semibold" color={headingColor}>
+                <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
+                  <Text fontSize="lg" fontWeight="semibold" color={headingColor} textAlign="center">
                     Recomendações
                   </Text>
-                  <Box as="ul" pl={6} spacing={2}>
+                  <Box as="ul" pl={6}>
                     <Text as="li" mb={2}>
                       Recomendamos prender o produto na base
                     </Text>
@@ -776,8 +979,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <VStack align="stretch" spacing={{ base: 6, md: 8 }}>
-                  <Text fontSize="lg" color={headingColor}>
+                <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
+                  <Text fontSize="lg" color={headingColor} textAlign="center">
                     A Ribermax vende somente para empresas. Para calcular sua embalagem,
                     palete ou embalagem, informe seu CNPJ e seus dados para contato.
                   </Text>
@@ -857,8 +1060,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
-                <VStack align="stretch" spacing={4}>
-                  <Heading size="md" color={headingColor}>
+                <VStack align="center" spacing={4} w="100%">
+                  <Heading size="md" color={headingColor} textAlign="center">
                     Resultado
                   </Heading>
                   <Text fontSize="sm" color={textColor}>
