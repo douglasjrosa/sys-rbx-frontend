@@ -6,11 +6,10 @@ import {
   FormControl,
   FormLabel,
   Heading,
+  Icon,
   IconButton,
   Image,
   Input,
-  InputGroup,
-  InputRightAddon,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -18,7 +17,6 @@ import {
   NumberDecrementStepper,
   Radio,
   RadioGroup,
-  Select,
   SimpleGrid,
   Stack,
   Text,
@@ -28,10 +26,11 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { ArrowBackIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { FaWeightHanging } from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 import { NextPage } from "next";
 import Head from "next/head";
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useCallback, useRef, useState } from "react";
 import {
   ASK_CONTENT_PROD_TYPES,
   FRACTIONED_PROD_TYPES,
@@ -62,6 +61,15 @@ const PACK_TYPE_IMAGES: Record<PackType, string> = {
   any: "/img/any.jpg",
 };
 
+const WEIGHT_RANGE_OPTIONS: { value: number; label: string }[] = [
+  { value: 30, label: "Menos de 30 Kg" },
+  { value: 100, label: "Entre 30 e 100 Kg" },
+  { value: 500, label: "Entre 100 e 500 Kg" },
+  { value: 1000, label: "Entre 500 e 1.000 Kg" },
+  { value: 2000, label: "Entre 1.000 e 2.000 Kg" },
+  { value: 2500, label: "Acima de 2.000 Kg" },
+];
+
 const PRODUCT_TYPE_IMAGES: Record<number, string | null> = {
   1: "/img/prodType-1.jpeg",
   2: "/img/prodType-2.webp",
@@ -87,7 +95,7 @@ const STEP_RESULT = 7;
 const initialForm: Partial<PackagingFormData> = {
   prodType: 0,
   weight: 0,
-  unit: "cm",
+  unit: "mm",
   length: 0,
   width: 0,
   height: 0,
@@ -116,6 +124,16 @@ const CalculadoraEmbalagem: NextPage = () => {
   const [ form, setForm ] = useState<Partial<PackagingFormData>>( initialForm );
   const [ elegibleTemplates, setElegibleTemplates ] = useState<string[]>( [] );
 
+  const sectionProdTypeRef = useRef<HTMLDivElement>( null );
+  const sectionIsExportRef = useRef<HTMLDivElement>( null );
+  const sectionWeightRef = useRef<HTMLDivElement>( null );
+
+  const scrollToSection = useCallback( ( ref: React.RefObject<HTMLDivElement | null> ) => {
+    setTimeout( () => {
+      ref.current?.scrollIntoView( { behavior: "smooth", block: "start" } );
+    }, 280 );
+  }, [] );
+
   const isPallet = form.packType === "pallet";
   const showProdType = !!form.packType;
 
@@ -125,6 +143,7 @@ const CalculadoraEmbalagem: NextPage = () => {
   const headingColor = useColorModeValue( "gray.800", "white" );
   const textColor = useColorModeValue( "gray.600", "gray.300" );
   const preBg = useColorModeValue( "gray.100", "gray.700" );
+  const unitToggleHoverBg = useColorModeValue( "gray.300", "gray.600" );
 
   const updateForm = useCallback( ( updates: Partial<PackagingFormData> ) => {
     setForm( ( prev ) => ( { ...prev, ...updates } ) );
@@ -137,25 +156,27 @@ const CalculadoraEmbalagem: NextPage = () => {
   const handlePackTypeChange = useCallback( ( v: string ) => {
     const packType = v as PackType;
     updateForm( { packType } );
-    if ( tela1SubStep === TELA1_SUB_PACK ) {
-      if ( packType === "pallet" ) {
-        updateForm( { prodType: DEFAULT_PRODTYPE_FOR_PALLET } );
-        setTela1SubStep( TELA1_SUB_EXPORT );
-      } else {
-        setTela1SubStep( TELA1_SUB_PROD );
-      }
+    if ( packType === "pallet" ) {
+      updateForm( { prodType: DEFAULT_PRODTYPE_FOR_PALLET } );
+      setTela1SubStep( ( s ) => Math.max( s, TELA1_SUB_EXPORT ) );
+      scrollToSection( sectionIsExportRef );
+    } else {
+      setTela1SubStep( ( s ) => Math.max( s, TELA1_SUB_PROD ) );
+      scrollToSection( sectionProdTypeRef );
     }
-  }, [ tela1SubStep, updateForm ] );
+  }, [ updateForm, scrollToSection ] );
 
   const handleProdTypeChange = useCallback( ( value: number ) => {
     updateForm( { prodType: value } );
-    if ( tela1SubStep === TELA1_SUB_PROD ) setTela1SubStep( TELA1_SUB_EXPORT );
-  }, [ tela1SubStep, updateForm ] );
+    setTela1SubStep( ( s ) => Math.max( s, TELA1_SUB_EXPORT ) );
+    scrollToSection( sectionIsExportRef );
+  }, [ updateForm, scrollToSection ] );
 
   const handleIsExportChange = useCallback( ( value: boolean ) => {
     updateForm( { isExport: value } );
-    if ( tela1SubStep === TELA1_SUB_EXPORT ) setTela1SubStep( TELA1_SUB_WEIGHT );
-  }, [ tela1SubStep, updateForm ] );
+    setTela1SubStep( ( s ) => Math.max( s, TELA1_SUB_WEIGHT ) );
+    scrollToSection( sectionWeightRef );
+  }, [ updateForm, scrollToSection ] );
 
   const handleTela1Continue = ( e: FormEvent ) => {
     e.preventDefault();
@@ -195,7 +216,7 @@ const CalculadoraEmbalagem: NextPage = () => {
 
   const handleTela2Continue = ( e: FormEvent ) => {
     e.preventDefault();
-    const unit = ( form.unit || "cm" ) as "mm" | "cm";
+    const unit = ( form.unit || "mm" ) as "mm" | "cm";
     const length = Number( form.length ) || 0;
     const width = Number( form.width ) || 0;
     const height = form.packType === "pallet" ? 0 : ( Number( form.height ) || 0 );
@@ -227,7 +248,7 @@ const CalculadoraEmbalagem: NextPage = () => {
       const weightVal = Number( form.weight ) || 0;
       const lengthVal = Number( form.length ) || 0;
       const widthVal = Number( form.width ) || 0;
-      const unitVal = ( form.unit || "cm" ) as "mm" | "cm";
+      const unitVal = ( form.unit || "mm" ) as "mm" | "cm";
       advanceFromTela4Check( weightVal, lengthVal, widthVal, unitVal );
     } else {
       goToStep( STEP_TELA6 );
@@ -427,7 +448,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                               src={PACK_TYPE_IMAGES[ opt.value ]}
                               alt={opt.label}
                               borderRadius="md"
-                              objectFit="cover"
+                              objectFit="contain"
                               w="100%"
                               h="140px"
                               mb={2}
@@ -445,7 +466,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                   </FormControl>
 
                   <Collapse in={showProdType && !isPallet && tela1SubStep >= TELA1_SUB_PROD}>
-                    <FormControl as="fieldset" isRequired w="full">
+                    <FormControl as="fieldset" isRequired w="full" ref={sectionProdTypeRef}>
                       <FormLabel
                         as="legend"
                         fontSize="lg"
@@ -526,7 +547,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                   </Collapse>
 
                   <Collapse in={tela1SubStep >= TELA1_SUB_EXPORT}>
-                    <FormControl as="fieldset" isRequired w="full">
+                    <FormControl as="fieldset" isRequired w="full" ref={sectionIsExportRef}>
                       <FormLabel
                         as="legend"
                         fontSize="lg"
@@ -592,7 +613,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                   </Collapse>
 
                   <Collapse in={tela1SubStep >= TELA1_SUB_WEIGHT}>
-                    <FormControl as="fieldset" isRequired w="full">
+                    <FormControl as="fieldset" isRequired w="full" ref={sectionWeightRef}>
                       <FormLabel
                         as="legend"
                         fontSize="lg"
@@ -602,32 +623,53 @@ const CalculadoraEmbalagem: NextPage = () => {
                       >
                         Qual é o peso aproximado do que você precisa embalar?
                       </FormLabel>
-                      <InputGroup
-                        size="lg"
-                        maxW={{ base: "100%", sm: "260px" }}
-                        minH="44px"
-                        mx="auto"
+                      <SimpleGrid
+                        columns={{ base: 1, sm: 2, md: 3 }}
+                        spacing={{ base: 3, md: 4 }}
+                        w="100%"
                       >
-                        <NumberInput
-                          value={form.weight || ""}
-                          onChange={( _, v ) => updateForm( { weight: v } )}
-                          min={0}
-                          w="full"
-                        >
-                          <NumberInputField
-                            placeholder="0"
-                            borderColor={borderColor}
-                          />
-                          <NumberInputStepper>
-                            <NumberIncrementStepper />
-                            <NumberDecrementStepper />
-                          </NumberInputStepper>
-                        </NumberInput>
-                        <InputRightAddon>kg</InputRightAddon>
-                      </InputGroup>
-                      <Text mt={2} fontSize="sm" color={textColor}>
-                        Informe o peso em quilogramas
-                      </Text>
+                        {WEIGHT_RANGE_OPTIONS.map( ( opt ) => {
+                          const isActive = form.weight === opt.value;
+                          const hasSelection = form.weight && form.weight > 0;
+                          const isDimmed = hasSelection && !isActive;
+                          return (
+                            <Box
+                              key={opt.value}
+                              as="button"
+                              type="button"
+                              onClick={() => updateForm( { weight: opt.value } )}
+                              borderWidth={isActive ? "2px" : "1px"}
+                              borderColor={
+                                isActive ? "blue.400" : borderColor
+                              }
+                              borderRadius="lg"
+                              p={4}
+                              boxShadow="sm"
+                              w="100%"
+                              bg={bgCard}
+                              _hover={{ borderColor: "blue.400" }}
+                              textAlign="left"
+                              opacity={isDimmed ? 0.6 : 1}
+                              filter={isDimmed ? "grayscale(100%)" : "none"}
+                              display="flex"
+                              alignItems="center"
+                              gap={3}
+                            >
+                              <Icon
+                                as={FaWeightHanging}
+                                boxSize={6}
+                                color={isActive ? "blue.500" : "gray.500"}
+                              />
+                              <Text
+                                fontSize="sm"
+                                fontWeight={isActive ? "extrabold" : "semibold"}
+                              >
+                                {opt.label}
+                              </Text>
+                            </Box>
+                          );
+                        } )}
+                      </SimpleGrid>
                     </FormControl>
                   </Collapse>
 
@@ -675,25 +717,59 @@ const CalculadoraEmbalagem: NextPage = () => {
                     w="100%"
                   >
                     <FormControl isRequired>
-                      <FormLabel textAlign="center">Unidade de medida</FormLabel>
-                      <Select
-                        value={form.unit || "cm"}
-                        onChange={( e ) =>
-                          updateForm( {
-                            unit: e.target.value as "mm" | "cm",
-                          } )
-                        }
-                        size="lg"
-                        borderColor={borderColor}
+                      <FormLabel textAlign="center" mr={0}>Unidade de medida</FormLabel>
+                      <Flex
                         minH="44px"
+                        w="full"
+                        maxW="120px"
+                        mx="auto"
+                        borderRadius="lg"
+                        overflow="hidden"
+                        borderWidth="1px"
+                        borderColor={borderColor}
+                        bg={preBg}
                       >
-                        <option value="mm">mm</option>
-                        <option value="cm">cm</option>
-                      </Select>
+                        <Box
+                          as="button"
+                          type="button"
+                          flex={1}
+                          py={2}
+                          textAlign="center"
+                          fontSize="md"
+                          fontWeight="semibold"
+                          bg={form.unit === "mm" ? "blue.500" : "transparent"}
+                          color={form.unit === "mm" ? "white" : textColor}
+                          onClick={() => updateForm( { unit: "mm" } )}
+                          _hover={{
+                            bg: form.unit === "mm" ? "blue.500" : unitToggleHoverBg,
+                            color: "white",
+                          }}
+                        >
+                          mm
+                        </Box>
+                        <Box
+                          as="button"
+                          type="button"
+                          flex={1}
+                          py={2}
+                          textAlign="center"
+                          fontSize="md"
+                          fontWeight="semibold"
+                          bg={form.unit === "cm" ? "blue.500" : "transparent"}
+                          color={form.unit === "cm" ? "white" : textColor}
+                          onClick={() => updateForm( { unit: "cm" } )}
+                          _hover={{
+                            bg: form.unit === "cm" ? "blue.500" : unitToggleHoverBg,
+                            color: "white",
+                          }}
+                        >
+                          cm
+                        </Box>
+                      </Flex>
                     </FormControl>
 
                     <FormControl isRequired>
-                      <FormLabel textAlign="center">Comprimento</FormLabel>
+                      <FormLabel textAlign="center" mr={0}>Comprimento</FormLabel>
                       <NumberInput
                         value={form.length || ""}
                         onChange={( _, v ) => updateForm( { length: v } )}
@@ -709,7 +785,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                     </FormControl>
 
                     <FormControl isRequired>
-                      <FormLabel textAlign="center">Largura</FormLabel>
+                      <FormLabel textAlign="center" mr={0}>Largura</FormLabel>
                       <NumberInput
                         value={form.width || ""}
                         onChange={( _, v ) => updateForm( { width: v } )}
@@ -726,7 +802,7 @@ const CalculadoraEmbalagem: NextPage = () => {
 
                     {!isPallet && (
                       <FormControl isRequired>
-                        <FormLabel textAlign="center">Altura</FormLabel>
+                        <FormLabel textAlign="center" mr={0}>Altura</FormLabel>
                         <NumberInput
                           value={form.height ?? ""}
                           onChange={( _, v ) => updateForm( { height: v } )}
