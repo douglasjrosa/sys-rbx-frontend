@@ -1,6 +1,7 @@
 import { cnpj } from "cpf-cnpj-validator";
 
 export type PackType = "box" | "crate" | "pallet" | "any";
+export type MeasuresOf = "internal" | "product";
 export type Unit = "mm" | "cm";
 export type IsExportable = "yes" | "no" | "optional";
 
@@ -40,10 +41,12 @@ export interface PackagingFormData {
   prodType: number;
   isExport: boolean;
   weight: number;
+  measuresOf: MeasuresOf;
   unit: Unit;
   length: number;
   width: number;
   height?: number;
+  clearance?: number;
   isUnitizedContent?: boolean;
   isDistributedWeight?: boolean | null;
   customerCnpj: string;
