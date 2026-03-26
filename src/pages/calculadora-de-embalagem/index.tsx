@@ -15,11 +15,8 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Progress,
   SimpleGrid,
-  Stack,
   Text,
-  Tooltip,
   useColorMode,
   useColorModeValue,
   useToast,
@@ -49,6 +46,7 @@ import {
   BoxTemplate,
 } from "@/utils/packagingCalculator";
 import boxTemplates from "@/data/box-templates.json";
+import { PackagingProgressTrack } from "@/components/calculadora-embalagem/PackagingProgressTrack";
 
 export interface ElegibleTemplateResult {
   name: string;
@@ -166,6 +164,35 @@ const DEFAULT_PRODTYPE_FOR_PALLET = 11;
 
 const CUSTOMER_STORAGE_KEY = "calculadora-embalagem-customer";
 
+type CalculadoraCustomerStored = {
+  customerName?: string;
+  customerEmail?: string;
+  customerCnpj?: string;
+  customerPhone?: string;
+};
+
+function readCalculadoraCustomerStored(): CalculadoraCustomerStored {
+  try {
+    const raw = localStorage.getItem( CUSTOMER_STORAGE_KEY );
+    if ( !raw ) return {};
+    const parsed = JSON.parse( raw ) as CalculadoraCustomerStored;
+    return typeof parsed === "object" && parsed != null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function mergeCalculadoraCustomerStorage(
+  patch: Partial<CalculadoraCustomerStored>,
+) {
+  try {
+    const next = { ...readCalculadoraCustomerStored(), ...patch };
+    localStorage.setItem( CUSTOMER_STORAGE_KEY, JSON.stringify( next ) );
+  } catch {
+    // Ignore quota / private mode
+  }
+}
+
 const CalculadoraEmbalagem: NextPage = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const toast = useToast();
@@ -251,23 +278,21 @@ const CalculadoraEmbalagem: NextPage = () => {
   const unitToggleHoverBg = useColorModeValue( "gray.300", "gray.600" );
   const clearanceBadgeBgActive = useColorModeValue( "blue.50", "blue.900" );
   const placeholderColor = useColorModeValue( "gray.500", "gray.400" );
+  const progressTrackInactiveBg = useColorModeValue( "gray.200", "gray.600" );
 
   useEffect( () => {
-    try {
-      const stored = localStorage.getItem( CUSTOMER_STORAGE_KEY );
-      if ( stored ) {
-        const parsed = JSON.parse( stored ) as { customerName?: string; customerEmail?: string };
-        if ( parsed.customerName && parsed.customerEmail ) {
-          setForm( ( prev ) => ( {
-            ...prev,
+    const parsed = readCalculadoraCustomerStored();
+    setForm( ( prev ) => ( {
+      ...prev,
+      ...( parsed.customerName && parsed.customerEmail
+        ? {
             customerName: parsed.customerName,
             customerEmail: parsed.customerEmail,
-          } ) );
-        }
-      }
-    } catch {
-      // Ignore parse errors
-    }
+          }
+        : {} ),
+      ...( parsed.customerCnpj ? { customerCnpj: parsed.customerCnpj } : {} ),
+      ...( parsed.customerPhone ? { customerPhone: parsed.customerPhone } : {} ),
+    } ) );
   }, [] );
 
   useEffect( () => {
@@ -406,14 +431,7 @@ const CalculadoraEmbalagem: NextPage = () => {
       } );
       return;
     }
-    try {
-      localStorage.setItem(
-        CUSTOMER_STORAGE_KEY,
-        JSON.stringify( { customerName: name, customerEmail: email } )
-      );
-    } catch {
-      // Ignore
-    }
+    mergeCalculadoraCustomerStorage( { customerName: name, customerEmail: email } );
     updateForm( { customerName: name, customerEmail: email } );
     const prodType = form.prodType ?? 0;
     if ( FRACTIONED_PROD_TYPES.includes( prodType ) ) {
@@ -541,6 +559,13 @@ const CalculadoraEmbalagem: NextPage = () => {
       } );
       return;
     }
+    const phoneTrim = ( form.customerPhone || "" ).trim();
+    mergeCalculadoraCustomerStorage( {
+      customerName: form.customerName || "",
+      customerEmail: email,
+      customerCnpj: cnpj,
+      ...( phoneTrim ? { customerPhone: phoneTrim } : {} ),
+    } );
     const fullForm: PackagingFormData = {
       packType: form.packType!,
       prodType: form.prodType!,
@@ -557,7 +582,7 @@ const CalculadoraEmbalagem: NextPage = () => {
       customerCnpj: cnpj,
       customerName: form.customerName || "",
       customerEmail: email,
-      customerPhone: "",
+      customerPhone: phoneTrim,
     };
     const templateNames = getElegibleTemplates(
       fullForm,
@@ -2339,92 +2364,13 @@ const CalculadoraEmbalagem: NextPage = () => {
           </AnimatePresence>
 
           <Box w="100%" mt={8} pt={6} borderTopWidth="1px" borderColor={borderColor}>
-            <Progress
-              value={( currentProgressStep / 5 ) * 100}
-              size="sm"
-              colorScheme="blue"
-              borderRadius="full"
-              mb={4}
-              max={100}
+            <PackagingProgressTrack
+              steps={PROGRESS_STEPS}
+              currentProgressStep={currentProgressStep}
+              textColor={textColor}
+              progressTrackInactiveBg={progressTrackInactiveBg}
+              surfaceBg={bgPage}
             />
-            <SimpleGrid
-              columns={{ base: 2, sm: 4, md: 7 }}
-              spacing={2}
-              w="100%"
-            >
-              {PROGRESS_STEPS.map( ( prog ) => {
-                const isCompleted = prog.id < currentProgressStep;
-                const isCurrent = prog.id === currentProgressStep;
-                const isComingSoon = prog.comingSoon === true;
-                const stepColor = isComingSoon
-                  ? "gray.400"
-                  : isCompleted
-                    ? "green.500"
-                    : isCurrent
-                      ? "blue.500"
-                      : "gray.300";
-                return (
-                  <Tooltip
-                    key={prog.id}
-                    label={
-                      isComingSoon
-                        ? "Em breve"
-                        : `${prog.id}. ${prog.label}`
-                    }
-                    placement="top"
-                    hasArrow
-                  >
-                    <Flex
-                      direction="column"
-                      align="center"
-                      gap={1}
-                      opacity={isComingSoon ? 0.6 : 1}
-                    >
-                      <Box
-                        w={8}
-                        h={8}
-                        borderRadius="full"
-                        borderWidth="2px"
-                        borderColor={stepColor}
-                        bg={isCompleted ? stepColor : "transparent"}
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        flexShrink={0}
-                      >
-                        {isCompleted && !isComingSoon ? (
-                          <Text color="white" fontSize="xs" fontWeight="bold">
-                            ✓
-                          </Text>
-                        ) : (
-                          <Text
-                            fontSize="xs"
-                            fontWeight="bold"
-                            color={
-                              isCurrent && !isComingSoon
-                                ? "blue.500"
-                                : isComingSoon
-                                  ? "gray.400"
-                                  : stepColor
-                            }
-                          >
-                            {prog.id}
-                          </Text>
-                        )}
-                      </Box>
-                      <Text
-                        fontSize="xs"
-                        color={isComingSoon ? "gray.400" : textColor}
-                        textAlign="center"
-                        noOfLines={2}
-                      >
-                        {prog.label}
-                      </Text>
-                    </Flex>
-                  </Tooltip>
-                );
-              } )}
-            </SimpleGrid>
           </Box>
         </Flex>
       </Box>
