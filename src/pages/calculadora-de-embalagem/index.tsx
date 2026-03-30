@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   Collapse,
@@ -6,29 +7,52 @@ import {
   FormControl,
   FormLabel,
   Heading,
+  HStack,
   Icon,
   IconButton,
   Image,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalOverlay,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+  ListItem,
   SimpleGrid,
+  Spinner,
   Text,
+  UnorderedList,
   useColorMode,
   useColorModeValue,
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { ArrowBackIcon, EditIcon, MoonIcon, SunIcon } from "@chakra-ui/icons";
+import {
+  ArrowBackIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  EditIcon,
+  MoonIcon,
+  SunIcon,
+} from "@chakra-ui/icons";
 import { FaWeightHanging } from "react-icons/fa";
 import { BsArrowsAngleExpand } from "react-icons/bs";
 import { AnimatePresence, motion } from "framer-motion";
 import { NextPage } from "next";
 import Head from "next/head";
-import { FormEvent, Fragment, useCallback, useEffect, useRef, useState } from "react";
+import {
+  FormEvent,
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ASK_CONTENT_PROD_TYPES,
   FRACTIONED_PROD_TYPES,
@@ -47,6 +71,14 @@ import {
 } from "@/utils/packagingCalculator";
 import boxTemplates from "@/data/box-templates.json";
 import { PackagingProgressTrack } from "@/components/calculadora-embalagem/PackagingProgressTrack";
+import { getTemplateImageSrc } from "@/utils/templateImages";
+
+const DESCRIPTION_LINES_BY_TEMPLATE_NAME = new Map<string, string[]>(
+  (boxTemplates as unknown as BoxTemplate[]).map((tpl) => [
+    tpl.name,
+    Array.isArray(tpl.description) ? tpl.description : [],
+  ])
+);
 
 export interface ElegibleTemplateResult {
   name: string;
@@ -54,6 +86,55 @@ export interface ElegibleTemplateResult {
     info?: { vFinal?: number; titulo?: string; preco?: number };
     error?: string;
   };
+}
+
+/** Display copy for the first three result cards after price sort (PT-BR). */
+const RESULT_CARD_RANK_CAPTIONS = [
+  "Modelo suficiente para o seu caso. Melhor custo benefício.",
+  "Modelo ideal caso você queira um reforço a mais para diminuir riscos.",
+  "Modelo indicado caso o seu produto seja de altíssimo valor e você queira o menor risco possível.",
+] as const;
+
+function numericPriceForSort(item: ElegibleTemplateResult): number {
+  const raw = item.priceResult?.info?.vFinal;
+  const n = raw == null ? NaN : Number(raw);
+  if (Number.isFinite(n)) return n;
+  return Number.POSITIVE_INFINITY;
+}
+
+function sortTemplateResultsByPriceAsc(
+  items: ElegibleTemplateResult[],
+): ElegibleTemplateResult[] {
+  return [...items].sort((a, b) => {
+    const na = numericPriceForSort(a);
+    const nb = numericPriceForSort(b);
+    if (na !== nb) return na - nb;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function formatTemplateModelLabel(templateKey: string): string {
+  return templateKey
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** L x W [x H unit (alt.)] matching user unit (mm/cm); same rules as summary. */
+function formatSimulationDimensionsLine(
+  formData: Partial<PackagingFormData>,
+): string | null {
+  if (!formData.length || !formData.width) return null;
+  const u = formData.unit ?? "mm";
+  const hasHeight =
+    formData.packType !== "pallet" &&
+    formData.height != null &&
+    formData.height > 0;
+  if (hasHeight) {
+    return (
+      `${formData.length} x ${formData.width} x ${formData.height} ${u} (alt.)`
+    );
+  }
+  return `${formData.length} x ${formData.width} ${u}`;
 }
 
 const PACK_TYPE_OPTIONS: { value: PackType; label: string }[] = [
@@ -85,11 +166,11 @@ const CLEARANCE_OPTIONS_MM: {
   suffix: string;
   iconSize: number;
 }[] = [
-  { value: 10, label: "Mínima", suffix: "(10mm)", iconSize: 3 },
-  { value: 30, label: "Média", suffix: "(30mm)", iconSize: 5 },
-  { value: 50, label: "Grande", suffix: "(50mm)", iconSize: 7 },
-  { value: 100, label: "Extra grande", suffix: "(100mm)", iconSize: 9 },
-];
+    { value: 10, label: "Mínima", suffix: "(10mm)", iconSize: 3 },
+    { value: 30, label: "Média", suffix: "(30mm)", iconSize: 5 },
+    { value: 50, label: "Grande", suffix: "(50mm)", iconSize: 7 },
+    { value: 100, label: "Extra grande", suffix: "(100mm)", iconSize: 9 },
+  ];
 
 const CLEARANCE_OPTIONS_CM: {
   value: number;
@@ -97,11 +178,11 @@ const CLEARANCE_OPTIONS_CM: {
   suffix: string;
   iconSize: number;
 }[] = [
-  { value: 1, label: "Folga Mínima", suffix: "(1cm)", iconSize: 3 },
-  { value: 3, label: "Folga Média", suffix: "(3cm)", iconSize: 5 },
-  { value: 5, label: "Folga Grande", suffix: "(5cm)", iconSize: 7 },
-  { value: 10, label: "Folga Extra Grande", suffix: "(10cm)", iconSize: 9 },
-];
+    { value: 1, label: "Folga Mínima", suffix: "(1cm)", iconSize: 3 },
+    { value: 3, label: "Folga Média", suffix: "(3cm)", iconSize: 5 },
+    { value: 5, label: "Folga Grande", suffix: "(5cm)", iconSize: 7 },
+    { value: 10, label: "Folga Extra Grande", suffix: "(10cm)", iconSize: 9 },
+  ];
 
 const PRODUCT_TYPE_IMAGES: Record<number, string | null> = {
   1: "/img/prodType-1.jpeg",
@@ -127,13 +208,13 @@ const STEP_TELA7 = 7;
 const STEP_RESULT = 8;
 
 const PROGRESS_STEPS = [
-  { id: 1, label: "Sobre a embalagem", telas: [ 1 ] },
-  { id: 2, label: "E-mail", telas: [ 2 ] },
-  { id: 3, label: "Medidas e detalhes", telas: [ 3, 4, 5, 6 ] },
-  { id: 4, label: "CNPJ", telas: [ 7 ] },
-  { id: 5, label: "Preço", telas: [ 8 ] },
-  { id: 6, label: "Política de descontos", telas: [ 9 ], comingSoon: true },
-  { id: 7, label: "Comprar", telas: [ 10 ], comingSoon: true },
+  { id: 1, label: "Sobre a embalagem", telas: [1] },
+  { id: 2, label: "E-mail", telas: [2] },
+  { id: 3, label: "Medidas e detalhes", telas: [3, 4, 5, 6] },
+  { id: 4, label: "CNPJ", telas: [7] },
+  { id: 5, label: "Preço", telas: [8] },
+  { id: 6, label: "Política de descontos", telas: [9], comingSoon: true },
+  { id: 7, label: "Comprar", telas: [10], comingSoon: true },
 ] as const;
 
 const initialForm: Partial<PackagingFormData> = {
@@ -153,7 +234,7 @@ const initialForm: Partial<PackagingFormData> = {
   customerPhone: "",
 };
 
-const MotionBox = motion( Box );
+const MotionBox = motion(Box);
 
 const TELA1_SUB_PACK = 0;
 const TELA1_SUB_PROD = 1;
@@ -163,6 +244,9 @@ const TELA1_SUB_WEIGHT = 3;
 const DEFAULT_PRODTYPE_FOR_PALLET = 11;
 
 const CUSTOMER_STORAGE_KEY = "calculadora-embalagem-customer";
+const RESULT_CARD_IMAGE_HEIGHT_MOBILE_PX = 200;
+const RESULT_CARD_IMAGE_SIDE_TABLET_PX = 240;
+const RESULT_CARD_ILLUSTRATION_DISCLAIMER = "* Imagem meramente ilustrativa do modelo";
 
 type CalculadoraCustomerStored = {
   customerName?: string;
@@ -173,9 +257,9 @@ type CalculadoraCustomerStored = {
 
 function readCalculadoraCustomerStored(): CalculadoraCustomerStored {
   try {
-    const raw = localStorage.getItem( CUSTOMER_STORAGE_KEY );
-    if ( !raw ) return {};
-    const parsed = JSON.parse( raw ) as CalculadoraCustomerStored;
+    const raw = localStorage.getItem(CUSTOMER_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as CalculadoraCustomerStored;
     return typeof parsed === "object" && parsed != null ? parsed : {};
   } catch {
     return {};
@@ -187,7 +271,7 @@ function mergeCalculadoraCustomerStorage(
 ) {
   try {
     const next = { ...readCalculadoraCustomerStored(), ...patch };
-    localStorage.setItem( CUSTOMER_STORAGE_KEY, JSON.stringify( next ) );
+    localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(next));
   } catch {
     // Ignore quota / private mode
   }
@@ -196,49 +280,54 @@ function mergeCalculadoraCustomerStorage(
 const CalculadoraEmbalagem: NextPage = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const toast = useToast();
-  const [ step, setStep ] = useState( STEP_TELA1 );
-  const [ tela1SubStep, setTela1SubStep ] = useState( TELA1_SUB_PACK );
-  const [ form, setForm ] = useState<Partial<PackagingFormData>>( initialForm );
-  const [ elegibleTemplates, setElegibleTemplates ] = useState<
+  const [step, setStep] = useState(STEP_TELA1);
+  const [tela1SubStep, setTela1SubStep] = useState(TELA1_SUB_PACK);
+  const [form, setForm] = useState<Partial<PackagingFormData>>(initialForm);
+  const [elegibleTemplates, setElegibleTemplates] = useState<
     ElegibleTemplateResult[]
-  >( [] );
-  const [ isCalculatingPrices, setIsCalculatingPrices ] = useState( false );
-  const [ recommendationsAcknowledged, setRecommendationsAcknowledged ] = useState( false );
-  const sectionPackTypeRef = useRef<HTMLDivElement>( null );
-  const sectionProdTypeRef = useRef<HTMLDivElement>( null );
-  const sectionIsExportRef = useRef<HTMLDivElement>( null );
-  const sectionWeightRef = useRef<HTMLDivElement>( null );
-  const sectionMeasuresRef = useRef<HTMLDivElement>( null );
-  const sectionClearanceRef = useRef<HTMLDivElement>( null );
-  const sectionMeasuresOfRef = useRef<HTMLDivElement>( null );
-  const sectionTela2Ref = useRef<HTMLDivElement>( null );
-  const sectionTela3Ref = useRef<HTMLDivElement>( null );
-  const sectionTela2ContinuarRef = useRef<HTMLDivElement>( null );
-  const sectionTela1ContinuarRef = useRef<HTMLDivElement>( null );
-  const sectionTela4Ref = useRef<HTMLDivElement>( null );
-  const sectionTela5Ref = useRef<HTMLDivElement>( null );
-  const sectionTela6Ref = useRef<HTMLDivElement>( null );
-  const sectionTela7Ref = useRef<HTMLDivElement>( null );
+  >([]);
+  const [isCalculatingPrices, setIsCalculatingPrices] = useState(false);
+  const [pricingModalNames, setPricingModalNames] = useState<string[]>([]);
+  const [pricingModalActiveIndex, setPricingModalActiveIndex] = useState(0);
+  const [recommendationsAcknowledged, setRecommendationsAcknowledged] = useState(false);
+  const [simulationSummaryOpen, setSimulationSummaryOpen] = useState(true);
+  const sectionPackTypeRef = useRef<HTMLDivElement>(null);
+  const sectionProdTypeRef = useRef<HTMLDivElement>(null);
+  const sectionIsExportRef = useRef<HTMLDivElement>(null);
+  const sectionWeightRef = useRef<HTMLDivElement>(null);
+  const sectionMeasuresRef = useRef<HTMLDivElement>(null);
+  const sectionClearanceRef = useRef<HTMLDivElement>(null);
+  const sectionMeasuresOfRef = useRef<HTMLDivElement>(null);
+  const sectionTela2Ref = useRef<HTMLDivElement>(null);
+  const sectionTela3Ref = useRef<HTMLDivElement>(null);
+  const sectionTela2ContinuarRef = useRef<HTMLDivElement>(null);
+  const sectionTela1ContinuarRef = useRef<HTMLDivElement>(null);
+  const sectionTela4Ref = useRef<HTMLDivElement>(null);
+  const sectionTela5Ref = useRef<HTMLDivElement>(null);
+  const sectionTela5ContinuarRef = useRef<HTMLDivElement>(null);
+  const sectionTela6Ref = useRef<HTMLDivElement>(null);
+  const sectionTela7Ref = useRef<HTMLDivElement>(null);
+  const isFirstStepEffect = useRef(true);
 
-  const scrollToSection = useCallback( ( ref: React.RefObject<HTMLDivElement | null> ) => {
-    setTimeout( () => {
-      ref.current?.scrollIntoView( { behavior: "smooth", block: "start" } );
-    }, 280 );
-  }, [] );
+  const scrollToSection = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
+    setTimeout(() => {
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 280);
+  }, []);
 
   const handleEditSummaryItem = useCallback(
-    ( target: {
+    (target: {
       step: number;
       tela1SubStep?: number;
       ref: React.RefObject<HTMLDivElement | null>;
-    } ) => {
-      setStep( target.step );
-      if ( target.tela1SubStep != null ) {
-        setTela1SubStep( target.tela1SubStep );
+    }) => {
+      setStep(target.step);
+      if (target.tela1SubStep != null) {
+        setTela1SubStep(target.tela1SubStep);
       }
-      setTimeout( () => scrollToSection( target.ref ), 400 );
+      setTimeout(() => scrollToSection(target.ref), 400);
     },
-    [ scrollToSection ]
+    [scrollToSection]
   );
 
   const isPallet = form.packType === "pallet";
@@ -253,330 +342,407 @@ const CalculadoraEmbalagem: NextPage = () => {
   const showTela2Continuar =
     !!form.length &&
     !!form.width &&
-    ( isPallet || !!form.height ) &&
-    ( form.measuresOf !== "product" || !!form.clearance );
+    (isPallet || !!form.height) &&
+    (form.measuresOf !== "product" || !!form.clearance);
 
   const showTela1Continuar =
     tela1SubStep >= TELA1_SUB_WEIGHT &&
     !!form.packType &&
-    ( isPallet || ( form.prodType && form.prodType > 0 ) ) &&
+    (isPallet || (form.prodType && form.prodType > 0)) &&
     form.isExport !== undefined &&
     !!form.weight;
 
+  const showTela5Continuar = form.isDistributedWeight !== undefined;
+
+  const prevShowTela1ContinuarRef = useRef(showTela1Continuar);
+  const prevShowTela2ContinuarRef = useRef(showTela2Continuar);
+  const prevShowTela5ContinuarRef = useRef(showTela5Continuar);
+
   const currentProgressStep = step <= 1 ? 1
     : step <= 2 ? 2
-    : step <= 6 ? 3
-    : step <= 7 ? 4
-    : 5;
+      : step <= 6 ? 3
+        : step <= 7 ? 4
+          : 5;
 
-  const bgPage = useColorModeValue( "gray.50", "gray.900" );
-  const bgCard = useColorModeValue( "white", "gray.800" );
-  const borderColor = useColorModeValue( "gray.200", "gray.600" );
-  const headingColor = useColorModeValue( "gray.800", "white" );
-  const textColor = useColorModeValue( "gray.600", "gray.300" );
-  const preBg = useColorModeValue( "gray.100", "gray.700" );
-  const unitToggleHoverBg = useColorModeValue( "gray.300", "gray.600" );
-  const clearanceBadgeBgActive = useColorModeValue( "blue.50", "blue.900" );
-  const placeholderColor = useColorModeValue( "gray.500", "gray.400" );
-  const progressTrackInactiveBg = useColorModeValue( "gray.200", "gray.600" );
+  const bgPage = useColorModeValue("gray.50", "gray.900");
+  const bgCard = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const headingColor = useColorModeValue("gray.800", "white");
+  const textColor = useColorModeValue("gray.600", "gray.300");
+  const preBg = useColorModeValue("gray.100", "gray.700");
+  const unitToggleHoverBg = useColorModeValue("gray.300", "gray.600");
+  const clearanceBadgeBgActive = useColorModeValue("blue.50", "blue.900");
+  const placeholderColor = useColorModeValue("gray.500", "gray.400");
+  const progressTrackInactiveBg = useColorModeValue("gray.200", "gray.600");
+  const resultListingPriceColor = useColorModeValue("green.500", "green.300");
+  const recommendedCardBorderColor = useColorModeValue(
+    "orange.400",
+    "orange.300",
+  );
+  const resultRankCaptionBgOther = useColorModeValue(
+    "gray.600",
+    "gray.500",
+  );
 
-  useEffect( () => {
+  const resultTemplatesSortedByPrice = useMemo(
+    () => sortTemplateResultsByPriceAsc(elegibleTemplates),
+    [elegibleTemplates],
+  );
+
+  useEffect(() => {
     const parsed = readCalculadoraCustomerStored();
-    setForm( ( prev ) => ( {
+    setForm((prev) => ({
       ...prev,
-      ...( parsed.customerName && parsed.customerEmail
+      ...(parsed.customerName && parsed.customerEmail
         ? {
-            customerName: parsed.customerName,
-            customerEmail: parsed.customerEmail,
-          }
-        : {} ),
-      ...( parsed.customerCnpj ? { customerCnpj: parsed.customerCnpj } : {} ),
-      ...( parsed.customerPhone ? { customerPhone: parsed.customerPhone } : {} ),
-    } ) );
-  }, [] );
+          customerName: parsed.customerName,
+          customerEmail: parsed.customerEmail,
+        }
+        : {}),
+      ...(parsed.customerCnpj ? { customerCnpj: parsed.customerCnpj } : {}),
+      ...(parsed.customerPhone ? { customerPhone: parsed.customerPhone } : {}),
+    }));
+  }, []);
 
-  useEffect( () => {
-    if ( showClearance ) {
-      setTimeout( () => {
-        sectionClearanceRef.current?.scrollIntoView( {
+  useEffect(() => {
+    if (isFirstStepEffect.current) {
+      isFirstStepEffect.current = false;
+      return;
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, [step]);
+
+  useEffect(() => {
+    if (showClearance) {
+      setTimeout(() => {
+        sectionClearanceRef.current?.scrollIntoView({
           behavior: "smooth",
           block: "start",
-        } );
-      }, 320 );
+        });
+      }, 320);
     }
-  }, [ showClearance ] );
+  }, [showClearance]);
 
-  useEffect( () => {
-    if ( step === STEP_TELA4 && showTela2Continuar ) {
-      setTimeout( () => {
-        sectionTela2ContinuarRef.current?.scrollIntoView( {
-          behavior: "smooth",
-          block: "start",
-        } );
-      }, 320 );
-    }
-  }, [ step, showTela2Continuar ] );
-
-  useEffect( () => {
+  useEffect(() => {
+    const prev = prevShowTela2ContinuarRef.current;
     if (
       step === STEP_TELA4 &&
-      ( form.isUnitizedContent === false || isPallet )
+      showTela2Continuar &&
+      !prev
     ) {
-      updateForm( { measuresOf: "internal" } );
-    }
-  }, [ step, form.isUnitizedContent, isPallet ] );
-
-  useEffect( () => {
-    if ( step === STEP_TELA1 && showTela1Continuar ) {
-      setTimeout( () => {
-        sectionTela1ContinuarRef.current?.scrollIntoView( {
+      setTimeout(() => {
+        sectionTela2ContinuarRef.current?.scrollIntoView({
           behavior: "smooth",
           block: "start",
-        } );
-      }, 320 );
+        });
+      }, 320);
     }
-  }, [ step, showTela1Continuar ] );
+    prevShowTela2ContinuarRef.current = showTela2Continuar;
+  }, [step, showTela2Continuar]);
 
-  useEffect( () => {
-    if ( step === STEP_TELA6 ) setRecommendationsAcknowledged( false );
-  }, [ step ] );
+  useEffect(() => {
+    if (
+      step === STEP_TELA4 &&
+      (form.isUnitizedContent === false || isPallet)
+    ) {
+      updateForm({ measuresOf: "internal" });
+    }
+  }, [step, form.isUnitizedContent, isPallet]);
 
-  const updateForm = useCallback( ( updates: Partial<PackagingFormData> ) => {
-    setForm( ( prev ) => ( { ...prev, ...updates } ) );
-  }, [] );
+  useEffect(() => {
+    const prev = prevShowTela1ContinuarRef.current;
+    if (
+      step === STEP_TELA1 &&
+      showTela1Continuar &&
+      !prev
+    ) {
+      setTimeout(() => {
+        sectionTela1ContinuarRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 320);
+    }
+    prevShowTela1ContinuarRef.current = showTela1Continuar;
+  }, [step, showTela1Continuar]);
 
-  const goToStep = useCallback( ( next: number ) => {
-    setStep( next );
-  }, [] );
+  useEffect(() => {
+    const prev = prevShowTela5ContinuarRef.current;
+    if (
+      step === STEP_TELA5 &&
+      showTela5Continuar &&
+      !prev
+    ) {
+      setTimeout(() => {
+        sectionTela5ContinuarRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 320);
+    }
+    prevShowTela5ContinuarRef.current = showTela5Continuar;
+  }, [step, showTela5Continuar]);
 
-  const goBack = useCallback( () => {
-    setStep( ( s ) => {
+  useEffect(() => {
+    if (step === STEP_TELA6) setRecommendationsAcknowledged(false);
+  }, [step]);
+
+  useEffect(() => {
+    if (step === STEP_TELA7) setSimulationSummaryOpen(true);
+    else if (step === STEP_RESULT) setSimulationSummaryOpen(false);
+  }, [step]);
+
+  const updateForm = useCallback((updates: Partial<PackagingFormData>) => {
+    setForm((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  const goToStep = useCallback((next: number) => {
+    setStep(next);
+  }, []);
+
+  const goBack = useCallback(() => {
+    setStep((s) => {
       if (
         s === STEP_TELA4 &&
-        !ASK_CONTENT_PROD_TYPES.includes( form.prodType ?? 0 )
+        !ASK_CONTENT_PROD_TYPES.includes(form.prodType ?? 0)
       ) {
         return STEP_TELA2;
       }
-      return Math.max( STEP_TELA1, s - 1 );
-    } );
-  }, [ form.prodType ] );
+      return Math.max(STEP_TELA1, s - 1);
+    });
+  }, [form.prodType]);
 
-  const handlePackTypeChange = useCallback( ( v: string ) => {
+  const handleChooseResultModel = useCallback(
+    (payload: { templateKey: string; label: string }) => {
+      toast({
+        id: `choose-model-${payload.templateKey}`,
+        title: payload.label,
+        description:
+          "Fluxo em desenvolvimento. Em breve você confirma este modelo aqui.",
+        status: "info",
+        duration: 4500,
+        isClosable: true,
+      });
+    },
+    [toast]
+  );
+
+  const handlePackTypeChange = useCallback((v: string) => {
     const packType = v as PackType;
-    updateForm( { packType } );
-    if ( packType === "pallet" ) {
-      updateForm( { prodType: DEFAULT_PRODTYPE_FOR_PALLET } );
-      setTela1SubStep( ( s ) => Math.max( s, TELA1_SUB_EXPORT ) );
-      scrollToSection( sectionIsExportRef );
+    updateForm({ packType });
+    if (packType === "pallet") {
+      updateForm({ prodType: DEFAULT_PRODTYPE_FOR_PALLET });
+      setTela1SubStep((s) => Math.max(s, TELA1_SUB_EXPORT));
+      scrollToSection(sectionIsExportRef);
     } else {
-      setTela1SubStep( ( s ) => Math.max( s, TELA1_SUB_PROD ) );
-      scrollToSection( sectionProdTypeRef );
+      setTela1SubStep((s) => Math.max(s, TELA1_SUB_PROD));
+      scrollToSection(sectionProdTypeRef);
     }
-  }, [ updateForm, scrollToSection ] );
+  }, [updateForm, scrollToSection]);
 
-  const handleProdTypeChange = useCallback( ( value: number ) => {
-    updateForm( { prodType: value } );
-    setTela1SubStep( ( s ) => Math.max( s, TELA1_SUB_EXPORT ) );
-    scrollToSection( sectionIsExportRef );
-  }, [ updateForm, scrollToSection ] );
+  const handleProdTypeChange = useCallback((value: number) => {
+    updateForm({ prodType: value });
+    setTela1SubStep((s) => Math.max(s, TELA1_SUB_EXPORT));
+    scrollToSection(sectionIsExportRef);
+  }, [updateForm, scrollToSection]);
 
-  const handleIsExportChange = useCallback( ( value: boolean ) => {
-    updateForm( { isExport: value } );
-    setTela1SubStep( ( s ) => Math.max( s, TELA1_SUB_WEIGHT ) );
-    scrollToSection( sectionWeightRef );
-  }, [ updateForm, scrollToSection ] );
+  const handleIsExportChange = useCallback((value: boolean) => {
+    updateForm({ isExport: value });
+    setTela1SubStep((s) => Math.max(s, TELA1_SUB_WEIGHT));
+    scrollToSection(sectionWeightRef);
+  }, [updateForm, scrollToSection]);
 
-  const handleMeasuresOfChange = useCallback( ( value: MeasuresOf ) => {
-    updateForm( { measuresOf: value } );
-    scrollToSection( sectionMeasuresRef );
-  }, [ updateForm, scrollToSection ] );
+  const handleMeasuresOfChange = useCallback((value: MeasuresOf) => {
+    updateForm({ measuresOf: value });
+    scrollToSection(sectionMeasuresRef);
+  }, [updateForm, scrollToSection]);
 
-  const handleTela1Continue = ( e: FormEvent ) => {
+  const handleTela1Continue = (e: FormEvent) => {
     e.preventDefault();
-    const hasProdType = isPallet || ( form.prodType && form.prodType > 0 );
+    const hasProdType = isPallet || (form.prodType && form.prodType > 0);
     if (
       !form.packType ||
       !hasProdType ||
       form.isExport === undefined ||
       !form.weight
     ) {
-      toast( {
+      toast({
         title: "Preencha todos os campos",
         status: "warning",
         duration: 3000,
-      } );
+      });
       return;
     }
-    if ( isPallet ) updateForm( { measuresOf: "internal" } );
-    goToStep( STEP_TELA2 );
+    if (isPallet) updateForm({ measuresOf: "internal" });
+    goToStep(STEP_TELA2);
   };
 
-  const handleTela2NameEmailSubmit = ( e: FormEvent ) => {
+  const handleTela2NameEmailSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const name = ( form.customerName || "" ).trim();
-    const email = ( form.customerEmail || "" ).trim();
-    if ( !name || !email ) {
-      toast( {
+    const name = (form.customerName || "").trim();
+    const email = (form.customerEmail || "").trim();
+    if (!name || !email) {
+      toast({
         title: "Preencha nome e e-mail",
         status: "warning",
         duration: 3000,
-      } );
+      });
       return;
     }
-    if ( !validateEmail( email ) ) {
-      toast( {
+    if (!validateEmail(email)) {
+      toast({
         title: "E-mail inválido",
         status: "error",
         duration: 3000,
-      } );
+      });
       return;
     }
-    mergeCalculadoraCustomerStorage( { customerName: name, customerEmail: email } );
-    updateForm( { customerName: name, customerEmail: email } );
+    mergeCalculadoraCustomerStorage({ customerName: name, customerEmail: email });
+    updateForm({ customerName: name, customerEmail: email });
     const prodType = form.prodType ?? 0;
-    if ( FRACTIONED_PROD_TYPES.includes( prodType ) ) {
-      updateForm( { isUnitizedContent: false, measuresOf: "internal" } );
-      goToStep( STEP_TELA4 );
-    } else if ( ASK_CONTENT_PROD_TYPES.includes( prodType ) ) {
-      goToStep( STEP_TELA3 );
+    if (FRACTIONED_PROD_TYPES.includes(prodType)) {
+      updateForm({ isUnitizedContent: false, measuresOf: "internal" });
+      goToStep(STEP_TELA4);
+    } else if (ASK_CONTENT_PROD_TYPES.includes(prodType)) {
+      goToStep(STEP_TELA3);
     } else {
-      updateForm( { isUnitizedContent: true } );
-      goToStep( STEP_TELA4 );
+      updateForm({ isUnitizedContent: true });
+      goToStep(STEP_TELA4);
     }
   };
 
   const advanceFromTela5Check = useCallback(
-    ( weightVal: number, lengthVal: number, widthVal: number, unitVal: "mm" | "cm" ) => {
-      const lengthM = toMeters( lengthVal, unitVal );
-      const widthM = toMeters( widthVal, unitVal );
+    (weightVal: number, lengthVal: number, widthVal: number, unitVal: "mm" | "cm") => {
+      const lengthM = toMeters(lengthVal, unitVal);
+      const widthM = toMeters(widthVal, unitVal);
       const skipCondition =
         weightVal < WEIGHT_THRESHOLD_KG ||
-        ( lengthM < LENGTH_THRESHOLD_M && widthM < WIDTH_THRESHOLD_M );
-      if ( skipCondition ) {
-        updateForm( { isDistributedWeight: null } );
-        goToStep( STEP_TELA7 );
+        (lengthM < LENGTH_THRESHOLD_M && widthM < WIDTH_THRESHOLD_M);
+      if (skipCondition) {
+        updateForm({ isDistributedWeight: null });
+        goToStep(STEP_TELA7);
       } else {
-        goToStep( STEP_TELA5 );
+        goToStep(STEP_TELA5);
       }
     },
-    [ updateForm, goToStep ]
+    [updateForm, goToStep]
   );
 
-  const handleTela3Continue = ( e: FormEvent ) => {
+  const handleTela3Continue = (e: FormEvent) => {
     e.preventDefault();
     const measuresOfVal = isPallet ? "internal" : form.measuresOf;
-    if ( !measuresOfVal ) {
-      toast( {
+    if (!measuresOfVal) {
+      toast({
         title: "Selecione se as medidas são internas ou do produto",
         status: "warning",
         duration: 3000,
-      } );
+      });
       return;
     }
-    const unit = ( form.unit || "mm" ) as "mm" | "cm";
-    const length = Number( form.length ) || 0;
-    const width = Number( form.width ) || 0;
-    const height = form.packType === "pallet" ? 0 : ( Number( form.height ) || 0 );
-    if ( measuresOfVal === "product" ) {
-      const clearanceVal = Number( form.clearance ) ?? 0;
-      if ( !clearanceVal ) {
-        toast( {
+    const unit = (form.unit || "mm") as "mm" | "cm";
+    const length = Number(form.length) || 0;
+    const width = Number(form.width) || 0;
+    const height = form.packType === "pallet" ? 0 : (Number(form.height) || 0);
+    if (measuresOfVal === "product") {
+      const clearanceVal = Number(form.clearance) ?? 0;
+      if (!clearanceVal) {
+        toast({
           title: "Preencha o campo Folga",
           status: "warning",
           duration: 3000,
-        } );
+        });
         return;
       }
     }
-    if ( !length || !width || ( form.packType !== "pallet" && !height ) ) {
-      toast( {
+    if (!length || !width || (form.packType !== "pallet" && !height)) {
+      toast({
         title: "Preencha todas as medidas",
         status: "warning",
         duration: 3000,
-      } );
+      });
       return;
     }
-    updateForm( { length, width, height: form.packType === "pallet" ? undefined : height } );
-    const weightVal = Number( form.weight ) || 0;
-    if ( form.isUnitizedContent === true ) {
-      advanceFromTela5Check( weightVal, length, width, unit );
+    updateForm({ length, width, height: form.packType === "pallet" ? undefined : height });
+    const weightVal = Number(form.weight) || 0;
+    if (form.isUnitizedContent === true) {
+      advanceFromTela5Check(weightVal, length, width, unit);
     } else {
-      goToStep( STEP_TELA7 );
+      goToStep(STEP_TELA7);
     }
   };
 
-  const handleTela3ContentChoice = ( unitized: boolean ) => {
-    updateForm( { isUnitizedContent: unitized } );
-    if ( unitized && !isPallet ) {
-      updateForm( { measuresOf: undefined } );
+  const handleTela3ContentChoice = (unitized: boolean) => {
+    updateForm({ isUnitizedContent: unitized });
+    if (unitized && !isPallet) {
+      updateForm({ measuresOf: undefined });
     } else {
-      updateForm( { measuresOf: "internal" } );
+      updateForm({ measuresOf: "internal" });
     }
-    goToStep( STEP_TELA4 );
+    goToStep(STEP_TELA4);
   };
 
-  const handleTela5Choice = ( distributed: boolean ) => {
-    updateForm( { isDistributedWeight: distributed } );
+  const handleTela5Choice = (distributed: boolean) => {
+    updateForm({ isDistributedWeight: distributed });
   };
 
   const handleTela5Continue = () => {
-    if ( form.isDistributedWeight === true ) {
-      goToStep( STEP_TELA7 );
+    if (form.isDistributedWeight === true) {
+      goToStep(STEP_TELA7);
     } else {
-      goToStep( STEP_TELA6 );
+      goToStep(STEP_TELA6);
     }
   };
 
   const handleTela6Continue = () => {
-    goToStep( STEP_TELA7 );
+    goToStep(STEP_TELA7);
   };
 
-  const handleTela7Submit = async ( e: FormEvent ) => {
+  const handleTela7Submit = async (e: FormEvent) => {
     e.preventDefault();
-    const cnpj = ( form.customerCnpj || "" ).trim();
-    const email = ( form.customerEmail || "" ).trim();
-    if ( !cnpj || !form.customerName || !email ) {
-      toast( {
+    const cnpj = (form.customerCnpj || "").trim();
+    const email = (form.customerEmail || "").trim();
+    if (!cnpj || !form.customerName || !email) {
+      toast({
         title: "Preencha todos os campos de contato",
         status: "warning",
         duration: 3000,
-      } );
+      });
       return;
     }
-    if ( !validateCnpj( cnpj ) ) {
-      toast( {
+    if (!validateCnpj(cnpj)) {
+      toast({
         title: "CNPJ inválido",
         status: "error",
         duration: 3000,
-      } );
+      });
       return;
     }
-    if ( !validateEmail( email ) ) {
-      toast( {
+    if (!validateEmail(email)) {
+      toast({
         title: "E-mail inválido",
         status: "error",
         duration: 3000,
-      } );
+      });
       return;
     }
-    const phoneTrim = ( form.customerPhone || "" ).trim();
-    mergeCalculadoraCustomerStorage( {
+    const phoneTrim = (form.customerPhone || "").trim();
+    mergeCalculadoraCustomerStorage({
       customerName: form.customerName || "",
       customerEmail: email,
       customerCnpj: cnpj,
-      ...( phoneTrim ? { customerPhone: phoneTrim } : {} ),
-    } );
+      ...(phoneTrim ? { customerPhone: phoneTrim } : {}),
+    });
     const fullForm: PackagingFormData = {
       packType: form.packType!,
       prodType: form.prodType!,
       isExport: form.isExport!,
-      weight: Number( form.weight ) || 0,
+      weight: Number(form.weight) || 0,
       measuresOf: form.measuresOf!,
       unit: form.unit!,
-      length: Number( form.length ) || 0,
-      width: Number( form.width ) || 0,
-      height: form.packType === "pallet" ? undefined : ( Number( form.height ) || 0 ),
-      clearance: form.measuresOf === "product" ? Number( form.clearance ) || 0 : undefined,
+      length: Number(form.length) || 0,
+      width: Number(form.width) || 0,
+      height: form.packType === "pallet" ? undefined : (Number(form.height) || 0),
+      clearance: form.measuresOf === "product" ? Number(form.clearance) || 0 : undefined,
       isUnitizedContent: form.isUnitizedContent,
       isDistributedWeight: form.isDistributedWeight ?? null,
       customerCnpj: cnpj,
@@ -586,45 +752,48 @@ const CalculadoraEmbalagem: NextPage = () => {
     };
     const templateNames = getElegibleTemplates(
       fullForm,
-      boxTemplates as BoxTemplate[]
+      boxTemplates as unknown as BoxTemplate[]
     );
-    const initial: ElegibleTemplateResult[] = templateNames.map( ( n ) => ( {
+    const initial: ElegibleTemplateResult[] = templateNames.map((n) => ({
       name: n,
-    } ) );
-    setElegibleTemplates( initial );
-    goToStep( STEP_RESULT );
+    }));
+    setElegibleTemplates(initial);
+    setSimulationSummaryOpen(false);
+    goToStep(STEP_RESULT);
 
-    if ( templateNames.length === 0 ) return;
+    if (templateNames.length === 0) return;
 
-    setIsCalculatingPrices( true );
+    setPricingModalNames([...templateNames]);
+    setPricingModalActiveIndex(0);
+    setIsCalculatingPrices(true);
     const unit = fullForm.unit || "mm";
-    const toCm = ( v: number ) => ( unit === "mm" ? v / 10 : v );
-    const compCm = toCm( fullForm.length );
-    const largCm = toCm( fullForm.width );
+    const toCm = (v: number) => (unit === "mm" ? v / 10 : v);
+    const compCm = toCm(fullForm.length);
+    const largCm = toCm(fullForm.width);
     const altCm =
-      fullForm.height !== undefined ? toCm( fullForm.height ) : 0;
-    const cnpjDigits = cnpj.replace( /\D/g, "" );
+      fullForm.height !== undefined ? toCm(fullForm.height) : 0;
+    const cnpjDigits = cnpj.replace(/\D/g, "");
 
-    const fetchPrice = async ( modelo: string ) => {
+    const fetchPrice = async (modelo: string) => {
       try {
-        const params = new URLSearchParams( {
-          calcular: "1",
+        const body: Record<string, string | boolean | undefined> = {
           modelo,
-          comprimento: String( compCm ),
-          largura: String( largCm ),
+          comprimento: String(compCm),
+          largura: String(largCm),
           empresa: cnpjDigits,
-          pesoProd: String( fullForm.weight ),
-        } );
-        if (
-          fullForm.packType !== "pallet" &&
-          altCm > 0
-        )
-          params.set( "altura", String( altCm ) );
-        const res = await fetch(
-          `/api/calculadora/calcular?${ params.toString() }`
-        );
+          pesoProd: String(fullForm.weight),
+          export: fullForm.isExport,
+        };
+        if (fullForm.packType !== "pallet" && altCm > 0) {
+          body.altura = String(altCm);
+        }
+        const res = await fetch("/api/calculadora/calcular", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
         const data = await res.json();
-        if ( data.error ) {
+        if (data.error) {
           return { name: modelo, priceResult: { error: data.error } };
         }
         const info = data.info ?? data;
@@ -632,28 +801,31 @@ const CalculadoraEmbalagem: NextPage = () => {
           name: modelo,
           priceResult: { info },
         };
-      } catch ( err ) {
+      } catch (err) {
         return {
           name: modelo,
           priceResult: {
-            error: ( err as Error )?.message || "Erro ao calcular",
+            error: (err as Error)?.message || "Erro ao calcular",
           },
         };
       }
     };
 
-    const results = await Promise.all(
-      templateNames.map( ( t ) => fetchPrice( t ) )
-    );
-    setElegibleTemplates( results );
-    setIsCalculatingPrices( false );
+    const results: ElegibleTemplateResult[] = [];
+    for (let i = 0; i < templateNames.length; i++) {
+      setPricingModalActiveIndex(i);
+      results.push(await fetchPrice(templateNames[i]));
+    }
+    setElegibleTemplates(results);
+    setIsCalculatingPrices(false);
+    setPricingModalNames([]);
   };
 
   const dimensionsIntro = () => {
     const pt = form.packType;
-    if ( pt === "pallet" ) return "Informe as medidas que você precisa que o palete tenha.";
-    if ( pt === "box" ) return "Informe as medidas finais que você precisa que tenha dentro da Caixa.";
-    if ( pt === "crate" ) return "Informe as medidas finais que você precisa que tenha dentro do Engradado.";
+    if (pt === "pallet") return "Informe as medidas que você precisa que o palete tenha.";
+    if (pt === "box") return "Informe as medidas finais que você precisa que tenha dentro da Caixa.";
+    if (pt === "crate") return "Informe as medidas finais que você precisa que tenha dentro do Engradado.";
     return "Informe as medidas que você precisa que tenha dentro da embalagem ou palete que vamos calcular.";
   };
 
@@ -798,7 +970,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                           w="100%"
                           justifyItems="center"
                         >
-                          {PACK_TYPE_OPTIONS.map( ( opt ) => {
+                          {PACK_TYPE_OPTIONS.map((opt) => {
                             const isActive = form.packType === opt.value;
                             const isDimmed = form.packType && !isActive;
                             return (
@@ -806,7 +978,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                 key={opt.value}
                                 as="button"
                                 type="button"
-                                onClick={() => handlePackTypeChange( opt.value )}
+                                onClick={() => handlePackTypeChange(opt.value)}
                                 borderWidth={isActive ? "2px" : "1px"}
                                 borderColor={
                                   isActive ? "blue.400" : borderColor
@@ -817,14 +989,14 @@ const CalculadoraEmbalagem: NextPage = () => {
                                 w="100%"
                                 maxW="260px"
                                 minH="220px"
-                                bg={useColorModeValue( "white", "gray.700" )}
+                                bg={useColorModeValue("white", "gray.700")}
                                 _hover={{ borderColor: "blue.400" }}
                                 textAlign="center"
                                 opacity={isDimmed ? 0.6 : 1}
                                 filter={isDimmed ? "grayscale(100%)" : "none"}
                               >
                                 <Image
-                                  src={PACK_TYPE_IMAGES[ opt.value ]}
+                                  src={PACK_TYPE_IMAGES[opt.value]}
                                   alt={opt.label}
                                   borderRadius="md"
                                   objectFit="contain"
@@ -840,7 +1012,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                 </Text>
                               </Box>
                             );
-                          } )}
+                          })}
                         </SimpleGrid>
                       </FormControl>
 
@@ -868,18 +1040,18 @@ const CalculadoraEmbalagem: NextPage = () => {
                               w="100%"
                               justifyItems="center"
                             >
-                              {Object.entries( PRODUCT_TYPE_LABELS ).map(
-                                ( [ key, label ] ) => {
-                                  const id = parseInt( key, 10 );
+                              {Object.entries(PRODUCT_TYPE_LABELS).map(
+                                ([key, label]) => {
+                                  const id = parseInt(key, 10);
                                   const isActive = form.prodType === id;
-                                  const imgSrc = PRODUCT_TYPE_IMAGES[ id ];
+                                  const imgSrc = PRODUCT_TYPE_IMAGES[id];
                                   const isDimmed = form.prodType && !isActive;
                                   return (
                                     <Box
                                       key={id}
                                       as="button"
                                       type="button"
-                                      onClick={() => handleProdTypeChange( id )}
+                                      onClick={() => handleProdTypeChange(id)}
                                       borderWidth={isActive ? "2px" : "1px"}
                                       borderColor={
                                         isActive ? "blue.400" : borderColor
@@ -947,16 +1119,16 @@ const CalculadoraEmbalagem: NextPage = () => {
                             {[
                               { value: true, label: "Sim, é exportação", img: "/img/isExport.avif" },
                               { value: false, label: "Não, apenas Brasil", img: "/img/noExport.jpg" },
-                            ].map( ( option ) => {
+                            ].map((option) => {
                               const isActive = form.isExport === option.value;
                               const hasSelection = form.isExport !== undefined;
                               const isDimmed = hasSelection && !isActive;
                               return (
                                 <Box
-                                  key={String( option.value )}
+                                  key={String(option.value)}
                                   as="button"
                                   type="button"
-                                  onClick={() => handleIsExportChange( option.value )}
+                                  onClick={() => handleIsExportChange(option.value)}
                                   borderWidth={isActive ? "2px" : "1px"}
                                   borderColor={isActive ? "blue.400" : borderColor}
                                   borderRadius="lg"
@@ -965,7 +1137,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   w="100%"
                                   maxW="260px"
                                   minH="220px"
-                                  bg={useColorModeValue( "white", "gray.700" )}
+                                  bg={useColorModeValue("white", "gray.700")}
                                   _hover={{ borderColor: "blue.400" }}
                                   textAlign="center"
                                   opacity={isDimmed ? 0.6 : 1}
@@ -988,7 +1160,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   </Text>
                                 </Box>
                               );
-                            } )}
+                            })}
                           </SimpleGrid>
                         </FormControl>
                       </Collapse>
@@ -1011,7 +1183,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                             spacing={{ base: 3, md: 4 }}
                             w="100%"
                           >
-                            {WEIGHT_RANGE_OPTIONS.map( ( opt ) => {
+                            {WEIGHT_RANGE_OPTIONS.map((opt) => {
                               const isActive = form.weight === opt.value;
                               const hasSelection = form.weight && form.weight > 0;
                               const isDimmed = hasSelection && !isActive;
@@ -1020,7 +1192,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   key={opt.value}
                                   as="button"
                                   type="button"
-                                  onClick={() => updateForm( { weight: opt.value } )}
+                                  onClick={() => updateForm({ weight: opt.value })}
                                   borderWidth={isActive ? "2px" : "1px"}
                                   borderColor={
                                     isActive ? "blue.400" : borderColor
@@ -1051,7 +1223,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   </Text>
                                 </Box>
                               );
-                            } )}
+                            })}
                           </SimpleGrid>
                         </FormControl>
                       </Collapse>
@@ -1114,8 +1286,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                       <FormLabel color={headingColor}>Nome</FormLabel>
                       <Input
                         value={form.customerName || ""}
-                        onChange={( e ) =>
-                          updateForm( { customerName: e.target.value } )
+                        onChange={(e) =>
+                          updateForm({ customerName: e.target.value })
                         }
                         placeholder="Seu nome"
                         size="lg"
@@ -1128,8 +1300,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                       <Input
                         type="email"
                         value={form.customerEmail || ""}
-                        onChange={( e ) =>
-                          updateForm( { customerEmail: e.target.value } )
+                        onChange={(e) =>
+                          updateForm({ customerEmail: e.target.value })
                         }
                         placeholder="seu@email.com"
                         size="lg"
@@ -1161,8 +1333,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                     size="lg"
                     minH="44px"
                     isDisabled={
-                      !( form.customerName || "" ).trim() ||
-                      !( form.customerEmail || "" ).trim()
+                      !(form.customerName || "").trim() ||
+                      !(form.customerEmail || "").trim()
                     }
                   >
                     Continuar
@@ -1218,17 +1390,17 @@ const CalculadoraEmbalagem: NextPage = () => {
                           img: "/img/not-unitized.jpg",
                         },
                       ] as const
-                    ).map( ( opt ) => {
+                    ).map((opt) => {
                       const isActive = form.isUnitizedContent === opt.value;
                       const hasSelection = form.isUnitizedContent !== undefined;
                       const isDimmed = hasSelection && !isActive;
                       return (
                         <Box
-                          key={String( opt.value )}
+                          key={String(opt.value)}
                           as="button"
                           type="button"
                           onClick={() =>
-                            updateForm( { isUnitizedContent: opt.value } )
+                            updateForm({ isUnitizedContent: opt.value })
                           }
                           borderRadius="xl"
                           borderWidth={isActive ? "2px" : "1px"}
@@ -1259,7 +1431,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                           </Text>
                         </Box>
                       );
-                    } )}
+                    })}
                   </SimpleGrid>
                 </MotionBox>
                 <Flex
@@ -1284,7 +1456,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                     isDisabled={form.isUnitizedContent === undefined}
                     onClick={() =>
                       form.isUnitizedContent !== undefined &&
-                      handleTela3ContentChoice( form.isUnitizedContent )
+                      handleTela3ContentChoice(form.isUnitizedContent)
                     }
                   >
                     Continuar
@@ -1346,7 +1518,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                             img: "/img/product-measures.jpg",
                           },
                         ] as const
-                      ).map( ( opt ) => {
+                      ).map((opt) => {
                         const isActive = form.measuresOf === opt.value;
                         const hasSelection = !!form.measuresOf;
                         const isDimmed = hasSelection && !isActive;
@@ -1355,7 +1527,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                             key={opt.value}
                             as="button"
                             type="button"
-                            onClick={() => handleMeasuresOfChange( opt.value )}
+                            onClick={() => handleMeasuresOfChange(opt.value)}
                             borderRadius="xl"
                             borderWidth={isActive ? "2px" : "1px"}
                             borderColor={isActive ? "blue.400" : borderColor}
@@ -1385,7 +1557,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                             </Text>
                           </Box>
                         );
-                      } )}
+                      })}
                     </SimpleGrid>
                   </MotionBox>
                 )}
@@ -1479,153 +1651,153 @@ const CalculadoraEmbalagem: NextPage = () => {
                           spacing={{ base: 4, md: 5 }}
                           w="100%"
                         >
-                    <FormControl>
-                      <FormLabel textAlign="center" mr={0}>Unidade de medida</FormLabel>
-                      <Flex
-                        minH="44px"
-                        w="full"
-                        maxW="120px"
-                        mx="auto"
-                        borderRadius="lg"
-                        overflow="hidden"
-                        borderWidth="1px"
-                        borderColor={borderColor}
-                        bg={preBg}
-                      >
-                        <Box
-                          as="button"
-                          type="button"
-                          flex={1}
-                          py={2}
-                          textAlign="center"
-                          fontSize="md"
-                          fontWeight="semibold"
-                          bg={form.unit === "mm" ? "blue.500" : "transparent"}
-                          color={form.unit === "mm" ? "white" : textColor}
-                          onClick={() =>
-                            updateForm( {
-                              unit: "mm",
-                              clearance:
-                                form.measuresOf === "product"
-                                  ? undefined
-                                  : form.clearance,
-                            } )
-                          }
-                          _hover={{
-                            bg: form.unit === "mm" ? "blue.500" : unitToggleHoverBg,
-                            color: "white",
-                          }}
-                        >
-                          mm
-                        </Box>
-                        <Box
-                          as="button"
-                          type="button"
-                          flex={1}
-                          py={2}
-                          textAlign="center"
-                          fontSize="md"
-                          fontWeight="semibold"
-                          bg={form.unit === "cm" ? "blue.500" : "transparent"}
-                          color={form.unit === "cm" ? "white" : textColor}
-                          onClick={() =>
-                            updateForm( {
-                              unit: "cm",
-                              clearance:
-                                form.measuresOf === "product"
-                                  ? undefined
-                                  : form.clearance,
-                            } )
-                          }
-                          _hover={{
-                            bg: form.unit === "cm" ? "blue.500" : unitToggleHoverBg,
-                            color: "white",
-                          }}
-                        >
-                          cm
-                        </Box>
-                      </Flex>
-                    </FormControl>
+                          <FormControl>
+                            <FormLabel textAlign="center" mr={0}>Unidade de medida</FormLabel>
+                            <Flex
+                              minH="44px"
+                              w="full"
+                              maxW="120px"
+                              mx="auto"
+                              borderRadius="lg"
+                              overflow="hidden"
+                              borderWidth="1px"
+                              borderColor={borderColor}
+                              bg={preBg}
+                            >
+                              <Box
+                                as="button"
+                                type="button"
+                                flex={1}
+                                py={2}
+                                textAlign="center"
+                                fontSize="md"
+                                fontWeight="semibold"
+                                bg={form.unit === "mm" ? "blue.500" : "transparent"}
+                                color={form.unit === "mm" ? "white" : textColor}
+                                onClick={() =>
+                                  updateForm({
+                                    unit: "mm",
+                                    clearance:
+                                      form.measuresOf === "product"
+                                        ? undefined
+                                        : form.clearance,
+                                  })
+                                }
+                                _hover={{
+                                  bg: form.unit === "mm" ? "blue.500" : unitToggleHoverBg,
+                                  color: "white",
+                                }}
+                              >
+                                mm
+                              </Box>
+                              <Box
+                                as="button"
+                                type="button"
+                                flex={1}
+                                py={2}
+                                textAlign="center"
+                                fontSize="md"
+                                fontWeight="semibold"
+                                bg={form.unit === "cm" ? "blue.500" : "transparent"}
+                                color={form.unit === "cm" ? "white" : textColor}
+                                onClick={() =>
+                                  updateForm({
+                                    unit: "cm",
+                                    clearance:
+                                      form.measuresOf === "product"
+                                        ? undefined
+                                        : form.clearance,
+                                  })
+                                }
+                                _hover={{
+                                  bg: form.unit === "cm" ? "blue.500" : unitToggleHoverBg,
+                                  color: "white",
+                                }}
+                              >
+                                cm
+                              </Box>
+                            </Flex>
+                          </FormControl>
 
-                    <FormControl>
-                      <FormLabel textAlign="center" mr={0}>Comprimento</FormLabel>
-                      <NumberInput
-                        value={form.length ?? ""}
-                        onChange={( _, v ) =>
-                          updateForm( {
-                            length: v === undefined || Number.isNaN( v )
-                              ? undefined
-                              : v,
-                          } )
-                        }
-                        min={form.unit === "mm" ? 60 : 6}
-                        step={form.unit === "mm" ? 1 : 0.1}
-                      >
-                        <NumberInputField
-                          borderColor={borderColor}
-                          minH="44px"
-                          textAlign="center"
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                    </FormControl>
+                          <FormControl>
+                            <FormLabel textAlign="center" mr={0}>Comprimento</FormLabel>
+                            <NumberInput
+                              value={form.length ?? ""}
+                              onChange={(_, v) =>
+                                updateForm({
+                                  length: v === undefined || Number.isNaN(v)
+                                    ? undefined
+                                    : v,
+                                })
+                              }
+                              min={form.unit === "mm" ? 60 : 6}
+                              step={form.unit === "mm" ? 1 : 0.1}
+                            >
+                              <NumberInputField
+                                borderColor={borderColor}
+                                minH="44px"
+                                textAlign="center"
+                              />
+                              <NumberInputStepper>
+                                <NumberIncrementStepper />
+                                <NumberDecrementStepper />
+                              </NumberInputStepper>
+                            </NumberInput>
+                          </FormControl>
 
-                    <FormControl>
-                      <FormLabel textAlign="center" mr={0}>Largura</FormLabel>
-                      <NumberInput
-                        value={form.width ?? ""}
-                        onChange={( _, v ) =>
-                          updateForm( {
-                            width: v === undefined || Number.isNaN( v )
-                              ? undefined
-                              : v,
-                          } )
-                        }
-                        min={form.unit === "mm" ? 60 : 6}
-                        step={form.unit === "mm" ? 1 : 0.1}
-                      >
-                        <NumberInputField
-                          borderColor={borderColor}
-                          minH="44px"
-                          textAlign="center"
-                        />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
-                    </FormControl>
+                          <FormControl>
+                            <FormLabel textAlign="center" mr={0}>Largura</FormLabel>
+                            <NumberInput
+                              value={form.width ?? ""}
+                              onChange={(_, v) =>
+                                updateForm({
+                                  width: v === undefined || Number.isNaN(v)
+                                    ? undefined
+                                    : v,
+                                })
+                              }
+                              min={form.unit === "mm" ? 60 : 6}
+                              step={form.unit === "mm" ? 1 : 0.1}
+                            >
+                              <NumberInputField
+                                borderColor={borderColor}
+                                minH="44px"
+                                textAlign="center"
+                              />
+                              <NumberInputStepper>
+                                <NumberIncrementStepper />
+                                <NumberDecrementStepper />
+                              </NumberInputStepper>
+                            </NumberInput>
+                          </FormControl>
 
-                    {!isPallet && (
-                      <FormControl>
-                        <FormLabel textAlign="center" mr={0}>Altura</FormLabel>
-                        <NumberInput
-                          value={form.height ?? ""}
-                          onChange={( _, v ) =>
-                            updateForm( {
-                              height: v === undefined || Number.isNaN( v )
-                                ? undefined
-                                : v,
-                            } )
-                          }
-                          min={form.unit === "mm" ? 60 : 6}
-                          step={form.unit === "mm" ? 1 : 0.1}
-                        >
-                          <NumberInputField
-                            borderColor={borderColor}
-                            minH="44px"
-                            textAlign="center"
-                          />
-                          <NumberInputStepper>
-                            <NumberIncrementStepper />
-                            <NumberDecrementStepper />
-                          </NumberInputStepper>
-                        </NumberInput>
-                      </FormControl>
-                    )}
+                          {!isPallet && (
+                            <FormControl>
+                              <FormLabel textAlign="center" mr={0}>Altura</FormLabel>
+                              <NumberInput
+                                value={form.height ?? ""}
+                                onChange={(_, v) =>
+                                  updateForm({
+                                    height: v === undefined || Number.isNaN(v)
+                                      ? undefined
+                                      : v,
+                                  })
+                                }
+                                min={form.unit === "mm" ? 60 : 6}
+                                step={form.unit === "mm" ? 1 : 0.1}
+                              >
+                                <NumberInputField
+                                  borderColor={borderColor}
+                                  minH="44px"
+                                  textAlign="center"
+                                />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper />
+                                  <NumberDecrementStepper />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </FormControl>
+                          )}
                         </SimpleGrid>
                       </VStack>
                     </MotionBox>
@@ -1664,7 +1836,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                               form.unit === "cm"
                                 ? CLEARANCE_OPTIONS_CM
                                 : CLEARANCE_OPTIONS_MM
-                            ).map( ( opt ) => {
+                            ).map((opt) => {
                               const isActive = form.clearance === opt.value;
                               const hasSelection =
                                 form.clearance !== undefined &&
@@ -1676,7 +1848,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   as="button"
                                   type="button"
                                   onClick={() =>
-                                    updateForm( { clearance: opt.value } )
+                                    updateForm({ clearance: opt.value })
                                   }
                                   borderWidth={isActive ? "2px" : "1px"}
                                   borderColor={
@@ -1717,7 +1889,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   </VStack>
                                 </Box>
                               );
-                            } )}
+                            })}
                           </SimpleGrid>
                         </FormControl>
                       </MotionBox>
@@ -1804,17 +1976,17 @@ const CalculadoraEmbalagem: NextPage = () => {
                             "exatamente onde vão estar os 4 pés da mesa.",
                           img: "/img/weight-concentrated.jpg",
                         },
-                      ].map( ( opt ) => {
+                      ].map((opt) => {
                         const isActive = form.isDistributedWeight === opt.value;
                         const hasSelection =
                           form.isDistributedWeight !== undefined;
                         const isDimmed = hasSelection && !isActive;
                         return (
                           <Box
-                            key={String( opt.value )}
+                            key={String(opt.value)}
                             as="button"
                             type="button"
-                            onClick={() => updateForm( { isDistributedWeight: opt.value } )}
+                            onClick={() => updateForm({ isDistributedWeight: opt.value })}
                             borderRadius="xl"
                             borderWidth={isActive ? "2px" : "1px"}
                             borderColor={isActive ? "blue.400" : borderColor}
@@ -1852,11 +2024,12 @@ const CalculadoraEmbalagem: NextPage = () => {
                             </VStack>
                           </Box>
                         );
-                      } )}
+                      })}
                     </SimpleGrid>
                   </VStack>
                 </MotionBox>
                 <Flex
+                  ref={sectionTela5ContinuarRef}
                   w="100%"
                   justify="space-between"
                   align="center"
@@ -1875,7 +2048,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                     colorScheme="blue"
                     size="lg"
                     minH="44px"
-                    isDisabled={form.isDistributedWeight === undefined}
+                    isDisabled={!showTela5Continuar}
                     onClick={handleTela5Continue}
                   >
                     Continuar
@@ -1936,14 +2109,16 @@ const CalculadoraEmbalagem: NextPage = () => {
                         </Box>
                       </Box>
                     </Flex>
-                    <Button
-                      colorScheme="blue"
-                      size="lg"
-                      minH="44px"
-                      onClick={() => setRecommendationsAcknowledged( true )}
-                    >
-                      Entendi
-                    </Button>
+                    {!recommendationsAcknowledged ? (
+                      <Button
+                        colorScheme="blue"
+                        size="lg"
+                        minH="44px"
+                        onClick={() => setRecommendationsAcknowledged(true)}
+                      >
+                        Entendi
+                      </Button>
+                    ) : null}
                   </VStack>
                 </MotionBox>
                 <Flex
@@ -1974,7 +2149,7 @@ const CalculadoraEmbalagem: NextPage = () => {
               </MotionBox>
             )}
 
-            {( step === STEP_TELA7 || step === STEP_RESULT ) && (
+            {(step === STEP_TELA7 || step === STEP_RESULT) && (
               <MotionBox
                 key={step === STEP_TELA7 ? "tela7-group" : "result-group"}
                 initial={{ opacity: 0, x: 20 }}
@@ -1989,33 +2164,65 @@ const CalculadoraEmbalagem: NextPage = () => {
                     borderRadius="xl"
                     borderWidth="1px"
                     borderColor={borderColor}
-                    p={{ base: 5, md: 8 }}
+                    p={5}
                     shadow="md"
                     w="100%"
                   >
-                    <Heading size="sm" color={headingColor} mb={4}>
-                      Resumo da sua simulação
-                    </Heading>
-                    <SimpleGrid
-                      columns={{ base: 1, sm: 2, md: 3 }}
-                      spacing={3}
-                      fontSize="sm"
-                    >
-                      {(
-                        [
-                          {
-                            label: "Tipo de embalagem",
-                            value: PACK_TYPE_OPTIONS.find(
-                              ( o ) => o.value === form.packType
-                            )?.label ?? form.packType,
-                            editTarget: {
-                              step: STEP_TELA1,
-                              tela1SubStep: TELA1_SUB_PACK,
-                              ref: sectionPackTypeRef,
+                    <Flex align="center" justify="space-between" gap={3}>
+                      <Heading
+                        size="md"
+                        color={headingColor}
+                        flex={1}
+                        textAlign="center"
+                      >
+                        Resumo da sua simulação
+                      </Heading>
+                      <IconButton
+                        type="button"
+                        border="1px solid"
+                        borderColor={borderColor}
+                        borderRadius="md"
+                        p={2}
+                        aria-expanded={simulationSummaryOpen}
+                        aria-label={
+                          simulationSummaryOpen
+                            ? "Recolher resumo da simulação"
+                            : "Expandir resumo da simulação"
+                        }
+                        icon={<ChevronDownIcon />}
+                        variant="ghost"
+                        size="sm"
+                        transform={
+                          simulationSummaryOpen ? "rotate(180deg)" : undefined
+                        }
+                        transition="transform 0.2s ease"
+                        onClick={() =>
+                          setSimulationSummaryOpen((open) => !open)
+                        }
+                      />
+                    </Flex>
+                    <Collapse in={simulationSummaryOpen} animateOpacity>
+                      <SimpleGrid
+                        columns={{ base: 1, sm: 2, md: 3 }}
+                        spacing={3}
+                        fontSize="sm"
+                        my={5}
+                      >
+                        {(
+                          [
+                            {
+                              label: "Tipo de embalagem",
+                              value: PACK_TYPE_OPTIONS.find(
+                                (o) => o.value === form.packType
+                              )?.label ?? form.packType,
+                              editTarget: {
+                                step: STEP_TELA1,
+                                tela1SubStep: TELA1_SUB_PACK,
+                                ref: sectionPackTypeRef,
+                              },
                             },
-                          },
-                          form.prodType && form.prodType > 0
-                            ? {
+                            form.prodType && form.prodType > 0
+                              ? {
                                 label: "Segmento de mercado",
                                 value: PRODUCT_TYPE_LABELS[form.prodType] ?? "",
                                 editTarget: {
@@ -2024,9 +2231,9 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   ref: sectionProdTypeRef,
                                 },
                               }
-                            : null,
-                          form.isExport !== undefined
-                            ? {
+                              : null,
+                            form.isExport !== undefined
+                              ? {
                                 label: "Exportação",
                                 value: form.isExport ? "Sim" : "Não",
                                 editTarget: {
@@ -2035,12 +2242,12 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   ref: sectionIsExportRef,
                                 },
                               }
-                            : null,
-                          form.weight
-                            ? {
+                              : null,
+                            form.weight
+                              ? {
                                 label: "Peso",
                                 value: WEIGHT_RANGE_OPTIONS.find(
-                                  ( o ) => o.value === form.weight
+                                  (o) => o.value === form.weight
                                 )?.label ?? `${form.weight} kg`,
                                 editTarget: {
                                   step: STEP_TELA1,
@@ -2048,9 +2255,9 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   ref: sectionWeightRef,
                                 },
                               }
-                            : null,
-                          form.isUnitizedContent !== undefined
-                            ? {
+                              : null,
+                            form.isUnitizedContent !== undefined
+                              ? {
                                 label: "Disposição do conteúdo",
                                 value: form.isUnitizedContent
                                   ? "Produto único"
@@ -2060,9 +2267,9 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   ref: sectionTela3Ref,
                                 },
                               }
-                            : null,
-                          form.measuresOf
-                            ? {
+                              : null,
+                            form.measuresOf
+                              ? {
                                 label: "Medidas referentes ao",
                                 value:
                                   form.measuresOf === "internal"
@@ -2076,46 +2283,36 @@ const CalculadoraEmbalagem: NextPage = () => {
                                       : sectionMeasuresRef,
                                 },
                               }
-                            : null,
-                          form.length && form.width
-                            ? {
+                              : null,
+                            form.length && form.width
+                              ? {
                                 label:
                                   form.measuresOf === "product"
                                     ? "Dimensões do produto"
                                     : "Dimensões internas da embalagem",
-                                value: (() => {
-                                  const u = form.unit ?? "mm";
-                                  const hasH =
-                                    form.packType !== "pallet" &&
-                                    form.height != null &&
-                                    form.height > 0;
-                                  const dims = hasH
-                                    ? `${form.length} x ${form.width} x ${form.height} ${u} (alt.)`
-                                    : `${form.length} x ${form.width} ${u}`;
-                                  return dims;
-                                })(),
+                                value: formatSimulationDimensionsLine(form) ?? "",
                                 editTarget: { step: STEP_TELA4, ref: sectionMeasuresRef },
                               }
-                            : null,
-                          form.measuresOf === "product" && form.clearance != null
-                            ? {
+                              : null,
+                            form.measuresOf === "product" && form.clearance != null
+                              ? {
                                 label: "Folga",
                                 value:
-                                  ( form.unit === "cm"
+                                  (form.unit === "cm"
                                     ? CLEARANCE_OPTIONS_CM
                                     : CLEARANCE_OPTIONS_MM
-                                  ).find( ( o ) => o.value === form.clearance )
-                                    ?.label ?? String( form.clearance ),
+                                  ).find((o) => o.value === form.clearance)
+                                    ?.label ?? String(form.clearance),
                                 editTarget: {
                                   step: STEP_TELA4,
                                   ref: sectionClearanceRef,
                                 },
                               }
-                            : null,
-                          form.isDistributedWeight !== undefined &&
-                          form.packType !== "pallet" &&
-                          form.isUnitizedContent === true
-                            ? {
+                              : null,
+                            form.isDistributedWeight !== undefined &&
+                              form.packType !== "pallet" &&
+                              form.isUnitizedContent === true
+                              ? {
                                 label: "Peso distribuído",
                                 value: form.isDistributedWeight ? "Sim" : "Não",
                                 editTarget: {
@@ -2123,97 +2320,98 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   ref: sectionTela5Ref,
                                 },
                               }
-                            : null,
-                          form.customerName
-                            ? {
+                              : null,
+                            form.customerName
+                              ? {
                                 label: "Nome",
                                 value: form.customerName,
                                 editTarget: { step: STEP_TELA2, ref: sectionTela2Ref },
                               }
-                            : null,
-                          form.customerEmail
-                            ? {
+                              : null,
+                            form.customerEmail
+                              ? {
                                 label: "E-mail",
                                 value: form.customerEmail,
                                 editTarget: { step: STEP_TELA2, ref: sectionTela2Ref },
                               }
-                            : null,
-                          form.customerCnpj
-                            ? {
+                              : null,
+                            form.customerCnpj
+                              ? {
                                 label: "CNPJ",
-                                value: form.customerCnpj.replace( /\D/g, "" ).replace(
+                                value: form.customerCnpj.replace(/\D/g, "").replace(
                                   /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
                                   "$1.$2.$3/$4-$5"
                                 ),
                                 editTarget: { step: STEP_TELA7, ref: sectionTela7Ref },
                               }
-                            : null,
-                        ] as ( {
-                          label: string;
-                          value: string;
-                          editTarget?: {
-                            step: number;
-                            tela1SubStep?: number;
-                            ref: React.RefObject<HTMLDivElement | null>;
-                          };
-                        } | null )[]
-                      )
-                        .filter( ( i ): i is NonNullable<typeof i> =>
-                          i != null && i.value !== ""
+                              : null,
+                          ] as ({
+                            label: string;
+                            value: string;
+                            editTarget?: {
+                              step: number;
+                              tela1SubStep?: number;
+                              ref: React.RefObject<HTMLDivElement | null>;
+                            };
+                          } | null)[]
                         )
-                        .map( ( item ) => (
-                          <Box
-                            key={item.label}
-                            role="group"
-                            textAlign="left"
-                            w="100%"
-                            p={3}
-                            borderRadius="lg"
-                            borderWidth="1px"
-                            borderColor={borderColor}
-                            cursor="pointer"
-                            bg="transparent"
-                            _hover={{
-                              borderColor: "blue.400",
-                              borderWidth: "2px",
-                              "& .summary-edit-btn": { opacity: 1 },
-                            }}
-                            onClick={() =>
-                              item.editTarget &&
-                              handleEditSummaryItem( item.editTarget )
-                            }
-                          >
-                            <Flex justify="space-between" align="flex-start" gap={2}>
-                              <Box flex={1} minW={0}>
-                                <Text
-                                  color={textColor}
-                                  fontWeight="medium"
-                                  fontSize="xs"
-                                >
-                                  {item.label}
-                                </Text>
-                                <Text color={headingColor} noOfLines={2}>
-                                  {item.value}
-                                </Text>
-                              </Box>
-                              {item.editTarget && (
-                                <IconButton
-                                  aria-label="Editar"
-                                  icon={<EditIcon />}
-                                  size="xs"
-                                  variant="ghost"
-                                  opacity={0.4}
-                                  minW={6}
-                                  minH={6}
-                                  flexShrink={0}
-                                  className="summary-edit-btn"
-                                  _groupHover={{ opacity: 1 }}
-                                />
-                              )}
-                            </Flex>
-                          </Box>
-                        ) )}
-                    </SimpleGrid>
+                          .filter((i): i is NonNullable<typeof i> =>
+                            i != null && i.value !== ""
+                          )
+                          .map((item) => (
+                            <Box
+                              key={item.label}
+                              role="group"
+                              textAlign="left"
+                              w="100%"
+                              p={3}
+                              borderRadius="lg"
+                              borderWidth="1px"
+                              borderColor={borderColor}
+                              cursor="pointer"
+                              bg="transparent"
+                              _hover={{
+                                borderColor: "blue.400",
+                                borderWidth: "2px",
+                                "& .summary-edit-btn": { opacity: 1 },
+                              }}
+                              onClick={() =>
+                                item.editTarget &&
+                                handleEditSummaryItem(item.editTarget)
+                              }
+                            >
+                              <Flex justify="space-between" align="flex-start" gap={2}>
+                                <Box flex={1} minW={0}>
+                                  <Text
+                                    color={textColor}
+                                    fontWeight="medium"
+                                    fontSize="xs"
+                                  >
+                                    {item.label}
+                                  </Text>
+                                  <Text color={headingColor} noOfLines={2}>
+                                    {item.value}
+                                  </Text>
+                                </Box>
+                                {item.editTarget && (
+                                  <IconButton
+                                    aria-label="Editar"
+                                    icon={<EditIcon />}
+                                    size="xs"
+                                    variant="ghost"
+                                    opacity={0.4}
+                                    minW={6}
+                                    minH={6}
+                                    flexShrink={0}
+                                    className="summary-edit-btn"
+                                    _groupHover={{ opacity: 1 }}
+                                  />
+                                )}
+                              </Flex>
+                            </Box>
+                          ))}
+                      </SimpleGrid>
+                    </Collapse>
                   </Box>
 
                   {step === STEP_TELA7 && (
@@ -2242,8 +2440,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                             <FormLabel>CNPJ</FormLabel>
                             <Input
                               value={form.customerCnpj || ""}
-                              onChange={( e ) =>
-                                updateForm( { customerCnpj: e.target.value } )
+                              onChange={(e) =>
+                                updateForm({ customerCnpj: e.target.value })
                               }
                               placeholder="00.000.000/0000-00"
                               size="lg"
@@ -2275,9 +2473,9 @@ const CalculadoraEmbalagem: NextPage = () => {
                           size="lg"
                           minH="44px"
                           isDisabled={
-                            !( form.customerCnpj || "" ).trim() ||
-                            !( form.customerName || "" ).trim() ||
-                            !( form.customerEmail || "" ).trim()
+                            !(form.customerCnpj || "").trim() ||
+                            !(form.customerName || "").trim() ||
+                            !(form.customerEmail || "").trim()
                           }
                         >
                           Calcular agora
@@ -2297,64 +2495,286 @@ const CalculadoraEmbalagem: NextPage = () => {
                       w="100%"
                     >
                       <VStack align="stretch" spacing={6} w="100%">
-                        <Heading size="md" color={headingColor} textAlign="center">
-                          Resultado
-                        </Heading>
-                        {isCalculatingPrices ? (
-                          <Flex justify="center" py={8}>
-                            <Text color={textColor}>
-                              Calculando preços...
-                            </Text>
-                          </Flex>
-                        ) : elegibleTemplates.length === 0 ? (
+                        {isCalculatingPrices ? null : elegibleTemplates.length === 0 ? (
                           <Text fontSize="sm" color={textColor} textAlign="center">
-                            Nenhum modelo elegível para as medidas informadas.
+                            Nenhum modelo viável para as características informadas.
                           </Text>
                         ) : (
-                          <VStack align="stretch" spacing={3}>
-                            {elegibleTemplates.map( ( t ) => (
-                              <Flex
-                                key={t.name}
-                                p={4}
-                                bg={preBg}
-                                borderRadius="lg"
-                                justify="space-between"
-                                align="center"
-                                flexWrap="wrap"
-                                gap={2}
-                              >
-                                <Text fontWeight="semibold" color={headingColor}>
-                                  {t.priceResult?.info?.titulo ??
-                                    t.name.replace( /_/g, " " ).replace(
-                                      /\b\w/g,
-                                      ( c ) => c.toUpperCase()
-                                    )}
-                                </Text>
-                                {t.priceResult?.error ? (
-                                  <Text fontSize="sm" color="red.500">
-                                    {t.priceResult.error}
-                                  </Text>
-                                ) : t.priceResult?.info?.vFinal != null ? (
-                                  <Text fontSize="lg" fontWeight="bold" color="green.600">
-                                    R$ {Number( t.priceResult.info.vFinal ).toFixed( 2 )}
-                                  </Text>
-                                ) : null}
-                              </Flex>
-                            ) )}
-                          </VStack>
+                          <Fragment>
+                            <Heading
+                              size="md"
+                              color={headingColor}
+                              textAlign="center"
+                            >
+                              Modelos viáveis para o seu caso
+                            </Heading>
+                            <SimpleGrid
+                              columns={1}
+                              spacing={4}
+                              w="100%"
+                            >
+                              {resultTemplatesSortedByPrice.map((t, cardIndex) => {
+                                const displayTitle =
+                                  t.priceResult?.info?.titulo ??
+                                  t.name.replace(/_/g, " ").replace(
+                                    /\b\w/g,
+                                    (c) => c.toUpperCase()
+                                  );
+                                const descriptionLines =
+                                  DESCRIPTION_LINES_BY_TEMPLATE_NAME.get(t.name)
+                                  ?? [];
+                                const isRecommendedCard = cardIndex === 0;
+                                const priceError = t.priceResult?.error;
+                                const priceValue = t.priceResult?.info?.vFinal;
+                                const rankCaption =
+                                  cardIndex < RESULT_CARD_RANK_CAPTIONS.length
+                                    ? RESULT_CARD_RANK_CAPTIONS[cardIndex]
+                                    : null;
+                                const dimensionsLine =
+                                  formatSimulationDimensionsLine(form);
+                                return (
+                                  <Box
+                                    key={t.name}
+                                    as="article"
+                                    role="group"
+                                    position="relative"
+                                    borderWidth={isRecommendedCard ? "3px" : "1px"}
+                                    borderColor={
+                                      isRecommendedCard
+                                        ? recommendedCardBorderColor
+                                        : borderColor
+                                    }
+                                    borderRadius="xl"
+                                    bg={bgCard}
+                                    overflow={isRecommendedCard ? "visible" : "hidden"}
+                                    boxShadow="sm"
+                                    transition="box-shadow 0.2s ease, border-color 0.2s ease"
+                                    _hover={{ boxShadow: "md" }}
+                                  >
+                                    {isRecommendedCard ? (
+                                      <Badge
+                                        position="absolute"
+                                        top={0}
+                                        right={45}
+                                        zIndex={3}
+                                        transform="translate(42%, -48%)"
+                                        bg={recommendedCardBorderColor}
+                                        color="white"
+                                        fontSize="xs"
+                                        fontWeight="bold"
+                                        letterSpacing="0.06em"
+                                        borderRadius="md"
+                                        px={2.5}
+                                        py={1}
+                                        borderWidth="0"
+                                        textTransform="none"
+                                        boxShadow="sm"
+                                      >
+                                        RECOMENDADO
+                                      </Badge>
+                                    ) : null}
+                                    <Flex
+                                      direction={{ base: "column", sm: "row" }}
+                                      align={{ base: "stretch", sm: "stretch" }}
+                                      overflow="hidden"
+                                      borderRadius="9px"
+                                    >
+                                      <VStack
+                                        flexShrink={0}
+                                        align="stretch"
+                                        justify="center"
+                                        spacing={1}
+                                        w={{ base: "100%", sm: `${RESULT_CARD_IMAGE_SIDE_TABLET_PX}px` }}
+                                        bg="white"
+                                        border="3px solid"
+                                        borderColor="white"
+                                      >
+                                        <Box
+                                          h={{
+                                            base: `${RESULT_CARD_IMAGE_HEIGHT_MOBILE_PX}px`,
+                                            sm: `${RESULT_CARD_IMAGE_SIDE_TABLET_PX}px`,
+                                          }}
+                                          position="relative"
+                                          p={4}
+                                          mt={{ base: 5, sm: 0 }}
+                                        >
+                                          <Image
+                                            src={getTemplateImageSrc(t.name)}
+                                            alt={displayTitle}
+                                            w="100%"
+                                            h="100%"
+                                            objectFit="contain"
+                                            transition="transform 0.25s ease"
+                                            _groupHover={{ transform: "scale(1.1)" }}
+                                          />
+                                        </Box>
+                                        <Text
+                                          fontSize="xs"
+                                          color="gray.600"
+                                          opacity={0.8}
+                                          textAlign="center"
+                                          lineHeight="short"
+                                          px={2}
+                                          pb={2}
+                                        >
+                                          {RESULT_CARD_ILLUSTRATION_DISCLAIMER}
+                                        </Text>
+                                      </VStack>
+                                      <Flex
+                                        direction="column"
+                                        flex="1"
+                                        minW={0}
+                                        p={4}
+                                        justify="space-between"
+                                        gap={3}
+                                      >
+                                        <Box>
+                                          <Text
+                                            fontWeight="semibold"
+                                            color={headingColor}
+                                            fontSize="md"
+                                            lineHeight="snug"
+                                            noOfLines={2}
+                                          >
+                                            {displayTitle}
+                                          </Text>
+                                          {descriptionLines.length > 0 ? (
+                                            <UnorderedList
+                                              fontSize="xs"
+                                              color={textColor}
+                                              opacity={0.88}
+                                              mt={2}
+                                              spacing={1}
+                                              pl={1}
+                                              ml={4}
+                                              lineHeight="short"
+                                            >
+                                              {descriptionLines.map(
+                                                (line, lineIdx) => (
+                                                  <ListItem
+                                                    key={`${t.name}-desc-${lineIdx}`}
+                                                  >
+                                                    {line}
+                                                  </ListItem>
+                                                )
+                                              )}
+                                            </UnorderedList>
+                                          ) : null}
+                                        </Box>
+                                        <Box pt={1} w="100%" mt="auto">
+                                          {priceError ? (
+                                            <Text
+                                              fontSize="sm"
+                                              color="red.500"
+                                            >
+                                              {priceError}
+                                            </Text>
+                                          ) : priceValue != null ? (
+                                            <VStack
+                                              align="stretch"
+                                              spacing={3}
+                                              w="100%"
+                                            >
+                                              {rankCaption ? (
+                                                <Box
+                                                  textAlign="start"
+                                                  px={3}
+                                                  py={2}
+                                                  borderRadius="md"
+                                                  bg={
+                                                    isRecommendedCard
+                                                      ? recommendedCardBorderColor
+                                                      : resultRankCaptionBgOther
+                                                  }
+                                                >
+                                                  <Text
+                                                    fontSize={
+                                                      isRecommendedCard
+                                                        ? "xl"
+                                                        : "md"
+                                                    }
+                                                    fontWeight="bold"
+                                                    lineHeight="short"
+                                                    color="white"
+                                                  >
+                                                    {rankCaption}
+                                                  </Text>
+                                                </Box>
+                                              ) : null}
+                                              <Box
+                                                display="flex"
+                                                flexDirection={{ base: "column", sm: "row" }}
+                                                justifyContent="space-around"
+                                                my={3}
+                                                flexWrap="wrap"
+                                              >
+                                                {dimensionsLine ? (
+                                                  <Text
+                                                    fontWeight="extrabold"
+                                                    fontSize="xl"
+                                                    color={textColor}
+                                                    textAlign="center"
+                                                  >
+                                                    {dimensionsLine}
+                                                  </Text>
+                                                ) : null}
+
+                                                <Text
+                                                  fontSize="2xl"
+                                                  fontWeight="extrabold"
+                                                  color={resultListingPriceColor}
+                                                  textAlign="center"
+                                                >
+                                                  R${" "}
+                                                  {Number(priceValue).toFixed(2)}
+                                                </Text>
+                                              </Box>
+                                            </VStack>
+                                          ) : (
+                                            <Text fontSize="xs" color={textColor}>
+                                              —
+                                            </Text>
+                                          )}
+                                          <Flex justify="flex-end" mt={3}>
+                                            <Button
+                                              type="button"
+                                              size="sm"
+                                              colorScheme="blue"
+                                              onClick={() =>
+                                                handleChooseResultModel({
+                                                  templateKey: t.name,
+                                                  label: displayTitle,
+                                                })
+                                              }
+                                            >
+                                              Escolher este Modelo
+                                            </Button>
+                                          </Flex>
+                                        </Box>
+                                      </Flex>
+                                    </Flex>
+                                  </Box>
+                                );
+                              })}
+                            </SimpleGrid>
+                            <Box
+                              as="pre"
+                              p={4}
+                              bg={preBg}
+                              borderRadius="md"
+                              overflow="auto"
+                              fontSize="xs"
+                              fontFamily="mono"
+                              maxH="200px"
+                            >
+                              {JSON.stringify(
+                                resultTemplatesSortedByPrice,
+                                null,
+                                2,
+                              )}
+                            </Box>
+                          </Fragment>
                         )}
-                        <Box
-                          as="pre"
-                          p={4}
-                          bg={preBg}
-                          borderRadius="md"
-                          overflow="auto"
-                          fontSize="xs"
-                          fontFamily="mono"
-                          maxH="200px"
-                        >
-                          {JSON.stringify( elegibleTemplates, null, 2 )}
-                        </Box>
                       </VStack>
                     </Box>
                   )}
@@ -2374,6 +2794,94 @@ const CalculadoraEmbalagem: NextPage = () => {
           </Box>
         </Flex>
       </Box>
+
+      <Modal
+        isOpen={isCalculatingPrices && pricingModalNames.length > 0}
+        onClose={() => { }}
+        closeOnOverlayClick={false}
+        closeOnEsc={false}
+        isCentered
+        motionPreset="scale"
+        scrollBehavior="inside"
+      >
+        <ModalOverlay
+          bg="blackAlpha.600"
+          backdropFilter="blur(8px)"
+        />
+        <ModalContent
+          bg={bgCard}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="xl"
+          shadow="xl"
+          mx={4}
+        >
+          <ModalBody py={{ base: 6, md: 8 }} px={{ base: 5, md: 8 }}>
+            <Text
+              fontWeight="semibold"
+              color={headingColor}
+              fontSize={{ base: "md", md: "lg" }}
+              mb={5}
+              lineHeight="snug"
+            >
+              {pricingModalNames.length === 1
+                ? "Encontramos 1 modelo viável para o seu caso."
+                : `Encontramos ${pricingModalNames.length} modelos viáveis para o seu caso.`}
+            </Text>
+            <VStack align="stretch" spacing={3} as="ul" listStyleType="none" m={0} p={0}>
+              {pricingModalNames.map((name, idx) => {
+                const label = formatTemplateModelLabel(name);
+                const isDone = idx < pricingModalActiveIndex;
+                const isCurrent = idx === pricingModalActiveIndex;
+                return (
+                  <MotionBox
+                    as="li"
+                    key={name}
+                    initial={{ opacity: 0, x: -14 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: idx * 0.07,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    <HStack align="flex-start" spacing={3}>
+                      <Flex
+                        w="22px"
+                        h="22px"
+                        flexShrink={0}
+                        align="center"
+                        justify="center"
+                        pt="2px"
+                      >
+                        {isDone ? (
+                          <Icon as={CheckIcon} color="green.500" boxSize={4} />
+                        ) : null}
+                        {isCurrent ? (
+                          <Spinner size="sm" color="blue.500" thickness="3px" />
+                        ) : null}
+                      </Flex>
+                      <Text
+                        fontSize="sm"
+                        color={isCurrent ? headingColor : textColor}
+                        fontWeight={isCurrent ? "semibold" : "normal"}
+                        pt="1px"
+                        lineHeight="tall"
+                      >
+                        {isDone
+                          ? `${label} — concluído.`
+                          : isCurrent
+                            ? `Calculando modelo ${label}...`
+                            : `Aguardando modelo ${label}...`}
+                      </Text>
+                    </HStack>
+                  </MotionBox>
+                );
+              })}
+            </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
 
     </Fragment>
   );

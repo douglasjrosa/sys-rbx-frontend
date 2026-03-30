@@ -2,89 +2,234 @@
   {
     "name": "caixa_economica",
     "packType": "box",
-    "prodTypes": [1, 2, 3, 4, 6, 11],
-    "sizeLimit": 2,
-    "weightLimit": 800,
-    "isExportable": "no"
+    "calcProfile": "boxWithElevatedPallet",
+    "description": [
+      "Estrutura Econômica de sarrafos de eucalipto 30x18mm",
+      "Revestimento Econômico de compensado de pinus 3mm",
+      "Palete alto para paleteira / empilhadeira"
+    ],
+    "exportable": "no",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [1, 2, 3, 4, 6, 11],
+        "maxSizeLimit": 2,
+        "minSizeLimit": 0.06,
+        "weightLimit": 800
+      }
+    }
   },
   {
     "name": "caixa_estruturada",
     "packType": "box",
-    "prodTypes": [1, 3, 4, 6, 9, 10, 11],
-    "sizeLimit": 4,
-    "weightLimit": 1200,
-    "isExportable": "no"
+    "calcProfile": "boxWithElevatedPallet",
+    "description": [
+      "Estrutura Reforçada de sarrafos de eucalipto 60x18mm",
+      "Revestimento Econômico de compensado de pinus 3mm",
+      "Palete alto para paleteira / empilhadeira"
+    ],
+    "exportable": "no",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [1, 3, 4, 6, 9, 10, 11],
+        "maxSizeLimit": 4,
+        "minSizeLimit": 0.06,
+        "weightLimit": 1200
+      }
+    }
   },
   {
     "name": "caixa_leve",
     "packType": "box",
-    "prodTypes": [1, 2, 4, 5, 11],
-    "sizeLimit": 0.5,
-    "weightLimit": 30,
-    "isExportable": "no"
+    "calcProfile": "boxNoPallet",
+    "description": [
+      "Estrutura Econômica de sarrafos de eucalipto 30x18mm",
+      "Revestimento Econômico de compensado de pinus 3mm",
+      "Não possui palete"
+    ],
+    "exportable": "no",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [1, 2, 4, 5, 11],
+        "maxSizeLimit": 0.5,
+        "minSizeLimit": 0.06,
+        "weightLimit": 30
+      }
+    }
   },
   {
     "name": "caixa_reforcada",
     "packType": "box",
-    "prodTypes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    "sizeLimit": 10,
-    "weightLimit": 2000,
-    "isExportable": "optional"
+    "calcProfile": "boxWithElevatedPallet",
+    "description": [
+      "Estrutura Reforçada de sarrafos de eucalipto 60x18mm",
+      "Revestimento Resistente de compensado de pinus 4mm",
+      "Palete alto para paleteira / empilhadeira"
+    ],
+    "exportable": "optional",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "maxSizeLimit": 10,
+        "minSizeLimit": 0.06,
+        "weightLimit": 2000
+      },
+      "exportation": {
+        "prodTypes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "maxSizeLimit": 10,
+        "minSizeLimit": 0.06,
+        "weightLimit": 2000
+      }
+    }
   },
   {
     "name": "caixa_resistente",
     "packType": "box",
-    "prodTypes": [1, 2, 3, 4, 5, 6, 9, 11],
-    "sizeLimit": 1,
-    "weightLimit": 500,
-    "isExportable": "yes"
+    "calcProfile": "boxWithElevatedPallet",
+    "description": [
+      "Estrutura Econômica de sarrafos de eucalipto 30x18mm",
+      "Revestimento Resistente de compensado de pinus 4mm",
+      "Palete alto para paleteira / empilhadeira"
+    ],
+    "exportable": "yes",
+    "context": {
+      "exportation": {
+        "prodTypes": [1, 2, 3, 4, 5, 6, 9, 11],
+        "maxSizeLimit": 1,
+        "minSizeLimit": 0.06,
+        "weightLimit": 500
+      }
+    }
   },
   {
     "name": "caixa_super_reforcada",
     "packType": "box",
-    "prodTypes": [7, 8, 11],
-    "sizeLimit": 2,
-    "weightLimit": 2000,
-    "isExportable": "optional"
+    "calcProfile": "boxWithElevatedPallet",
+    "description": [
+      "Estrutura Reforçada de sarrafos de eucalipto 60x18mm",
+      "Revestimento Reforçado de tábuas de eucalipto 18mm",
+      "Palete alto para paleteira / empilhadeira"
+    ],
+    "exportable": "optional",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [7, 8, 11],
+        "maxSizeLimit": 2,
+        "minSizeLimit": 0.06,
+        "weightLimit": 2000
+      },
+      "exportation": {
+        "prodTypes": [7, 8, 11],
+        "maxSizeLimit": 2,
+        "minSizeLimit": 0.06,
+        "weightLimit": 2000
+      }
+    }
   },
   {
     "name": "engradado_leve",
     "packType": "crate",
-    "prodTypes": [2],
-    "sizeLimit": 0.5,
-    "weightLimit": 30,
-    "isExportable": "no"
+    "calcProfile": "crateNoPallet",
+    "description": [
+      "Estrutura Econômica de sarrafos de eucalipto 30x18mm",
+      "Não possui revestimento",
+      "Não possui palete"
+    ],
+    "exportable": "no",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [2],
+        "maxSizeLimit": 0.5,
+        "minSizeLimit": 0.06,
+        "weightLimit": 30
+      }
+    }
   },
   {
     "name": "engradado_economico",
     "packType": "crate",
-    "prodTypes": [4],
-    "sizeLimit": 1,
-    "weightLimit": 100,
-    "isExportable": "no"
+    "calcProfile": "crateWithElevatedPallet",
+    "description": [
+      "Estrutura Econômica de sarrafos de eucalipto 30x18mm",
+      "Não possui revestimento",
+      "Palete alto para paleteira / empilhadeira"
+    ],
+    "exportable": "no",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [4],
+        "maxSizeLimit": 1,
+        "minSizeLimit": 0.06,
+        "weightLimit": 100
+      }
+    }
   },
   {
     "name": "engradado_resistente",
     "packType": "crate",
-    "prodTypes": [2, 3, 4, 8, 10, 11],
-    "sizeLimit": 2,
-    "weightLimit": 700,
-    "isExportable": "no"
+    "calcProfile": "crateWithElevatedPallet",
+    "description": [
+      "Estrutura Econômica de sarrafos de eucalipto 30x18mm",
+      "Não possui revestimento",
+      "Palete alto para paleteira / empilhadeira"
+    ],
+    "exportable": "no",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [2, 3, 4, 8, 10, 11],
+        "maxSizeLimit": 2,
+        "minSizeLimit": 0.06,
+        "weightLimit": 700
+      }
+    }
   },
   {
     "name": "engradado_reforcado",
     "packType": "crate",
-    "prodTypes": [4, 7, 8, 11],
-    "sizeLimit": 3,
-    "weightLimit": 1500,
-    "isExportable": "optional"
+    "calcProfile": "crateWithElevatedPallet",
+    "description": [
+      "Amarração horizontal de sarrafos de eucalipto 60x18mm",
+      "Estrutura vertical de tábuas de eucalipto 18mm",
+      "Palete alto para paleteira / empilhadeira"
+    ],
+    "exportable": "optional",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [4, 7, 8, 11],
+        "maxSizeLimit": 3,
+        "minSizeLimit": 0.06,
+        "weightLimit": 1500
+      },
+      "exportation": {
+        "prodTypes": [4, 7, 8, 11],
+        "maxSizeLimit": 3,
+        "minSizeLimit": 0.06,
+        "weightLimit": 1500
+      }
+    }
   },
   {
     "name": "palete_sob_medida",
     "packType": "pallet",
-    "prodTypes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    "sizeLimit": 2,
-    "weightLimit": 2000,
-    "isExportable": "optional"
+    "calcProfile": "palletOnly",
+    "description": [
+      "Palete sob medida para carga específica",
+      "Pés altos para empilhadeira ou paleteira",
+      "Assoalho fechado com tábuas de eucalipto 18mm"
+    ],
+    "exportable": "optional",
+    "context": {
+      "localDelivery": {
+        "prodTypes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "maxSizeLimit": 2,
+        "minSizeLimit": 0.06,
+        "weightLimit": 2000
+      },
+      "exportation": {
+        "prodTypes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "maxSizeLimit": 2,
+        "minSizeLimit": 0.06,
+        "weightLimit": 2000
+      }
+    }
   }
 ]

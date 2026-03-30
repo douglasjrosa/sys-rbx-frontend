@@ -5,6 +5,14 @@ export type MeasuresOf = "internal" | "product";
 export type Unit = "mm" | "cm";
 export type IsExportable = "yes" | "no" | "optional";
 
+/** Maps calculadora templates to RBX $cx defaults (vs PackagingCalculator::addInfo all-on). */
+export type CalcProfile =
+  | "boxWithElevatedPallet"
+  | "boxNoPallet"
+  | "crateWithElevatedPallet"
+  | "crateNoPallet"
+  | "palletOnly";
+
 export const UNITIZED_PROD_TYPES = [1, 2, 3, 4];
 export const FRACTIONED_PROD_TYPES = [5, 6, 7];
 export const ASK_CONTENT_PROD_TYPES = [8, 9, 10, 11];
@@ -27,13 +35,26 @@ export const PRODUCT_TYPE_LABELS: Record<number, string> = {
   11: "Outro tipo de produto",
 };
 
+/** Limits for one commercial context (local vs export). */
+export interface TemplateContextRule {
+  prodTypes: number[];
+  maxSizeLimit: number;
+  minSizeLimit: number;
+  weightLimit: number;
+}
+
 export interface BoxTemplate {
   name: string;
   packType: PackType;
-  prodTypes: number[];
-  sizeLimit: number;
-  weightLimit: number;
-  isExportable: IsExportable;
+  /** Marketing / spec bullets shown on result cards */
+  description?: string[];
+  /** When set, pricing proxy merges RBX calcular overrides for this commercial intent. */
+  calcProfile?: CalcProfile;
+  exportable: IsExportable;
+  context: {
+    localDelivery?: TemplateContextRule;
+    exportation?: TemplateContextRule;
+  };
 }
 
 export interface PackagingFormData {
@@ -63,7 +84,7 @@ export function isOversized(
   length: number,
   width: number,
   height: number,
-  sizeLimit: number
+  maxSizeLimit: number
 ): boolean {
   const baseAndLidM2 = length * width;
   const sideM2 = length * height;
@@ -72,12 +93,41 @@ export function isOversized(
   const boxM3 = length * width * height;
   const biggestMeasure = Math.max(length, width, height);
   return (
-    baseAndLidM2 > sizeLimit ||
-    sideM2 > sizeLimit ||
-    endM2 > sizeLimit ||
-    biggestM2 > sizeLimit ||
-    boxM3 > sizeLimit ||
-    biggestMeasure > sizeLimit
+    baseAndLidM2 > maxSizeLimit ||
+    sideM2 > maxSizeLimit ||
+    endM2 > maxSizeLimit ||
+    biggestM2 > maxSizeLimit ||
+    boxM3 > maxSizeLimit ||
+    biggestMeasure > maxSizeLimit
+  );
+}
+
+/**
+ * Inverse of isOversized for minimum limits. Metrics that are 0 (e.g. side areas
+ * when height is 0 for pallets) are ignored so behavior matches isOversized.
+ */
+export function isUndersized(
+  length: number,
+  width: number,
+  height: number,
+  minSizeLimit: number
+): boolean {
+  const baseAndLidM2 = length * width;
+  const sideM2 = length * height;
+  const endM2 = width * height;
+  const biggestM2 = Math.max(baseAndLidM2, sideM2, endM2);
+  const boxM3 = length * width * height;
+  const biggestMeasure = Math.max(length, width, height);
+
+  const belowMinimum = (metric: number) => metric > 0 && metric < minSizeLimit;
+
+  return (
+    belowMinimum(baseAndLidM2) ||
+    belowMinimum(sideM2) ||
+    belowMinimum(endM2) ||
+    belowMinimum(biggestM2) ||
+    belowMinimum(boxM3) ||
+    belowMinimum(biggestMeasure)
   );
 }
 
@@ -87,15 +137,30 @@ export function isOverweight(weight: number, weightLimit: number): boolean {
 
 export function isEligible(
   oversized: boolean,
+  undersized: boolean,
   overweight: boolean
 ): boolean {
-  return !oversized && !overweight;
+  return !oversized && !undersized && !overweight;
 }
 
-function isExportMatch(formIsExport: boolean, templateIsExportable: IsExportable): boolean {
-  if (templateIsExportable === "optional") return true;
-  if (formIsExport) return templateIsExportable === "yes";
-  return templateIsExportable === "no";
+function isExportMatch(
+  formIsExport: boolean,
+  templateExportable: IsExportable,
+): boolean {
+  if (templateExportable === "optional") return true;
+  if (formIsExport) return templateExportable === "yes";
+  return templateExportable === "no";
+}
+
+function resolveContextRule(
+  template: BoxTemplate,
+  formIsExport: boolean,
+): TemplateContextRule | null {
+  const { context } = template;
+  if (formIsExport) {
+    return context.exportation ?? null;
+  }
+  return context.localDelivery ?? null;
 }
 
 export function validateCnpj(cnpjStr: string): boolean {
@@ -124,20 +189,31 @@ export function getElegibleTemplates(
   for (const template of templates) {
     const packTypeMatch =
       formData.packType === "any" || template.packType === formData.packType;
-    const prodTypeMatch = template.prodTypes.includes(formData.prodType);
-    const exportMatch = isExportMatch(formData.isExport, template.isExportable);
+    const exportMatch = isExportMatch(formData.isExport, template.exportable);
 
-    if (!packTypeMatch || !prodTypeMatch || !exportMatch) continue;
+    if (!packTypeMatch || !exportMatch) continue;
+
+    const rule = resolveContextRule(template, formData.isExport);
+    if (!rule) continue;
+
+    const prodTypeMatch = rule.prodTypes.includes(formData.prodType);
+    if (!prodTypeMatch) continue;
 
     const oversized = isOversized(
       lengthM,
       widthM,
       heightM,
-      template.sizeLimit
+      rule.maxSizeLimit
     );
-    const overweight = isOverweight(formData.weight, template.weightLimit);
+    const undersized = isUndersized(
+      lengthM,
+      widthM,
+      heightM,
+      rule.minSizeLimit
+    );
+    const overweight = isOverweight(formData.weight, rule.weightLimit);
 
-    if (isEligible(oversized, overweight)) {
+    if (isEligible(oversized, undersized, overweight)) {
       eligible.push(template.name);
     }
   }
