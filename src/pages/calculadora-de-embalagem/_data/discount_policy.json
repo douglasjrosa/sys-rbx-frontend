@@ -1,0 +1,69 @@
+[
+    {
+        "name": "atacado",
+        "title": "Atacado",
+        "description": "Vou comprar 10 ou mais unidades iguais.",
+        "sub_description": "Esta quantidade deve referir-se a uma mesma medida de embalagem e a um mesmo pedido.",
+        "valid_for": "Desconto válido para todas as unidades com estas mesmas medidas.",
+        "percentage": 0.03
+    },
+    {
+        "name": "frete-fob",
+        "title": "Frete FOB",
+        "description": "Vou contratar o frete por conta própria.",
+        "sub_description": "O cliente deve negociar diretamente com a transportadora.",
+        "valid_for": "Desconto no pedido todo.",
+        "percentage": 0.03
+    },
+    {
+        "name": "recorrencia",
+        "title": "Recorrência",
+        "description": "Tenho demanda mensal de pelo menos 100 unidades.",
+        "sub_description": "Válido somente depois do primeiro mês de compras do cliente comprovando a demanda mensal.",
+        "valid_for": "Desconto em todos os pedidos do cliente",
+        "percentage": 0.03
+    },
+    {
+        "name": "antecedencia",
+        "title": "Antecedência",
+        "description": "Vou confirmar o pedido com antecedência.",
+        "sub_description": "O pedido deve ser oficializado com antecedência de pelo menos 10 dias úteis.",
+        "valid_for": "Desconto no pedido todo.",
+        "percentage": 0.03
+    },
+    {
+        "name": "pagamento-antecipado",
+        "title": "Pagamento antecipado",
+        "description": "Vou pagar no ato do pedido.",
+        "sub_description": "O pedido só entra na fila de produção após o pagamento.",
+        "valid_for": "Desconto no pedido todo.",
+        "percentage": 0.05
+    },
+    {
+        "name": "carga-completa-vuc",
+        "title": "Carga completa VUC",
+        "description": "Meu pedido deve ultrapassar o valor de 20 mil reais.",
+        "sub_description": "O pedido deve encher um pequeno caminhão urbano. (volume aproximado)",
+        "valid_for": "Desconto no pedido todo.",
+        "percentage": 0.05,
+        "radio_group": "carga-completa"
+    },
+    {
+        "name": "carga-completa-34",
+        "title": "Carga completa 3/4",
+        "description": "Meu pedido deve ultrapassar o valor de 30 mil reais.",
+        "sub_description": "O pedido deve encher um caminhão 3/4. (volume aproximado)",
+        "valid_for": "Desconto no pedido todo.",
+        "percentage": 0.06,
+        "radio_group": "carga-completa"
+    },
+    {
+        "name": "carga-completa-truck",
+        "title": "Carga completa Truck",
+        "description": "Meu pedido deve ultrapassar o valor de 40 mil reais.",
+        "sub_description": "O pedido deve encher um caminhão Truck. (volume aproximado)",
+        "valid_for": "Desconto no pedido todo.",
+        "percentage": 0.07,
+        "radio_group": "carga-completa"
+    }
+]

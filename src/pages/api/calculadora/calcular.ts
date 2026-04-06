@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import boxTemplates from "@/data/box-templates.json";
-import type { BoxTemplate } from "@/utils/packagingCalculator";
+import boxTemplates from "@/pages/calculadora-de-embalagem/_data/box-templates.json";
+import type { BoxTemplate } from "@/lib/calculadora-de-embalagem/utils/packagingCalculator";
 import {
   CALC_CX_QUERY_ALLOWLIST,
   findBoxTemplateByName,
   mergeCalcCxPatches,
-} from "@/utils/templateCalcParams";
+} from "@/lib/calculadora-de-embalagem/utils/templateCalcParams";
 
 const FETCH_TIMEOUT_MS = 30000;
 

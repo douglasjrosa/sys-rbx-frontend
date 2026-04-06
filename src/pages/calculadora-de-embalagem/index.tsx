@@ -1,5 +1,4 @@
 import {
-  Badge,
   Box,
   Button,
   Collapse,
@@ -9,39 +8,32 @@ import {
   Heading,
   HStack,
   Icon,
-  IconButton,
   Image,
   Input,
   Modal,
   ModalBody,
   ModalContent,
+  ModalFooter,
   ModalOverlay,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  ListItem,
+  Radio,
+  RadioGroup,
   SimpleGrid,
   Spinner,
   Text,
-  UnorderedList,
   useColorMode,
   useColorModeValue,
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import {
-  ArrowBackIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  EditIcon,
-  MoonIcon,
-  SunIcon,
-} from "@chakra-ui/icons";
+import { ArrowBackIcon, CheckIcon } from "@chakra-ui/icons";
 import { FaWeightHanging } from "react-icons/fa";
 import { BsArrowsAngleExpand } from "react-icons/bs";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { NextPage } from "next";
 import Head from "next/head";
 import {
@@ -56,7 +48,9 @@ import {
 import {
   ASK_CONTENT_PROD_TYPES,
   FRACTIONED_PROD_TYPES,
+  AssemblyType,
   getElegibleTemplates,
+  resolveInternalPackageDimensions,
   PackagingFormData,
   PackType,
   MeasuresOf,
@@ -67,215 +61,114 @@ import {
   WEIGHT_THRESHOLD_KG,
   LENGTH_THRESHOLD_M,
   WIDTH_THRESHOLD_M,
-  BoxTemplate,
-} from "@/utils/packagingCalculator";
-import boxTemplates from "@/data/box-templates.json";
-import { PackagingProgressTrack } from "@/components/calculadora-embalagem/PackagingProgressTrack";
-import { getTemplateImageSrc } from "@/utils/templateImages";
-
-const DESCRIPTION_LINES_BY_TEMPLATE_NAME = new Map<string, string[]>(
-  (boxTemplates as unknown as BoxTemplate[]).map((tpl) => [
-    tpl.name,
-    Array.isArray(tpl.description) ? tpl.description : [],
-  ])
-);
-
-export interface ElegibleTemplateResult {
-  name: string;
-  priceResult?: {
-    info?: { vFinal?: number; titulo?: string; preco?: number };
-    error?: string;
-  };
-}
-
-/** Display copy for the first three result cards after price sort (PT-BR). */
-const RESULT_CARD_RANK_CAPTIONS = [
-  "Modelo suficiente para o seu caso. Melhor custo benefício.",
-  "Modelo ideal caso você queira um reforço a mais para diminuir riscos.",
-  "Modelo indicado caso o seu produto seja de altíssimo valor e você queira o menor risco possível.",
-] as const;
-
-function numericPriceForSort(item: ElegibleTemplateResult): number {
-  const raw = item.priceResult?.info?.vFinal;
-  const n = raw == null ? NaN : Number(raw);
-  if (Number.isFinite(n)) return n;
-  return Number.POSITIVE_INFINITY;
-}
-
-function sortTemplateResultsByPriceAsc(
-  items: ElegibleTemplateResult[],
-): ElegibleTemplateResult[] {
-  return [...items].sort((a, b) => {
-    const na = numericPriceForSort(a);
-    const nb = numericPriceForSort(b);
-    if (na !== nb) return na - nb;
-    return a.name.localeCompare(b.name);
-  });
-}
-
-function formatTemplateModelLabel(templateKey: string): string {
-  return templateKey
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-/** L x W [x H unit (alt.)] matching user unit (mm/cm); same rules as summary. */
-function formatSimulationDimensionsLine(
-  formData: Partial<PackagingFormData>,
-): string | null {
-  if (!formData.length || !formData.width) return null;
-  const u = formData.unit ?? "mm";
-  const hasHeight =
-    formData.packType !== "pallet" &&
-    formData.height != null &&
-    formData.height > 0;
-  if (hasHeight) {
-    return (
-      `${formData.length} x ${formData.width} x ${formData.height} ${u} (alt.)`
-    );
-  }
-  return `${formData.length} x ${formData.width} ${u}`;
-}
-
-const PACK_TYPE_OPTIONS: { value: PackType; label: string }[] = [
-  { value: "box", label: "Caixa Fechada" },
-  { value: "crate", label: "Engradado" },
-  { value: "pallet", label: "Palete" },
-  { value: "any", label: "Ajude-me a escolher" },
-];
-
-const PACK_TYPE_IMAGES: Record<PackType, string> = {
-  box: "/img/box.jpg",
-  crate: "/img/crate.jpg",
-  pallet: "/img/pallet.jpg",
-  any: "/img/any.jpg",
-};
-
-const WEIGHT_RANGE_OPTIONS: { value: number; label: string }[] = [
-  { value: 30, label: "Menos de 30 Kg" },
-  { value: 100, label: "Entre 30 e 100 Kg" },
-  { value: 500, label: "Entre 100 e 500 Kg" },
-  { value: 1000, label: "Entre 500 e 1.000 Kg" },
-  { value: 2000, label: "Entre 1.000 e 2.000 Kg" },
-  { value: 2500, label: "Acima de 2.000 Kg" },
-];
-
-const CLEARANCE_OPTIONS_MM: {
-  value: number;
-  label: string;
-  suffix: string;
-  iconSize: number;
-}[] = [
-    { value: 10, label: "Mínima", suffix: "(10mm)", iconSize: 3 },
-    { value: 30, label: "Média", suffix: "(30mm)", iconSize: 5 },
-    { value: 50, label: "Grande", suffix: "(50mm)", iconSize: 7 },
-    { value: 100, label: "Extra grande", suffix: "(100mm)", iconSize: 9 },
-  ];
-
-const CLEARANCE_OPTIONS_CM: {
-  value: number;
-  label: string;
-  suffix: string;
-  iconSize: number;
-}[] = [
-    { value: 1, label: "Folga Mínima", suffix: "(1cm)", iconSize: 3 },
-    { value: 3, label: "Folga Média", suffix: "(3cm)", iconSize: 5 },
-    { value: 5, label: "Folga Grande", suffix: "(5cm)", iconSize: 7 },
-    { value: 10, label: "Folga Extra Grande", suffix: "(10cm)", iconSize: 9 },
-  ];
-
-const PRODUCT_TYPE_IMAGES: Record<number, string | null> = {
-  1: "/img/prodType-1.jpeg",
-  2: "/img/prodType-2.webp",
-  3: "/img/prodType-3.jpg",
-  4: "/img/prodType-4.webp",
-  5: "/img/prodType-5.png",
-  6: "/img/prodType-6.jpg",
-  7: "/img/prodType-7.jpg",
-  8: "/img/prodType-8.jpg",
-  9: "/img/prodType-9.jpg",
-  10: "/img/prodType-10.jpg",
-  11: "/img/prodType-11.webp",
-};
-
-const STEP_TELA1 = 1;
-const STEP_TELA2 = 2;
-const STEP_TELA3 = 3;
-const STEP_TELA4 = 4;
-const STEP_TELA5 = 5;
-const STEP_TELA6 = 6;
-const STEP_TELA7 = 7;
-const STEP_RESULT = 8;
-
-const PROGRESS_STEPS = [
-  { id: 1, label: "Sobre a embalagem", telas: [1] },
-  { id: 2, label: "E-mail", telas: [2] },
-  { id: 3, label: "Medidas e detalhes", telas: [3, 4, 5, 6] },
-  { id: 4, label: "CNPJ", telas: [7] },
-  { id: 5, label: "Preço", telas: [8] },
-  { id: 6, label: "Política de descontos", telas: [9], comingSoon: true },
-  { id: 7, label: "Comprar", telas: [10], comingSoon: true },
-] as const;
-
-const initialForm: Partial<PackagingFormData> = {
-  prodType: 0,
-  weight: 0,
-  measuresOf: undefined,
-  unit: "mm",
-  length: undefined,
-  width: undefined,
-  height: undefined,
-  clearance: undefined,
-  isUnitizedContent: undefined,
-  isDistributedWeight: undefined,
-  customerCnpj: "",
-  customerName: "",
-  customerEmail: "",
-  customerPhone: "",
-};
-
-const MotionBox = motion(Box);
-
-const TELA1_SUB_PACK = 0;
-const TELA1_SUB_PROD = 1;
-const TELA1_SUB_EXPORT = 2;
-const TELA1_SUB_WEIGHT = 3;
-
-const DEFAULT_PRODTYPE_FOR_PALLET = 11;
-
-const CUSTOMER_STORAGE_KEY = "calculadora-embalagem-customer";
-const RESULT_CARD_IMAGE_HEIGHT_MOBILE_PX = 200;
-const RESULT_CARD_IMAGE_SIDE_TABLET_PX = 240;
-const RESULT_CARD_ILLUSTRATION_DISCLAIMER = "* Imagem meramente ilustrativa do modelo";
-
-type CalculadoraCustomerStored = {
-  customerName?: string;
-  customerEmail?: string;
-  customerCnpj?: string;
-  customerPhone?: string;
-};
-
-function readCalculadoraCustomerStored(): CalculadoraCustomerStored {
-  try {
-    const raw = localStorage.getItem(CUSTOMER_STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as CalculadoraCustomerStored;
-    return typeof parsed === "object" && parsed != null ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function mergeCalculadoraCustomerStorage(
-  patch: Partial<CalculadoraCustomerStored>,
-) {
-  try {
-    const next = { ...readCalculadoraCustomerStored(), ...patch };
-    localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Ignore quota / private mode
-  }
-}
+} from "@/lib/calculadora-de-embalagem/utils/packagingCalculator";
+import { PackagingProgressTrack } from "@/lib/calculadora-de-embalagem/components/PackagingProgressTrack";
+import {
+  TypewriterBlock,
+  TypewriterCardText,
+} from "@/lib/calculadora-de-embalagem/components/TypewriterCardText";
+import { DiscountPolicyDiscountCard } from "@/lib/calculadora-de-embalagem/components/DiscountPolicyDiscountTable";
+import type { AppliedDiscounts } from "@/lib/calculadora-de-embalagem/utils/appliedDiscounts";
+import { buildAppliedDiscounts } from "@/lib/calculadora-de-embalagem/utils/appliedDiscounts";
+import { DiscountPolicySelectedModelSection } from "@/lib/calculadora-de-embalagem/components/DiscountPolicySelectedModelSection";
+import { ResultTemplateCard } from "@/lib/calculadora-de-embalagem/components/ResultTemplateCard";
+import { SimulationSummaryPanel } from "@/lib/calculadora-de-embalagem/components/SimulationSummaryPanel";
+import { StepConferirContent } from "@/lib/calculadora-de-embalagem/components/StepConferirContent";
+import type { ElegibleTemplateResult } from "@/lib/calculadora-de-embalagem/utils/types";
+import {
+  DEFAULT_PRODTYPE_FOR_PALLET,
+  PROGRESS_STEPS,
+  STEP_CONFERIR,
+  STEP_DISCOUNT,
+  STEP_RESULT,
+  STEP_TELA1,
+  STEP_TELA2,
+  STEP_TELA3,
+  STEP_TELA4,
+  STEP_TELA5,
+  STEP_TELA6,
+  STEP_TELA7,
+  TELA1_SUB_EXPORT,
+  TELA1_SUB_PACK,
+  TELA1_SUB_PROD,
+  TELA1_SUB_WEIGHT,
+} from "@/lib/calculadora-de-embalagem/utils/wizardSteps";
+import {
+  ASSEMBLY_OPTIONS,
+  CLEARANCE_OPTIONS_CM,
+  CLEARANCE_OPTIONS_MM,
+  initialForm,
+  PACK_TYPE_IMAGES,
+  PACK_TYPE_OPTIONS,
+  PRODUCT_TYPE_IMAGES,
+  WEIGHT_RANGE_OPTIONS,
+} from "@/lib/calculadora-de-embalagem/utils/formOptions";
+import {
+  TELA1_TW_EXPORT_BOX,
+  TELA1_TW_EXPORT_PALLET,
+  TELA1_TW_PACK,
+  TELA1_TW_PROD,
+  TELA1_TW_WEIGHT_BOX,
+  TELA1_TW_WEIGHT_PALLET,
+  TELA4_TW_U_FALSE_HEAD,
+  TELA4_TW_U_FALSE_PARA,
+  TELA4_TW_U_TRUE_HEAD,
+  TELA4_TW_U_TRUE_OPT0,
+  TELA4_TW_U_TRUE_OPT1,
+  TELA6_TW_BULLET_1,
+  TELA6_TW_BULLET_2,
+  TELA6_TW_TITLE,
+  TELA7_TW_CNPJ_LABEL,
+  TELA7_TW_INTRO,
+  TW_SEQ_TELA2,
+  TW_SEQ_TELA3,
+  TW_SEQ_TELA4,
+  TW_SEQ_TELA5,
+  TW_SEQ_TELA6,
+  TW_SEQ_TELA7,
+} from "@/lib/calculadora-de-embalagem/utils/typewriterConstants";
+import {
+  formatCnpjMaskInput,
+  formatMoneyBrlPtBr,
+  formatSimulationDimensionsLine,
+  formatTemplateModelLabel,
+} from "@/lib/calculadora-de-embalagem/utils/formatters";
+import {
+  ASSEMBLY_SURCHARGE_FRACTION_OF_VFINAL,
+  sortTemplateResultsByPriceAsc,
+} from "@/lib/calculadora-de-embalagem/utils/pricing";
+import {
+  assemblyIllustrationSrc,
+  boxTemplatesList,
+  packTypeForTemplateName,
+} from "@/lib/calculadora-de-embalagem/utils/templateMeta";
+import {
+  CONTACT_CHANNEL_OPTIONS,
+  contactChannelShowsEmail,
+  contactChannelShowsPhone,
+  isContactPreferencesStepComplete,
+  type ContactChannel,
+} from "@/lib/calculadora-de-embalagem/utils/contactChannel";
+import {
+  hydrateInitialFormFromCustomerStorage,
+  mergeCalculadoraCustomerStorage,
+  readCalculadoraCustomerStored,
+} from "@/lib/calculadora-de-embalagem/utils/customerStorage";
+import {
+  buildCalculadoraSubmissionPayload,
+  type CalculadoraSubmissionPayload,
+  type CustomerClarity,
+} from "@/lib/calculadora-de-embalagem/utils/calculadoraSubmissionPayload";
+import { getStrapiErrorDescription } from "@/lib/strapiApiError";
+import { buildCalculadoraPricingQuote } from "@/lib/calculadora-de-embalagem/utils/pricing";
+import { isProgressStepUnlocked as checkProgressUnlocked } from "@/lib/calculadora-de-embalagem/utils/progressNavigation";
+import { getRecommendedTemplateName } from "@/lib/calculadora-de-embalagem/utils/recommendedTemplate";
+import { MotionBox } from "@/lib/calculadora-de-embalagem/components/motionPrimitives";
+import { CalculadoraPageChrome } from "@/lib/calculadora-de-embalagem/components/CalculadoraPageChrome";
+import {
+  useCalculadoraSimulationSummaryItems,
+  useCalculadoraThemeTokens,
+} from "@/lib/calculadora-de-embalagem/hooks/useCalculadoraWizard";
 
 const CalculadoraEmbalagem: NextPage = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -291,6 +184,15 @@ const CalculadoraEmbalagem: NextPage = () => {
   const [pricingModalActiveIndex, setPricingModalActiveIndex] = useState(0);
   const [recommendationsAcknowledged, setRecommendationsAcknowledged] = useState(false);
   const [simulationSummaryOpen, setSimulationSummaryOpen] = useState(true);
+  const [customerClarity, setCustomerClarity] = useState<CustomerClarity | null>(
+    null,
+  );
+  const [conferirQty, setConferirQty] = useState<number | "">(1);
+  const [conferirProdName, setConferirProdName] = useState("");
+  const [conferirProdCode, setConferirProdCode] = useState("");
+  const [conferirMessage, setConferirMessage] = useState("");
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const lastSubmissionRef = useRef<CalculadoraSubmissionPayload | null>(null);
   const sectionPackTypeRef = useRef<HTMLDivElement>(null);
   const sectionProdTypeRef = useRef<HTMLDivElement>(null);
   const sectionIsExportRef = useRef<HTMLDivElement>(null);
@@ -307,6 +209,9 @@ const CalculadoraEmbalagem: NextPage = () => {
   const sectionTela5ContinuarRef = useRef<HTMLDivElement>(null);
   const sectionTela6Ref = useRef<HTMLDivElement>(null);
   const sectionTela7Ref = useRef<HTMLDivElement>(null);
+  const sectionAssemblyRef = useRef<HTMLDivElement>(null);
+  const sectionAssemblyContinueRef = useRef<HTMLDivElement>(null);
+  const sectionResultModelsRef = useRef<HTMLDivElement>(null);
   const isFirstStepEffect = useRef(true);
 
   const scrollToSection = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
@@ -354,6 +259,21 @@ const CalculadoraEmbalagem: NextPage = () => {
 
   const showTela5Continuar = form.isDistributedWeight !== undefined;
 
+  const contactFormComplete = useMemo(
+    () => isContactPreferencesStepComplete(form, validateEmail),
+    [
+      form.contactChannel,
+      form.customerName,
+      form.customerEmail,
+      form.customerPhone,
+    ],
+  );
+
+  const tela7NfeFieldsValid = useMemo(() => {
+    const nfe = (form.emailNfe || "").trim();
+    return nfe !== "" && validateEmail(nfe);
+  }, [form.emailNfe]);
+
   const prevShowTela1ContinuarRef = useRef(showTela1Continuar);
   const prevShowTela2ContinuarRef = useRef(showTela2Continuar);
   const prevShowTela5ContinuarRef = useRef(showTela5Continuar);
@@ -362,44 +282,232 @@ const CalculadoraEmbalagem: NextPage = () => {
     : step <= 2 ? 2
       : step <= 6 ? 3
         : step <= 7 ? 4
-          : 5;
+          : step <= STEP_RESULT ? 5
+            : step <= STEP_DISCOUNT ? 6
+              : 7;
 
-  const bgPage = useColorModeValue("gray.50", "gray.900");
-  const bgCard = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
-  const headingColor = useColorModeValue("gray.800", "white");
-  const textColor = useColorModeValue("gray.600", "gray.300");
-  const preBg = useColorModeValue("gray.100", "gray.700");
-  const unitToggleHoverBg = useColorModeValue("gray.300", "gray.600");
-  const clearanceBadgeBgActive = useColorModeValue("blue.50", "blue.900");
-  const placeholderColor = useColorModeValue("gray.500", "gray.400");
-  const progressTrackInactiveBg = useColorModeValue("gray.200", "gray.600");
-  const resultListingPriceColor = useColorModeValue("green.500", "green.300");
-  const recommendedCardBorderColor = useColorModeValue(
-    "orange.400",
-    "orange.300",
-  );
-  const resultRankCaptionBgOther = useColorModeValue(
-    "gray.600",
-    "gray.500",
-  );
+  const {
+    bgPage,
+    bgCard,
+    borderColor,
+    headingColor,
+    textColor,
+    preBg,
+    unitToggleHoverBg,
+    clearanceBadgeBgActive,
+    placeholderColor,
+    progressTrackInactiveBg,
+    resultListingPriceColor,
+    recommendedCardBorderColor,
+    resultRankCaptionBgOther,
+    assemblyOptionCardBg,
+  } = useCalculadoraThemeTokens();
+
+  const successModalToastBg = useColorModeValue("green.50", "green.900");
+  const successModalToastBorder = useColorModeValue("green.200", "green.700");
+  const successModalToastAccent = useColorModeValue("green.500", "green.400");
+  const ganheTempoTitleColor = useColorModeValue("blue.500", "blue.300");
 
   const resultTemplatesSortedByPrice = useMemo(
     () => sortTemplateResultsByPriceAsc(elegibleTemplates),
     [elegibleTemplates],
   );
 
+  const tela1TypewriterSequenceKey = useMemo(
+    () => `tela1-${form.template || "none"}`,
+    [form.template],
+  );
+
+  const resultTypewriterSequenceKey = useMemo(
+    () => `result-${form.template || "none"}`,
+    [form.template],
+  );
+
+  const tela4DimensionsIntroLineIndex = useMemo(() => {
+    if (isPallet) return 0;
+    if (form.isUnitizedContent === true) return 3;
+    if (form.isUnitizedContent === false) return 2;
+    return 0;
+  }, [isPallet, form.isUnitizedContent]);
+
+  const tela4ClearanceLineBase = useMemo(
+    () => tela4DimensionsIntroLineIndex + 1,
+    [tela4DimensionsIntroLineIndex],
+  );
+
+  const tela4MeasuresBlockResetKey = useMemo(
+    () =>
+      `${TW_SEQ_TELA4}-${form.packType ?? "none"}-u${String(
+        form.isUnitizedContent,
+      )}`,
+    [form.packType, form.isUnitizedContent],
+  );
+
+  const visibleResultTemplates = useMemo(() => {
+    if (!form.template) return resultTemplatesSortedByPrice;
+    return resultTemplatesSortedByPrice.filter((t) => t.name === form.template);
+  }, [form.template, resultTemplatesSortedByPrice]);
+
+  const recommendedTemplateName = useMemo(
+    () => getRecommendedTemplateName(resultTemplatesSortedByPrice),
+    [resultTemplatesSortedByPrice],
+  );
+
+  const chosenTemplateRow = useMemo(
+    () =>
+      form.template
+        ? elegibleTemplates.find((t) => t.name === form.template)
+        : undefined,
+    [form.template, elegibleTemplates],
+  );
+
+  const conferirPackTypeForQty = useMemo((): Exclude<PackType, "any"> => {
+    const fromTemplate = (name: string | undefined): Exclude<PackType, "any"> => {
+      const p = name ? packTypeForTemplateName(name) : undefined;
+      if (p === "box" || p === "crate" || p === "pallet") {
+        return p;
+      }
+      return "box";
+    };
+    if (form.packType === "any") {
+      return fromTemplate(form.template);
+    }
+    if (
+      form.packType === "box" ||
+      form.packType === "crate" ||
+      form.packType === "pallet"
+    ) {
+      return form.packType;
+    }
+    return fromTemplate(form.template);
+  }, [form.packType, form.template]);
+
+  const selectedTemplatePackType = useMemo((): PackType | undefined => {
+    if (!form.template) return undefined;
+    return packTypeForTemplateName(form.template);
+  }, [form.template]);
+
+  const assemblyAssetFolder = useMemo((): "box" | "crate" | null => {
+    if (selectedTemplatePackType === "box") return "box";
+    if (selectedTemplatePackType === "crate") return "crate";
+    return null;
+  }, [selectedTemplatePackType]);
+
+  const showAssemblySection =
+    Boolean(form.template) && assemblyAssetFolder !== null;
+
+  const selectedTemplateVFinal = useMemo(() => {
+    if (!form.template) return NaN;
+    const row = elegibleTemplates.find((t) => t.name === form.template);
+    const raw = row?.priceResult?.info?.vFinal;
+    const n = raw == null ? NaN : Number(raw);
+    return Number.isFinite(n) ? n : NaN;
+  }, [form.template, elegibleTemplates]);
+
+  const [discountEnabledByName, setDiscountEnabledByName] = useState<
+    Record<string, boolean>
+  >({});
+
+  const appliedDiscounts = useMemo((): AppliedDiscounts => {
+    const hasValidPrice =
+      Number.isFinite(selectedTemplateVFinal) && selectedTemplateVFinal > 0;
+    return buildAppliedDiscounts(
+      discountEnabledByName,
+      hasValidPrice,
+      selectedTemplateVFinal,
+    );
+  }, [discountEnabledByName, selectedTemplateVFinal]);
+
+  const conferirPricingQuote = useMemo(() => {
+    const v = selectedTemplateVFinal;
+    if (!Number.isFinite(v)) return null;
+    return buildCalculadoraPricingQuote({
+      vFinal: v,
+      isExport: form.isExport === true,
+      assembly: form.assembly,
+      discountsTotalBrl: appliedDiscounts.totalValue,
+    });
+  }, [
+    selectedTemplateVFinal,
+    form.isExport,
+    form.assembly,
+    appliedDiscounts.totalValue,
+  ]);
+
+  useEffect(() => {
+    if (step < STEP_RESULT) {
+      setDiscountEnabledByName({});
+    }
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== STEP_CONFERIR) {
+      setCustomerClarity(null);
+      setConferirQty(1);
+      setConferirProdName("");
+      setConferirProdCode("");
+      setConferirMessage("");
+    }
+  }, [step]);
+
+  const canContinueFromResultToDiscount = useMemo(
+    () =>
+      Boolean(form.template) &&
+      (!showAssemblySection || form.assembly != null),
+    [form.template, showAssemblySection, form.assembly],
+  );
+
+  const simulationSummaryItems = useCalculadoraSimulationSummaryItems({
+    form,
+    isPallet,
+    showAssemblySection,
+    elegibleTemplates,
+    refs: {
+      sectionPackTypeRef,
+      sectionProdTypeRef,
+      sectionIsExportRef,
+      sectionWeightRef,
+      sectionTela3Ref,
+      sectionMeasuresRef,
+      sectionMeasuresOfRef,
+      sectionClearanceRef,
+      sectionTela5Ref,
+      sectionTela2Ref,
+      sectionTela7Ref,
+      sectionResultModelsRef,
+      sectionAssemblyRef,
+    },
+  });
+
+  useEffect(() => {
+    if (
+      step === STEP_RESULT ||
+      step === STEP_DISCOUNT ||
+      step === STEP_CONFERIR
+    ) {
+      return;
+    }
+    setForm((prev) => {
+      if (prev.template === undefined && prev.assembly == null) {
+        return prev;
+      }
+      return { ...prev, template: undefined, assembly: null };
+    });
+  }, [step]);
+
   useEffect(() => {
     const parsed = readCalculadoraCustomerStored();
     setForm((prev) => ({
       ...prev,
-      ...(parsed.customerName && parsed.customerEmail
-        ? {
-          customerName: parsed.customerName,
-          customerEmail: parsed.customerEmail,
-        }
+      ...(parsed.contactChannel
+        ? { contactChannel: parsed.contactChannel }
         : {}),
-      ...(parsed.customerCnpj ? { customerCnpj: parsed.customerCnpj } : {}),
+      ...(parsed.customerName ? { customerName: parsed.customerName } : {}),
+      ...(parsed.customerEmail ? { customerEmail: parsed.customerEmail } : {}),
+      ...(parsed.customerCnpj
+        ? { customerCnpj: formatCnpjMaskInput(parsed.customerCnpj) }
+        : {}),
+      ...(parsed.emailNfe ? { emailNfe: parsed.emailNfe } : {}),
       ...(parsed.customerPhone ? { customerPhone: parsed.customerPhone } : {}),
     }));
   }, []);
@@ -488,17 +596,92 @@ const CalculadoraEmbalagem: NextPage = () => {
   }, [step]);
 
   useEffect(() => {
-    if (step === STEP_TELA7) setSimulationSummaryOpen(true);
-    else if (step === STEP_RESULT) setSimulationSummaryOpen(false);
+    if (step === STEP_TELA7 || step === STEP_CONFERIR) {
+      setSimulationSummaryOpen(true);
+    } else if (step === STEP_RESULT || step === STEP_DISCOUNT) {
+      setSimulationSummaryOpen(false);
+    }
   }, [step]);
 
   const updateForm = useCallback((updates: Partial<PackagingFormData>) => {
     setForm((prev) => ({ ...prev, ...updates }));
   }, []);
 
+  const handleAssemblyOptionClick = useCallback(
+    (value: AssemblyType) => {
+      updateForm({ assembly: value });
+      setTimeout(() => scrollToSection(sectionAssemblyContinueRef), 280);
+    },
+    [scrollToSection, updateForm],
+  );
+
+  useEffect(() => {
+    if (
+      (step !== STEP_RESULT &&
+        step !== STEP_DISCOUNT &&
+        step !== STEP_CONFERIR) ||
+      !form.template
+    ) {
+      return;
+    }
+    const pt = packTypeForTemplateName(form.template ?? "");
+    if (pt === "pallet" && form.assembly != null) {
+      updateForm({ assembly: null });
+    }
+  }, [step, form.template, form.assembly, updateForm]);
+
   const goToStep = useCallback((next: number) => {
     setStep(next);
   }, []);
+
+  /** Footer link only after the user has reached that checkpoint’s first screen. */
+  const isProgressStepUnlocked = useCallback(
+    (progressId: number) => checkProgressUnlocked(step, progressId),
+    [step],
+  );
+
+  /** Maps footer progress checkpoint → first wizard screen in that group. */
+  const handleProgressStepNavigate = useCallback(
+    (progressId: number) => {
+      if (!isProgressStepUnlocked(progressId)) return;
+      const meta = PROGRESS_STEPS.find((s) => s.id === progressId);
+      if (!meta) return;
+      if ("comingSoon" in meta && meta.comingSoon) return;
+
+      let nextStep: number;
+      switch (progressId) {
+        case 1:
+          setTela1SubStep(TELA1_SUB_PACK);
+          nextStep = STEP_TELA1;
+          break;
+        case 2:
+          nextStep = STEP_TELA2;
+          break;
+        case 3:
+          nextStep = ASK_CONTENT_PROD_TYPES.includes(form.prodType ?? 0)
+            ? STEP_TELA3
+            : STEP_TELA4;
+          break;
+        case 4:
+          nextStep = STEP_TELA7;
+          break;
+        case 5:
+          nextStep = STEP_RESULT;
+          break;
+        case 6:
+          nextStep = STEP_DISCOUNT;
+          break;
+        case 7:
+          nextStep = STEP_CONFERIR;
+          break;
+        default:
+          return;
+      }
+      setStep(nextStep);
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    },
+    [form.prodType, isProgressStepUnlocked],
+  );
 
   const goBack = useCallback(() => {
     setStep((s) => {
@@ -512,19 +695,102 @@ const CalculadoraEmbalagem: NextPage = () => {
     });
   }, [form.prodType]);
 
+  const handleConferirSubmit = useCallback(async () => {
+    if (customerClarity == null) return;
+    if (
+      typeof conferirQty !== "number" ||
+      !Number.isInteger(conferirQty) ||
+      conferirQty < 1
+    ) {
+      return;
+    }
+    const payload = buildCalculadoraSubmissionPayload({
+      form,
+      chosenRow: chosenTemplateRow,
+      appliedDiscounts,
+      customerClarity,
+      qty: conferirQty,
+      message: conferirMessage,
+      prodName: conferirProdName,
+      prodCode: conferirProdCode,
+    });
+    if (!payload) {
+      toast({
+        title: "Não foi possível enviar",
+        description: "Verifique o preço do modelo e tente novamente.",
+        status: "warning",
+        duration: 5000,
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/calculadora/submit-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload }),
+      });
+      if (!res.ok) {
+        const errBody = (await res.json().catch(() => null)) as unknown;
+        const desc =
+          getStrapiErrorDescription(errBody) ??
+          `Erro ${String(res.status)} ao salvar a cotação.`;
+        toast({
+          title: "Não foi possível enviar",
+          description: desc,
+          status: "error",
+          duration: 7000,
+        });
+        return;
+      }
+    } catch {
+      toast({
+        title: "Não foi possível enviar",
+        description: "Falha de rede. Tente novamente.",
+        status: "error",
+        duration: 7000,
+      });
+      return;
+    }
+
+    lastSubmissionRef.current = payload;
+
+    setStep(STEP_TELA1);
+    setTela1SubStep(TELA1_SUB_PACK);
+    setForm(hydrateInitialFormFromCustomerStorage());
+    setElegibleTemplates([]);
+    setDiscountEnabledByName({});
+    setSimulationSummaryOpen(true);
+    setRecommendationsAcknowledged(false);
+    setIsCalculatingPrices(false);
+    setPricingModalNames([]);
+    setPricingModalActiveIndex(0);
+    setSuccessModalOpen(true);
+  }, [
+    customerClarity,
+    conferirQty,
+    conferirProdName,
+    conferirProdCode,
+    conferirMessage,
+    form,
+    chosenTemplateRow,
+    appliedDiscounts,
+    toast,
+  ]);
+
   const handleChooseResultModel = useCallback(
     (payload: { templateKey: string; label: string }) => {
-      toast({
-        id: `choose-model-${payload.templateKey}`,
-        title: payload.label,
-        description:
-          "Fluxo em desenvolvimento. Em breve você confirma este modelo aqui.",
-        status: "info",
-        duration: 4500,
-        isClosable: true,
+      const isPalletModel =
+        packTypeForTemplateName(payload.templateKey) === "pallet";
+      updateForm({
+        template: payload.templateKey,
+        assembly: null,
       });
+      if (!isPalletModel) {
+        setTimeout(() => scrollToSection(sectionAssemblyRef), 280);
+      }
     },
-    [toast]
+    [scrollToSection, updateForm],
   );
 
   const handlePackTypeChange = useCallback((v: string) => {
@@ -579,26 +845,30 @@ const CalculadoraEmbalagem: NextPage = () => {
 
   const handleTela2NameEmailSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const name = (form.customerName || "").trim();
-    const email = (form.customerEmail || "").trim();
-    if (!name || !email) {
+    if (!isContactPreferencesStepComplete(form, validateEmail)) {
       toast({
-        title: "Preencha nome e e-mail",
+        title: "Preencha os campos de contato",
+        description: "Escolha um canal e preencha os dados exibidos.",
         status: "warning",
-        duration: 3000,
+        duration: 4000,
       });
       return;
     }
-    if (!validateEmail(email)) {
-      toast({
-        title: "E-mail inválido",
-        status: "error",
-        duration: 3000,
-      });
-      return;
-    }
-    mergeCalculadoraCustomerStorage({ customerName: name, customerEmail: email });
-    updateForm({ customerName: name, customerEmail: email });
+    const ch = form.contactChannel!;
+    const name = (form.customerName || "").trim();
+    const emailTrim = (form.customerEmail || "").trim();
+    const phoneTrim = (form.customerPhone || "").trim();
+    mergeCalculadoraCustomerStorage({
+      customerName: name,
+      contactChannel: ch,
+      customerEmail: emailTrim,
+      customerPhone: phoneTrim,
+    });
+    updateForm({
+      customerName: name,
+      customerEmail: emailTrim,
+      customerPhone: phoneTrim,
+    });
     const prodType = form.prodType ?? 0;
     if (FRACTIONED_PROD_TYPES.includes(prodType)) {
       updateForm({ isUnitizedContent: false, measuresOf: "internal" });
@@ -701,11 +971,20 @@ const CalculadoraEmbalagem: NextPage = () => {
     e.preventDefault();
     const cnpj = (form.customerCnpj || "").trim();
     const email = (form.customerEmail || "").trim();
-    if (!cnpj || !form.customerName || !email) {
+    if (!cnpj || !form.customerName) {
       toast({
         title: "Preencha todos os campos de contato",
         status: "warning",
         duration: 3000,
+      });
+      return;
+    }
+    if (!isContactPreferencesStepComplete(form, validateEmail)) {
+      toast({
+        title: "Preencha os campos de contato",
+        description: "Revise nome e os canais escolhidos na etapa anterior.",
+        status: "warning",
+        duration: 4000,
       });
       return;
     }
@@ -717,20 +996,25 @@ const CalculadoraEmbalagem: NextPage = () => {
       });
       return;
     }
-    if (!validateEmail(email)) {
+    const ch = form.contactChannel!;
+    const emailNfeTrim = (form.emailNfe || "").trim();
+    if (!emailNfeTrim || !validateEmail(emailNfeTrim)) {
       toast({
-        title: "E-mail inválido",
+        title: "E-mail para NF-e inválido",
+        description: "Informe um e-mail válido para envio da nota fiscal.",
         status: "error",
-        duration: 3000,
+        duration: 4000,
       });
       return;
     }
     const phoneTrim = (form.customerPhone || "").trim();
     mergeCalculadoraCustomerStorage({
       customerName: form.customerName || "",
-      customerEmail: email,
       customerCnpj: cnpj,
-      ...(phoneTrim ? { customerPhone: phoneTrim } : {}),
+      emailNfe: emailNfeTrim,
+      contactChannel: ch,
+      customerEmail: email,
+      customerPhone: phoneTrim,
     });
     const fullForm: PackagingFormData = {
       packType: form.packType!,
@@ -746,14 +1030,15 @@ const CalculadoraEmbalagem: NextPage = () => {
       isUnitizedContent: form.isUnitizedContent,
       isDistributedWeight: form.isDistributedWeight ?? null,
       customerCnpj: cnpj,
+      emailNfe: emailNfeTrim,
       customerName: form.customerName || "",
       customerEmail: email,
       customerPhone: phoneTrim,
+      contactChannel: ch,
+      template: undefined,
+      assembly: undefined,
     };
-    const templateNames = getElegibleTemplates(
-      fullForm,
-      boxTemplates as unknown as BoxTemplate[]
-    );
+    const templateNames = getElegibleTemplates(fullForm, boxTemplatesList);
     const initial: ElegibleTemplateResult[] = templateNames.map((n) => ({
       name: n,
     }));
@@ -766,12 +1051,20 @@ const CalculadoraEmbalagem: NextPage = () => {
     setPricingModalNames([...templateNames]);
     setPricingModalActiveIndex(0);
     setIsCalculatingPrices(true);
+    const internalDims = resolveInternalPackageDimensions(fullForm);
+    if (!internalDims) {
+      setIsCalculatingPrices(false);
+      setPricingModalNames([]);
+      return;
+    }
     const unit = fullForm.unit || "mm";
     const toCm = (v: number) => (unit === "mm" ? v / 10 : v);
-    const compCm = toCm(fullForm.length);
-    const largCm = toCm(fullForm.width);
+    const compCm = toCm(internalDims.length);
+    const largCm = toCm(internalDims.width);
     const altCm =
-      fullForm.height !== undefined ? toCm(fullForm.height) : 0;
+      fullForm.packType !== "pallet" && internalDims.height > 0
+        ? toCm(internalDims.height)
+        : 0;
     const cnpjDigits = cnpj.replace(/\D/g, "");
 
     const fetchPrice = async (modelo: string) => {
@@ -856,78 +1149,11 @@ const CalculadoraEmbalagem: NextPage = () => {
           gap={{ base: 6, md: 8 }}
           align="center"
         >
-          <Box w="100%">
-            <Flex
-              display={{ base: "flex", md: "none" }}
-              direction="column"
-              gap={4}
-            >
-              <Flex justify="space-between" align="center" w="100%">
-                <Button
-                  as="a"
-                  href="https://ribermax.com.br"
-                  variant="ghost"
-                  size="sm"
-                  leftIcon={<ArrowBackIcon />}
-                >
-                  Voltar para o site
-                </Button>
-                <IconButton
-                  aria-label="Alternar tema"
-                  icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-                  onClick={toggleColorMode}
-                  variant="ghost"
-                  size="lg"
-                  fontSize="xl"
-                  color={headingColor}
-                />
-              </Flex>
-              <Heading
-                size="lg"
-                color={headingColor}
-                fontWeight="bold"
-                textAlign="center"
-                w="100%"
-              >
-                Calculadora de Embalagem
-              </Heading>
-            </Flex>
-            <Flex
-              display={{ base: "none", md: "flex" }}
-              justify="space-between"
-              align="center"
-              w="100%"
-              gap={4}
-            >
-              <Button
-                as="a"
-                href="https://ribermax.com.br"
-                variant="ghost"
-                size="sm"
-                leftIcon={<ArrowBackIcon />}
-              >
-                Voltar para o site
-              </Button>
-              <Heading
-                size="xl"
-                color={headingColor}
-                fontWeight="bold"
-                textAlign="center"
-                flex="1"
-              >
-                Calculadora de Embalagem
-              </Heading>
-              <IconButton
-                aria-label="Alternar tema"
-                icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-                onClick={toggleColorMode}
-                variant="ghost"
-                size="lg"
-                fontSize="xl"
-                color={headingColor}
-              />
-            </Flex>
-          </Box>
+          <CalculadoraPageChrome
+            headingColor={headingColor}
+            colorMode={colorMode}
+            onToggleColorMode={toggleColorMode}
+          />
 
           <AnimatePresence mode="wait">
             {step === STEP_TELA1 && (
@@ -941,6 +1167,10 @@ const CalculadoraEmbalagem: NextPage = () => {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
+                <TypewriterBlock
+                  blockVisible={step === STEP_TELA1}
+                  resetKey={tela1TypewriterSequenceKey}
+                >
                 <VStack align="center" spacing={6} w="100%">
                   <MotionBox
                     bg={bgCard}
@@ -959,10 +1189,15 @@ const CalculadoraEmbalagem: NextPage = () => {
                           fontWeight="semibold"
                           color={headingColor}
                           mb={3}
-                          textAlign="center"
+                          textAlign="left"
                           w="100%"
                         >
-                          O que você quer calcular hoje?
+                          <TypewriterCardText
+                            as="span"
+                            lineIndex={TELA1_TW_PACK}
+                            text="O que você quer calcular hoje?"
+                            isVisible
+                          />
                         </FormLabel>
                         <SimpleGrid
                           columns={{ base: 1, md: 2, lg: 4 }}
@@ -1003,6 +1238,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   w="100%"
                                   h="140px"
                                   mb={2}
+                                  bg="white"
                                 />
                                 <Text
                                   fontSize="md"
@@ -1016,18 +1252,27 @@ const CalculadoraEmbalagem: NextPage = () => {
                         </SimpleGrid>
                       </FormControl>
 
-                      <Collapse in={showProdType && !isPallet && tela1SubStep >= TELA1_SUB_PROD}>
+                      <Collapse
+                        in={showProdType && !isPallet && tela1SubStep >= TELA1_SUB_PROD}
+                        unmountOnExit
+                      >
                         <FormControl as="fieldset" isRequired w="full" ref={sectionProdTypeRef}>
                           <FormLabel
                             as="legend"
                             fontSize="lg"
                             fontWeight="semibold"
                             color={headingColor}
-                            mb={3}
-                            textAlign="center"
+                            my={3}
+                            textAlign="left"
                             w="100%"
+                            pt={3}
                           >
-                            Que tipo de produto você precisa embalar?
+                            <TypewriterCardText
+                              as="span"
+                              lineIndex={TELA1_TW_PROD}
+                              text="Que tipo de produto você precisa embalar?"
+                              isVisible={showProdType && !isPallet && tela1SubStep >= TELA1_SUB_PROD}
+                            />
                           </FormLabel>
                           <Box
                             w="100%"
@@ -1099,7 +1344,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                         </FormControl>
                       </Collapse>
 
-                      <Collapse in={tela1SubStep >= TELA1_SUB_EXPORT}>
+                      <Collapse in={tela1SubStep >= TELA1_SUB_EXPORT} unmountOnExit>
                         <FormControl as="fieldset" isRequired w="full" ref={sectionIsExportRef}>
                           <FormLabel
                             as="legend"
@@ -1108,7 +1353,16 @@ const CalculadoraEmbalagem: NextPage = () => {
                             color={headingColor}
                             mb={3}
                           >
-                            Para onde vai a embalagem? É exportação?
+                            <TypewriterCardText
+                              as="span"
+                              lineIndex={
+                                isPallet
+                                  ? TELA1_TW_EXPORT_PALLET
+                                  : TELA1_TW_EXPORT_BOX
+                              }
+                              text="Para onde vai a embalagem? É exportação?"
+                              isVisible={tela1SubStep >= TELA1_SUB_EXPORT}
+                            />
                           </FormLabel>
                           <SimpleGrid
                             columns={{ base: 1, md: 2 }}
@@ -1165,7 +1419,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                         </FormControl>
                       </Collapse>
 
-                      <Collapse in={tela1SubStep >= TELA1_SUB_WEIGHT}>
+                      <Collapse in={tela1SubStep >= TELA1_SUB_WEIGHT} unmountOnExit>
                         <FormControl as="fieldset" isRequired w="full" ref={sectionWeightRef}>
                           <FormLabel
                             as="legend"
@@ -1173,10 +1427,18 @@ const CalculadoraEmbalagem: NextPage = () => {
                             fontWeight="semibold"
                             color={headingColor}
                             mb={3}
-                            textAlign="center"
                             w="100%"
                           >
-                            Qual é o peso aproximado do que você precisa embalar?
+                            <TypewriterCardText
+                              as="span"
+                              lineIndex={
+                                isPallet
+                                  ? TELA1_TW_WEIGHT_PALLET
+                                  : TELA1_TW_WEIGHT_BOX
+                              }
+                              text="Qual é o peso aproximado do que você precisa embalar?"
+                              isVisible={tela1SubStep >= TELA1_SUB_WEIGHT}
+                            />
                           </FormLabel>
                           <SimpleGrid
                             columns={{ base: 1, sm: 2, md: 3 }}
@@ -1249,6 +1511,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                     </Button>
                   </Flex>
                 </VStack>
+                </TypewriterBlock>
               </MotionBox>
             )}
 
@@ -1263,6 +1526,10 @@ const CalculadoraEmbalagem: NextPage = () => {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.25 }}
               >
+                <TypewriterBlock
+                  blockVisible={step === STEP_TELA2}
+                  resetKey={TW_SEQ_TELA2}
+                >
                 <MotionBox
                   ref={sectionTela2Ref}
                   bg={bgCard}
@@ -1274,41 +1541,119 @@ const CalculadoraEmbalagem: NextPage = () => {
                   w="100%"
                 >
                   <VStack align="stretch" spacing={4} w="100%">
-                    <Text
+                    <TypewriterCardText
+                      lineIndex={0}
+                      text="Antes de seguir com a simulação, o que você prefere?"
                       fontSize="lg"
                       fontWeight="semibold"
                       color={headingColor}
-                      textAlign="center"
-                    >
-                      Para receber esta cotação, informe seu nome e e-mail.
-                    </Text>
-                    <FormControl isRequired>
-                      <FormLabel color={headingColor}>Nome</FormLabel>
-                      <Input
-                        value={form.customerName || ""}
-                        onChange={(e) =>
-                          updateForm({ customerName: e.target.value })
-                        }
-                        placeholder="Seu nome"
-                        size="lg"
-                        borderColor={borderColor}
-                        minH="44px"
-                      />
+                    />
+                    <FormControl>
+                      <FormLabel color={headingColor} fontWeight="semibold">
+                        É assim que eu gosto que falem comigo:
+                      </FormLabel>
+                      <RadioGroup
+                        value={form.contactChannel ?? ""}
+                        onChange={(v) => {
+                          updateForm({ contactChannel: v as ContactChannel });
+                        }}
+                      >
+                        <VStack align="stretch" spacing={3}>
+                          {CONTACT_CHANNEL_OPTIONS.map((opt) => (
+                            <Radio
+                              key={opt.value}
+                              value={opt.value}
+                              colorScheme="blue"
+                              borderColor={borderColor}
+                            >
+                              <Text
+                                as="span"
+                                fontSize="sm"
+                                color={textColor}
+                                lineHeight="tall"
+                              >
+                                {opt.label}
+                              </Text>
+                            </Radio>
+                          ))}
+                        </VStack>
+                      </RadioGroup>
                     </FormControl>
-                    <FormControl isRequired>
-                      <FormLabel color={headingColor}>E-mail</FormLabel>
-                      <Input
-                        type="email"
-                        value={form.customerEmail || ""}
-                        onChange={(e) =>
-                          updateForm({ customerEmail: e.target.value })
-                        }
-                        placeholder="seu@email.com"
-                        size="lg"
-                        borderColor={borderColor}
-                        minH="44px"
-                      />
-                    </FormControl>
+                    <Collapse in={form.contactChannel != null} animateOpacity>
+                      {form.contactChannel != null ? (
+                        <SimpleGrid
+                          columns={{ base: 1, md: 3 }}
+                          spacing={4}
+                          w="100%"
+                        >
+                          <FormControl isRequired>
+                            <FormLabel color={headingColor}>Nome</FormLabel>
+                            <Input
+                              value={form.customerName || ""}
+                              onChange={(e) =>
+                                updateForm({ customerName: e.target.value })
+                              }
+                              placeholder="Seu nome"
+                              size="lg"
+                              borderColor={borderColor}
+                              minH="44px"
+                              autoComplete="name"
+                            />
+                          </FormControl>
+                          <FormControl
+                            isRequired={contactChannelShowsEmail(
+                              form.contactChannel,
+                            )}
+                          >
+                            <FormLabel color={headingColor}>
+                              E-mail
+                              {!contactChannelShowsEmail(form.contactChannel)
+                                ? " (opcional)"
+                                : ""}
+                            </FormLabel>
+                            <Input
+                              type="email"
+                              value={form.customerEmail || ""}
+                              onChange={(e) =>
+                                updateForm({ customerEmail: e.target.value })
+                              }
+                              placeholder="seu@email.com"
+                              size="lg"
+                              borderColor={borderColor}
+                              minH="44px"
+                              autoComplete="email"
+                              color={textColor}
+                            />
+                          </FormControl>
+                          <FormControl
+                            isRequired={contactChannelShowsPhone(
+                              form.contactChannel,
+                            )}
+                          >
+                            <FormLabel color={headingColor}>
+                              Telefone
+                              {!contactChannelShowsPhone(form.contactChannel)
+                                ? " (opcional)"
+                                : ""}
+                            </FormLabel>
+                            <Input
+                              type="tel"
+                              inputMode="tel"
+                              value={form.customerPhone || ""}
+                              onChange={(e) =>
+                                updateForm({ customerPhone: e.target.value })
+                              }
+                              placeholder="(00) 00000-0000"
+                              size="lg"
+                              borderColor={borderColor}
+                              minH="44px"
+                              autoComplete="tel"
+                              color={textColor}
+                            />
+                          </FormControl>
+                        </SimpleGrid>
+                      ) : null}
+                    </Collapse>
                   </VStack>
                 </MotionBox>
                 <Flex
@@ -1332,14 +1677,12 @@ const CalculadoraEmbalagem: NextPage = () => {
                     colorScheme="blue"
                     size="lg"
                     minH="44px"
-                    isDisabled={
-                      !(form.customerName || "").trim() ||
-                      !(form.customerEmail || "").trim()
-                    }
+                    isDisabled={!contactFormComplete}
                   >
                     Continuar
                   </Button>
                 </Flex>
+                </TypewriterBlock>
               </MotionBox>
             )}
 
@@ -1352,6 +1695,10 @@ const CalculadoraEmbalagem: NextPage = () => {
                 transition={{ duration: 0.25 }}
                 w="100%"
               >
+                <TypewriterBlock
+                  blockVisible={step === STEP_TELA3}
+                  resetKey={TW_SEQ_TELA3}
+                >
                 <MotionBox
                   ref={sectionTela3Ref}
                   bg={bgCard}
@@ -1390,7 +1737,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                           img: "/img/not-unitized.jpg",
                         },
                       ] as const
-                    ).map((opt) => {
+                    ).map((opt, optIndex) => {
                       const isActive = form.isUnitizedContent === opt.value;
                       const hasSelection = form.isUnitizedContent !== undefined;
                       const isDimmed = hasSelection && !isActive;
@@ -1422,13 +1769,13 @@ const CalculadoraEmbalagem: NextPage = () => {
                               objectFit="contain"
                             />
                           </Box>
-                          <Text
+                          <TypewriterCardText
+                            lineIndex={optIndex}
+                            text={opt.label}
                             fontSize="sm"
                             fontWeight="semibold"
                             p={2}
-                          >
-                            {opt.label}
-                          </Text>
+                          />
                         </Box>
                       );
                     })}
@@ -1462,6 +1809,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                     Continuar
                   </Button>
                 </Flex>
+                </TypewriterBlock>
               </MotionBox>
             )}
 
@@ -1474,6 +1822,10 @@ const CalculadoraEmbalagem: NextPage = () => {
                 transition={{ duration: 0.25 }}
                 w="100%"
               >
+                <TypewriterBlock
+                  blockVisible={step === STEP_TELA4}
+                  resetKey={tela4MeasuresBlockResetKey}
+                >
                 {form.isUnitizedContent === true && !isPallet && (
                   <MotionBox
                     key="tela3-measuresOf"
@@ -1490,15 +1842,15 @@ const CalculadoraEmbalagem: NextPage = () => {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <Text
+                    <TypewriterCardText
+                      lineIndex={TELA4_TW_U_TRUE_HEAD}
+                      text="Quais medidas você tem?"
+                      isVisible
                       fontSize="lg"
                       fontWeight="semibold"
                       color={headingColor}
-                      textAlign="center"
                       mb={4}
-                    >
-                      Quais medidas você tem?
-                    </Text>
+                    />
                     <SimpleGrid
                       columns={{ base: 1, md: 2 }}
                       spacing={{ base: 4, md: 6 }}
@@ -1518,7 +1870,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                             img: "/img/product-measures.jpg",
                           },
                         ] as const
-                      ).map((opt) => {
+                      ).map((opt, measureOptIndex) => {
                         const isActive = form.measuresOf === opt.value;
                         const hasSelection = !!form.measuresOf;
                         const isDimmed = hasSelection && !isActive;
@@ -1548,13 +1900,15 @@ const CalculadoraEmbalagem: NextPage = () => {
                                 objectFit="contain"
                               />
                             </Box>
-                            <Text
+                            <TypewriterCardText
+                              lineIndex={
+                                TELA4_TW_U_TRUE_OPT0 + measureOptIndex
+                              }
+                              text={opt.label}
                               fontSize="sm"
                               fontWeight="semibold"
                               p={2}
-                            >
-                              {opt.label}
-                            </Text>
+                            />
                           </Box>
                         );
                       })}
@@ -1576,16 +1930,16 @@ const CalculadoraEmbalagem: NextPage = () => {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.25 }}
+                    mb={4}
                   >
-                    <Text
+                    <TypewriterCardText
+                      lineIndex={TELA4_TW_U_FALSE_HEAD}
                       fontSize="lg"
                       fontWeight="semibold"
                       color={headingColor}
-                      textAlign="center"
                       mb={4}
-                    >
-                      Informe as medidas internas da embalagem
-                    </Text>
+                      text="Informe as medidas internas da embalagem"
+                    />
                     <Flex
                       direction={{ base: "column", md: "row" }}
                       align={{ base: "center", md: "flex-start" }}
@@ -1610,10 +1964,18 @@ const CalculadoraEmbalagem: NextPage = () => {
                         <Text as="span" fontWeight="bold" display="block" mb={2}>
                           ATENÇÃO:
                         </Text>
-                        As medidas que você informar aqui serão exatamente as
+                        <TypewriterCardText
+                          lineIndex={TELA4_TW_U_FALSE_PARA}
+                          text="As medidas que você informar aqui serão exatamente as
                         medidas que a embalagem terá por dentro, então, considere
                         já a medida dos seus produtos e da folga que você quer
-                        que tenha.
+                        que tenha."
+                          fontSize="sm"
+                          color={textColor}
+                          fontWeight="semibold"
+                          display="block"
+                          mb={2}
+                        />
                       </Text>
                     </Flex>
                   </MotionBox>
@@ -1626,6 +1988,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                     form.measuresOf === "product" ||
                     form.isUnitizedContent === false
                   }
+                  unmountOnExit
                 >
                   <Box ref={sectionMeasuresRef} w="100%" as="form" id="tela4-form" onSubmit={handleTela3Continue}>
                     <MotionBox
@@ -1642,9 +2005,14 @@ const CalculadoraEmbalagem: NextPage = () => {
                       transition={{ duration: 0.25 }}
                     >
                       <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
-                        <Text fontSize="lg" fontWeight="semibold" color={headingColor} textAlign="center">
-                          {dimensionsIntro()}
-                        </Text>
+                        <TypewriterCardText
+                          lineIndex={tela4DimensionsIntroLineIndex}
+                          fontSize="lg"
+                          w="100%"
+                          fontWeight="semibold"
+                          color={headingColor}
+                          text={dimensionsIntro()}
+                        />
 
                         <SimpleGrid
                           columns={{ base: 1, md: 2, lg: 4 }}
@@ -1802,7 +2170,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                       </VStack>
                     </MotionBox>
 
-                    <Collapse in={showClearance}>
+                    <Collapse in={showClearance} unmountOnExit>
                       <MotionBox
                         ref={sectionClearanceRef}
                         w="100%"
@@ -1822,13 +2190,12 @@ const CalculadoraEmbalagem: NextPage = () => {
                             fontWeight="semibold"
                             color={headingColor}
                             mb={4}
-                            textAlign="center"
                             w="100%"
                           >
                             Quanto de folga você quer que tenha entre o produto e a embalagem?
                           </FormLabel>
                           <SimpleGrid
-                            columns={{ base: 1, sm: 2, md: 4 }}
+                            columns={{ base: 1, sm: 2, md: 3, lg: 5 }}
                             spacing={{ base: 3, md: 4 }}
                             w="100%"
                           >
@@ -1836,7 +2203,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                               form.unit === "cm"
                                 ? CLEARANCE_OPTIONS_CM
                                 : CLEARANCE_OPTIONS_MM
-                            ).map((opt) => {
+                            ).map((opt, clearanceIndex) => {
                               const isActive = form.clearance === opt.value;
                               const hasSelection =
                                 form.clearance !== undefined &&
@@ -1875,14 +2242,16 @@ const CalculadoraEmbalagem: NextPage = () => {
                                     }
                                   />
                                   <VStack align="flex-start" spacing={0}>
-                                    <Text
+                                    <TypewriterCardText
+                                      lineIndex={
+                                        tela4ClearanceLineBase + clearanceIndex
+                                      }
+                                      text={opt.label}
                                       fontSize="sm"
                                       fontWeight={
                                         isActive ? "extrabold" : "semibold"
                                       }
-                                    >
-                                      {opt.label}
-                                    </Text>
+                                    />
                                     <Text fontSize="xs" color={textColor}>
                                       {opt.suffix}
                                     </Text>
@@ -1924,6 +2293,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                     Continuar
                   </Button>
                 </Flex>
+                </TypewriterBlock>
               </MotionBox>
             )}
 
@@ -1936,6 +2306,10 @@ const CalculadoraEmbalagem: NextPage = () => {
                 transition={{ duration: 0.25 }}
                 w="100%"
               >
+                <TypewriterBlock
+                  blockVisible={step === STEP_TELA5}
+                  resetKey={TW_SEQ_TELA5}
+                >
                 <MotionBox
                   ref={sectionTela5Ref}
                   bg={bgCard}
@@ -1945,15 +2319,15 @@ const CalculadoraEmbalagem: NextPage = () => {
                   p={{ base: 5, md: 8 }}
                   shadow="md"
                 >
-                  <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
-                    <Text
+                  <VStack spacing={{ base: 6, md: 8 }} w="100%">
+                  <TypewriterCardText
+                      lineIndex={0}
+                      text="O peso do produto será bem distribuído sobre a base da embalagem?"
                       fontSize="lg"
                       fontWeight="semibold"
                       color={headingColor}
-                      textAlign="center"
-                    >
-                      O peso do produto será bem distribuído sobre a base da embalagem?
-                    </Text>
+                      w="100%"
+                    />
                     <SimpleGrid
                       columns={{ base: 1, md: 2 }}
                       spacing={{ base: 4, md: 6 }}
@@ -1962,21 +2336,33 @@ const CalculadoraEmbalagem: NextPage = () => {
                     >
                       {[
                         {
+                          value: false as const,
+                          label: "",
+                          suffix: "",
+                          img: "",
+                        },
+                        {
                           value: true as const,
-                          label: "Sim. O peso vai ficar distribuído em toda a área da base.",
+                          label: "Sim. O peso vai ficar distribuído sobre a base.",
                           suffix: "Exemplo: Uma mesa deitada distribui seu peso ao longo da base.",
                           img: "/img/weight-evenly-distributed.jpg",
                         },
                         {
                           value: false as const,
+                          label: "",
+                          suffix: "",
+                          img: "",
+                        },
+                        {
+                          value: false as const,
                           label:
-                            "Não. O peso vai se concentrar em alguns pontos sobre a base.",
+                            "Não. O peso vai se concentrar em alguns pontos.",
                           suffix:
-                            "Exemplo: Uma mesa em pé concentra seu peso em 4 pontos da base, " +
-                            "exatamente onde vão estar os 4 pés da mesa.",
+                            "Exemplo: Uma mesa em pé concentra seu peso em 4 pontos da base.",
                           img: "/img/weight-concentrated.jpg",
                         },
-                      ].map((opt) => {
+                      ].map((opt, lineIndex) => {
+                        if(!opt.label) return null;
                         const isActive = form.isDistributedWeight === opt.value;
                         const hasSelection =
                           form.isDistributedWeight !== undefined;
@@ -1994,7 +2380,6 @@ const CalculadoraEmbalagem: NextPage = () => {
                             w="fit-content"
                             bg={bgCard}
                             _hover={{ borderColor: "blue.400" }}
-                            textAlign="center"
                             display="flex"
                             flexDirection="column"
                             alignItems="center"
@@ -2015,12 +2400,20 @@ const CalculadoraEmbalagem: NextPage = () => {
                               />
                             </Box>
                             <VStack align="center" spacing={0} textAlign="center" w="100%">
-                              <Text fontSize="sm" fontWeight="semibold">
-                                {opt.label}
-                              </Text>
-                              <Text fontSize="xs" color={textColor}>
-                                {opt.suffix}
-                              </Text>
+                              <TypewriterCardText
+                                lineIndex={lineIndex}
+                                text={opt.label}
+                                fontSize="sm"
+                                fontWeight="semibold"
+                                w="100%"
+                              />
+                              <TypewriterCardText
+                                lineIndex={lineIndex+1}
+                                fontSize="xs"
+                                color={textColor}
+                                text={opt.suffix}
+                                w="100%"
+                              />
                             </VStack>
                           </Box>
                         );
@@ -2054,6 +2447,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                     Continuar
                   </Button>
                 </Flex>
+                </TypewriterBlock>
               </MotionBox>
             )}
 
@@ -2074,52 +2468,66 @@ const CalculadoraEmbalagem: NextPage = () => {
                   p={{ base: 5, md: 8 }}
                   shadow="md"
                 >
-                  <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
-                    <Flex
-                      w="100%"
-                      direction={{ base: "column", md: "row" }}
-                      align={{ base: "center", md: "flex-start" }}
-                      gap={{ base: 8, md: 10 }}
-                    >
-                      <Image
-                        src="/img/recommended-securing.png"
-                        alt="Nossas Recomendações"
-                        w="300px"
-                        flexShrink={0}
-                        objectFit="contain"
-                        borderRadius="xl"
-                      />
-                      <Box flex={1}>
-                        <Text
-                          fontSize="xl"
-                          fontWeight="semibold"
-                          color={headingColor}
-                          mb={4}
-                        >
-                          Nossas Recomendações
-                        </Text>
-                        <Box as="ul" pl={6}>
-                          <Text as="li" mb={2} fontSize="lg">
-                            Recomendamos prender o produto na base
-                          </Text>
-                          <Text as="li" mb={2} fontSize="lg">
-                            Considere a inclusão de tábuas avulsas para calçar o
-                            produto na base
-                          </Text>
-                        </Box>
-                      </Box>
-                    </Flex>
-                    {!recommendationsAcknowledged ? (
-                      <Button
-                        colorScheme="blue"
-                        size="lg"
-                        minH="44px"
-                        onClick={() => setRecommendationsAcknowledged(true)}
+                  <TypewriterBlock
+                    blockVisible={step === STEP_TELA6}
+                    resetKey={TW_SEQ_TELA6}
+                  >
+                    <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
+                      <Flex
+                        w="100%"
+                        direction={{ base: "column", md: "row" }}
+                        align={{ base: "center", md: "flex-start" }}
+                        gap={{ base: 8, md: 10 }}
                       >
-                        Entendi
-                      </Button>
-                    ) : null}
-                  </VStack>
+                        <Image
+                          src="/img/recommended-securing.png"
+                          alt="Nossas Recomendações"
+                          w="300px"
+                          flexShrink={0}
+                          objectFit="contain"
+                          borderRadius="xl"
+                        />
+                        <Box flex={1}>
+                          <TypewriterCardText
+                            lineIndex={TELA6_TW_TITLE}
+                            text="Nossas Recomendações"
+                            fontSize="xl"
+                            fontWeight="semibold"
+                            color={headingColor}
+                            mb={4}
+                          />
+                          <Box as="ul" pl={6}>
+                            <TypewriterCardText
+                              as="li"
+                              lineIndex={TELA6_TW_BULLET_1}
+                              text="Recomendamos prender o produto na base"
+                              mb={2}
+                              fontSize="lg"
+                              display="list-item"
+                            />
+                            <TypewriterCardText
+                              as="li"
+                              lineIndex={TELA6_TW_BULLET_2}
+                              text="Considere a inclusão de tábuas avulsas para calçar o produto na base"
+                              mb={2}
+                              fontSize="lg"
+                              display="list-item"
+                            />
+                          </Box>
+                        </Box>
+                      </Flex>
+                      {!recommendationsAcknowledged ? (
+                        <Button
+                          colorScheme="blue"
+                          size="lg"
+                          minH="44px"
+                          onClick={() => setRecommendationsAcknowledged(true)}
+                        >
+                          Entendi
+                        </Button>
+                      ) : null}
+                    </VStack>
+                  </TypewriterBlock>
                 </MotionBox>
                 <Flex
                   w="100%"
@@ -2149,9 +2557,20 @@ const CalculadoraEmbalagem: NextPage = () => {
               </MotionBox>
             )}
 
-            {(step === STEP_TELA7 || step === STEP_RESULT) && (
+            {(step === STEP_TELA7 ||
+              step === STEP_RESULT ||
+              step === STEP_DISCOUNT ||
+              step === STEP_CONFERIR) && (
               <MotionBox
-                key={step === STEP_TELA7 ? "tela7-group" : "result-group"}
+                key={
+                  step === STEP_TELA7
+                    ? "tela7-group"
+                    : step === STEP_RESULT
+                      ? "result-group"
+                      : step === STEP_DISCOUNT
+                        ? "discount-group"
+                        : "conferir-group"
+                }
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -2159,260 +2578,21 @@ const CalculadoraEmbalagem: NextPage = () => {
                 w="100%"
               >
                 <VStack spacing={6} w="100%">
-                  <Box
-                    bg={bgCard}
-                    borderRadius="xl"
-                    borderWidth="1px"
-                    borderColor={borderColor}
-                    p={5}
-                    shadow="md"
-                    w="100%"
-                  >
-                    <Flex align="center" justify="space-between" gap={3}>
-                      <Heading
-                        size="md"
-                        color={headingColor}
-                        flex={1}
-                        textAlign="center"
-                      >
-                        Resumo da sua simulação
-                      </Heading>
-                      <IconButton
-                        type="button"
-                        border="1px solid"
-                        borderColor={borderColor}
-                        borderRadius="md"
-                        p={2}
-                        aria-expanded={simulationSummaryOpen}
-                        aria-label={
-                          simulationSummaryOpen
-                            ? "Recolher resumo da simulação"
-                            : "Expandir resumo da simulação"
-                        }
-                        icon={<ChevronDownIcon />}
-                        variant="ghost"
-                        size="sm"
-                        transform={
-                          simulationSummaryOpen ? "rotate(180deg)" : undefined
-                        }
-                        transition="transform 0.2s ease"
-                        onClick={() =>
-                          setSimulationSummaryOpen((open) => !open)
-                        }
-                      />
-                    </Flex>
-                    <Collapse in={simulationSummaryOpen} animateOpacity>
-                      <SimpleGrid
-                        columns={{ base: 1, sm: 2, md: 3 }}
-                        spacing={3}
-                        fontSize="sm"
-                        my={5}
-                      >
-                        {(
-                          [
-                            {
-                              label: "Tipo de embalagem",
-                              value: PACK_TYPE_OPTIONS.find(
-                                (o) => o.value === form.packType
-                              )?.label ?? form.packType,
-                              editTarget: {
-                                step: STEP_TELA1,
-                                tela1SubStep: TELA1_SUB_PACK,
-                                ref: sectionPackTypeRef,
-                              },
-                            },
-                            form.prodType && form.prodType > 0
-                              ? {
-                                label: "Segmento de mercado",
-                                value: PRODUCT_TYPE_LABELS[form.prodType] ?? "",
-                                editTarget: {
-                                  step: STEP_TELA1,
-                                  tela1SubStep: TELA1_SUB_PROD,
-                                  ref: sectionProdTypeRef,
-                                },
-                              }
-                              : null,
-                            form.isExport !== undefined
-                              ? {
-                                label: "Exportação",
-                                value: form.isExport ? "Sim" : "Não",
-                                editTarget: {
-                                  step: STEP_TELA1,
-                                  tela1SubStep: TELA1_SUB_EXPORT,
-                                  ref: sectionIsExportRef,
-                                },
-                              }
-                              : null,
-                            form.weight
-                              ? {
-                                label: "Peso",
-                                value: WEIGHT_RANGE_OPTIONS.find(
-                                  (o) => o.value === form.weight
-                                )?.label ?? `${form.weight} kg`,
-                                editTarget: {
-                                  step: STEP_TELA1,
-                                  tela1SubStep: TELA1_SUB_WEIGHT,
-                                  ref: sectionWeightRef,
-                                },
-                              }
-                              : null,
-                            form.isUnitizedContent !== undefined
-                              ? {
-                                label: "Disposição do conteúdo",
-                                value: form.isUnitizedContent
-                                  ? "Produto único"
-                                  : "Vários produtos",
-                                editTarget: {
-                                  step: STEP_TELA3,
-                                  ref: sectionTela3Ref,
-                                },
-                              }
-                              : null,
-                            form.measuresOf
-                              ? {
-                                label: "Medidas referentes ao",
-                                value:
-                                  form.measuresOf === "internal"
-                                    ? "Interior da embalagem"
-                                    : "Produto a ser embalado",
-                                editTarget: {
-                                  step: STEP_TELA4,
-                                  ref:
-                                    form.isUnitizedContent === true && !isPallet
-                                      ? sectionMeasuresOfRef
-                                      : sectionMeasuresRef,
-                                },
-                              }
-                              : null,
-                            form.length && form.width
-                              ? {
-                                label:
-                                  form.measuresOf === "product"
-                                    ? "Dimensões do produto"
-                                    : "Dimensões internas da embalagem",
-                                value: formatSimulationDimensionsLine(form) ?? "",
-                                editTarget: { step: STEP_TELA4, ref: sectionMeasuresRef },
-                              }
-                              : null,
-                            form.measuresOf === "product" && form.clearance != null
-                              ? {
-                                label: "Folga",
-                                value:
-                                  (form.unit === "cm"
-                                    ? CLEARANCE_OPTIONS_CM
-                                    : CLEARANCE_OPTIONS_MM
-                                  ).find((o) => o.value === form.clearance)
-                                    ?.label ?? String(form.clearance),
-                                editTarget: {
-                                  step: STEP_TELA4,
-                                  ref: sectionClearanceRef,
-                                },
-                              }
-                              : null,
-                            form.isDistributedWeight !== undefined &&
-                              form.packType !== "pallet" &&
-                              form.isUnitizedContent === true
-                              ? {
-                                label: "Peso distribuído",
-                                value: form.isDistributedWeight ? "Sim" : "Não",
-                                editTarget: {
-                                  step: STEP_TELA5,
-                                  ref: sectionTela5Ref,
-                                },
-                              }
-                              : null,
-                            form.customerName
-                              ? {
-                                label: "Nome",
-                                value: form.customerName,
-                                editTarget: { step: STEP_TELA2, ref: sectionTela2Ref },
-                              }
-                              : null,
-                            form.customerEmail
-                              ? {
-                                label: "E-mail",
-                                value: form.customerEmail,
-                                editTarget: { step: STEP_TELA2, ref: sectionTela2Ref },
-                              }
-                              : null,
-                            form.customerCnpj
-                              ? {
-                                label: "CNPJ",
-                                value: form.customerCnpj.replace(/\D/g, "").replace(
-                                  /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-                                  "$1.$2.$3/$4-$5"
-                                ),
-                                editTarget: { step: STEP_TELA7, ref: sectionTela7Ref },
-                              }
-                              : null,
-                          ] as ({
-                            label: string;
-                            value: string;
-                            editTarget?: {
-                              step: number;
-                              tela1SubStep?: number;
-                              ref: React.RefObject<HTMLDivElement | null>;
-                            };
-                          } | null)[]
-                        )
-                          .filter((i): i is NonNullable<typeof i> =>
-                            i != null && i.value !== ""
-                          )
-                          .map((item) => (
-                            <Box
-                              key={item.label}
-                              role="group"
-                              textAlign="left"
-                              w="100%"
-                              p={3}
-                              borderRadius="lg"
-                              borderWidth="1px"
-                              borderColor={borderColor}
-                              cursor="pointer"
-                              bg="transparent"
-                              _hover={{
-                                borderColor: "blue.400",
-                                borderWidth: "2px",
-                                "& .summary-edit-btn": { opacity: 1 },
-                              }}
-                              onClick={() =>
-                                item.editTarget &&
-                                handleEditSummaryItem(item.editTarget)
-                              }
-                            >
-                              <Flex justify="space-between" align="flex-start" gap={2}>
-                                <Box flex={1} minW={0}>
-                                  <Text
-                                    color={textColor}
-                                    fontWeight="medium"
-                                    fontSize="xs"
-                                  >
-                                    {item.label}
-                                  </Text>
-                                  <Text color={headingColor} noOfLines={2}>
-                                    {item.value}
-                                  </Text>
-                                </Box>
-                                {item.editTarget && (
-                                  <IconButton
-                                    aria-label="Editar"
-                                    icon={<EditIcon />}
-                                    size="xs"
-                                    variant="ghost"
-                                    opacity={0.4}
-                                    minW={6}
-                                    minH={6}
-                                    flexShrink={0}
-                                    className="summary-edit-btn"
-                                    _groupHover={{ opacity: 1 }}
-                                  />
-                                )}
-                              </Flex>
-                            </Box>
-                          ))}
-                      </SimpleGrid>
-                    </Collapse>
-                  </Box>
+                  {step === STEP_TELA7 && (
+                    <SimulationSummaryPanel
+                      simulationSummaryOpen={simulationSummaryOpen}
+                      onToggleOpen={() =>
+                        setSimulationSummaryOpen((open) => !open)
+                      }
+                      items={simulationSummaryItems}
+                      onEditItem={handleEditSummaryItem}
+                      bgCard={bgCard}
+                      borderColor={borderColor}
+                      headingColor={headingColor}
+                      textColor={textColor}
+                      appliedDiscounts={appliedDiscounts}
+                    />
+                  )}
 
                   {step === STEP_TELA7 && (
                     <Box
@@ -2430,26 +2610,77 @@ const CalculadoraEmbalagem: NextPage = () => {
                         shadow="md"
                         w="100%"
                       >
+                        <TypewriterBlock
+                          blockVisible={step === STEP_TELA7}
+                          resetKey={TW_SEQ_TELA7}
+                        >
                         <VStack align="center" spacing={{ base: 6, md: 8 }} w="100%">
-                          <Text fontSize="lg" color={headingColor} textAlign="center">
-                            A Ribermax vende somente para empresas. Para calcular sua
-                            embalagem, informe seu CNPJ.
-                          </Text>
+                          <TypewriterCardText
+                            lineIndex={TELA7_TW_INTRO}
+                            fontSize="lg"
+                            color={headingColor}
+                            text="A Ribermax vende somente para empresas. Para calcular sua embalagem, informe seu CNPJ."
+                            w="100%"
+                          />
 
-                          <FormControl isRequired>
-                            <FormLabel>CNPJ</FormLabel>
-                            <Input
-                              value={form.customerCnpj || ""}
-                              onChange={(e) =>
-                                updateForm({ customerCnpj: e.target.value })
-                              }
-                              placeholder="00.000.000/0000-00"
-                              size="lg"
-                              borderColor={borderColor}
-                              minH="44px"
-                            />
-                          </FormControl>
+                          <SimpleGrid
+                            columns={{ base: 1, md: 2 }}
+                            spacing={4}
+                            w="100%"
+                            alignItems="start"
+                          >
+                            <FormControl isRequired>
+                              <FormLabel htmlFor="calculadora-cnpj-input">
+                                <TypewriterCardText
+                                  as="span"
+                                  lineIndex={TELA7_TW_CNPJ_LABEL}
+                                  text="CNPJ"
+                                />
+                              </FormLabel>
+                              <Input
+                                id="calculadora-cnpj-input"
+                                value={form.customerCnpj || ""}
+                                onChange={(e) =>
+                                  updateForm({
+                                    customerCnpj: formatCnpjMaskInput(
+                                      e.target.value,
+                                    ),
+                                  })
+                                }
+                                placeholder="00.000.000/0000-00"
+                                inputMode="numeric"
+                                autoComplete="off"
+                                maxLength={18}
+                                size="lg"
+                                borderColor={borderColor}
+                                minH="44px"
+                              />
+                            </FormControl>
+                            <FormControl isRequired>
+                              <FormLabel
+                                htmlFor="calculadora-email-nfe-input"
+                                color={headingColor}
+                              >
+                                E-mail para NF-e
+                              </FormLabel>
+                              <Input
+                                id="calculadora-email-nfe-input"
+                                type="email"
+                                value={form.emailNfe || ""}
+                                onChange={(e) =>
+                                  updateForm({ emailNfe: e.target.value })
+                                }
+                                placeholder="nf-e@empresa.com.br"
+                                autoComplete="email"
+                                size="lg"
+                                borderColor={borderColor}
+                                minH="44px"
+                                color={textColor}
+                              />
+                            </FormControl>
+                          </SimpleGrid>
                         </VStack>
+                        </TypewriterBlock>
                       </MotionBox>
                       <Flex
                         w="100%"
@@ -2474,8 +2705,8 @@ const CalculadoraEmbalagem: NextPage = () => {
                           minH="44px"
                           isDisabled={
                             !(form.customerCnpj || "").trim() ||
-                            !(form.customerName || "").trim() ||
-                            !(form.customerEmail || "").trim()
+                            !tela7NfeFieldsValid ||
+                            !contactFormComplete
                           }
                         >
                           Calcular agora
@@ -2494,6 +2725,10 @@ const CalculadoraEmbalagem: NextPage = () => {
                       shadow="md"
                       w="100%"
                     >
+                      <TypewriterBlock
+                        blockVisible={step === STEP_RESULT}
+                        resetKey={resultTypewriterSequenceKey}
+                      >
                       <VStack align="stretch" spacing={6} w="100%">
                         {isCalculatingPrices ? null : elegibleTemplates.length === 0 ? (
                           <Text fontSize="sm" color={textColor} textAlign="center">
@@ -2509,274 +2744,312 @@ const CalculadoraEmbalagem: NextPage = () => {
                               Modelos viáveis para o seu caso
                             </Heading>
                             <SimpleGrid
+                              ref={sectionResultModelsRef}
                               columns={1}
                               spacing={4}
                               w="100%"
                             >
-                              {resultTemplatesSortedByPrice.map((t, cardIndex) => {
-                                const displayTitle =
-                                  t.priceResult?.info?.titulo ??
-                                  t.name.replace(/_/g, " ").replace(
-                                    /\b\w/g,
-                                    (c) => c.toUpperCase()
-                                  );
-                                const descriptionLines =
-                                  DESCRIPTION_LINES_BY_TEMPLATE_NAME.get(t.name)
-                                  ?? [];
-                                const isRecommendedCard = cardIndex === 0;
-                                const priceError = t.priceResult?.error;
-                                const priceValue = t.priceResult?.info?.vFinal;
-                                const rankCaption =
-                                  cardIndex < RESULT_CARD_RANK_CAPTIONS.length
-                                    ? RESULT_CARD_RANK_CAPTIONS[cardIndex]
-                                    : null;
-                                const dimensionsLine =
-                                  formatSimulationDimensionsLine(form);
-                                return (
-                                  <Box
-                                    key={t.name}
-                                    as="article"
-                                    role="group"
-                                    position="relative"
-                                    borderWidth={isRecommendedCard ? "3px" : "1px"}
-                                    borderColor={
-                                      isRecommendedCard
-                                        ? recommendedCardBorderColor
-                                        : borderColor
-                                    }
-                                    borderRadius="xl"
-                                    bg={bgCard}
-                                    overflow={isRecommendedCard ? "visible" : "hidden"}
-                                    boxShadow="sm"
-                                    transition="box-shadow 0.2s ease, border-color 0.2s ease"
-                                    _hover={{ boxShadow: "md" }}
+                              {visibleResultTemplates.map((t, cardIndex) => (
+                                <ResultTemplateCard
+                                  key={t.name}
+                                  variant="listing"
+                                  row={t}
+                                  cardIndex={cardIndex}
+                                  visibleCount={visibleResultTemplates.length}
+                                  recommendedTemplateName={recommendedTemplateName}
+                                  form={form}
+                                  onChooseModel={handleChooseResultModel}
+                                  theme={{
+                                    bgCard,
+                                    borderColor,
+                                    headingColor,
+                                    textColor,
+                                    recommendedCardBorderColor,
+                                    resultRankCaptionBgOther,
+                                    resultListingPriceColor,
+                                  }}
+                                />
+                              ))}
+
+                            </SimpleGrid>
+                            <Box w="100%" mt={6}>
+                              <SimulationSummaryPanel
+                                simulationSummaryOpen={simulationSummaryOpen}
+                                onToggleOpen={() =>
+                                  setSimulationSummaryOpen((open) => !open)
+                                }
+                                items={simulationSummaryItems}
+                                onEditItem={handleEditSummaryItem}
+                                bgCard={bgCard}
+                                borderColor={borderColor}
+                                headingColor={headingColor}
+                                textColor={textColor}
+                                appliedDiscounts={appliedDiscounts}
+                              />
+                            </Box>
+                            <Collapse
+                              in={showAssemblySection}
+                              animateOpacity
+                              unmountOnExit
+                            >
+                              <MotionBox
+                                ref={sectionAssemblyRef}
+                                key="assembly-choice"
+                                initial={{ opacity: 0, y: 16 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 16 }}
+                                transition={{ duration: 0.28 }}
+                                w="100%"
+                                mt={6}
+                                bg={bgCard}
+                                borderRadius="xl"
+                                borderWidth="1px"
+                                borderColor={borderColor}
+                                p={{ base: 5, md: 8 }}
+                                shadow="md"
+                              >
+                                <VStack align="stretch" spacing={5} w="100%">
+                                  <Heading
+                                    size="md"
+                                    color={headingColor}
+                                    textAlign="center"
                                   >
-                                    {isRecommendedCard ? (
-                                      <Badge
-                                        position="absolute"
-                                        top={0}
-                                        right={45}
-                                        zIndex={3}
-                                        transform="translate(42%, -48%)"
-                                        bg={recommendedCardBorderColor}
-                                        color="white"
-                                        fontSize="xs"
-                                        fontWeight="bold"
-                                        letterSpacing="0.06em"
-                                        borderRadius="md"
-                                        px={2.5}
-                                        py={1}
-                                        borderWidth="0"
-                                        textTransform="none"
-                                        boxShadow="sm"
-                                      >
-                                        RECOMENDADO
-                                      </Badge>
-                                    ) : null}
-                                    <Flex
-                                      direction={{ base: "column", sm: "row" }}
-                                      align={{ base: "stretch", sm: "stretch" }}
-                                      overflow="hidden"
-                                      borderRadius="9px"
-                                    >
-                                      <VStack
-                                        flexShrink={0}
-                                        align="stretch"
-                                        justify="center"
-                                        spacing={1}
-                                        w={{ base: "100%", sm: `${RESULT_CARD_IMAGE_SIDE_TABLET_PX}px` }}
-                                        bg="white"
-                                        border="3px solid"
-                                        borderColor="white"
-                                      >
+                                    Como deve ser a montagem e as aberturas?
+                                  </Heading>
+                                  <SimpleGrid
+                                    columns={{ base: 1, sm: 2, md: 3 }}
+                                    spacing={{ base: 3, md: 4 }}
+                                    w="100%"
+                                  >
+                                    {ASSEMBLY_OPTIONS.map((opt) => {
+                                      const isActive = form.assembly === opt.value;
+                                      const hasPick = form.assembly != null;
+                                      const isDimmed = hasPick && !isActive;
+                                      const imgSrc =
+                                        assemblyAssetFolder != null
+                                          ? assemblyIllustrationSrc(
+                                            assemblyAssetFolder,
+                                            opt.value,
+                                          )
+                                          : "";
+                                      const surchargeAmount =
+                                        selectedTemplateVFinal *
+                                        ASSEMBLY_SURCHARGE_FRACTION_OF_VFINAL;
+                                      const footnote =
+                                        opt.value === "disassembled"
+                                          ? "* Sem custo extra"
+                                          : Number.isFinite(selectedTemplateVFinal)
+                                            ? `* Acréscimo de ${formatMoneyBrlPtBr(
+                                              surchargeAmount,
+                                            )} ao valor total`
+                                            : "* Acréscimo de 10% ao valor total";
+                                      return (
                                         <Box
-                                          h={{
-                                            base: `${RESULT_CARD_IMAGE_HEIGHT_MOBILE_PX}px`,
-                                            sm: `${RESULT_CARD_IMAGE_SIDE_TABLET_PX}px`,
-                                          }}
-                                          position="relative"
-                                          p={4}
-                                          mt={{ base: 5, sm: 0 }}
+                                          key={opt.value}
+                                          as="button"
+                                          type="button"
+                                          onClick={() =>
+                                            handleAssemblyOptionClick(opt.value)
+                                          }
+                                          borderWidth={isActive ? "2px" : "1px"}
+                                          borderColor={
+                                            isActive ? "blue.400" : borderColor
+                                          }
+                                          borderRadius="lg"
+                                          p={3}
+                                          boxShadow="md"
+                                          w="100%"
+                                          bg={assemblyOptionCardBg}
+                                          _hover={{ borderColor: "blue.400" }}
+                                          textAlign="left"
+                                          opacity={isDimmed ? 0.6 : 1}
+                                          filter={isDimmed ? "grayscale(100%)" : "none"}
+                                          transition="opacity 0.2s ease, filter 0.2s ease"
                                         >
-                                          <Image
-                                            src={getTemplateImageSrc(t.name)}
-                                            alt={displayTitle}
-                                            w="100%"
-                                            h="100%"
-                                            objectFit="contain"
-                                            transition="transform 0.25s ease"
-                                            _groupHover={{ transform: "scale(1.1)" }}
-                                          />
-                                        </Box>
-                                        <Text
-                                          fontSize="xs"
-                                          color="gray.600"
-                                          opacity={0.8}
-                                          textAlign="center"
-                                          lineHeight="short"
-                                          px={2}
-                                          pb={2}
-                                        >
-                                          {RESULT_CARD_ILLUSTRATION_DISCLAIMER}
-                                        </Text>
-                                      </VStack>
-                                      <Flex
-                                        direction="column"
-                                        flex="1"
-                                        minW={0}
-                                        p={4}
-                                        justify="space-between"
-                                        gap={3}
-                                      >
-                                        <Box>
-                                          <Text
-                                            fontWeight="semibold"
-                                            color={headingColor}
-                                            fontSize="md"
-                                            lineHeight="snug"
-                                            noOfLines={2}
-                                          >
-                                            {displayTitle}
-                                          </Text>
-                                          {descriptionLines.length > 0 ? (
-                                            <UnorderedList
-                                              fontSize="xs"
-                                              color={textColor}
-                                              opacity={0.88}
-                                              mt={2}
-                                              spacing={1}
-                                              pl={1}
-                                              ml={4}
-                                              lineHeight="short"
+                                          <VStack align="stretch" spacing={3}>
+                                            <Box
+                                              h="120px"
+                                              w="100%"
+                                              borderRadius="md"
+                                              bg="white"
+                                              boxShadow="md"
+                                              flexShrink={0}
+                                              overflow="hidden"
+                                              display="flex"
+                                              alignItems="center"
+                                              justifyContent="center"
                                             >
-                                              {descriptionLines.map(
-                                                (line, lineIdx) => (
-                                                  <ListItem
-                                                    key={`${t.name}-desc-${lineIdx}`}
-                                                  >
-                                                    {line}
-                                                  </ListItem>
-                                                )
-                                              )}
-                                            </UnorderedList>
-                                          ) : null}
-                                        </Box>
-                                        <Box pt={1} w="100%" mt="auto">
-                                          {priceError ? (
+                                              {imgSrc ? (
+                                                <Image
+                                                  src={imgSrc}
+                                                  alt=""
+                                                  aria-hidden
+                                                  w="100%"
+                                                  h="100%"
+                                                  objectFit="contain"
+                                                />
+                                              ) : null}
+                                            </Box>
                                             <Text
                                               fontSize="sm"
-                                              color="red.500"
-                                            >
-                                              {priceError}
-                                            </Text>
-                                          ) : priceValue != null ? (
-                                            <VStack
-                                              align="stretch"
-                                              spacing={3}
-                                              w="100%"
-                                            >
-                                              {rankCaption ? (
-                                                <Box
-                                                  textAlign="start"
-                                                  px={3}
-                                                  py={2}
-                                                  borderRadius="md"
-                                                  bg={
-                                                    isRecommendedCard
-                                                      ? recommendedCardBorderColor
-                                                      : resultRankCaptionBgOther
-                                                  }
-                                                >
-                                                  <Text
-                                                    fontSize={
-                                                      isRecommendedCard
-                                                        ? "xl"
-                                                        : "md"
-                                                    }
-                                                    fontWeight="bold"
-                                                    lineHeight="short"
-                                                    color="white"
-                                                  >
-                                                    {rankCaption}
-                                                  </Text>
-                                                </Box>
-                                              ) : null}
-                                              <Box
-                                                display="flex"
-                                                flexDirection={{ base: "column", sm: "row" }}
-                                                justifyContent="space-around"
-                                                my={3}
-                                                flexWrap="wrap"
-                                              >
-                                                {dimensionsLine ? (
-                                                  <Text
-                                                    fontWeight="extrabold"
-                                                    fontSize="xl"
-                                                    color={textColor}
-                                                    textAlign="center"
-                                                  >
-                                                    {dimensionsLine}
-                                                  </Text>
-                                                ) : null}
-
-                                                <Text
-                                                  fontSize="2xl"
-                                                  fontWeight="extrabold"
-                                                  color={resultListingPriceColor}
-                                                  textAlign="center"
-                                                >
-                                                  R${" "}
-                                                  {Number(priceValue).toFixed(2)}
-                                                </Text>
-                                              </Box>
-                                            </VStack>
-                                          ) : (
-                                            <Text fontSize="xs" color={textColor}>
-                                              —
-                                            </Text>
-                                          )}
-                                          <Flex justify="flex-end" mt={3}>
-                                            <Button
-                                              type="button"
-                                              size="sm"
-                                              colorScheme="blue"
-                                              onClick={() =>
-                                                handleChooseResultModel({
-                                                  templateKey: t.name,
-                                                  label: displayTitle,
-                                                })
+                                              fontWeight={
+                                                isActive ? "extrabold" : "semibold"
                                               }
+                                              color={headingColor}
+                                              lineHeight="short"
                                             >
-                                              Escolher este Modelo
-                                            </Button>
-                                          </Flex>
+                                              {opt.label}
+                                            </Text>
+                                            <Text
+                                              fontSize="xs"
+                                              color={textColor}
+                                              lineHeight="short"
+                                              opacity={0.9}
+                                            >
+                                              {footnote}
+                                            </Text>
+                                          </VStack>
                                         </Box>
-                                      </Flex>
-                                    </Flex>
-                                  </Box>
-                                );
-                              })}
-                            </SimpleGrid>
-                            <Box
-                              as="pre"
-                              p={4}
-                              bg={preBg}
-                              borderRadius="md"
-                              overflow="auto"
-                              fontSize="xs"
-                              fontFamily="mono"
-                              maxH="200px"
-                            >
-                              {JSON.stringify(
-                                resultTemplatesSortedByPrice,
-                                null,
-                                2,
-                              )}
-                            </Box>
+                                      );
+                                    })}
+                                  </SimpleGrid>
+                                  <Flex
+                                    ref={sectionAssemblyContinueRef}
+                                    w="100%"
+                                    justify="flex-end"
+                                    mt={4}
+                                  >
+                                    <Button
+                                      colorScheme="blue"
+                                      size="lg"
+                                      minH="44px"
+                                      minW="160px"
+                                      isDisabled={!canContinueFromResultToDiscount}
+                                      onClick={() => goToStep(STEP_DISCOUNT)}
+                                    >
+                                      Continuar
+                                    </Button>
+                                  </Flex>
+                                </VStack>
+                              </MotionBox>
+                            </Collapse>
+                            {!showAssemblySection && form.template ? (
+                              <Flex w="100%" justify="flex-end" mt={6}>
+                                <Button
+                                  colorScheme="blue"
+                                  size="lg"
+                                  minH="44px"
+                                  minW="160px"
+                                  onClick={() => goToStep(STEP_DISCOUNT)}
+                                >
+                                  Continuar
+                                </Button>
+                              </Flex>
+                            ) : null}
                           </Fragment>
                         )}
                       </VStack>
+                      </TypewriterBlock>
                     </Box>
+                  )}
+
+                  {step === STEP_DISCOUNT && (
+                    <VStack align="stretch" spacing={6} w="100%">
+                      <DiscountPolicyDiscountCard
+                        vFinal={selectedTemplateVFinal}
+                        bgCard={bgCard}
+                        borderColor={borderColor}
+                        headingColor={headingColor}
+                        textColor={textColor}
+                        enabledByName={discountEnabledByName}
+                        onEnabledByNameChange={setDiscountEnabledByName}
+                      />
+
+                      <DiscountPolicySelectedModelSection
+                        chosenRow={chosenTemplateRow}
+                        form={form}
+                        discountsTotalBrl={appliedDiscounts.totalValue}
+                        surfaceBg={bgCard}
+                        borderColor={borderColor}
+                        headingColor={headingColor}
+                        textColor={textColor}
+                        cardTheme={{
+                          bgCard,
+                          borderColor,
+                          headingColor,
+                          textColor,
+                          recommendedCardBorderColor,
+                          resultRankCaptionBgOther,
+                          resultListingPriceColor,
+                        }}
+                      />
+
+                      <Box w="100%">
+                        <SimulationSummaryPanel
+                          simulationSummaryOpen={simulationSummaryOpen}
+                          onToggleOpen={() =>
+                            setSimulationSummaryOpen((open) => !open)
+                          }
+                          items={simulationSummaryItems}
+                          onEditItem={handleEditSummaryItem}
+                          bgCard={bgCard}
+                          borderColor={borderColor}
+                          headingColor={headingColor}
+                          textColor={textColor}
+                          appliedDiscounts={appliedDiscounts}
+                        />
+                      </Box>
+
+                      <Flex w="100%" justify="space-between" align="center" gap={4}>
+                        <Button
+                          variant="ghost"
+                          size="lg"
+                          leftIcon={<ArrowBackIcon />}
+                          onClick={goBack}
+                        >
+                          Voltar
+                        </Button>
+                        <Button
+                          colorScheme="blue"
+                          size="lg"
+                          minH="44px"
+                          onClick={() => goToStep(STEP_CONFERIR)}
+                        >
+                          Continuar
+                        </Button>
+                      </Flex>
+                    </VStack>
+                  )}
+
+                  {step === STEP_CONFERIR && (
+                    <StepConferirContent
+                      bgCard={bgCard}
+                      borderColor={borderColor}
+                      headingColor={headingColor}
+                      textColor={textColor}
+                      simulationSummaryOpen={simulationSummaryOpen}
+                      onToggleSummaryOpen={() =>
+                        setSimulationSummaryOpen((open) => !open)
+                      }
+                      summaryItems={simulationSummaryItems}
+                      onEditSummaryItem={handleEditSummaryItem}
+                      appliedDiscounts={appliedDiscounts}
+                      pricingQuote={conferirPricingQuote}
+                      totalPriceColor={resultListingPriceColor}
+                      customerClarity={customerClarity}
+                      onClarityChange={setCustomerClarity}
+                      packTypeForQty={conferirPackTypeForQty}
+                      qty={conferirQty}
+                      onQtyChange={setConferirQty}
+                      prodName={conferirProdName}
+                      onProdNameChange={setConferirProdName}
+                      prodCode={conferirProdCode}
+                      onProdCodeChange={setConferirProdCode}
+                      message={conferirMessage}
+                      onMessageChange={setConferirMessage}
+                      onBack={goBack}
+                      onSubmit={handleConferirSubmit}
+                    />
                   )}
                 </VStack>
               </MotionBox>
@@ -2790,6 +3063,8 @@ const CalculadoraEmbalagem: NextPage = () => {
               textColor={textColor}
               progressTrackInactiveBg={progressTrackInactiveBg}
               surfaceBg={bgPage}
+              onProgressStepNavigate={handleProgressStepNavigate}
+              isProgressStepEnabled={isProgressStepUnlocked}
             />
           </Box>
         </Flex>
@@ -2880,6 +3155,102 @@ const CalculadoraEmbalagem: NextPage = () => {
               })}
             </VStack>
           </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+        isCentered
+        motionPreset="scale"
+      >
+        <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(6px)" />
+        <ModalContent
+          bg={bgCard}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="xl"
+          mx={4}
+        >
+          <ModalBody py={{ base: 6, md: 8 }} px={{ base: 5, md: 8 }}>
+            <VStack spacing={5} align="stretch">
+              <Box
+                bg={successModalToastBg}
+                borderRadius="lg"
+                borderWidth="1px"
+                borderColor={successModalToastBorder}
+                borderLeftWidth="4px"
+                borderLeftColor={successModalToastAccent}
+                py={4}
+                px={4}
+                boxShadow="sm"
+              >
+              <Text
+                color={"green.500"}
+                fontSize="md"
+                lineHeight="tall"
+                textAlign="center"
+                fontWeight="bold"
+              >
+                Suas informações foram enviadas com sucesso.
+              </Text>
+                <Text
+                  color={headingColor}
+                  fontSize="sm"
+                  lineHeight="tall"
+                  textAlign="center"
+                >
+                  Agora é só aguardar, pois um de nossos vendedores entrará em
+                  contato para seguir com o seu pedido.
+                </Text>
+              </Box>
+              <Box
+                pt={2}
+                borderTopWidth="1px"
+                borderTopColor={borderColor}
+              />
+              <VStack spacing={2} align="stretch">
+                <Heading
+                  as="h3"
+                  fontSize={{ base: "xl", md: "2xl" }}
+                  fontWeight="bold"
+                  color={ganheTempoTitleColor}
+                  textAlign="center"
+                >
+                  Ganhe tempo!
+                </Heading>
+                <Text
+                  color={textColor}
+                  fontSize="md"
+                  lineHeight="tall"
+                  textAlign="center"
+                >
+                  Se você tem mais de uma medida de embalagem, faça agora uma
+                  nova simulação e envie.<br/>Assim o vendedor poderá tratar de
+                  todas elas com você de uma só vez.
+                </Text>
+                <Text
+                  color={"orange.500"}
+                  fontSize="md"
+                  lineHeight="tall"
+                  textAlign="center"
+                  fontWeight="bold"
+                >
+                  Não será necessário preencher seus dados de novo.
+                </Text>
+              </VStack>
+            </VStack>
+          </ModalBody>
+          <ModalFooter justifyContent="center" pb={6}>
+            <Button
+              colorScheme="blue"
+              size="lg"
+              minH="44px"
+              onClick={() => setSuccessModalOpen(false)}
+            >
+              OK
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
 

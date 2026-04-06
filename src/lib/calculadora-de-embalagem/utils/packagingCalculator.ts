@@ -1,9 +1,24 @@
 import { cnpj } from "cpf-cnpj-validator";
 
+import type { ContactChannel } from "./contactChannel";
+
 export type PackType = "box" | "crate" | "pallet" | "any";
+export type { ContactChannel } from "./contactChannel";
 export type MeasuresOf = "internal" | "product";
 export type Unit = "mm" | "cm";
 export type IsExportable = "yes" | "no" | "optional";
+
+/** How the packaging is assembled / opened (calculadora follow-up). */
+export type AssemblyType =
+  | "disassembled"
+  | "top-opening"
+  | "bottom-opening"
+  | "side-opening"
+  | "end-opening"
+  | "top-and-side-opening"
+  | "top-and-end-opening"
+  | "bottom-and-side-opening"
+  | "bottom-and-end-opening";
 
 /** Maps calculadora templates to RBX $cx defaults (vs PackagingCalculator::addInfo all-on). */
 export type CalcProfile =
@@ -71,13 +86,54 @@ export interface PackagingFormData {
   isUnitizedContent?: boolean;
   isDistributedWeight?: boolean | null;
   customerCnpj: string;
+  /** E-mail for NF-e (electronic invoice) delivery. */
+  emailNfe: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  /** Preferred contact channel (Tela 2). */
+  contactChannel?: ContactChannel;
+  /** Selected RBX modelo key after price step (e.g. caixa_economica). */
+  template?: string;
+  /** null = user has not chosen yet (calculadora result step). */
+  assembly?: AssemblyType | null;
 }
 
 export function toMeters(value: number, unit: Unit): number {
   return unit === "mm" ? value / 1000 : value / 100;
+}
+
+/**
+ * Box internal dimensions used for pricing API and result cards.
+ * When the user entered product dimensions, adds clearance to L/W/H (same unit as form).
+ * When measures are already internal, returns length/width/height unchanged.
+ */
+export function resolveInternalPackageDimensions(
+  form: Partial<PackagingFormData>,
+): { length: number; width: number; height: number } | null {
+  const rawL = Number(form.length);
+  const rawW = Number(form.width);
+  if (!Number.isFinite(rawL) || !Number.isFinite(rawW) || rawL <= 0 || rawW <= 0) {
+    return null;
+  }
+  const packType = form.packType;
+  const rawH = form.height != null ? Number(form.height) : NaN;
+  const hasHeight =
+    packType !== "pallet" &&
+    Number.isFinite(rawH) &&
+    rawH > 0;
+
+  const clearanceAdd =
+    form.measuresOf === "product" && form.clearance != null
+      ? Number(form.clearance)
+      : 0;
+  const c = Number.isFinite(clearanceAdd) ? clearanceAdd : 0;
+
+  return {
+    length: rawL + c,
+    width: rawW + c,
+    height: hasHeight ? rawH + c : 0,
+  };
 }
 
 export function isOversized(
@@ -177,12 +233,13 @@ export function getElegibleTemplates(
   formData: PackagingFormData,
   templates: BoxTemplate[]
 ): string[] {
-  const lengthM = toMeters(formData.length, formData.unit);
-  const widthM = toMeters(formData.width, formData.unit);
-  const heightM =
-    formData.height !== undefined
-      ? toMeters(formData.height, formData.unit)
-      : 0;
+  const internal = resolveInternalPackageDimensions(formData);
+  if (!internal) {
+    return [];
+  }
+  const lengthM = toMeters(internal.length, formData.unit);
+  const widthM = toMeters(internal.width, formData.unit);
+  const heightM = toMeters(internal.height, formData.unit);
 
   const eligible: string[] = [];
 

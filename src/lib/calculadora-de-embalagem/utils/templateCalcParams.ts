@@ -1,4 +1,4 @@
-import type { BoxTemplate, CalcProfile, PackType } from "@/utils/packagingCalculator";
+import type { BoxTemplate, CalcProfile, PackType } from "./packagingCalculator";
 
 /**
  * RBX $cx keys the calculadora may forward (aligns with advConfigs /
