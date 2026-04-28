@@ -13,8 +13,6 @@ export function useCalculadoraThemeTokens() {
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const headingColor = useColorModeValue("gray.800", "white");
   const textColor = useColorModeValue("gray.600", "gray.300");
-  const preBg = useColorModeValue("gray.100", "gray.700");
-  const unitToggleHoverBg = useColorModeValue("gray.300", "gray.600");
   const clearanceBadgeBgActive = useColorModeValue("blue.50", "blue.900");
   const placeholderColor = useColorModeValue("gray.500", "gray.400");
   const progressTrackInactiveBg = useColorModeValue("gray.200", "gray.600");
@@ -35,8 +33,6 @@ export function useCalculadoraThemeTokens() {
     borderColor,
     headingColor,
     textColor,
-    preBg,
-    unitToggleHoverBg,
     clearanceBadgeBgActive,
     placeholderColor,
     progressTrackInactiveBg,

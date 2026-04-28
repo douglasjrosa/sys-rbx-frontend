@@ -89,7 +89,7 @@ export const initialForm: Partial<PackagingFormData> = {
   prodType: 0,
   weight: 0,
   measuresOf: undefined,
-  unit: "mm",
+  unit: undefined,
   length: undefined,
   width: undefined,
   height: undefined,

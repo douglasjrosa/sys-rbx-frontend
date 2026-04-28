@@ -33,6 +33,12 @@ export type CalculadoraSubmissionCustomer = {
   message: string;
 };
 
+/*
+ * Phase 2 (multi-line cart): discount policy and Strapi quote payload may aggregate
+ * several CalculadoraCartLine rows from localStorage; this builder stays single-line
+ * until the backend accepts an array of packaging items per submission.
+ */
+
 type PackagingFormFieldsWithoutCustomer = Omit<
   Partial<PackagingFormData>,
   | "customerCnpj"
@@ -45,9 +51,9 @@ type PackagingFormFieldsWithoutCustomer = Omit<
 
 export type CalculadoraSubmissionPackaging = PackagingFormFieldsWithoutCustomer & {
   appliedDiscounts: AppliedDiscounts;
-  /** Optional product label for this packaging quote (Conferir step). */
+  /** Product label collected on the price step before Conferir. */
   prodName?: string;
-  /** Optional product code (Conferir step). */
+  /** Product code collected on the price step before Conferir. */
   prodCode?: string;
 };
 

@@ -467,13 +467,15 @@ function ResultTemplateCardListing(p: ListingProps) {
                         w="100%"
                         flex="1"
                       >
-                        {!!isExportCard || form.assembly != 'disassembled' && <Text
-                          fontSize="sm"
-                          color={textColor}
-                          fontWeight="bold"
-                        >
-                          Preço: {formatMoneyBrlPtBr(numericPriceValue)}
-                        </Text>}
+                        {isExportCard ? (
+                          <Text
+                            fontSize="sm"
+                            color={textColor}
+                            fontWeight="bold"
+                          >
+                            Preço: {formatMoneyBrlPtBr(numericPriceValue)}
+                          </Text>
+                        ) : null}
                         {isExportCard ? (
                           <Text fontSize="sm" color={textColor}>
                             Fumigação: {brlPlus(fumigationValue)}
@@ -734,13 +736,15 @@ function ResultTemplateCardDiscount(p: DiscountProps) {
                       w="100%"
                       flex="1"
                     >
-                      {(!!isExportCard || (form.assembly && form.assembly !== "disassembled") || !!discountsTotalBrl) && <Text
-                        fontSize="sm"
-                        color={textColor}
-                        fontWeight="bold"
-                      >
-                        Preço: {formatMoneyBrlPtBr(basePrice)}
-                      </Text>}
+                      {isExportCard ? (
+                        <Text
+                          fontSize="sm"
+                          color={textColor}
+                          fontWeight="bold"
+                        >
+                          Preço: {formatMoneyBrlPtBr(basePrice)}
+                        </Text>
+                      ) : null}
                       {isExportCard ? (
                         <Text fontSize="sm" color={textColor}>
                           Fumigação: {brlPlus(fumigationAmt)}

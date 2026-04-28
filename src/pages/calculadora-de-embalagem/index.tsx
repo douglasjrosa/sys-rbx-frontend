@@ -4,6 +4,7 @@ import {
   Collapse,
   Flex,
   FormControl,
+  FormHelperText,
   FormLabel,
   Heading,
   HStack,
@@ -74,6 +75,15 @@ import { DiscountPolicySelectedModelSection } from "@/lib/calculadora-de-embalag
 import { ResultTemplateCard } from "@/lib/calculadora-de-embalagem/components/ResultTemplateCard";
 import { SimulationSummaryPanel } from "@/lib/calculadora-de-embalagem/components/SimulationSummaryPanel";
 import { StepConferirContent } from "@/lib/calculadora-de-embalagem/components/StepConferirContent";
+import {
+  MorePackagingDecisionCard,
+  ResultStepNamingCard,
+  ResultStepQtyCard,
+} from "@/lib/calculadora-de-embalagem/components/ResultStepAfterModelCards";
+import {
+  appendCalculadoraCartLine,
+  pickCalculadoraCartFormSnapshot,
+} from "@/lib/calculadora-de-embalagem/utils/cartStorage";
 import type { ElegibleTemplateResult } from "@/lib/calculadora-de-embalagem/utils/types";
 import {
   DEFAULT_PRODTYPE_FOR_PALLET,
@@ -191,6 +201,9 @@ const CalculadoraEmbalagem: NextPage = () => {
   const [conferirProdName, setConferirProdName] = useState("");
   const [conferirProdCode, setConferirProdCode] = useState("");
   const [conferirMessage, setConferirMessage] = useState("");
+  const [resultStepNameBlurredValid, setResultStepNameBlurredValid] =
+    useState(false);
+  const [resultStepNameShowError, setResultStepNameShowError] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const lastSubmissionRef = useRef<CalculadoraSubmissionPayload | null>(null);
   const sectionPackTypeRef = useRef<HTMLDivElement>(null);
@@ -244,7 +257,9 @@ const CalculadoraEmbalagem: NextPage = () => {
     !!form.width &&
     !!form.height;
 
+  const dimensionsUnitSelected = form.unit === "mm" || form.unit === "cm";
   const showTela2Continuar =
+    dimensionsUnitSelected &&
     !!form.length &&
     !!form.width &&
     (isPallet || !!form.height) &&
@@ -292,8 +307,6 @@ const CalculadoraEmbalagem: NextPage = () => {
     borderColor,
     headingColor,
     textColor,
-    preBg,
-    unitToggleHoverBg,
     clearanceBadgeBgActive,
     placeholderColor,
     progressTrackInactiveBg,
@@ -443,18 +456,43 @@ const CalculadoraEmbalagem: NextPage = () => {
   useEffect(() => {
     if (step !== STEP_CONFERIR) {
       setCustomerClarity(null);
-      setConferirQty(1);
-      setConferirProdName("");
-      setConferirProdCode("");
       setConferirMessage("");
     }
   }, [step]);
+
+  useEffect(() => {
+    if (step < STEP_RESULT) {
+      setConferirQty(1);
+      setConferirProdName("");
+      setConferirProdCode("");
+      setResultStepNameBlurredValid(false);
+      setResultStepNameShowError(false);
+    }
+  }, [step]);
+
+  useEffect(() => {
+    setResultStepNameBlurredValid(false);
+    setResultStepNameShowError(false);
+  }, [form.template, form.assembly]);
 
   const canContinueFromResultToDiscount = useMemo(
     () =>
       Boolean(form.template) &&
       (!showAssemblySection || form.assembly != null),
     [form.template, showAssemblySection, form.assembly],
+  );
+
+  const conferirQtyValid = useMemo(
+    () =>
+      typeof conferirQty === "number" &&
+      Number.isInteger(conferirQty) &&
+      conferirQty >= 1,
+    [conferirQty],
+  );
+
+  const resultPostModelCardTheme = useMemo(
+    () => ({ bgCard, borderColor, headingColor, textColor }),
+    [bgCard, borderColor, headingColor, textColor],
   );
 
   const simulationSummaryItems = useCalculadoraSimulationSummaryItems({
@@ -695,6 +733,79 @@ const CalculadoraEmbalagem: NextPage = () => {
     });
   }, [form.prodType]);
 
+  const handleResultProdNameBlur = useCallback(() => {
+    const trimmed = conferirProdName.trim();
+    if (trimmed === "") {
+      setResultStepNameBlurredValid(false);
+      setResultStepNameShowError(true);
+      return;
+    }
+    setResultStepNameBlurredValid(true);
+    setResultStepNameShowError(false);
+  }, [conferirProdName]);
+
+  const handleAppendAnotherPackagingLine = useCallback(() => {
+    if (!form.template || !chosenTemplateRow) {
+      toast({
+        title: "Não foi possível salvar",
+        description: "Selecione um modelo com preço válido antes de continuar.",
+        status: "warning",
+        duration: 5000,
+      });
+      return;
+    }
+    if (
+      typeof conferirQty !== "number" ||
+      !Number.isInteger(conferirQty) ||
+      conferirQty < 1
+    ) {
+      return;
+    }
+    const nameTrim = conferirProdName.trim();
+    if (nameTrim === "") {
+      return;
+    }
+    let priceSnapshot: ElegibleTemplateResult;
+    try {
+      priceSnapshot = structuredClone(chosenTemplateRow);
+    } catch {
+      priceSnapshot = JSON.parse(
+        JSON.stringify(chosenTemplateRow),
+      ) as ElegibleTemplateResult;
+    }
+    appendCalculadoraCartLine({
+      prodName: nameTrim,
+      prodCode: conferirProdCode.trim(),
+      qty: conferirQty,
+      template: form.template,
+      assembly: form.assembly ?? null,
+      formSnapshot: pickCalculadoraCartFormSnapshot(form),
+      priceRow: priceSnapshot,
+    });
+    setStep(STEP_TELA1);
+    setTela1SubStep(TELA1_SUB_PACK);
+    setForm(hydrateInitialFormFromCustomerStorage());
+    setElegibleTemplates([]);
+    setDiscountEnabledByName({});
+    setRecommendationsAcknowledged(false);
+    setConferirQty(1);
+    setConferirProdName("");
+    setConferirProdCode("");
+    setResultStepNameBlurredValid(false);
+    setResultStepNameShowError(false);
+    setSimulationSummaryOpen(true);
+    setIsCalculatingPrices(false);
+    setPricingModalNames([]);
+    setPricingModalActiveIndex(0);
+  }, [
+    chosenTemplateRow,
+    conferirProdCode,
+    conferirProdName,
+    conferirQty,
+    form,
+    toast,
+  ]);
+
   const handleConferirSubmit = useCallback(async () => {
     if (customerClarity == null) return;
     if (
@@ -909,7 +1020,15 @@ const CalculadoraEmbalagem: NextPage = () => {
       });
       return;
     }
-    const unit = (form.unit || "mm") as "mm" | "cm";
+    if (form.unit !== "mm" && form.unit !== "cm") {
+      toast({
+        title: "Selecione a unidade de medida",
+        status: "warning",
+        duration: 3000,
+      });
+      return;
+    }
+    const unit = form.unit;
     const length = Number(form.length) || 0;
     const width = Number(form.width) || 0;
     const height = form.packType === "pallet" ? 0 : (Number(form.height) || 0);
@@ -2014,141 +2133,108 @@ const CalculadoraEmbalagem: NextPage = () => {
                           text={dimensionsIntro()}
                         />
 
-                        <SimpleGrid
-                          columns={{ base: 1, md: 2, lg: 4 }}
-                          spacing={{ base: 4, md: 5 }}
-                          w="100%"
+                        <FormControl as="fieldset" isRequired w="100%">
+                          <FormLabel
+                            as="legend"
+                            textAlign="center"
+                            mr={0}
+                            color={headingColor}
+                            fontWeight="semibold"
+                            mb={3}
+                            w="100%"
+                          >
+                            Unidade de medida
+                          </FormLabel>
+                          <SimpleGrid
+                            columns={{ base: 1, sm: 2 }}
+                            spacing={{ base: 3, md: 4 }}
+                            w="100%"
+                            maxW="lg"
+                            mx="auto"
+                          >
+                            {(
+                              [
+                                { value: "mm" as const, label: "Milímetros (mm)" },
+                                { value: "cm" as const, label: "Centímetros (cm)" },
+                              ] as const
+                            ).map((opt) => {
+                              const isActive = form.unit === opt.value;
+                              const hasSelection = dimensionsUnitSelected;
+                              const isDimmed = hasSelection && !isActive;
+                              return (
+                                <Box
+                                  key={opt.value}
+                                  as="button"
+                                  type="button"
+                                  onClick={() =>
+                                    updateForm({
+                                      unit: opt.value,
+                                      clearance:
+                                        form.measuresOf === "product"
+                                          ? undefined
+                                          : form.clearance,
+                                    })
+                                  }
+                                  borderWidth={isActive ? "2px" : "1px"}
+                                  borderColor={
+                                    isActive ? "blue.400" : borderColor
+                                  }
+                                  borderRadius="lg"
+                                  p={4}
+                                  boxShadow="sm"
+                                  w="100%"
+                                  bg={
+                                    isActive ? clearanceBadgeBgActive : bgCard
+                                  }
+                                  _hover={{ borderColor: "blue.400" }}
+                                  textAlign="center"
+                                  justifyContent="center"
+                                  opacity={isDimmed ? 0.6 : 1}
+                                  filter={isDimmed ? "grayscale(100%)" : "none"}
+                                  display="flex"
+                                  alignItems="center"
+                                >
+                                  <Text
+                                    fontSize="lg"
+                                    fontWeight={
+                                      isActive ? "extrabold" : "semibold"
+                                    }
+                                    color={textColor}
+                                  >
+                                    {opt.label}
+                                  </Text>
+                                </Box>
+                              );
+                            })}
+                          </SimpleGrid>
+                        </FormControl>
+
+                        <Collapse
+                          in={dimensionsUnitSelected}
+                          animateOpacity
+                          unmountOnExit
                         >
-                          <FormControl>
-                            <FormLabel textAlign="center" mr={0}>Unidade de medida</FormLabel>
-                            <Flex
-                              minH="44px"
-                              w="full"
-                              maxW="120px"
-                              mx="auto"
-                              borderRadius="lg"
-                              overflow="hidden"
-                              borderWidth="1px"
-                              borderColor={borderColor}
-                              bg={preBg}
-                            >
-                              <Box
-                                as="button"
-                                type="button"
-                                flex={1}
-                                py={2}
-                                textAlign="center"
-                                fontSize="md"
-                                fontWeight="semibold"
-                                bg={form.unit === "mm" ? "blue.500" : "transparent"}
-                                color={form.unit === "mm" ? "white" : textColor}
-                                onClick={() =>
-                                  updateForm({
-                                    unit: "mm",
-                                    clearance:
-                                      form.measuresOf === "product"
-                                        ? undefined
-                                        : form.clearance,
-                                  })
-                                }
-                                _hover={{
-                                  bg: form.unit === "mm" ? "blue.500" : unitToggleHoverBg,
-                                  color: "white",
-                                }}
-                              >
-                                mm
-                              </Box>
-                              <Box
-                                as="button"
-                                type="button"
-                                flex={1}
-                                py={2}
-                                textAlign="center"
-                                fontSize="md"
-                                fontWeight="semibold"
-                                bg={form.unit === "cm" ? "blue.500" : "transparent"}
-                                color={form.unit === "cm" ? "white" : textColor}
-                                onClick={() =>
-                                  updateForm({
-                                    unit: "cm",
-                                    clearance:
-                                      form.measuresOf === "product"
-                                        ? undefined
-                                        : form.clearance,
-                                  })
-                                }
-                                _hover={{
-                                  bg: form.unit === "cm" ? "blue.500" : unitToggleHoverBg,
-                                  color: "white",
-                                }}
-                              >
-                                cm
-                              </Box>
-                            </Flex>
-                          </FormControl>
-
-                          <FormControl>
-                            <FormLabel textAlign="center" mr={0}>Comprimento</FormLabel>
-                            <NumberInput
-                              value={form.length ?? ""}
-                              onChange={(_, v) =>
-                                updateForm({
-                                  length: v === undefined || Number.isNaN(v)
-                                    ? undefined
-                                    : v,
-                                })
-                              }
-                              min={form.unit === "mm" ? 60 : 6}
-                              step={form.unit === "mm" ? 1 : 0.1}
-                            >
-                              <NumberInputField
-                                borderColor={borderColor}
-                                minH="44px"
-                                textAlign="center"
-                              />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                              </NumberInputStepper>
-                            </NumberInput>
-                          </FormControl>
-
-                          <FormControl>
-                            <FormLabel textAlign="center" mr={0}>Largura</FormLabel>
-                            <NumberInput
-                              value={form.width ?? ""}
-                              onChange={(_, v) =>
-                                updateForm({
-                                  width: v === undefined || Number.isNaN(v)
-                                    ? undefined
-                                    : v,
-                                })
-                              }
-                              min={form.unit === "mm" ? 60 : 6}
-                              step={form.unit === "mm" ? 1 : 0.1}
-                            >
-                              <NumberInputField
-                                borderColor={borderColor}
-                                minH="44px"
-                                textAlign="center"
-                              />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                              </NumberInputStepper>
-                            </NumberInput>
-                          </FormControl>
-
-                          {!isPallet && (
+                          <SimpleGrid
+                            columns={{ base: 1, md: isPallet ? 2 : 3 }}
+                            spacing={{ base: 4, md: 5 }}
+                            w="100%"
+                            mt={2}
+                          >
                             <FormControl>
-                              <FormLabel textAlign="center" mr={0}>Altura</FormLabel>
+                              <FormLabel textAlign="center" mr={0}>
+                                Comprimento
+                                {form.unit === "mm" || form.unit === "cm"
+                                  ? ` (${form.unit})`
+                                  : ""}
+                              </FormLabel>
                               <NumberInput
-                                value={form.height ?? ""}
+                                value={form.length ?? ""}
                                 onChange={(_, v) =>
                                   updateForm({
-                                    height: v === undefined || Number.isNaN(v)
-                                      ? undefined
-                                      : v,
+                                    length:
+                                      v === undefined || Number.isNaN(v)
+                                        ? undefined
+                                        : v,
                                   })
                                 }
                                 min={form.unit === "mm" ? 60 : 6}
@@ -2158,15 +2244,123 @@ const CalculadoraEmbalagem: NextPage = () => {
                                   borderColor={borderColor}
                                   minH="44px"
                                   textAlign="center"
+                                  color={textColor}
                                 />
                                 <NumberInputStepper>
                                   <NumberIncrementStepper />
                                   <NumberDecrementStepper />
                                 </NumberInputStepper>
                               </NumberInput>
+                              <FormHelperText
+                                textAlign="center"
+                                mb={0}
+                                color={textColor}
+                                opacity={0.88}
+                                fontSize="sm"
+                              >
+                                {form.unit === "mm"
+                                  ? "Ex.: 1500 mm"
+                                  : form.unit === "cm"
+                                    ? "Ex.: 150 cm"
+                                    : ""}
+                              </FormHelperText>
                             </FormControl>
-                          )}
-                        </SimpleGrid>
+
+                            <FormControl>
+                              <FormLabel textAlign="center" mr={0}>
+                                Largura
+                                {form.unit === "mm" || form.unit === "cm"
+                                  ? ` (${form.unit})`
+                                  : ""}
+                              </FormLabel>
+                              <NumberInput
+                                value={form.width ?? ""}
+                                onChange={(_, v) =>
+                                  updateForm({
+                                    width:
+                                      v === undefined || Number.isNaN(v)
+                                        ? undefined
+                                        : v,
+                                  })
+                                }
+                                min={form.unit === "mm" ? 60 : 6}
+                                step={form.unit === "mm" ? 1 : 0.1}
+                              >
+                                <NumberInputField
+                                  borderColor={borderColor}
+                                  minH="44px"
+                                  textAlign="center"
+                                  color={textColor}
+                                />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper />
+                                  <NumberDecrementStepper />
+                                </NumberInputStepper>
+                              </NumberInput>
+                              <FormHelperText
+                                textAlign="center"
+                                mb={0}
+                                color={textColor}
+                                opacity={0.88}
+                                fontSize="sm"
+                              >
+                                {form.unit === "mm"
+                                  ? "Ex.: 1000 mm"
+                                  : form.unit === "cm"
+                                    ? "Ex.: 100 cm"
+                                    : ""}
+                              </FormHelperText>
+                            </FormControl>
+
+                            {!isPallet && (
+                              <FormControl>
+                                <FormLabel textAlign="center" mr={0}>
+                                  Altura
+                                  {form.unit === "mm" || form.unit === "cm"
+                                    ? ` (${form.unit})`
+                                    : ""}
+                                </FormLabel>
+                                <NumberInput
+                                  value={form.height ?? ""}
+                                  onChange={(_, v) =>
+                                    updateForm({
+                                      height:
+                                        v === undefined || Number.isNaN(v)
+                                          ? undefined
+                                          : v,
+                                    })
+                                  }
+                                  min={form.unit === "mm" ? 60 : 6}
+                                  step={form.unit === "mm" ? 1 : 0.1}
+                                >
+                                  <NumberInputField
+                                    borderColor={borderColor}
+                                    minH="44px"
+                                    textAlign="center"
+                                    color={textColor}
+                                  />
+                                  <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                  </NumberInputStepper>
+                                </NumberInput>
+                                <FormHelperText
+                                  textAlign="center"
+                                  mb={0}
+                                  color={textColor}
+                                  opacity={0.88}
+                                  fontSize="sm"
+                                >
+                                  {form.unit === "mm"
+                                    ? "Ex.: 500 mm"
+                                    : form.unit === "cm"
+                                      ? "Ex.: 50 cm"
+                                      : ""}
+                                </FormHelperText>
+                              </FormControl>
+                            )}
+                          </SimpleGrid>
+                        </Collapse>
                       </VStack>
                     </MotionBox>
 
@@ -2579,22 +2773,6 @@ const CalculadoraEmbalagem: NextPage = () => {
               >
                 <VStack spacing={6} w="100%">
                   {step === STEP_TELA7 && (
-                    <SimulationSummaryPanel
-                      simulationSummaryOpen={simulationSummaryOpen}
-                      onToggleOpen={() =>
-                        setSimulationSummaryOpen((open) => !open)
-                      }
-                      items={simulationSummaryItems}
-                      onEditItem={handleEditSummaryItem}
-                      bgCard={bgCard}
-                      borderColor={borderColor}
-                      headingColor={headingColor}
-                      textColor={textColor}
-                      appliedDiscounts={appliedDiscounts}
-                    />
-                  )}
-
-                  {step === STEP_TELA7 && (
                     <Box
                       as="form"
                       onSubmit={handleTela7Submit}
@@ -2913,38 +3091,48 @@ const CalculadoraEmbalagem: NextPage = () => {
                                       );
                                     })}
                                   </SimpleGrid>
-                                  <Flex
+                                  <Box
                                     ref={sectionAssemblyContinueRef}
+                                    h={0}
                                     w="100%"
-                                    justify="flex-end"
-                                    mt={4}
-                                  >
-                                    <Button
-                                      colorScheme="blue"
-                                      size="lg"
-                                      minH="44px"
-                                      minW="160px"
-                                      isDisabled={!canContinueFromResultToDiscount}
-                                      onClick={() => goToStep(STEP_DISCOUNT)}
-                                    >
-                                      Continuar
-                                    </Button>
-                                  </Flex>
+                                    aria-hidden
+                                  />
                                 </VStack>
                               </MotionBox>
                             </Collapse>
-                            {!showAssemblySection && form.template ? (
-                              <Flex w="100%" justify="flex-end" mt={6}>
-                                <Button
-                                  colorScheme="blue"
-                                  size="lg"
-                                  minH="44px"
-                                  minW="160px"
-                                  onClick={() => goToStep(STEP_DISCOUNT)}
-                                >
-                                  Continuar
-                                </Button>
-                              </Flex>
+                            {canContinueFromResultToDiscount ? (
+                              <VStack align="stretch" spacing={6} w="100%" mt={6}>
+                                <ResultStepNamingCard
+                                  theme={resultPostModelCardTheme}
+                                  prodName={conferirProdName}
+                                  prodCode={conferirProdCode}
+                                  onProdNameChange={(v) => {
+                                    setConferirProdName(v);
+                                    setResultStepNameShowError(false);
+                                  }}
+                                  onProdCodeChange={setConferirProdCode}
+                                  onProdNameBlur={handleResultProdNameBlur}
+                                  showNameError={resultStepNameShowError}
+                                />
+                                {resultStepNameBlurredValid &&
+                                conferirProdName.trim() !== "" ? (
+                                  <ResultStepQtyCard
+                                    theme={resultPostModelCardTheme}
+                                    packTypeForQty={conferirPackTypeForQty}
+                                    qty={conferirQty}
+                                    onQtyChange={setConferirQty}
+                                  />
+                                ) : null}
+                                {resultStepNameBlurredValid &&
+                                conferirProdName.trim() !== "" &&
+                                conferirQtyValid ? (
+                                  <MorePackagingDecisionCard
+                                    theme={resultPostModelCardTheme}
+                                    onNoMore={() => goToStep(STEP_DISCOUNT)}
+                                    onAddAnother={handleAppendAnotherPackagingLine}
+                                  />
+                                ) : null}
+                              </VStack>
                             ) : null}
                           </Fragment>
                         )}
@@ -2984,22 +3172,6 @@ const CalculadoraEmbalagem: NextPage = () => {
                         }}
                       />
 
-                      <Box w="100%">
-                        <SimulationSummaryPanel
-                          simulationSummaryOpen={simulationSummaryOpen}
-                          onToggleOpen={() =>
-                            setSimulationSummaryOpen((open) => !open)
-                          }
-                          items={simulationSummaryItems}
-                          onEditItem={handleEditSummaryItem}
-                          bgCard={bgCard}
-                          borderColor={borderColor}
-                          headingColor={headingColor}
-                          textColor={textColor}
-                          appliedDiscounts={appliedDiscounts}
-                        />
-                      </Box>
-
                       <Flex w="100%" justify="space-between" align="center" gap={4}>
                         <Button
                           variant="ghost"
@@ -3038,13 +3210,7 @@ const CalculadoraEmbalagem: NextPage = () => {
                       totalPriceColor={resultListingPriceColor}
                       customerClarity={customerClarity}
                       onClarityChange={setCustomerClarity}
-                      packTypeForQty={conferirPackTypeForQty}
-                      qty={conferirQty}
-                      onQtyChange={setConferirQty}
-                      prodName={conferirProdName}
-                      onProdNameChange={setConferirProdName}
-                      prodCode={conferirProdCode}
-                      onProdCodeChange={setConferirProdCode}
+                      lineQtyValid={conferirQtyValid}
                       message={conferirMessage}
                       onMessageChange={setConferirMessage}
                       onBack={goBack}

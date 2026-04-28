@@ -148,6 +148,11 @@ const Painel: React.FC = () => {
 
 	const badgeWidth = { base: '100%', sm: '10rem', md: '12rem' }
 	const badgeHeight = '40px'
+	const hasCommissionData = Boolean(
+		commissionData &&
+		typeof commissionData === 'object' &&
+		Object.keys( commissionData ).length > 0
+	)
 
 	return (
 		<Box minH="100%" bg="gray.800" w="100%">
@@ -271,7 +276,7 @@ const Painel: React.FC = () => {
 					alignItems={{ base: 'center', lg: 'flex-start' }}
 					justifyContent={{ base: 'center', lg: 'space-between' }}
 				>
-					{ User && (
+					{ User && hasCommissionData && (
 						<Box
 							order={{ base: 1, lg: 2 }}
 							flexShrink={0}
