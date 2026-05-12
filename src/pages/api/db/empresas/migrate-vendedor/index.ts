@@ -5,8 +5,8 @@ import { LogEmpresa } from "@/pages/api/lib/logEmpresa"
 import { getEmpresa } from "@/pages/api/db/empresas/atualizacao/functions/getEmpresa"
 import axios from "axios"
 
-/** Allows bulk migration to finish before platform gateway timeout (e.g. Vercel). */
-export const config = { maxDuration: 300 }
+/** Hobby plan caps serverless duration at 60s; Pro allows higher values. */
+export const config = { maxDuration: 60 }
 
 /** Parallel Strapi updates per batch (bounded to avoid overloading Strapi). */
 const MIGRATE_CONCURRENCY = 4
