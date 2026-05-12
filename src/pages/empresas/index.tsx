@@ -11,6 +11,7 @@ import { parseISO, startOfDay } from "date-fns"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useMemo, useState, useRef } from "react"
+import { getToastErrorMessage } from "@/utils/getToastErrorMessage"
 
 function Empresas () {
 	const router = useRouter()
@@ -572,11 +573,10 @@ function Empresas () {
 					isClosable: true,
 				} )
 			}
-		} catch ( error: any ) {
-			console.error( "Erro ao migrar carteira:", error )
+		} catch ( error: unknown ) {
 			toast( {
 				title: 'Erro',
-				description: error.response?.data?.error || 'Erro ao migrar carteira',
+				description: getToastErrorMessage( error, 'Erro ao migrar carteira' ),
 				status: 'error',
 				duration: 7000,
 				isClosable: true,
@@ -734,12 +734,11 @@ function Empresas () {
 			} else {
 				carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
 			}
-		} catch ( error: any ) {
-			console.error( 'Erro ao refatorar purchase frequency:', error )
+		} catch ( error: unknown ) {
 			toast.close( 'refactor-progress' )
 			toast( {
 				title: 'Erro',
-				description: error.response?.data?.error || 'Erro ao refatorar frequência de compra',
+				description: getToastErrorMessage( error, 'Erro ao refatorar frequência de compra' ),
 				status: 'error',
 				duration: 7000,
 				isClosable: true,
@@ -803,12 +802,11 @@ function Empresas () {
 			} else {
 				carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
 			}
-		} catch ( error: any ) {
-			console.error( 'Erro ao checar empresas expiradas:', error )
+		} catch ( error: unknown ) {
 			toast.close( 'check-progress' )
 			toast( {
 				title: 'Erro',
-				description: error.response?.data?.error || 'Erro ao verificar empresas expiradas',
+				description: getToastErrorMessage( error, 'Erro ao verificar empresas expiradas' ),
 				status: 'error',
 				duration: 7000,
 				isClosable: true,
@@ -872,18 +870,10 @@ function Empresas () {
 			} else {
 				carregarEmpresasSemVendedor( paginaAtualSemVendedor, filtroTexto )
 			}
-		} catch ( error: any ) {
-			console.error( 'Erro ao recalcular tabelas:', error )
-			const errorMsg = error.response?.data?.error?.message ||
-				( typeof error.response?.data?.error === 'string' ? error.response.data.error : null ) ||
-				( typeof error.message === 'string' ? error.message : null ) ||
-				'Erro ao recalcular margens das empresas'
-
-			const finalMsg = typeof errorMsg === 'object' ? JSON.stringify( errorMsg ) : errorMsg
-
+		} catch ( error: unknown ) {
 			toast( {
 				title: 'Erro',
-				description: finalMsg,
+				description: getToastErrorMessage( error, 'Erro ao recalcular margens das empresas' ),
 				status: 'error',
 				duration: 7000,
 				isClosable: true,
@@ -965,8 +955,8 @@ function Empresas () {
 							totalCreated += syncRes.data.created
 							totalUpdated += syncRes.data.updated
 						}
-					} catch ( err ) {
-						console.error( `Erro ao sincronizar empresa ${ nomeEmpresa }:`, err )
+					} catch {
+						// Company skipped; loop continues with remaining companies
 					}
 				}
 
@@ -986,12 +976,11 @@ function Empresas () {
 				isClosable: true,
 			} )
 
-		} catch ( error: any ) {
-			console.error( 'Erro ao sincronizar produtos:', error )
+		} catch ( error: unknown ) {
 			toast.close( 'sync-prod-progress' )
 			toast( {
 				title: 'Erro',
-				description: error.response?.data?.error || error.message || 'Erro ao sincronizar produtos',
+				description: getToastErrorMessage( error, 'Erro ao sincronizar produtos' ),
 				status: 'error',
 				duration: 7000,
 				isClosable: true,

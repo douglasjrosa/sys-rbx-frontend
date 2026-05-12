@@ -5,6 +5,12 @@ import { LogEmpresa } from "@/pages/api/lib/logEmpresa"
 import { getEmpresa } from "@/pages/api/db/empresas/atualizacao/functions/getEmpresa"
 import axios from "axios"
 
+/** Allows bulk migration to finish before platform gateway timeout (e.g. Vercel). */
+export const config = { maxDuration: 300 }
+
+/** Parallel Strapi updates per batch (bounded to avoid overloading Strapi). */
+const MIGRATE_CONCURRENCY = 4
+
 /**
  * Migrate empresas from one vendedor to another in bulk
  * 
@@ -45,47 +51,55 @@ export default async function MigrateVendedor (
 					)
 					// Strapi v4 returns data directly, v3 might wrap it
 					novoVendedorUsername = userResponse.data?.username || userResponse.data?.data?.username || ""
-				} catch ( error ) {
-					console.error( "Error fetching user:", error )
+				} catch {
+					// Username stays empty; PUT still sends user id
 				}
 			}
 
-			const results = []
-			const errors = []
+			const results: Array<{ empresaId: unknown; success: boolean; data: unknown }> = []
+			const errors: Array<{ empresaId: unknown; error: unknown }> = []
 
-			// Update each empresa
-			for ( const empresaId of empresaIds ) {
-				try {
-					// Get current empresa data for logging
-					const dadosAtual = await getEmpresa( empresaId )
-
-					// Log the change
-					await LogEmpresa( dadosAtual, "PUT", vendedorName || "Sistema" )
-
-					// Update empresa with new vendedor
-					const updateData = {
-						data: {
-							user: {
-								id: Number( novoVendedorId ),
-							},
-							vendedor: novoVendedorUsername,
-						},
+			for ( let i = 0; i < empresaIds.length; i += MIGRATE_CONCURRENCY ) {
+				const chunk = empresaIds.slice( i, i + MIGRATE_CONCURRENCY )
+				const chunkOutcomes = await Promise.all(
+					chunk.map( async ( empresaId ) => {
+						try {
+							const dadosAtual = await getEmpresa( empresaId )
+							await LogEmpresa( dadosAtual, "PUT", vendedorName || "Sistema" )
+							const updateData = {
+								data: {
+									user: { id: Number( novoVendedorId ) },
+									vendedor: novoVendedorUsername,
+								},
+							}
+							const response = await PUT_Strapi( updateData, `/empresas/${ empresaId }` )
+							return {
+								ok: true as const,
+								empresaId,
+								data: response,
+							}
+						} catch ( error: any ) {
+							return {
+								ok: false as const,
+								empresaId,
+								error: error.response?.data || error.message || "Unknown error",
+							}
+						}
+					} )
+				)
+				for ( const outcome of chunkOutcomes ) {
+					if ( outcome.ok ) {
+						results.push( {
+							empresaId: outcome.empresaId,
+							success: true,
+							data: outcome.data,
+						} )
+					} else {
+						errors.push( {
+							empresaId: outcome.empresaId,
+							error: outcome.error,
+						} )
 					}
-
-					const urlStrapi = `/empresas/${ empresaId }`
-					const response = await PUT_Strapi( updateData, urlStrapi )
-
-					results.push( {
-						empresaId,
-						success: true,
-						data: response,
-					} )
-				} catch ( error: any ) {
-					console.error( `Error updating empresa ${ empresaId }:`, error )
-					errors.push( {
-						empresaId,
-						error: error.response?.data || error.message || "Unknown error",
-					} )
 				}
 			}
 
@@ -97,7 +111,6 @@ export default async function MigrateVendedor (
 				errors,
 			} )
 		} catch ( error: any ) {
-			console.error( "Error in MigrateVendedor:", error )
 			res.status( 500 ).json( {
 				error: error.message || "Internal Server Error",
 			} )
