@@ -11,19 +11,19 @@ const WEEKDAYS_PT = [
 	'Quinta-feira', 'Sexta-feira', 'Sábado'
 ]
 
-const formatDeliveryDateDisplay = ( dateStr: string ) => {
-	if ( !dateStr ) return ''
-	const datePart = dateStr.split( 'T' )[ 0 ]
-	const [ year, month, day ] = datePart.split( '-' ).map( Number )
-	if ( !year || !month || !day ) return dateStr
-	const date = new Date( year, month - 1, day )
-	const weekday = WEEKDAYS_PT[ date.getDay() ]
+const formatDeliveryDateDisplay = (dateStr: string) => {
+	if (!dateStr) return ''
+	const datePart = dateStr.split('T')[0]
+	const [year, month, day] = datePart.split('-').map(Number)
+	if (!year || !month || !day) return dateStr
+	const date = new Date(year, month - 1, day)
+	const weekday = WEEKDAYS_PT[date.getDay()]
 	const formatted =
-		`${ String( day ).padStart( 2, '0' ) }/${ String( month ).padStart( 2, '0' ) }/${ year }`
-	return `${ weekday } dia ${ formatted }`
+		`${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`
+	return `${weekday} dia ${formatted}`
 }
 
-const SendOrderModal = ( props: any ) => {
+const SendOrderModal = (props: any) => {
 
 	const {
 		isOpen, onClose, onchat, orderData,
@@ -35,50 +35,50 @@ const SendOrderModal = ( props: any ) => {
 
 	const router = useRouter()
 	const toast = useToast()
-	const [ load, setload ] = useState<boolean>( false )
+	const [load, setload] = useState<boolean>(false)
 
 	const makeOrder: () => Promise<boolean> = useCallback(
 		async () => {
-			setload( true )
+			setload(true)
 
-			toast( {
+			toast({
 				title: "Aguarde. Enviando pedido...",
 				status: "info",
 				isClosable: true,
 				position: 'bottom',
-			} )
+			})
 
 			const { propostaId, orderValue, vendedor, vendedorId, businessId } = orderData
 
-			if ( !propostaId || !businessId ) {
-				toast( {
+			if (!propostaId || !businessId) {
+				toast({
 					title: "Erro",
 					description: "Dados incompletos. Verifique se o negócio possui uma proposta.",
 					status: "error",
 					isClosable: true,
 					duration: 5000,
 					position: "bottom",
-				} )
+				})
 				return false
 			}
 
-			const order = await fetchOrderData( String( propostaId ) )
+			const order = await fetchOrderData(String(propostaId))
 			const fullOrderData = order?.data
 
-			if ( !fullOrderData?.attributes ) {
-				toast( {
+			if (!fullOrderData?.attributes) {
+				toast({
 					title: "Erro ao carregar pedido",
 					description: "Não foi possível obter os dados da proposta.",
 					status: "error",
 					isClosable: true,
 					duration: 5000,
 					position: "bottom",
-				} )
+				})
 				return false
 			}
 
 			const orderStatus: OrderStatusType = fullOrderData.attributes?.orderStatus
-				? JSON.parse( fullOrderData.attributes.orderStatus )
+				? JSON.parse(fullOrderData.attributes.orderStatus)
 				: {
 					blingClientExists: false,
 					blingProductsExist: false,
@@ -92,41 +92,41 @@ const SendOrderModal = ( props: any ) => {
 			const orderId = fullOrderData.id
 
 			// Handling clients in Bling
-			toast( {
+			toast({
 				title: "BLING: Checando cadastro do cliente...",
 				description: "Verificando se o cliente já está cadastrado no Bling.",
 				status: "success",
 				isClosable: true,
 				duration: 3000,
 				position: "bottom",
-			} )
+			})
 
 			const blingAccountCnpj = fullOrderData.attributes.fornecedorId.data.attributes.CNPJ
 			const clientCNPJ = fullOrderData.attributes.empresa.data.attributes.CNPJ
 
-			const checkIfClientExists = await clientExists( blingAccountCnpj, clientCNPJ )
+			const checkIfClientExists = await clientExists(blingAccountCnpj, clientCNPJ)
 			const blingClientId = checkIfClientExists?.id
 
-			let saved = await saveClient( fullOrderData, blingClientId )
+			let saved = await saveClient(fullOrderData, blingClientId)
 
-			if ( typeof saved === "object" && !!saved.error ) {
+			if (typeof saved === "object" && !!saved.error) {
 				const fields = <ol>
 					{
-						saved.error.fields.map( ( field: any, index: number ) => {
-							return <li key={ index }>{ field.msg }</li>
-						} )
+						saved.error.fields.map((field: any, index: number) => {
+							return <li key={index}>{field.msg}</li>
+						})
 					}
 				</ol>
-				toast( {
+				toast({
 					title: `BLING: Problemas com o cadastro do cliente.`,
 					description: fields,
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 				orderStatus.blingClientExists = false
-				console.error( { orderStatus } )
+				console.error({ orderStatus })
 				return false
 			}
 			else orderStatus.blingClientExists = true
@@ -136,51 +136,51 @@ const SendOrderModal = ( props: any ) => {
 
 
 			// Handling products in Bling
-			toast( {
+			toast({
 				title: "BLING: Checando cadastro de cada produto...",
 				description: "Verificando se todos os produtos já estão cadastrados no Bling.",
 				status: "success",
 				isClosable: true,
 				duration: 7000,
 				position: "bottom",
-			} )
+			})
 			const { itens } = fullOrderData.attributes
-			const blingItems = await handleItems( blingAccountCnpj, itens, toast )
-			if ( blingItems.length !== itens.length ) {
-				toast( {
+			const blingItems = await handleItems(blingAccountCnpj, itens, toast)
+			if (blingItems.length !== itens.length) {
+				toast({
 					title: "BLING: Ooops, tivemos um pequeno problema...",
 					description: "Parece que nem todos os produtos foram corretamente cadastrados no Bling",
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 				orderStatus.blingProductsExist = false
-				console.error( { orderStatus } )
+				console.error({ orderStatus })
 				return false
 			}
 			else orderStatus.blingProductsExist = true
 
 
 			// Handling order in Bling
-			toast( {
+			toast({
 				title: "BLING:",
 				description: "Enviando pedido para o Bling...",
 				status: "success",
 				isClosable: true,
 				duration: 3000,
 				position: "bottom",
-			} )
+			})
 
 			const { dataEntrega, prazo, totalGeral, cliente_pedido, obs } = fullOrderData.attributes
 			const dataPrevista = dataEntrega
-			const totalOrderValue = parseCurrency( totalGeral )
+			const totalOrderValue = parseCurrency(totalGeral)
 			const today = getFormattedDate()
-			const installments = await handleInstallments( blingAccountCnpj, dataPrevista, prazo, totalOrderValue )
+			const installments = await handleInstallments(blingAccountCnpj, dataPrevista, prazo, totalOrderValue)
 
 			const orderNumber = cliente_pedido ?? ""
 			const obsText = obs ?? ""
-			let observacoes = !!orderNumber ? `Pedido: ${ orderNumber }` : ""
+			let observacoes = !!orderNumber ? `Pedido: ${orderNumber}` : ""
 			observacoes += !!orderNumber && !!obsText ? " | " : ""
 			observacoes += !!obsText ? obsText : ""
 
@@ -193,186 +193,186 @@ const SendOrderModal = ( props: any ) => {
 				itens: blingItems,
 				parcelas: installments,
 				numeroPedidoCompra: orderNumber,
-				outrasDespesas: parseCurrency( fullOrderData.attributes.custoAdicional ),
+				outrasDespesas: parseCurrency(fullOrderData.attributes.custoAdicional),
 				desconto: {
-					valor: parseCurrency( fullOrderData.attributes.descontoTotal )
+					valor: parseCurrency(fullOrderData.attributes.descontoTotal)
 				},
 				transporte: {
 					fretePorConta: fullOrderData.attributes.frete === "CIF" ? 0 : 1, // 0 = CIF, 1 = FOB
-					frete: parseCurrency( fullOrderData.attributes.valorFrete )
+					frete: parseCurrency(fullOrderData.attributes.valorFrete)
 				},
 				observacoes
 			}
-			const blingOrder = await sendBlingOrder( blingAccountCnpj, blingOrderData )
+			const blingOrder = await sendBlingOrder(blingAccountCnpj, blingOrderData)
 
-			if ( !blingOrder.data?.id && blingOrder.error ) {
+			if (!blingOrder.data?.id && blingOrder.error) {
 
 				const fields: string[] = []
 
-				if ( blingOrder.error?.fields?.length ) {
-					blingOrder.error.fields.map( ( field: any ) => {
-						fields.push( field.msg )
-						field.collection?.map( ( col: any ) => fields.push( col.msg ) )
-					} )
+				if (blingOrder.error?.fields?.length) {
+					blingOrder.error.fields.map((field: any) => {
+						fields.push(field.msg)
+						field.collection?.map((col: any) => fields.push(col.msg))
+					})
 				}
 
 
 				let description = '<div><p>Pedido enviado com sucesso.</p>'
-				if ( fields.length ) {
+				if (fields.length) {
 					description += '<ol>'
-					description += fields.map( ( field: any, index: number ) => (
-						`<li key='${ index }' >${ field }</li>`
-					) )
+					description += fields.map((field: any, index: number) => (
+						`<li key='${index}' >${field}</li>`
+					))
 					description += '</ol>'
 				}
 				description += '</div>'
 
-				toast( {
-					title: `BLING: ${ blingOrder.message }`,
+				toast({
+					title: `BLING: ${blingOrder.message}`,
 					description,
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 				orderStatus.blingOrderCreated = false
-				console.error( { orderStatus } )
+				console.error({ orderStatus })
 				return false
 			}
 			else orderStatus.blingOrderCreated = true
 
 			// Handling business update in Strapi
-			toast( {
+			toast({
 				title: "STRAPI:",
 				description: "Atualizando informações do negócio...",
 				status: "info",
 				isClosable: true,
 				duration: 3000,
 				position: "bottom",
-			} )
-			const blingOrderId = String( blingOrder.data.id )
-			const updateNegocio = await updateBusinessInStrapi( String( businessId ), blingOrderId )
+			})
+			const blingOrderId = String(blingOrder.data.id)
+			const updateNegocio = await updateBusinessInStrapi(String(businessId), blingOrderId)
 
-			if ( !updateNegocio.data?.id ) {
+			if (!updateNegocio.data?.id) {
 
-				toast( {
+				toast({
 					title: "STRAPI: Ooops, tivemos um pequeno problema...",
 					description: "Houve um erro ao atualizar o negócio.",
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 				orderStatus.strapiBusinessUpdated = false
-				console.error( { orderStatus } )
+				console.error({ orderStatus })
 				return false
 			}
 			else orderStatus.strapiBusinessUpdated = true
 
 			// Handling company last order value
-			toast( {
+			toast({
 				title: "STRAPI:",
 				description: "Atualizando o valor da última compra deste cliente...",
 				status: "info",
 				isClosable: true,
 				duration: 3000,
 				position: "bottom",
-			} )
-			const updateLastOrder = await updateLastOrderInStrapi( clientCNPJ, orderValue, vendedor, vendedorId )
-			if ( !updateLastOrder.data?.id ) {
+			})
+			const updateLastOrder = await updateLastOrderInStrapi(clientCNPJ, orderValue, vendedor, vendedorId)
+			if (!updateLastOrder.data?.id) {
 
-				toast( {
+				toast({
 					title: "STRAPI: Ooops, tivemos um pequeno problema...",
 					description: "Não foi possível atualizar o valor da última compra da empresa.",
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 				orderStatus.strapiLastOrderUpdated = false
-				console.error( { orderStatus } )
+				console.error({ orderStatus })
 				return false
 			}
 			else orderStatus.strapiLastOrderUpdated = true
 
 			// Handling lote info
-			toast( {
+			toast({
 				title: "STRAPI:",
 				description: "Atualizando informações de lote...",
 				status: "info",
 				isClosable: true,
 				duration: 3000,
 				position: "bottom",
-			} )
-			const nLoteUpdate = await postNLote( propostaId )
+			})
+			const nLoteUpdate = await postNLote(propostaId)
 
-			if ( !nLoteUpdate?.lotes?.length ) {
+			if (!nLoteUpdate?.lotes?.length) {
 
-				toast( {
+				toast({
 					title: "STRAPI: Ooops, tivemos um pequeno problema...",
 					description: "Não foi possível atualizar o lote referente a esta compra.",
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 				orderStatus.strapiLoteUpdated = false
-				console.error( { orderStatus, nLoteUpdate } )
+				console.error({ orderStatus, nLoteUpdate })
 				return false
 			}
 			else orderStatus.strapiLoteUpdated = true
 
 			// Handling Trello cards sending
-			toast( {
+			toast({
 				title: "TRELLO:",
 				description: "Enviando os cards de pedido para o Trello...",
 				status: "success",
 				isClosable: true,
 				duration: 3000,
 				position: "bottom",
-			} )
-			const sendToTrello = await sendCardsToTrello( propostaId )
-			if ( !sendToTrello.length ) {
+			})
+			const sendToTrello = await sendCardsToTrello(propostaId)
+			if (!sendToTrello.length) {
 
-				toast( {
+				toast({
 					title: "TRELLO: Ooops, tivemos um pequeno problema...",
 					description: "Erro ao enviar os cards para o Trello.",
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 				orderStatus.trelloCardsCreated = false
-				console.error( { orderStatus } )
+				console.error({ orderStatus })
 				return false
 			}
 			else orderStatus.trelloCardsCreated = true
 
 
 			// Handling order update in Strapi
-			toast( {
+			toast({
 				title: "STRAPI:",
 				description: "Salvando o pedido no banco de dados...",
 				status: "info",
 				isClosable: true,
 				duration: 3000,
 				position: "bottom",
-			} )
+			})
 			orderStatus.strapiOrderUpdated = true
-			const orderUpdate = await updateOrderInStrapi( blingOrderId, orderId, orderStatus )
+			const orderUpdate = await updateOrderInStrapi(blingOrderId, orderId, orderStatus)
 
-			if ( !orderUpdate.data?.id ) {
+			if (!orderUpdate.data?.id) {
 
-				toast( {
+				toast({
 					title: "STRAPI: Ooops, tivemos um pequeno problema...",
 					description: "Houve um erro ao atualizar o pedido.",
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 				orderStatus.strapiOrderUpdated = false
-				console.error( { orderStatus } )
+				console.error({ orderStatus })
 				return false
 			}
 			return true
@@ -401,126 +401,126 @@ const SendOrderModal = ( props: any ) => {
 
 			const orderResponse = await makeOrder()
 
-			if ( orderResponse ) {
-				toast( {
+			if (orderResponse) {
+				toast({
 					title: "Tudo certo!",
 					description: "Pedido enviado com sucesso.",
 					status: "success",
 					isClosable: true,
 					duration: 5000,
 					position: "bottom",
-				} )
+				})
 			}
 			else {
-				toast( {
+				toast({
 					title: "Algo não deu certo.",
 					description: "Tente enviar o pedido novamente.",
 					status: "warning",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				} )
+				})
 			}
 
 			onClose()
-			setload( false )
-			onchat( true )
+			setload(false)
+			onchat(true)
 		},
-		[ makeOrder, toast, onClose, setload, onchat ]
+		[makeOrder, toast, onClose, setload, onchat]
 	)
 
 	const handleConfirm = useCallback(
 		async () => {
-			setload( true )
+			setload(true)
 			try {
-				if ( saveBusiness ) {
+				if (saveBusiness) {
 					await saveBusiness()
 				}
 				await finalResponse()
-			} catch ( error ) {
-				console.error( 'Error confirming order:', error )
-				toast( {
+			} catch (error) {
+				console.error('Error confirming order:', error)
+				toast({
 					title: 'Erro ao confirmar pedido',
 					description: 'Tente novamente.',
 					status: 'error',
 					duration: 5000,
 					isClosable: true,
 					position: 'bottom',
-				} )
-				setload( false )
+				})
+				setload(false)
 			}
 		},
-		[ saveBusiness, finalResponse, toast ]
+		[saveBusiness, finalResponse, toast]
 	)
 
 	const handleAlter = useCallback(
 		() => {
 			onClose()
-			if ( businessId ) {
-				router.push( `/negocios/proposta/${ businessId }` )
+			if (businessId) {
+				router.push(`/negocios/proposta/${businessId}`)
 			}
 		},
-		[ onClose, businessId, router ]
+		[onClose, businessId, router]
 	)
 
-	if ( mode === 'confirm' ) {
+	if (mode === 'confirm') {
 		return (
 			<Modal
 				isCentered
-				closeOnOverlayClick={ false }
-				isOpen={ isOpen }
-				onClose={ onClose }
+				closeOnOverlayClick={false}
+				isOpen={isOpen}
+				onClose={onClose}
 			>
 				<ModalOverlay
 					bg='blackAlpha.300'
 					backdropFilter='blur(10px) hue-rotate(90deg)'
 				/>
-				<ModalContent bg={ 'gray.600' } position="relative">
+				<ModalContent bg={'gray.600'} position="relative">
 					<IconButton
 						aria-label="Fechar"
-						icon={ <FaTimes size={ 20 } /> }
+						icon={<FaTimes size={20} />}
 						position="absolute"
 						top="8px"
 						right="8px"
-						zIndex={ 1 }
+						zIndex={1}
 						size="sm"
 						variant="solid"
 						bg="red.500"
 						color="white"
 						rounded="md"
-						_hover={ { bg: "red.600" } }
-						onClick={ onClose }
+						_hover={{ bg: "red.600" }}
+						onClick={onClose}
 					/>
 					<ModalHeader pt="55px" textAlign="center">
-							CONFIRME A DATA DE ENTREGA
-						</ModalHeader>
-					<ModalBody pb={ 6 } textAlign="center">
-						<Text fontSize="md" mb={ 2 }>
+						CONFIRME A DATA DE ENTREGA
+					</ModalHeader>
+					<ModalBody pb={6} textAlign="center">
+						<Text fontSize="md" mb={2}>
 							Este pedido será programado para entrega em:
 						</Text>
 						<Text
 							fontSize="2xl"
 							fontWeight="bold"
 							color="orange.300"
-							mb={ 6 }
+							mb={6}
 						>
-							{ formatDeliveryDateDisplay( deliveryDate ) }
+							{formatDeliveryDateDisplay(deliveryDate)}
 						</Text>
-						<Flex gap={ 3 } justify="center">
+						<Flex gap={3} justify="center">
 							<Button
-								flex={ 1 }
+								flex={1}
 								colorScheme="blue"
-								onClick={ handleAlter }
-								isDisabled={ load }
+								onClick={handleAlter}
+								isDisabled={load}
 							>
 								Alterar
 							</Button>
 							<Button
-								flex={ 1 }
+								flex={1}
 								colorScheme="green"
-								onClick={ handleConfirm }
-								isDisabled={ load }
-								isLoading={ load }
+								onClick={handleConfirm}
+								isDisabled={load}
+								isLoading={load}
 							>
 								Confirmar
 							</Button>
@@ -532,32 +532,32 @@ const SendOrderModal = ( props: any ) => {
 	}
 
 	return (
-		<Modal isCentered closeOnOverlayClick={ false } isOpen={ isOpen } onClose={ onClose }>
+		<Modal isCentered closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose}>
 			<ModalOverlay
 				bg='blackAlpha.300'
 				backdropFilter='blur(10px) hue-rotate(90deg)'
 			/>
-			<ModalContent bg={ 'gray.600' } position="relative">
+			<ModalContent bg={'gray.600'} position="relative">
 				<IconButton
 					aria-label="Fechar"
-					icon={ <FaTimes size={ 20 } /> }
+					icon={<FaTimes size={20} />}
 					position="absolute"
 					top="8px"
 					right="8px"
-					zIndex={ 1 }
+					zIndex={1}
 					size="sm"
 					variant="solid"
 					bg="red.500"
 					color="white"
 					rounded="md"
-					_hover={ { bg: "red.600" } }
-					onClick={ onClose }
+					_hover={{ bg: "red.600" }}
+					onClick={onClose}
 				/>
 				<ModalHeader pt="55px" textAlign="center">
 					REENVIAR PEDIDO
 				</ModalHeader>
-				<ModalBody pb={ 6 } textAlign="center">
-					<Text fontSize="md" mb={ 6 }>
+				<ModalBody pb={6} textAlign="center">
+					<Text fontSize="md" mb={6}>
 						Ao reenviar o pedido, confira se está tudo certo
 						no Bling e no Trello.
 					</Text>
@@ -565,9 +565,9 @@ const SendOrderModal = ( props: any ) => {
 						<Button
 							w="full"
 							colorScheme="messenger"
-							isDisabled={ load }
-							isLoading={ load }
-							onClick={ finalResponse }
+							isDisabled={load}
+							isLoading={load}
+							onClick={finalResponse}
 						>
 							Reenviar
 						</Button>
