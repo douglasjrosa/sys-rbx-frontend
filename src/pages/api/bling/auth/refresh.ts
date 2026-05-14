@@ -1,3 +1,4 @@
+import { normalizeBlingApiV3Endpoint } from '@/pages/api/bling';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 interface RefreshRequestBody {
@@ -37,7 +38,7 @@ export default async function refresh(req: NextApiRequest, res: NextApiResponse)
   const { refresh_token, client_id, client_secret } = formData;
   const credentials = Buffer.from(`${client_id}:${client_secret}`).toString('base64');
 
-  const url = process.env.BLING_API_TOKEN_ENDPOINT as string;
+  const url = normalizeBlingApiV3Endpoint(process.env.BLING_API_TOKEN_ENDPOINT);
 
   try {
     const response = await fetch(url, {

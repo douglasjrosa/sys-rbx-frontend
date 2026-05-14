@@ -1,3 +1,4 @@
+import { normalizeBlingApiV3Endpoint } from '@/pages/api/bling'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export default function handler ( req: NextApiRequest, res: NextApiResponse ) {
@@ -12,7 +13,7 @@ export default function handler ( req: NextApiRequest, res: NextApiResponse ) {
 		const { code, client_id, client_secret } = formData
 		const credentials = btoa( `${ client_id }:${ client_secret }` )
 
-		const url = process.env.BLING_API_TOKEN_ENDPOINT as string
+		const url = normalizeBlingApiV3Endpoint( process.env.BLING_API_TOKEN_ENDPOINT )
 		fetch( url, {
 			method: 'POST',
 			headers: {

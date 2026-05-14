@@ -1,3 +1,25 @@
+const BLING_API_V3_OFFICIAL_HOST = 'api.bling.com.br'
+const BLING_LEGACY_API_HOSTS = new Set( [ 'www.bling.com.br', 'bling.com.br' ] )
+
+/**
+ * Bling blocks API calls to www.bling.com.br; the official host is api.bling.com.br.
+ * Normalizes misconfigured BLING_API_V3_ENDPOINT values at runtime.
+ */
+export function normalizeBlingApiV3Endpoint ( raw: string | undefined ): string {
+	const trimmed = raw?.trim()
+	if ( !trimmed ) return ''
+	try {
+		const parsed = new URL( trimmed )
+		if ( BLING_LEGACY_API_HOSTS.has( parsed.hostname.toLowerCase() ) ) {
+			parsed.hostname = BLING_API_V3_OFFICIAL_HOST
+		}
+		const withHost = parsed.toString()
+		return withHost.endsWith( '/' ) ? withHost.slice( 0, -1 ) : withHost
+	} catch {
+		return trimmed.endsWith( '/' ) ? trimmed.slice( 0, -1 ) : trimmed
+	}
+}
+
 function getBaseUrl (): string {
 	const url = process.env.NEXT_PUBLIC_BASE_URL || `https://${ process.env.NEXT_PUBLIC_VERCEL_URL }`
 	if ( process.env.NODE_ENV === 'development' && url?.includes( 'localhost' ) ) {
@@ -6,7 +28,9 @@ function getBaseUrl (): string {
 	return url
 }
 
-export const blingApiEndpoint = process.env.BLING_API_V3_ENDPOINT as string
+export const blingApiEndpoint = normalizeBlingApiV3Endpoint(
+	process.env.BLING_API_V3_ENDPOINT as string | undefined
+)
 
 export async function refreshToken (
 	client_id: string,
