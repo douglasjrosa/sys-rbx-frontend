@@ -1,6 +1,36 @@
 import { parseCurrency } from "@/utils/customNumberFormats"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
 
+/** Human-readable detail from Bling proxy JSON (`errorMessage` / `responseError`). */
+function getBlingProxyErrorMessage ( payload: unknown, statusText: string ): string {
+	if ( !payload || typeof payload !== 'object' ) {
+		return statusText
+	}
+	const p = payload as Record<string, unknown>
+	const wrapped = p.responseError as Record<string, unknown> | undefined
+	const errCandidate = wrapped?.error ?? p.error
+	if ( errCandidate && typeof errCandidate === 'object' ) {
+		const err = errCandidate as Record<string, unknown>
+		const desc = err.description
+		if ( Array.isArray( desc ) && desc.length > 0 ) {
+			return String( desc[ 0 ] )
+		}
+		if ( typeof desc === 'string' ) {
+			return desc
+		}
+		const firstField = ( err.fields as Array<{ msg?: string }> | undefined )?.[ 0 ]
+		if ( firstField?.msg ) {
+			return firstField.msg
+		}
+	}
+	if ( typeof p.errorMessage === 'string' ) {
+		return p.errorMessage
+	}
+	if ( typeof p.message === 'string' ) {
+		return p.message
+	}
+	return statusText
+}
 
 export type BlingOrderDataType = {
 	numero: number
@@ -60,24 +90,18 @@ export function delay ( ms: number ) {
 }
 
 export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string ): Promise<any> => {
-	try {
-		const response = await fetch( `/api/bling/${ blingAccountCnpj }/contatos?pesquisa=${ clientCnpj }` )
-
-		if ( !response.ok ) {
-			throw new Error( `Error fetching client: ${ response.statusText }` )
-		}
-
-		const searchClient = await response.json()
-
-		if ( searchClient.data && searchClient.data.length > 0 ) {
-			return searchClient.data[ 0 ]
-		}
-
-		return {}
-	} catch ( error ) {
-		console.error( "Error:", error )
-		return {}
+	const response = await fetch(
+		`/api/bling/${ blingAccountCnpj }/contatos?pesquisa=${ clientCnpj }`
+	)
+	const searchClient = await response.json().catch( () => ( {} ) )
+	if ( !response.ok ) {
+		const detail = getBlingProxyErrorMessage( searchClient, response.statusText )
+		throw new Error( `Error fetching client: HTTP ${ response.status } — ${ detail }` )
 	}
+	if ( searchClient.data && searchClient.data.length > 0 ) {
+		return searchClient.data[ 0 ]
+	}
+	return {}
 }
 
 export const saveClient = async ( orderData: any, blingClientId?: number ): Promise<number | { error: any }> => {
@@ -88,24 +112,28 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 
 	// Taking the types of contact of "Vendedor" and "Cliente" to save in the company data later in Bling
 	const typesOfContactsResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos/tipos` )
-
-	const typesOfContacts = await typesOfContactsResponse.json()
-
+	const typesOfContacts = await typesOfContactsResponse.json().catch( () => ( {} ) )
 	if ( !typesOfContactsResponse.ok ) {
-		console.error( { typesOfContacts } )
-		throw new Error( `Error fetching client: ${ typesOfContactsResponse.statusText }` )
+		const detail = getBlingProxyErrorMessage( typesOfContacts, typesOfContactsResponse.statusText )
+		throw new Error(
+			`Error fetching client: HTTP ${ typesOfContactsResponse.status } — ${ detail }`
+		)
 	}
 
 	const typeOfContactClienteId = typesOfContacts.data.find( ( type: any ) => type.descricao === 'Cliente' ).id
 
 
 	// Taking the financial category to save in the company data later in Bling
-	const financialCategoriesResponse = await fetch( `/api/bling/${ blingAccountCnpj }/categorias/receitas-despesas` )
-
+	const financialCategoriesResponse = await fetch(
+		`/api/bling/${ blingAccountCnpj }/categorias/receitas-despesas`
+	)
+	const financialCategories = await financialCategoriesResponse.json().catch( () => ( {} ) )
 	if ( !financialCategoriesResponse.ok ) {
-		throw new Error( `Error fetching client: ${ financialCategoriesResponse.statusText }` )
+		const detail = getBlingProxyErrorMessage( financialCategories, financialCategoriesResponse.statusText )
+		throw new Error(
+			`Error fetching client: HTTP ${ financialCategoriesResponse.status } — ${ detail }`
+		)
 	}
-	const financialCategories = await financialCategoriesResponse.json()
 
 	const financialCategoryId = financialCategories.data.find( ( category: any ) => category.descricao === "Vendas de produtos" ).id
 

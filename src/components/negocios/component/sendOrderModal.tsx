@@ -398,33 +398,44 @@ const SendOrderModal = (props: any) => {
 
 	const finalResponse = useCallback(
 		async () => {
+			try {
+				const orderResponse = await makeOrder()
 
-			const orderResponse = await makeOrder()
-
-			if (orderResponse) {
+				if (orderResponse) {
+					toast({
+						title: "Tudo certo!",
+						description: "Pedido enviado com sucesso.",
+						status: "success",
+						isClosable: true,
+						duration: 5000,
+						position: "bottom",
+					})
+				} else {
+					toast({
+						title: "Algo não deu certo.",
+						description: "Tente enviar o pedido novamente.",
+						status: "warning",
+						isClosable: true,
+						duration: 30000,
+						position: "bottom",
+					})
+				}
+			} catch (error) {
+				const description =
+					error instanceof Error ? error.message : "Erro inesperado. Tente novamente."
 				toast({
-					title: "Tudo certo!",
-					description: "Pedido enviado com sucesso.",
-					status: "success",
-					isClosable: true,
-					duration: 5000,
-					position: "bottom",
-				})
-			}
-			else {
-				toast({
-					title: "Algo não deu certo.",
-					description: "Tente enviar o pedido novamente.",
-					status: "warning",
+					title: "Falha ao integrar com o Bling",
+					description,
+					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
 				})
+			} finally {
+				onClose()
+				setload(false)
+				onchat(true)
 			}
-
-			onClose()
-			setload(false)
-			onchat(true)
 		},
 		[makeOrder, toast, onClose, setload, onchat]
 	)
