@@ -4,6 +4,7 @@ import qs from 'qs'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '../auth/[...nextauth]'
 import { calculateExpiresInFromFrequency } from '../lib/update-empresa-purchase'
+import { cnpjFilterValue, stripDocumentDigits } from '@/utils/cnpjSearch'
 
 export default async function handler (
 	req: NextApiRequest,
@@ -20,14 +21,22 @@ export default async function handler (
 				return res.status( 401 ).json( { error: 'Unauthorized' } )
 			}
 
-			// Construir a query string para o Strapi
-			const filters: any = {
-				$or: [
-					{ nome: { $containsi: searchString } },
-					{ CNPJ: { $containsi: searchString } },
-					{ fantasia: { $containsi: searchString } }
-				]
+			const search = String( searchString ?? '' ).trim()
+			const cnpjTerm = cnpjFilterValue( search )
+			const documentDigits = stripDocumentDigits( search )
+
+			const orFilters: Record<string, unknown>[] = [
+				{ nome: { $containsi: search } },
+				{ fantasia: { $containsi: search } },
+			]
+
+			if ( documentDigits.length >= 3 ) {
+				orFilters.push( { CNPJ: { $containsi: cnpjTerm || documentDigits } } )
+			} else if ( search ) {
+				orFilters.push( { CNPJ: { $containsi: search } } )
 			}
+
+			const filters: { $or: Record<string, unknown>[] } = { $or: orFilters }
 
 			const queryObj: any = { filters }
 			

@@ -1,17 +1,9 @@
 import { FormLabel, Input, InputGroup, InputLeftElement, Box, IconButton, Spinner } from "@chakra-ui/react"
 import { memo, useCallback, useEffect, useState } from "react"
 import { FaSearch, FaTimes } from "react-icons/fa"
-import { unMask } from "remask"
-
 type FiltroEmpresaProps = {
 	empresa: ( searchText: string ) => void
 	isLoading?: boolean
-}
-
-// Função para detectar se o texto é um CNPJ (apenas números, 11-14 dígitos)
-const isCNPJ = ( text: string ): boolean => {
-	const cleanText = unMask( text )
-	return /^\d{11,14}$/.test( cleanText )
 }
 
 export const FiltroEmpresa = memo( ( { empresa, isLoading = false }: FiltroEmpresaProps ) => {

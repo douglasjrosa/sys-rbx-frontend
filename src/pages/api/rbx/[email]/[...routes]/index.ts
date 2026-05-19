@@ -66,7 +66,12 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		try {
 			responseData = responseText ? JSON.parse( responseText ) : {}
 		} catch {
-			responseData = { error: 'Invalid JSON response from legacy API', raw: responseText.substring( 0, 500 ) }
+			res.status( 502 ).json( {
+				error: 'Invalid JSON response from legacy API',
+				erro: 'Resposta inválida do sistema legado.',
+				raw: responseText.substring( 0, 500 ),
+			} )
+			return
 		}
 
 		if ( !response.ok ) {

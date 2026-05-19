@@ -1,0 +1,16 @@
+{
+  "BaseSN": "on",
+  "LatESN": "on",
+  "LatDSN": "on",
+  "TampaSN": "on",
+  "CabESN": "on",
+  "CabDSN": "on",
+  "LatAdFrSN": "on",
+  "CabAdFrSN": "on",
+  "LatAdExSN": "off",
+  "CabAdExSN": "off",
+  "LatForaSN": "off",
+  "CabChaoSN": "off",
+  "CabTopoSN": "off",
+  "printable": "on"
+}

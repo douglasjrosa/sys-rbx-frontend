@@ -19,12 +19,14 @@ import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react'
 import axios from 'axios'
 import Link from 'next/link'
-import { FaSearch, FaSync, FaFileInvoiceDollar, FaTrash, FaInfoCircle, FaTimes, FaAngleDoubleLeft, FaAngleDoubleRight, FaMoneyBillWave, FaSave, FaShoppingCart, FaTable } from 'react-icons/fa'
+import { FaSearch, FaSync, FaFileInvoiceDollar, FaTrash, FaInfoCircle, FaTimes, FaAngleDoubleLeft, FaAngleDoubleRight, FaMoneyBillWave, FaSave, FaShoppingCart, FaTable, FaEdit } from 'react-icons/fa'
 import { marginTables } from '@/components/data/marginTables'
 import { getTableBadgeColor, getTableNameInPortuguese } from '@/utils/tableUtils'
 import { parseCurrency } from '@/utils/customNumberFormats'
 import { buildProductDisplayName } from '@/utils/productDisplayName'
 import { getToastErrorMessage } from '@/utils/getToastErrorMessage'
+import { mapLegacyProductsForSync } from '@/utils/produtoCalcResponse'
+import { isProdutoAtivo } from '@/utils/produtoAtivo'
 
 interface Pedido {
 	id: number
@@ -91,13 +93,38 @@ interface Product {
 	codigo: string
 	pesoCx: number
 	created_from: string
-	ativo: boolean
+	ativo?: boolean | string | number
 	expired: boolean
 	expiresIn?: string
 	deleteIndex: boolean
 	lastChange: string
 	lastUser?: string
 	audit?: any
+}
+
+function mapLegacyListProduct( raw: Record<string, unknown> ): Product {
+	return {
+		nomeProd: String( raw.nomeProd ?? '' ),
+		prodId: Number( raw.prodId ),
+		custo: Number( raw.custo ?? 0 ),
+		vFinal: Number( raw.vFinal ?? raw.preco ?? 0 ),
+		preco: Number( raw.preco ?? 0 ),
+		titulo: String( raw.titulo ?? '' ),
+		modelo: String( raw.modelo ?? '' ),
+		empresa: String( raw.empresa ?? '' ),
+		comprimento: Number( raw.comprimento ?? 0 ),
+		largura: Number( raw.largura ?? 0 ),
+		altura: Number( raw.altura ?? 0 ),
+		tabela: String( raw.tabela ?? '' ),
+		codigo: String( raw.codigo ?? '' ),
+		pesoCx: Number( raw.pesoCx ?? 0 ),
+		ativo: raw.ativo ?? '0',
+		expired: false,
+		deleteIndex: false,
+		lastChange: String( raw.lastChange ?? '' ),
+		lastUser: raw.lastUser != null ? String( raw.lastUser ) : undefined,
+		created_from: String( raw.created_from ?? '' ),
+	}
 }
 
 const formatCNPJ = (cnpj: string | undefined | null) => {
@@ -340,7 +367,49 @@ function Produtos() {
 			try {
 				if ( attempt > 0 ) await new Promise( r => setTimeout( r, RETRY_DELAY ) )
 				const response = await axios.get( url )
-				setProducts( response.data || [] )
+				let list: Product[] = response.data || []
+
+				const isAdminUser = session.user.pemission === 'Adm'
+				const companyCnpj = selectedCompany.attributes?.CNPJ
+				if ( isAdminUser && companyCnpj ) {
+					try {
+						const cnpjDigits = companyCnpj.replace( /\D/g, '' )
+						const legacyRes = await axios.get(
+							`/api/rbx/${ session.user.email }/produtos?CNPJ=${ cnpjDigits }&includeInactive=1&limit=2000`,
+						)
+						const legacyList = Array.isArray( legacyRes.data )
+							? legacyRes.data
+							: []
+						const knownIds = new Set( list.map( ( p ) => Number( p.prodId ) ) )
+
+						for ( const raw of legacyList ) {
+							if ( !raw || typeof raw !== 'object' ) {
+								continue
+							}
+							const item = raw as Record<string, unknown>
+							if ( isProdutoAtivo( item.ativo ) ) {
+								continue
+							}
+							const pid = Number( item.prodId )
+							if ( !knownIds.has( pid ) ) {
+								list.push( mapLegacyListProduct( item ) )
+								knownIds.add( pid )
+							} else {
+								list = list.map( ( p ) =>
+									Number( p.prodId ) === pid
+										? { ...p, ativo: item.ativo ?? '0' }
+										: p,
+								)
+							}
+						}
+
+						list.sort( ( a, b ) => Number( b.prodId ) - Number( a.prodId ) )
+					} catch {
+						/* legacy inactive list is optional */
+					}
+				}
+
+				setProducts( list )
 				setIsLoadingProducts( false )
 				return
 			} catch ( error: unknown ) {
@@ -353,7 +422,7 @@ function Produtos() {
 			}
 		}
 		setIsLoadingProducts( false )
-	}, [session?.user?.email, selectedCompany?.id, effectiveEmpresaId])
+	}, [ session?.user?.email, session?.user?.pemission, selectedCompany, effectiveEmpresaId ] )
 
 	const handleDeleteProduct = useCallback(async () => {
 		if (!productToDelete || !session?.user?.email) return
@@ -620,10 +689,9 @@ function Produtos() {
 				}
 				if ( lastErr ) throw lastErr
 			}
-			// 2. Filter active products (legacy may return ativo as "1" or 1)
-			const activeProducts = allProducts.filter((p: any) => String(p.ativo) === "1")
+			const activeProducts = mapLegacyProductsForSync( allProducts )
 
-			if (activeProducts.length > 0) {
+			if ( activeProducts.length > 0 ) {
 				const BATCH_SIZE = 5
 				let totalCreated = 0
 				let totalUpdated = 0
@@ -674,10 +742,13 @@ function Produtos() {
 			} else {
 				toast.close('sync-company-prod')
 				toast({
-					title: 'Nenhum produto ativo',
-					description: 'Não foram encontrados produtos ativos para sincronizar.',
+					title: 'Nenhum produto ativo no legado',
+					description:
+						'A API legado retornou 0 produtos ativos para este CNPJ. Verifique se o ' +
+						'produto foi criado no mesmo ambiente configurado em RIBERMAX_API_URL ' +
+						'(local XAMPP vs produção) e se está com ativo=1.',
 					status: 'warning',
-					duration: 5000,
+					duration: 9000,
 				})
 			}
 		} catch (error: unknown) {
@@ -767,13 +838,13 @@ function Produtos() {
 				hasMore = page.length >= FETCH_PAGE_SIZE
 				offset += FETCH_PAGE_SIZE
 			}
-			const activeProducts = allProducts.filter((p: any) => String(p.ativo) === "1")
+			const activeProducts = mapLegacyProductsForSync( allProducts )
 
-			if (activeProducts.length > 0) {
-				await axios.post(`/api/db/produtos/sync`, {
+			if ( activeProducts.length > 0 ) {
+				await axios.post( `/api/db/produtos/sync`, {
 					empresaId: selectedCompany?.id,
-					produtos: activeProducts
-				})
+					produtos: activeProducts,
+				} )
 			}
 
 			await fetchProducts()
@@ -800,12 +871,21 @@ function Produtos() {
 		}
 	}
 
+	const isAdminUser = session?.user?.pemission === 'Adm'
+
+	const visibleProducts = useMemo( () => {
+		if ( isAdminUser ) {
+			return products
+		}
+		return products.filter( ( p ) => isProdutoAtivo( p.ativo ) )
+	}, [ products, isAdminUser ] )
+
 	const filteredProducts = useMemo(() => {
-		if (!searchTerm) return products
+		if (!searchTerm) return visibleProducts
 		const term = searchTerm.toLowerCase().trim()
 		const normalizedTerm = term.replace(/\s+/g, '').replace(/x/g, 'x') // ensure we use 'x'
 
-		return products.filter(p => {
+		return visibleProducts.filter(p => {
 			// Nome, Modelo, Código e prodId
 			if (
 				p.nomeProd?.toLowerCase().includes(term) ||
@@ -820,7 +900,7 @@ function Produtos() {
 
 			return false
 		})
-	}, [products, searchTerm])
+	}, [visibleProducts, searchTerm])
 
 	const totalPages = useMemo(() => Math.ceil(filteredProducts.length / pageSize), [filteredProducts, pageSize])
 
@@ -1457,7 +1537,7 @@ function Produtos() {
 										px={2}
 										fontSize={{ base: 'xs', md: 'sm' }}
 									>
-										{products.length}
+										{visibleProducts.length}
 									</Badge>
 									<IconButton
 										aria-label="Sincronizar Produtos"
@@ -1614,8 +1694,15 @@ function Produtos() {
 										</Tr>
 									</Thead>
 									<Tbody>
-										{paginatedProducts.map((product: Product, index: number) => (
-											<Tr key={index} _hover={{ bg: 'gray.600' }} transition="0.2s">
+										{paginatedProducts.map((product: Product) => {
+											const inactive = !isProdutoAtivo( product.ativo )
+											return (
+											<Tr
+												key={ product.prodId }
+												opacity={ isAdminUser && inactive ? 0.35 : 1 }
+												_hover={{ bg: 'gray.600' }}
+												transition="0.2s"
+											>
 												<Td fontWeight="bold" color="blue.300" py={4} textAlign="center">
 													<VStack align="center" spacing={1}>
 														<Text>{product.codigo}</Text>
@@ -1631,6 +1718,15 @@ function Produtos() {
 													</Text>
 														<Flex gap={2} mb={1} alignItems="center">
 															<Text fontSize="xs" color="gray.400">{product.titulo}</Text>
+															{ isAdminUser && inactive && (
+																<Badge
+																	colorScheme="gray"
+																	variant="outline"
+																	fontSize="9px"
+																>
+																	Inativo
+																</Badge>
+															) }
 														</Flex>
 														<HStack spacing={2}>
 															{product.pesoCx > 0 && (
@@ -1681,7 +1777,7 @@ function Produtos() {
 												</Td>
 												<Td textAlign="center" py={4}>
 													<HStack spacing={2} justify="center">
-														{effectiveProposta && !isPriceTableMode && (
+														{effectiveProposta && !isPriceTableMode && !inactive && (
 															<IconButton
 																aria-label="Adicionar à proposta"
 																icon={<FaShoppingCart color={isProductSelected(product.prodId) ? "white" : undefined} />}
@@ -1697,7 +1793,7 @@ function Produtos() {
 																onClick={() => toggleItem(product)}
 															/>
 														)}
-														{isPriceTableMode && (
+														{isPriceTableMode && !inactive && (
 															<IconButton
 																aria-label="Adicionar à tabela de preços"
 																icon={<FaTable color={isProductSelected(product.prodId) ? "white" : undefined} />}
@@ -1726,6 +1822,27 @@ function Produtos() {
 																onOpenDetails()
 															}}
 														/>
+														{selectedCompany && (
+															<IconButton
+																aria-label="Editar produto"
+																icon={<FaEdit />}
+																size="sm"
+																colorScheme="orange"
+																variant="ghost"
+																color="orange.300"
+																_hover={{ bg: "orange.900" }}
+																onClick={() => {
+																	router.push( {
+																		pathname: '/produtos/novo',
+																		query: {
+																			cnpj: selectedCompany.attributes.CNPJ,
+																			prodId: product.prodId,
+																			edit: '1',
+																		},
+																	} )
+																}}
+															/>
+														)}
 														{session?.user?.pemission === 'Adm' && (
 															<>
 																<IconButton
@@ -1756,7 +1873,8 @@ function Produtos() {
 													</HStack>
 												</Td>
 											</Tr>
-										))}
+											)
+										})}
 									</Tbody>
 								</Table>
 							</Box>

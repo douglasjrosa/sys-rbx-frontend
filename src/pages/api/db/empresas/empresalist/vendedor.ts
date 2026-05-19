@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import { GET_Strapi } from "@/pages/api/lib/request_strapi/get"
 import { NextApiRequest, NextApiResponse } from "next"
+import { normalizeEmpresaFiltroTexto } from "@/utils/cnpjSearch"
 
 /**
  * GetEmpresaVendedor function to fetch empresas with vendedor from the API.
@@ -27,7 +28,7 @@ export default async function GetEmpresaVendedor (
 		try {
 			const userId = req.query.userId || ""
 			const page = parseInt( req.query.page as string ) || 1
-			const filtroTexto = req.query.filtro || ""
+			const filtroTexto = normalizeEmpresaFiltroTexto( String( req.query.filtro ?? '' ) )
 			const filtroCNAE = req.query.filtroCNAE as string || ""
 			const filtroCidade = req.query.filtroCidade as string || ""
 			const sortOrder = req.query.sort as string || "relevancia"

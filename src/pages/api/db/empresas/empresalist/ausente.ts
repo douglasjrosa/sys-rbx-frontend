@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import { GET_Strapi } from "@/pages/api/lib/request_strapi/get"
 import { NextApiRequest, NextApiResponse } from "next"
+import { normalizeEmpresaFiltroTexto } from "@/utils/cnpjSearch"
 
 /**
  * GetEmpresaAusente function to fetch empresas without vendedor from the API.
@@ -26,7 +27,7 @@ export default async function GetEmpresaAusente (
 	if ( req.method === "GET" ) {
 		try {
 			const page = parseInt( req.query.page as string ) || 1
-			const filtro = req.query.filtro as string || ""
+			const filtro = normalizeEmpresaFiltroTexto( String( req.query.filtro ?? '' ) )
 			const filtroCNAE = req.query.filtroCNAE as string || ""
 			const filtroCidade = req.query.filtroCidade as string || ""
 			const sortOrder = req.query.sort as string || "relevancia"

@@ -3,6 +3,7 @@ import { GET_Strapi } from "@/pages/api/lib/request_strapi/get"
 import { getServerSession } from "next-auth/next"
 import { NextApiRequest, NextApiResponse } from "next"
 import { authOptions } from "@/pages/api/auth/[...nextauth]"
+import { normalizeEmpresaFiltroTexto } from "@/utils/cnpjSearch"
 
 /**
  * GetEmpresaOutrosVendedores: companies assigned to other vendors.
@@ -25,7 +26,7 @@ export default async function GetEmpresaOutrosVendedores (
 		}
 
 		const page = parseInt( req.query.page as string ) || 1
-		const filtroTexto = ( req.query.filtro as string ) || ""
+		const filtroTexto = normalizeEmpresaFiltroTexto( String( req.query.filtro ?? '' ) )
 		const filtroCNAE = ( req.query.filtroCNAE as string ) || ""
 		const filtroCidade = ( req.query.filtroCidade as string ) || ""
 		const pageSize = 50

@@ -1,5 +1,6 @@
 import axios from "axios"
 import { NextApiRequest, NextApiResponse } from "next"
+import { cnpjFilterValue } from "@/utils/cnpjSearch"
 
 export default async function GetEmpresa (
 	req: NextApiRequest,
@@ -9,7 +10,7 @@ export default async function GetEmpresa (
 		const token = process.env.ATORIZZATION_TOKEN
 		const BasseUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL
 		const Vendedor = req.query.Vendedor
-		const CNPJ = req.query.CNPJ
+		const CNPJ = cnpjFilterValue( String( req.query.CNPJ ?? '' ) )
 		const EMPRESA = req.query.EMPRESA
 		const BUSCA = !req.query.BUSCA ? '*&filters[user][username][$null]=true' : '*'
 
