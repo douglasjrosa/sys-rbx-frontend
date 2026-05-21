@@ -127,6 +127,38 @@ function mapLegacyListProduct( raw: Record<string, unknown> ): Product {
 	}
 }
 
+function mergeLegacyInactiveProducts (
+	list: Product[],
+	legacyList: Record<string, unknown>[],
+): Product[] {
+	let merged = [ ...list ]
+	const knownIds = new Set( merged.map( ( p ) => Number( p.prodId ) ) )
+
+	for ( const raw of legacyList ) {
+		if ( !raw || typeof raw !== 'object' ) {
+			continue
+		}
+		const item = raw as Record<string, unknown>
+		if ( isProdutoAtivo( item.ativo ) ) {
+			continue
+		}
+		const pid = Number( item.prodId )
+		if ( !knownIds.has( pid ) ) {
+			merged.push( mapLegacyListProduct( item ) )
+			knownIds.add( pid )
+		} else {
+			merged = merged.map( ( p ) =>
+				Number( p.prodId ) === pid
+					? { ...p, ativo: item.ativo ?? '0' }
+					: p,
+			)
+		}
+	}
+
+	merged.sort( ( a, b ) => Number( b.prodId ) - Number( a.prodId ) )
+	return merged
+}
+
 const formatCNPJ = (cnpj: string | undefined | null) => {
 	if (!cnpj) return ''
 	const cleaned = cnpj.replace(/\D/g, '')
@@ -361,56 +393,37 @@ function Produtos() {
 		setIsLoadingProducts(true)
 		const empresaId = selectedCompany.id
 		const url = `/api/db/produtos/list?empresaId=${empresaId}`
+		const isAdminUser = session.user.pemission === 'Adm'
+		const cnpjDigits = selectedCompany.attributes?.CNPJ?.replace(/\D/g, '') ?? ''
+		const legacyUrl = isAdminUser && cnpjDigits
+			? `/api/rbx/${session.user.email}/produtos?CNPJ=${cnpjDigits}&onlyInactive=1&listOnly=1&limit=500`
+			: null
 		const MAX_RETRIES = 2
 		const RETRY_DELAY = 2000
 		for ( let attempt = 0; attempt <= MAX_RETRIES; attempt++ ) {
 			try {
 				if ( attempt > 0 ) await new Promise( r => setTimeout( r, RETRY_DELAY ) )
+
+				const legacyPromise = legacyUrl
+					? axios.get( legacyUrl ).catch( () => ( { data: [] as unknown[] } ) )
+					: null
+
 				const response = await axios.get( url )
-				let list: Product[] = response.data || []
-
-				const isAdminUser = session.user.pemission === 'Adm'
-				const companyCnpj = selectedCompany.attributes?.CNPJ
-				if ( isAdminUser && companyCnpj ) {
-					try {
-						const cnpjDigits = companyCnpj.replace( /\D/g, '' )
-						const legacyRes = await axios.get(
-							`/api/rbx/${ session.user.email }/produtos?CNPJ=${ cnpjDigits }&includeInactive=1&limit=2000`,
-						)
-						const legacyList = Array.isArray( legacyRes.data )
-							? legacyRes.data
-							: []
-						const knownIds = new Set( list.map( ( p ) => Number( p.prodId ) ) )
-
-						for ( const raw of legacyList ) {
-							if ( !raw || typeof raw !== 'object' ) {
-								continue
-							}
-							const item = raw as Record<string, unknown>
-							if ( isProdutoAtivo( item.ativo ) ) {
-								continue
-							}
-							const pid = Number( item.prodId )
-							if ( !knownIds.has( pid ) ) {
-								list.push( mapLegacyListProduct( item ) )
-								knownIds.add( pid )
-							} else {
-								list = list.map( ( p ) =>
-									Number( p.prodId ) === pid
-										? { ...p, ativo: item.ativo ?? '0' }
-										: p,
-								)
-							}
-						}
-
-						list.sort( ( a, b ) => Number( b.prodId ) - Number( a.prodId ) )
-					} catch {
-						/* legacy inactive list is optional */
-					}
-				}
+				const list: Product[] = response.data || []
 
 				setProducts( list )
 				setIsLoadingProducts( false )
+
+				if ( legacyPromise ) {
+					const legacyRes = await legacyPromise
+					const legacyList = Array.isArray( legacyRes.data )
+						? legacyRes.data
+						: []
+					setProducts( mergeLegacyInactiveProducts(
+						list,
+						legacyList as Record<string, unknown>[],
+					) )
+				}
 				return
 			} catch ( error: unknown ) {
 				const ax = error as { response?: { status?: number }; message?: string }
@@ -1208,6 +1221,7 @@ function Produtos() {
 			prodId: product.prodId,
 			tabela: product.tabela,
 			modelo: product.modelo,
+			titulo: product.titulo,
 		}))
 
 		const empresaId = selectedCompany?.id

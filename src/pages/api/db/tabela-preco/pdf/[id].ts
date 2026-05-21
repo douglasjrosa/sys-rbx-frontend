@@ -4,6 +4,7 @@ import path from "path"
 import PDFPrinter from "pdfmake"
 import { TDocumentDefinitions, Content } from "pdfmake/interfaces"
 import axios from "axios"
+import { capitalizeWords } from "@/function/captalize"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
 import { markdownToPdfmake } from "@/utils/markdownToPdfmake"
 
@@ -38,6 +39,33 @@ function formatarTelefone ( telefone: string ) {
 	}
 	return ""
 }
+
+function getTituloLabel ( item: { titulo?: string; modelo?: string } ): string {
+	const titulo = String( item.titulo ?? "" ).trim()
+	if ( titulo ) return titulo
+
+	const modelo = String( item.modelo ?? "" ).trim()
+	if ( !modelo ) return ""
+
+	return capitalizeWords( modelo.replace( /_/g, " " ) )
+}
+
+function prodCellSubtitle (
+	text: string,
+	align: "left" | "center",
+): Content {
+	return {
+		text,
+		alignment: align,
+		fontSize: 9,
+		color: "#666666",
+		bold: true,
+		margin: [0, 4, 0, 0],
+	}
+}
+
+/** Approximate vertical center for single-line cells when a row has subtitles. */
+const SINGLE_LINE_CELL_PAD = 10
 
 export default async function GetTabelaPrecoPdf (
 	req: NextApiRequest,
@@ -217,33 +245,45 @@ export default async function GetTabelaPrecoPdf (
 		measures += i.altura ? " x " + i.altura + "cm(alt.)" : "cm(largura)"
 		measures = i.comprimento ? measures : ""
 
-		const stackNomeProd: any[] = [{
+		const tituloLabel = getTituloLabel( i )
+		const rowHasSubtitle = Boolean( i.codigo ) || Boolean( tituloLabel )
+		const singleLinePad: [number, number, number, number] = rowHasSubtitle
+			? [0, SINGLE_LINE_CELL_PAD, 0, 0]
+			: [0, 0, 0, 0]
+
+		const stackNomeProd: Content[] = [{
 			text: buildProductDisplayName( i ),
 			alignment: "left",
 			fontSize: 10,
 			bold: true,
 			lineHeight: 1.3,
+			...( !i.codigo && rowHasSubtitle ? { margin: singleLinePad } : {} ),
 		}]
 
 		if ( i.codigo ) {
-			stackNomeProd.push( {
-				text: `Código: ${ i.codigo }`,
-				alignment: "left",
-				fontSize: 9,
-				color: '#666666',
-				bold: true,
-				margin: [0, 4, 0, 0],
-			} )
+			stackNomeProd.push( prodCellSubtitle( `Código: ${ i.codigo }`, "left" ) )
+		}
+
+		const stackMedidas: Content[] = [{
+			text: measures || "",
+			alignment: "center",
+			fontSize: 9,
+			lineHeight: 1.3,
+			...( !tituloLabel && rowHasSubtitle ? { margin: singleLinePad } : {} ),
+		}]
+
+		if ( tituloLabel ) {
+			stackMedidas.push( prodCellSubtitle( tituloLabel, "center" ) )
 		}
 
 		return [
 			{
-				stack: [...stackNomeProd],
+				stack: stackNomeProd,
 				style: "prodCells",
 				alignment: "left",
 			},
 			{
-				text: measures || "",
+				stack: stackMedidas,
 				style: "prodCells",
 				alignment: "center",
 			},
@@ -257,6 +297,7 @@ export default async function GetTabelaPrecoPdf (
 				bold: true,
 				alignment: "center",
 				noWrap: true,
+				margin: [1, rowHasSubtitle ? SINGLE_LINE_CELL_PAD + 4 : 4, 1, 4],
 			},
 		]
 	} )
@@ -288,6 +329,12 @@ export default async function GetTabelaPrecoPdf (
 			vLineColor: function () { return '#AACCAA' },
 			fillColor: function ( rowIndex: number ) {
 				return ( rowIndex === 0 ) ? '#009512' : ( rowIndex % 2 === 0 ) ? '#eeffee' : null
+			},
+			paddingTop: function ( rowIndex: number ) {
+				return rowIndex <= 1 ? 4 : 8
+			},
+			paddingBottom: function ( rowIndex: number ) {
+				return rowIndex <= 1 ? 4 : 8
 			},
 		},
 	}
@@ -330,7 +377,7 @@ export default async function GetTabelaPrecoPdf (
 				margin: [1, 4, 1, 4],
 			},
 			prodCells: {
-				margin: [1, 4, 1, 4],
+				margin: [4, 6, 4, 6],
 				fontSize: 9,
 			},
 			sectionHeader: {
