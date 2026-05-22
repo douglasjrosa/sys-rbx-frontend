@@ -263,6 +263,115 @@ export const NegocioHeader = (props: {
     }
   };
 
+  const handleDeleteBusiness = async () => {
+    props.onLoad(true);
+
+    toast({
+      title: "Bling",
+      description: "Excluindo pedido de venda...",
+      status: "info",
+      duration: 3000,
+      isClosable: true,
+    });
+
+    toast({
+      title: "Trello",
+      description: "Arquivando cards do negócio...",
+      status: "info",
+      duration: 3000,
+      isClosable: true,
+    });
+
+    try {
+      const response = await axios("/api/db/business/delete/" + ID);
+      const integration = response.data?.integration;
+
+      if (integration?.bling?.deleted) {
+        toast({
+          title: "Bling",
+          description: "Pedido excluído com sucesso.",
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+        });
+      } else if (integration?.bling?.skipped) {
+        toast({
+          title: "Bling",
+          description: "Nenhum pedido encontrado para excluir.",
+          status: "info",
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+
+      const trelloArchived = integration?.trello?.archived ?? 0;
+      if (trelloArchived > 0) {
+        toast({
+          title: "Trello",
+          description: `${trelloArchived} card(s) arquivado(s) com sucesso.`,
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+        });
+      } else if (integration?.trello?.skipped) {
+        toast({
+          title: "Trello",
+          description: "Nenhum card encontrado para arquivar.",
+          status: "info",
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+
+      toast({
+        title: "Negocio foi Deletado",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      });
+      router.push("/negocios");
+    } catch (err: any) {
+      props.onLoad(false);
+      const integration = err.response?.data?.integration;
+
+      if (integration?.bling && !integration.bling.deleted) {
+        toast({
+          title: "Bling",
+          description:
+            err.response?.data?.message ||
+            "Não foi possível excluir o pedido no Bling.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+
+      if (integration?.trello?.failed > 0) {
+        toast({
+          title: "Trello",
+          description:
+            err.response?.data?.message ||
+            "Não foi possível arquivar os cards no Trello.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+
+      if (!integration?.bling && !integration?.trello) {
+        toast({
+          title: "Erro ao excluir",
+          description:
+            err.response?.data?.message ||
+            "Não foi possível excluir o negócio.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    }
+  };
+
   const saveBusinessAsWon = async () => {
     const mpercaValue =
       Mperca !== "" && Mperca != null && !Number.isNaN(Number(Mperca))
@@ -371,20 +480,7 @@ export const NegocioHeader = (props: {
                 size="sm"
                 minW="110px"
                 h="36px"
-                onClick={async () => {
-                  props.onLoad(true)
-                  await axios("/api/db/business/delete/" + ID)
-                    .then(() => {
-                      toast({
-                        title: "Negocio foi Deletado",
-                        status: "info",
-                        duration: 3000,
-                        isClosable: true,
-                      })
-                      router.push("/negocios")
-                    })
-                    .catch((err: any) => console.error(err))
-                }}
+                onClick={handleDeleteBusiness}
               >
                 Excluir
               </Button>
@@ -647,15 +743,7 @@ export const NegocioHeader = (props: {
           {(Etapa !== 6 || session?.user.pemission === "Adm") && (
             <Button
               colorScheme="red"
-              onClick={async () => {
-                props.onLoad(true)
-                await axios("/api/db/business/delete/" + ID)
-                  .then(() => {
-                    toast({ title: "Negocio foi Deletado", status: "info", duration: 3000, isClosable: true })
-                    router.push("/negocios")
-                  })
-                  .catch((err: any) => console.error(err))
-              }}
+              onClick={handleDeleteBusiness}
             >
               Excluir
             </Button>
