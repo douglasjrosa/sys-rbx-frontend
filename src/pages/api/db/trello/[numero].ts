@@ -6,6 +6,10 @@ import { GetTrelloId } from "../../lib/get_trello_id"
 import { ErroTrello } from "../../lib/errtrello"
 import { IncidentRecord } from "../lib/businesses"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
+import {
+	getTrelloAssemblyLabel,
+	isOrderItemMont,
+} from "@/utils/assemblyLabel"
 
 
 export default async function PostTrello (
@@ -48,6 +52,31 @@ export default async function PostTrello (
 		const idBoard = process.env.TRELLO_BOARD_ID
 		const idList = process.env.TRELLO_LIST_ID
 
+		const strapiAuthHeaders = {
+			Authorization: `Bearer ${ process.env.ATORIZZATION_TOKEN }`,
+			"Content-Type": "application/json",
+		}
+		const assemblyByProdId = new Map<number, string>()
+
+		const fetchProductAssembly = async ( prodId: number ): Promise<string | null> => {
+			if ( assemblyByProdId.has( prodId ) ) {
+				return assemblyByProdId.get( prodId ) ?? null
+			}
+			try {
+				const response = await axios( {
+					url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/produtos?filters[prodId][$eq]=${ prodId }&fields[0]=assembly&pagination[limit]=1`,
+					headers: strapiAuthHeaders,
+				} )
+				const assembly = response.data?.data?.[ 0 ]?.attributes?.assembly ?? null
+				if ( assembly ) {
+					assemblyByProdId.set( prodId, assembly )
+				}
+				return assembly
+			} catch {
+				return null
+			}
+		}
+
 		try {
 			const cardsSent = []
 			for ( const i of items ) {
@@ -75,6 +104,12 @@ export default async function PostTrello (
 
 				const nomeCard = trimmedClientName + qtde + trimmedProdName + measures + expo + mont + weight + lot
 
+				let assemblyKey = i.assembly ?? null
+				if ( isOrderItemMont( i.mont ) && !assemblyKey && i.prodId ) {
+					assemblyKey = await fetchProductAssembly( Number( i.prodId ) )
+				}
+				const montagemLabel = getTrelloAssemblyLabel( i.mont, assemblyKey )
+
 				const dataBoard = JSON.stringify( {
 					idList,
 					boardId: idBoard,
@@ -88,6 +123,7 @@ export default async function PostTrello (
 						Pedido do cliente: Nº.${ pedidoCliente === null ? '' : pedidoCliente },
 						Lote: Nº.${ nlote },
 						Modelo: ${ i.titulo },
+						Montagem: ${ montagemLabel },
 						E-mail: ${ email },
 						E-mail NFe: ${ emailNfe }.`,
 					due: estrega + 'T16:00:00.000Z',
@@ -130,6 +166,7 @@ export default async function PostTrello (
 							Tipo_de_frete: frete,
 							Lote: nlote,
 							Modelo: i.titulo,
+							Montagem: montagemLabel,
 							erro_status: err.response.status,
 							erro_message: err.response.data,
 						},

@@ -92,6 +92,7 @@ interface Product {
 	ncm?: string
 	codigo: string
 	pesoCx: number
+	assembly?: string | null
 	created_from: string
 	ativo?: boolean | string | number
 	expired: boolean
@@ -118,6 +119,7 @@ function mapLegacyListProduct( raw: Record<string, unknown> ): Product {
 		tabela: String( raw.tabela ?? '' ),
 		codigo: String( raw.codigo ?? '' ),
 		pesoCx: Number( raw.pesoCx ?? 0 ),
+		assembly: raw.assembly != null ? String( raw.assembly ) : null,
 		ativo: raw.ativo ?? '0',
 		expired: false,
 		deleteIndex: false,
@@ -951,12 +953,22 @@ function Produtos() {
 			const pid = Number(item.prodId ?? item.codg)
 			return !isNaN(pid) && selectedIdsSet.has(pid)
 		})
-		const existingIds = new Set(existingFiltered.map((item: any) => Number(item.prodId ?? item.codg)))
+		const productById = new Map(
+			products.map( ( p ) => [ Number( p.prodId ), p ] ),
+		)
+		const existingWithAssembly = existingFiltered.map( ( item: any ) => {
+			const pid = Number( item.prodId ?? item.codg )
+			const product = productById.get( pid )
+			return product
+				? { ...item, assembly: product.assembly ?? null }
+				: item
+		} )
+		const existingIds = new Set(existingWithAssembly.map((item: any) => Number(item.prodId ?? item.codg)))
 		const newSelectedIds = selectedIdsArr.filter(id => !existingIds.has(id))
 		const newProducts = products.filter(p => newSelectedIds.includes(Number(p.prodId)))
 
 		const existingByProdId = new Map<number, { Qtd: number | string; mont: boolean; expo: boolean }>()
-		existingFiltered.forEach((item: any) => {
+		existingWithAssembly.forEach((item: any) => {
 			const pid = Number(item.prodId ?? item.codg)
 			if (!isNaN(pid)) {
 				existingByProdId.set(pid, {
@@ -985,7 +997,7 @@ function Produtos() {
 			})
 
 			return {
-				id: existingFiltered.length + index + 1,
+				id: existingWithAssembly.length + index + 1,
 				nomeProd: product.nomeProd,
 				codigo,
 				Qtd,
@@ -996,6 +1008,7 @@ function Produtos() {
 				altura: product.altura,
 				expo,
 				mont,
+				assembly: product.assembly ?? null,
 				ativo: '1',
 				preco: product.preco,
 				total,
@@ -1011,7 +1024,7 @@ function Produtos() {
 			}
 		})
 
-		const itemsToSave = [...existingFiltered, ...newItems]
+		const itemsToSave = [...existingWithAssembly, ...newItems]
 		localStorage.setItem(`proposal_items_${effectiveProposta}`, JSON.stringify(itemsToSave))
 	}, [effectiveProposta, selectedIdsSet, products])
 
@@ -1166,6 +1179,7 @@ function Produtos() {
 				altura: product.altura,
 				expo,
 				mont,
+				assembly: product.assembly ?? null,
 				ativo: "1",
 				preco: product.preco,
 				total,

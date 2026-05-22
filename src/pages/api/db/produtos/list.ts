@@ -24,6 +24,7 @@ export default async function ListProdutos (
 		url += `&fields[6]=prodId&fields[7]=codigo&fields[8]=lastChange`
 		url += `&fields[9]=lastUser&fields[10]=titulo&fields[11]=tablecalc`
 		url += `&fields[12]=pesoCx&fields[13]=ncm&fields[14]=ativo&fields[15]=custoMp`
+		url += `&fields[16]=assembly`
 		
 		if ( empresaId ) {
 			url += `&filters[empresa][id][$eq]=${ empresaId }`
