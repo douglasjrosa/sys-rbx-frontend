@@ -1,4 +1,9 @@
 import advConfigsJson from '@/components/data/advConfigs.json'
+import {
+	parseLegacyAccessories,
+	serializeAccessoriesForLegacy,
+	type AccessoryItem,
+} from '@/components/data/accessoryConfig'
 import cxConfigsDefaultsJson from '@/components/data/cxConfigsDefaults.json'
 import type { AssemblyType } from '@/lib/calculadora-de-embalagem/utils/packagingCalculator'
 
@@ -115,6 +120,15 @@ export function buildLegacyAdvFormOverrides(
 	return overrides
 }
 
+export function buildLegacyAccessoryOverrides(
+	form: NovoProdutoFormState,
+): Record<string, string> {
+	if ( form.accessories.length === 0 ) {
+		return {}
+	}
+	return { acessorios: serializeAccessoriesForLegacy( form.accessories ) }
+}
+
 const DIMENSION_KEYS = new Set( [ 'comprimento', 'largura', 'altura' ] )
 
 export function getModelAdvConfigKeys( modelo: string ): AdvConfigKey[] {
@@ -150,7 +164,13 @@ export function isCalcInvalidatingAdvKey( key: string ): boolean {
 	if ( ( ADV_QUANTITY_KEYS as string[] ).includes( key ) ) {
 		return true
 	}
-	return key === 'tabela' || key === 'modelo' || key === 'pesoProd'
+	return (
+		key === 'tabela' ||
+		key === 'modelo' ||
+		key === 'pesoProd' ||
+		key === 'assembly' ||
+		key === 'acessorios'
+	)
 }
 
 export function getCxConfigDefaultOnOff( key: AdvCheckboxKey ): boolean {
@@ -201,6 +221,7 @@ export type NovoProdutoFormState = {
 	obsCaixa: string
 	advCheckboxes: Record<AdvCheckboxKey, boolean>
 	advQuantities: Record<AdvQuantityKey, string>
+	accessories: AccessoryItem[]
 }
 
 const PALLET_MODEL_ID = 'palete_sob_medida'
@@ -255,6 +276,10 @@ export function buildNovoProdutoCalcParams( form: NovoProdutoFormState ): URLSea
 		if ( qty !== undefined && qty !== null && String( qty ).trim() !== '' ) {
 			params.append( key, String( qty ) )
 		}
+	}
+
+	if ( form.accessories.length > 0 ) {
+		params.append( 'acessorios', serializeAccessoriesForLegacy( form.accessories ) )
 	}
 
 	return params
@@ -342,6 +367,7 @@ export function mapLegacyProductToForm(
 		obsCaixa: String( product.obsCaixa ?? '' ),
 		advCheckboxes,
 		advQuantities,
+		accessories: parseLegacyAccessories( product.acessorios ),
 	}
 }
 
@@ -385,6 +411,10 @@ export function mergeFormAdvIntoCalcCaixa(
 		if ( qty !== '' ) {
 			info[ key ] = qty
 		}
+	}
+
+	if ( form.accessories.length > 0 ) {
+		info.acessorios = serializeAccessoriesForLegacy( form.accessories )
 	}
 
 	cloned.info = info

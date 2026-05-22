@@ -13,7 +13,6 @@ import {
 	VStack,
 	useToast,
 	IconButton,
-	Badge,
 	Spinner,
 	Divider,
 	useColorModeValue,
@@ -21,15 +20,16 @@ import {
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { FaArrowLeft, FaCalculator, FaSave } from 'react-icons/fa'
+import { FaArrowLeft, FaCalculator } from 'react-icons/fa'
 import axios from 'axios'
 
-import { modCaix } from '@/components/data/modCaix'
 import { marginTables } from '@/components/data/marginTables'
+import { modCaix } from '@/components/data/modCaix'
 import {
 	FOOT_CONFIG_OPTIONS,
 	ADV_CHECKBOX_LABELS,
 	ADV_QUANTITY_LABELS,
+	buildLegacyAccessoryOverrides,
 	buildLegacyAdvFormOverrides,
 	buildNovoProdutoCalcParams,
 	createDefaultAdvCheckboxes,
@@ -48,8 +48,18 @@ import {
 	type AdvQuantityKey,
 	type NovoProdutoFormState,
 } from '@/components/data/produtoAdvConfigs'
+import type { AccessoryMpOption } from '@/components/data/accessoryConfig'
+import { AccessoriesSection } from '@/components/produtos/novo/AccessoriesSection'
+import { CalculationResultCard } from '@/components/produtos/novo/CalculationResultCard'
+import { AssemblyPicker } from '@/components/produtos/novo/AssemblyPicker'
 import { FormFieldLabel } from '@/components/produtos/novo/FormFieldLabel'
+import { PackagingModelPicker } from '@/components/produtos/novo/PackagingModelPicker'
 import { ProductFormCard } from '@/components/produtos/novo/ProductFormCard'
+import {
+	produtoInputStyles,
+	produtoSelectOptionProps,
+	produtoSelectStyles,
+} from '@/components/produtos/novo/produtoFormStyles'
 import type { ProdutoCalcInfo, ProdutoSavePayload } from '@/types/produtoCalc'
 import {
 	normalizeProdutoCalcResponse,
@@ -75,12 +85,7 @@ const formatCompanyDisplayName = ( name: string | undefined | null ): string => 
 		: upper
 }
 
-const inputStyles = {
-	bg: 'gray.800',
-	border: 'none',
-	size: 'sm' as const,
-	rounded: 'md',
-}
+const inputStyles = produtoInputStyles
 
 function createInitialFormState( empresa: string ): NovoProdutoFormState {
 	return {
@@ -98,6 +103,7 @@ function createInitialFormState( empresa: string ): NovoProdutoFormState {
 		obsCaixa: '',
 		advCheckboxes: createDefaultAdvCheckboxes(),
 		advQuantities: createDefaultAdvQuantities(),
+		accessories: [],
 	}
 }
 
@@ -135,6 +141,10 @@ export default function NovoProduto() {
 	const [ result, setResult ] = useState<ProdutoCalcInfo | null>( null )
 	const [ savePayload, setSavePayload ] = useState<ProdutoSavePayload | null>( null )
 	const [ replaceLoaded, setReplaceLoaded ] = useState<number | null>( null )
+	const [ accessoryMpOptions, setAccessoryMpOptions ] = useState<AccessoryMpOption[]>(
+		[],
+	)
+	const [ isLoadingAccessoryMps, setIsLoadingAccessoryMps ] = useState( false )
 	const pageBottomRef = useRef<HTMLDivElement>( null )
 
 	const cardBg = useColorModeValue( 'gray.700', 'gray.700' )
@@ -153,6 +163,30 @@ export default function NovoProduto() {
 	const showAssemblySelect = modelSupportsAssembly( formData.modelo )
 	const showAltura = formData.modelo !== 'palete_sob_medida'
 	const showTabelaSelect = isAdmin
+
+	const packageSummary = useMemo( () => {
+		const modelName =
+			modCaix.find( ( model ) => model.id === formData.modelo )?.title ?? ''
+		const measurements =
+			showAltura && formData.altura
+				? `${ formData.comprimento } x ${ formData.largura } x ${ formData.altura } cm`
+				: `${ formData.comprimento } x ${ formData.largura } cm`
+		const footConfig = modelHasAdvKey( formData.modelo, 'configPe' )
+			? FOOT_CONFIG_OPTIONS.find( ( opt ) => opt.value === formData.pe )?.label ?? null
+			: null
+		const assembly = modelSupportsAssembly( formData.modelo )
+			? ASSEMBLY_OPTIONS.find( ( opt ) => opt.value === formData.assembly )?.label ?? null
+			: null
+
+		return {
+			productName: formData.nomeProd.trim() || null,
+			productCode: formData.codigo.trim() || null,
+			modelName,
+			measurements,
+			footConfig,
+			assembly,
+		}
+	}, [ formData, showAltura ] )
 
 	const invalidateCalc = useCallback( () => {
 		setResult( null )
@@ -242,6 +276,28 @@ export default function NovoProduto() {
 		}
 	}, [ isEditMode, prodId, cnpj, session, router.isReady, toast ] )
 
+	useEffect( () => {
+		if ( !session?.user?.email ) {
+			return
+		}
+		setIsLoadingAccessoryMps( true )
+		axios
+			.get( `/api/rbx/${ session.user.email }/produtos?accessoryMps=1` )
+			.then( ( res ) => {
+				const options = ( res.data as { options?: AccessoryMpOption[] } )?.options
+				setAccessoryMpOptions( Array.isArray( options ) ? options : [] )
+			} )
+			.catch( () => {
+				toast( {
+					title: 'Não foi possível carregar matérias-primas',
+					description: 'A lista de acessórios pode estar indisponível.',
+					status: 'warning',
+					duration: 4000,
+				} )
+			} )
+			.finally( () => setIsLoadingAccessoryMps( false ) )
+	}, [ session?.user?.email, toast ] )
+
 	const patchForm = useCallback(
 		( patch: Partial<NovoProdutoFormState>, fieldName?: string ) => {
 			if ( fieldName && result && isCalcInvalidatingAdvKey( fieldName ) ) {
@@ -327,6 +383,11 @@ export default function NovoProduto() {
 		}
 	}
 
+	const handleAdminPriceChange = useCallback( ( vFinal: number ) => {
+		setResult( ( prev ) => ( prev ? { ...prev, vFinal, preco: vFinal } : prev ) )
+		setSavePayload( ( prev ) => ( prev ? { ...prev, vFinal, preco: vFinal } : prev ) )
+	}, [] )
+
 	const handleSave = async () => {
 		if ( !result || !savePayload ) {
 			toast( { title: 'Calcule antes de salvar', status: 'warning' } )
@@ -382,6 +443,7 @@ export default function NovoProduto() {
 					? { assembly: formData.assembly }
 					: {} ),
 				...buildLegacyAdvFormOverrides( formData ),
+				...buildLegacyAccessoryOverrides( formData ),
 				_calcCaixa: mergeFormAdvIntoCalcCaixa( savePayload._calcCaixa, formData ),
 			} )
 
@@ -475,7 +537,7 @@ export default function NovoProduto() {
 
 			<VStack spacing={ 6 } maxW="container.xl" mx="auto" align="stretch">
 				<SimpleGrid columns={{ base: 1, lg: 2 }} spacing={ 6 } alignItems="stretch">
-					<ProductFormCard title="Dimensões e características">
+					<ProductFormCard title="Dimensões e identificação">
 						<VStack spacing={ 4 } align="stretch">
 							<SimpleGrid columns={{ base: 1, sm: 3 }} spacing={ 4 }>
 								<Box>
@@ -516,23 +578,12 @@ export default function NovoProduto() {
 
 							<Box>
 								<FormFieldLabel>Modelo da embalagem</FormFieldLabel>
-								<Select
-									name="modelo"
+								<PackagingModelPicker
 									value={ formData.modelo }
-									onChange={ handleInputChange }
-									placeholder="Selecione o modelo"
-									{ ...inputStyles }
-								>
-									{ modCaix.map( ( m ) => (
-										<option
-											key={ m.id }
-											value={ m.id }
-											style={ { background: '#1A202C' } }
-										>
-											{ m.title }
-										</option>
-									) ) }
-								</Select>
+									onChange={ ( modelId ) =>
+										patchForm( { modelo: modelId }, 'modelo' )
+									}
+								/>
 							</Box>
 
 							<Divider borderColor="gray.600" />
@@ -582,16 +633,16 @@ export default function NovoProduto() {
 										name="tabela"
 										value={ formData.tabela }
 										onChange={ handleInputChange }
-										{ ...inputStyles }
+										{ ...produtoSelectStyles }
 									>
-										<option value="" style={ { background: '#1A202C' } }>
+										<option value="" { ...produtoSelectOptionProps }>
 											Selecione a tabela
 										</option>
 										{ marginTables.map( ( t ) => (
 											<option
 												key={ t.id }
 												value={ t.profitMargin.toFixed( 2 ) }
-												style={ { background: '#1A202C' } }
+												{ ...produtoSelectOptionProps }
 											>
 												{ t.name } ({ ( t.profitMargin * 100 ).toFixed( 0 ) }%)
 											</option>
@@ -605,22 +656,16 @@ export default function NovoProduto() {
 									{ showTabelaSelect && <Divider borderColor="gray.600" /> }
 									<Box>
 										<FormFieldLabel>Montagem e aberturas</FormFieldLabel>
-										<Select
-											name="assembly"
+										<AssemblyPicker
 											value={ formData.assembly }
-											onChange={ handleInputChange }
-											{ ...inputStyles }
-										>
-											{ ASSEMBLY_OPTIONS.map( ( opt ) => (
-												<option
-													key={ opt.value }
-													value={ opt.value }
-													style={ { background: '#1A202C' } }
-												>
-													{ opt.label }
-												</option>
-											) ) }
-										</Select>
+											modelId={ formData.modelo }
+											onChange={ ( assembly ) =>
+												patchForm(
+													{ assembly },
+													'assembly',
+												)
+											}
+										/>
 									</Box>
 								</>
 							) }
@@ -636,13 +681,13 @@ export default function NovoProduto() {
 											name="pe"
 											value={ formData.pe }
 											onChange={ handleInputChange }
-											{ ...inputStyles }
+											{ ...produtoSelectStyles }
 										>
 											{ FOOT_CONFIG_OPTIONS.map( ( opt ) => (
 												<option
 													key={ opt.value }
 													value={ opt.value }
-													style={ { background: '#1A202C' } }
+													{ ...produtoSelectOptionProps }
 												>
 													{ opt.label }
 												</option>
@@ -713,6 +758,20 @@ export default function NovoProduto() {
 						) }
 
 						<ProductFormCard
+							title="Acessórios"
+							gridColumn={{ lg: '1 / -1' }}
+						>
+							<AccessoriesSection
+								items={ formData.accessories }
+								mpOptions={ accessoryMpOptions }
+								isLoadingMps={ isLoadingAccessoryMps }
+								onChange={ ( accessories ) =>
+									patchForm( { accessories }, 'acessorios' )
+								}
+							/>
+						</ProductFormCard>
+
+						<ProductFormCard
 							title="Observações"
 							gridColumn={{ lg: '1 / -1' }}
 						>
@@ -750,49 +809,22 @@ export default function NovoProduto() {
 
 				{ result && (
 					<ProductFormCard title="Resultado do Cálculo" mb={ 8 }>
-						<VStack spacing={ 6 } align="stretch">
-							<Box
-								bg="green.900"
-								p={ 8 }
-								borderRadius="xl"
-								border="1px"
-								borderColor="green.500"
-							>
-								<VStack spacing={ 4 } align="center">
-									<Text
-										fontSize="sm"
-										fontWeight="bold"
-										color="green.200"
-										textTransform="uppercase"
-									>
-										Preço Calculado
-									</Text>
-									<Heading size="2xl">
-										{ new Intl.NumberFormat( 'pt-BR', {
-											style: 'currency',
-											currency: 'BRL',
-										} ).format( Number( result.vFinal ) ) }
-									</Heading>
-									<Badge colorScheme="green" fontSize="md" px={ 3 } py={ 1 } borderRadius="full">
-										{ formData.tabela
-											? marginTables.find(
-												( t ) => t.profitMargin.toFixed( 2 ) === formData.tabela,
-											)?.name
-											: 'Margem Padrão' }
-									</Badge>
-								</VStack>
-							</Box>
-							<Button
-								leftIcon={ <FaSave /> }
-								colorScheme="green"
-								size="lg"
-								w="full"
-								onClick={ handleSave }
-								isLoading={ isSaving }
-							>
-								Salvar
-							</Button>
-						</VStack>
+						<CalculationResultCard
+							vFinal={ Number( result.vFinal ?? 0 ) }
+							modelId={ formData.modelo }
+							packageSummary={ packageSummary }
+							marginLabel={
+								formData.tabela
+									? marginTables.find(
+										( t ) => t.profitMargin.toFixed( 2 ) === formData.tabela,
+									)?.name ?? 'Margem Padrão'
+									: 'Margem Padrão'
+							}
+							isAdmin={ isAdmin }
+							onPriceChange={ handleAdminPriceChange }
+							onSave={ handleSave }
+							isSaving={ isSaving }
+						/>
 					</ProductFormCard>
 				) }
 			</VStack>

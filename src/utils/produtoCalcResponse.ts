@@ -32,6 +32,7 @@ export const PRODUTO_PERSIST_FIELD_NAMES = [
 	'lastChange',
 	'lastUser',
 	'assembly',
+	'acessorios',
 	...PRODUTO_CALC_CONFIG_PERSIST_KEYS,
 ] as const
 

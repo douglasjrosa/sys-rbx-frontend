@@ -17,6 +17,25 @@ export function packTypeForTemplateName(name: string): PackType | undefined {
   return tpl?.packType;
 }
 
+export function assemblyAssetFolderForModel(
+  modelId: string,
+): "box" | "crate" | null {
+  const packType = packTypeForTemplateName(modelId);
+  if (packType === "box") {
+    return "box";
+  }
+  if (packType === "crate") {
+    return "crate";
+  }
+  if (modelId.startsWith("engradado")) {
+    return "crate";
+  }
+  if (modelId.startsWith("caixa")) {
+    return "box";
+  }
+  return null;
+}
+
 export function assemblyIllustrationSrc(
   folder: "box" | "crate",
   variant: AssemblyType,
