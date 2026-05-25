@@ -159,8 +159,43 @@ const SendOrderModal = (props: any) => {
 				position: "bottom",
 			})
 			const { itens } = fullOrderData.attributes
-			const blingItems = await handleItems(blingAccountCnpj, itens, toast)
-			if (blingItems.length !== itens.length) {
+			if ( !Array.isArray( itens ) || itens.length === 0 ) {
+				toast( {
+					title: "BLING: Proposta sem itens",
+					description: "Não há produtos na proposta para enviar ao Bling.",
+					status: "error",
+					isClosable: true,
+					duration: 30000,
+					position: "bottom",
+				} )
+				orderStatus.blingProductsExist = false
+				return false
+			}
+
+			let blingItems
+			try {
+				blingItems = await handleItems( blingAccountCnpj, itens, toast )
+			} catch ( productError ) {
+				const detail =
+					productError instanceof Error
+						? productError.message
+						: "Erro ao cadastrar produtos no Bling."
+				toast( {
+					title: "BLING: Falha no cadastro de produtos",
+					description: detail,
+					status: "error",
+					isClosable: true,
+					duration: 30000,
+					position: "bottom",
+				} )
+				orderStatus.blingProductsExist = false
+				return false
+			}
+
+			const missingProductId = blingItems.some(
+				( row ) => !row?.produto?.id || Number( row.produto.id ) <= 0,
+			)
+			if ( blingItems.length !== itens.length || missingProductId ) {
 				toast({
 					title: "BLING: Ooops, tivemos um pequeno problema...",
 					description: "Parece que nem todos os produtos foram corretamente cadastrados no Bling",

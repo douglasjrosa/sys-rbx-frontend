@@ -263,9 +263,40 @@ export const sendCardsToTrello = async ( propostaId: string ) => {
 	return await response.json()
 }
 
+type BlingProductLookup = {
+	codigo?: string | number
+	nome: string
+}
+
+/**
+ * Looks up a product in Bling after create/update when the API omits id in the body.
+ */
+async function refetchBlingProductId (
+	blingAccountCnpj: string,
+	productData: BlingProductLookup,
+): Promise<number | null> {
+	const codigo = productData.codigo
+	if ( codigo !== undefined && codigo !== null && String( codigo ).trim() !== '' ) {
+		const byCode = await getBlingProductByCodigo(
+			blingAccountCnpj,
+			String( codigo ),
+		)
+		if ( byCode?.id ) {
+			return Number( byCode.id )
+		}
+	}
+	const byName = await getBlingProductByName( blingAccountCnpj, productData.nome )
+	if ( byName?.id ) {
+		return Number( byName.id )
+	}
+	return null
+}
+
 export const getBlingProductByCodigo = async ( blingAccountCnpj: string, codigo: string ): Promise<any> => {
 
-	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos?codigo=${ codigo }` )
+	const response = await fetch(
+		`/api/bling/${ blingAccountCnpj }/produtos?codigo=${ encodeURIComponent( codigo ) }`,
+	)
 	await delay( 500 )
 	const product = await response.json()
 
@@ -279,7 +310,9 @@ export const getBlingProductByCodigo = async ( blingAccountCnpj: string, codigo:
 
 export const getBlingProductByName = async ( blingAccountCnpj: string, nomeProd: string ): Promise<any> => {
 
-	const response = await fetch( `/api/bling/${ blingAccountCnpj }/produtos?nome=${ nomeProd }` )
+	const response = await fetch(
+		`/api/bling/${ blingAccountCnpj }/produtos?nome=${ encodeURIComponent( nomeProd ) }`,
+	)
 	const product = await response.json()
 
 	if ( !response.ok ) {
@@ -304,12 +337,29 @@ export const updateBlingProduct = async (
 	if ( !response.ok ) throw new Error( `Error fetching product: ${ response.statusText }` )
 	const product = await response.json()
 
-	if ( !product.data?.id ) {
-		if ( delay === 3000 ) return null
-		if ( delay ) await new Promise( resolve => setTimeout( resolve, delay ) )
-		return await updateBlingProduct( blingAccountCnpj, blingProdId, productData, delay + 1000 )
+	if ( product.data?.id ) {
+		return Number( product.data.id )
 	}
-	return product.data.id
+
+	if ( response.ok ) {
+		const refetched = await refetchBlingProductId( blingAccountCnpj, {
+			codigo: productData.codigo,
+			nome: String( productData.nome ?? '' ),
+		} )
+		if ( refetched ) {
+			return refetched
+		}
+		return Number( blingProdId )
+	}
+
+	if ( delay === 3000 ) return null
+	if ( delay ) await new Promise( resolve => setTimeout( resolve, delay ) )
+	return await updateBlingProduct(
+		blingAccountCnpj,
+		blingProdId,
+		productData,
+		delay + 1000,
+	)
 }
 
 export const createBlingProduct = async (
@@ -330,12 +380,23 @@ export const createBlingProduct = async (
 		throw new Error( `Error fetching product: ${ response.statusText }` )
 	}
 
-	if ( !product.data?.id ) {
-		if ( delay === 3000 ) return null
-		if ( delay ) await new Promise( resolve => setTimeout( resolve, delay ) )
-		return await createBlingProduct( blingAccountCnpj, productData, delay + 1000 )
+	if ( product.data?.id ) {
+		return Number( product.data.id )
 	}
-	return product.data.id
+
+	if ( response.ok ) {
+		const refetched = await refetchBlingProductId( blingAccountCnpj, {
+			codigo: productData.codigo,
+			nome: String( productData.nome ?? '' ),
+		} )
+		if ( refetched ) {
+			return refetched
+		}
+	}
+
+	if ( delay === 3000 ) return null
+	if ( delay ) await new Promise( resolve => setTimeout( resolve, delay ) )
+	return await createBlingProduct( blingAccountCnpj, productData, delay + 1000 )
 }
 
 export const handleItems = async ( blingAccountCnpj: string, items: any[], toast: any ): Promise<any> => {
@@ -381,16 +442,27 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[], toast
 		if ( !getBlingProd?.id )
 			getBlingProd = await getBlingProductByName( blingAccountCnpj, displayName )
 
-		let blingProdId = getBlingProd?.id
+		let blingProdId = getBlingProd?.id ? Number( getBlingProd.id ) : null
 
-		if ( !!blingProdId && getBlingProd.nome !== displayName )
-			blingProdId = await updateBlingProduct( blingAccountCnpj, blingProdId, productData )
-
-		blingProdId = blingProdId || await createBlingProduct( blingAccountCnpj, productData )
+		if ( blingProdId && getBlingProd.nome !== displayName ) {
+			const updatedId = await updateBlingProduct(
+				blingAccountCnpj,
+				blingProdId,
+				productData,
+			)
+			blingProdId = updatedId ?? blingProdId
+		}
 
 		if ( !blingProdId ) {
-			console.error( { getBlingProd, blingProdId } )
-			throw new Error( `Error creating product: in handleItems() function.` )
+			const createdId = await createBlingProduct( blingAccountCnpj, productData )
+			blingProdId = createdId
+		}
+
+		if ( !blingProdId || blingProdId <= 0 ) {
+			console.error( { getBlingProd, blingProdId, displayName, codigo } )
+			throw new Error(
+				`Produto "${ displayName }" não obteve ID válido no Bling.`,
+			)
 		}
 
 		respItems.push( {
@@ -399,7 +471,7 @@ export const handleItems = async ( blingAccountCnpj: string, items: any[], toast
 			codigo,
 			unidade: "Un",
 			quantidade: +Qtd,
-			produto: { id: blingProdId }
+			produto: { id: blingProdId },
 		} )
 	}
 
