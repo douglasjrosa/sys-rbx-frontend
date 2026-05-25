@@ -204,7 +204,41 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 		console.error( saveClientResponse )
 		return { error }
 	}
-	return blingClientId || saveClientData.data?.id || 0
+
+	const createdId = saveClientData.data?.id
+	if ( createdId ) {
+		return Number( createdId )
+	}
+	if ( blingClientId ) {
+		return Number( blingClientId )
+	}
+
+	// POST may return 204 without body; resolve id by CNPJ lookup.
+	const refetched = await clientExists( blingAccountCnpj, clientData.CNPJ )
+	if ( refetched?.id ) {
+		return Number( refetched.id )
+	}
+
+	return { error: { fields: [ { msg: 'Cliente criado no Bling, mas o ID não foi retornado.' } ] } }
+}
+
+/**
+ * Resolves Bling contact id after saveClient (create or update).
+ */
+export function resolveBlingClientIdAfterSave (
+	saved: number | { error: unknown },
+	existingId?: number,
+): number | null {
+	if ( typeof saved === 'object' && saved !== null && 'error' in saved ) {
+		return null
+	}
+	if ( typeof saved === 'number' && saved > 0 ) {
+		return saved
+	}
+	if ( existingId && existingId > 0 ) {
+		return existingId
+	}
+	return null
 }
 
 export const postNLote = async ( propostaId: string ) => {

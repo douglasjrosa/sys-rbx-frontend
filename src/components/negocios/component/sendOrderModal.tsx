@@ -1,4 +1,4 @@
-import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
+import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, resolveBlingClientIdAfterSave, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
 import { parseCurrency } from "@/utils/customNumberFormats"
 import { Button, Flex, IconButton, Modal, Text, ModalBody, ModalContent, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
 import { useRouter } from "next/router"
@@ -39,8 +39,6 @@ const SendOrderModal = (props: any) => {
 
 	const makeOrder: () => Promise<boolean> = useCallback(
 		async () => {
-			setload(true)
-
 			toast({
 				title: "Aguarde. Enviando pedido...",
 				status: "info",
@@ -107,16 +105,20 @@ const SendOrderModal = (props: any) => {
 			const checkIfClientExists = await clientExists(blingAccountCnpj, clientCNPJ)
 			const blingClientId = checkIfClientExists?.id
 
-			let saved = await saveClient(fullOrderData, blingClientId)
+			const saved = await saveClient(fullOrderData, blingClientId)
 
-			if (typeof saved === "object" && !!saved.error) {
-				const fields = <ol>
-					{
-						saved.error.fields.map((field: any, index: number) => {
-							return <li key={index}>{field.msg}</li>
-						})
-					}
-				</ol>
+			if (typeof saved === "object" && saved !== null && "error" in saved && saved.error) {
+				const errFields = ( saved.error as { fields?: Array<{ msg?: string }> } )
+					?.fields
+				const fields = errFields?.length ? (
+					<ol>
+						{ errFields.map( ( field, index ) => (
+							<li key={ index }>{ field.msg }</li>
+						) ) }
+					</ol>
+				) : (
+					<span>Não foi possível cadastrar o cliente no Bling.</span>
+				)
 				toast({
 					title: `BLING: Problemas com o cadastro do cliente.`,
 					description: fields,
@@ -129,10 +131,22 @@ const SendOrderModal = (props: any) => {
 				console.error({ orderStatus })
 				return false
 			}
-			else orderStatus.blingClientExists = true
 
-
-			const clientId = blingClientId
+			const clientId = resolveBlingClientIdAfterSave( saved, blingClientId )
+			if ( !clientId ) {
+				toast({
+					title: "BLING: Cliente sem identificador",
+					description:
+						"O cliente foi processado, mas o Bling não retornou um ID válido para o pedido.",
+					status: "error",
+					isClosable: true,
+					duration: 30000,
+					position: "bottom",
+				})
+				orderStatus.blingClientExists = false
+				return false
+			}
+			orderStatus.blingClientExists = true
 
 
 			// Handling products in Bling
@@ -379,8 +393,7 @@ const SendOrderModal = (props: any) => {
 		},
 		[
 			orderData,
-			setload,
-			useToast,
+			toast,
 			fetchOrderData,
 			clientExists,
 			saveClient,
@@ -398,70 +411,103 @@ const SendOrderModal = (props: any) => {
 
 	const finalResponse = useCallback(
 		async () => {
+			setload( true )
+			onchat( false )
 			try {
 				const orderResponse = await makeOrder()
 
-				if (orderResponse) {
-					toast({
+				if ( orderResponse ) {
+					toast( {
 						title: "Tudo certo!",
 						description: "Pedido enviado com sucesso.",
 						status: "success",
 						isClosable: true,
 						duration: 5000,
 						position: "bottom",
-					})
+					} )
+					onClose()
 				} else {
-					toast({
+					toast( {
 						title: "Algo não deu certo.",
 						description: "Tente enviar o pedido novamente.",
 						status: "warning",
 						isClosable: true,
 						duration: 30000,
 						position: "bottom",
-					})
+					} )
 				}
-			} catch (error) {
+			} catch ( error ) {
 				const description =
-					error instanceof Error ? error.message : "Erro inesperado. Tente novamente."
-				toast({
+					error instanceof Error
+						? error.message
+						: "Erro inesperado. Tente novamente."
+				toast( {
 					title: "Falha ao integrar com o Bling",
 					description,
 					status: "error",
 					isClosable: true,
 					duration: 30000,
 					position: "bottom",
-				})
+				} )
 			} finally {
-				onClose()
-				setload(false)
-				onchat(true)
+				setload( false )
+				onchat( true )
 			}
 		},
-		[makeOrder, toast, onClose, setload, onchat]
+		[ makeOrder, toast, onClose, onchat ]
 	)
 
 	const handleConfirm = useCallback(
 		async () => {
-			setload(true)
+			setload( true )
+			props.onchat( false )
 			try {
-				if (saveBusiness) {
+				const orderOk = await makeOrder()
+				if ( !orderOk ) {
+					toast( {
+						title: "Negócio não foi concluído",
+						description:
+							"O pedido não foi integrado ao Bling/Trello. " +
+							"Corrija os problemas indicados e tente novamente.",
+						status: "error",
+						isClosable: true,
+						duration: 30000,
+						position: "bottom",
+					} )
+					return
+				}
+				if ( saveBusiness ) {
 					await saveBusiness()
 				}
-				await finalResponse()
-			} catch (error) {
-				console.error('Error confirming order:', error)
-				toast({
-					title: 'Erro ao confirmar pedido',
-					description: 'Tente novamente.',
-					status: 'error',
-					duration: 5000,
+				toast( {
+					title: "Tudo certo!",
+					description: "Pedido enviado e negócio concluído com sucesso.",
+					status: "success",
 					isClosable: true,
-					position: 'bottom',
-				})
-				setload(false)
+					duration: 5000,
+					position: "bottom",
+				} )
+				onClose()
+			} catch ( error ) {
+				console.error( "Error confirming order:", error )
+				const description =
+					error instanceof Error
+						? error.message
+						: "Erro inesperado. Tente novamente."
+				toast( {
+					title: "Erro ao confirmar pedido",
+					description,
+					status: "error",
+					duration: 30000,
+					isClosable: true,
+					position: "bottom",
+				} )
+			} finally {
+				setload( false )
+				props.onchat( true )
 			}
 		},
-		[saveBusiness, finalResponse, toast]
+		[ makeOrder, saveBusiness, toast, onClose, props ]
 	)
 
 	const handleAlter = useCallback(
