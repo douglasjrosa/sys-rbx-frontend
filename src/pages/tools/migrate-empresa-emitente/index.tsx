@@ -3,6 +3,7 @@ import {
 	Button,
 	Flex,
 	Heading,
+	Progress,
 	Stack,
 	Table,
 	Tbody,
@@ -72,6 +73,7 @@ export default function MigrateEmpresaEmitentePage () {
 	const [ loading, setLoading ] = useState( true )
 	const [ batchStates, setBatchStates ] = useState<Record<number, BatchState>>( {} )
 	const [ lastResult, setLastResult ] = useState<MigrationBatchResult | null>( null )
+	const [ batchProgress, setBatchProgress ] = useState( "" )
 
 	const fetchOverview = useCallback( async () => {
 		setLoading( true )
@@ -106,30 +108,57 @@ export default function MigrateEmpresaEmitentePage () {
 	const runBatch = async ( batch: MigrationBatch ) => {
 		setBatchStates( ( prev ) => ( { ...prev, [ batch.index ]: "running" } ) )
 		setLastResult( null )
+		setBatchProgress( "" )
+
+		const aggregated: MigrationBatchResult = {
+			processed: 0,
+			updated: 0,
+			skipped: 0,
+			errors: 0,
+			results: [],
+		}
 
 		try {
-			const res = await fetch( "/api/db/empresas/migrate-emitente", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify( { empresaIds: batch.empresaIds } ),
-			} )
-			const data = await res.json()
+			for ( let i = 0; i < batch.empresaIds.length; i += 1 ) {
+				const empresaId = batch.empresaIds[ i ]
+				setBatchProgress(
+					`Processando ${ i + 1 } de ${ batch.empresaIds.length }...`
+				)
 
-			if ( !res.ok ) {
-				throw new Error( data?.message || "Migration failed" )
+				const res = await fetch( "/api/db/empresas/migrate-emitente", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify( { empresaIds: [ empresaId ] } ),
+				} )
+				const data = await res.json()
+
+				if ( !res.ok ) {
+					throw new Error( data?.message || "Migration failed" )
+				}
+
+				aggregated.processed += data.processed ?? 0
+				aggregated.updated += data.updated ?? 0
+				aggregated.skipped += data.skipped ?? 0
+				aggregated.errors += data.errors ?? 0
+				aggregated.results.push( ...( data.results ?? [] ) )
 			}
 
-			setLastResult( data )
+			setLastResult( aggregated )
 			setBatchStates( ( prev ) => ( { ...prev, [ batch.index ]: "done" } ) )
+			setBatchProgress( "" )
 			toast( {
-				title: `Lote concluído: ${ data.updated } atualizados`,
-				status: data.errors ? "warning" : "success",
+				title: `Lote concluído: ${ aggregated.updated } atualizados`,
+				status: aggregated.errors ? "warning" : "success",
 				duration: 5000,
 				isClosable: true,
 			} )
 			await fetchOverview()
 		} catch ( error: unknown ) {
 			setBatchStates( ( prev ) => ( { ...prev, [ batch.index ]: "error" } ) )
+			setBatchProgress( "" )
+			if ( aggregated.results.length ) {
+				setLastResult( aggregated )
+			}
 			const message = error instanceof Error ? error.message : "Erro desconhecido"
 			toast( {
 				title: "Erro ao processar lote",
@@ -155,7 +184,8 @@ export default function MigrateEmpresaEmitentePage () {
 			<Text mb={ 6 } color="gray.300" maxW="900px">
 				Define empresaEmitente em clientes sem vínculo, usando o emitente do
 				último negócio (updatedAt). Se o emitente não existir mais, usa a
-				empresa com mainAccount na tabela Token.
+				empresa com mainAccount na tabela Token. Cada lote processa as
+				empresas uma a uma para evitar timeout do servidor.
 			</Text>
 
 			{ loading && <Text color="gray.400">Carregando...</Text> }
@@ -177,12 +207,24 @@ export default function MigrateEmpresaEmitentePage () {
 						</Text>
 					) }
 
+					{ batchProgress && (
+						<Box>
+							<Text fontSize="sm" color="gray.300" mb={ 2 }>
+								{ batchProgress }
+							</Text>
+							<Progress size="xs" isIndeterminate colorScheme="blue" />
+						</Box>
+					) }
+
 					{ overview.batches.length > 0 && (
 						<Flex wrap="wrap" gap={ 3 }>
 							{ overview.batches.map( ( batch ) => {
 								const state = batchStates[ batch.index ] ?? "idle"
 								const isRunning = state === "running"
 								const isDone = state === "done"
+								const isAnyRunning = Object.values( batchStates ).includes(
+									"running"
+								)
 
 								return (
 									<Button
@@ -190,7 +232,7 @@ export default function MigrateEmpresaEmitentePage () {
 										colorScheme={ isDone ? "green" : "blue" }
 										variant={ isDone ? "solid" : "outline" }
 										isLoading={ isRunning }
-										isDisabled={ isRunning }
+										isDisabled={ isAnyRunning && !isRunning }
 										onClick={ () => runBatch( batch ) }
 									>
 										{ batch.label } ({ batch.range })

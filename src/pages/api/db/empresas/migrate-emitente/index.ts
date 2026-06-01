@@ -3,9 +3,14 @@ import { requireAdminSession } from "../../tokens/lib/requireAdmin"
 import {
 	buildMigrationBatches,
 	EMITENTE_MIGRATION_BATCH_SIZE,
+	EMITENTE_MIGRATION_REQUEST_SIZE,
 	fetchPendingClientIds,
 	migrateEmpresaEmitenteBatch,
 } from "./lib/emitenteMigration"
+
+export const config = {
+	maxDuration: 60,
+}
 
 export default async function handler (
 	req: NextApiRequest,
@@ -50,9 +55,10 @@ export default async function handler (
 				} )
 			}
 
-			if ( empresaIds.length > EMITENTE_MIGRATION_BATCH_SIZE ) {
+			if ( empresaIds.length > EMITENTE_MIGRATION_REQUEST_SIZE ) {
 				return res.status( 400 ).json( {
-					message: `Maximum ${ EMITENTE_MIGRATION_BATCH_SIZE } companies per batch`,
+					message: `Maximum ${ EMITENTE_MIGRATION_REQUEST_SIZE } `
+						+ "company per request to avoid gateway timeout",
 				} )
 			}
 

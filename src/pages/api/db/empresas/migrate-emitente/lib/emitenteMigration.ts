@@ -2,6 +2,9 @@ import axios from "axios"
 import { normalizeCnpj } from "@/utils/blingOAuth"
 
 export const EMITENTE_MIGRATION_BATCH_SIZE = 20
+export const EMITENTE_MIGRATION_REQUEST_SIZE = 1
+
+const INDEX_CACHE_TTL_MS = 5 * 60 * 1000
 
 const strapiHeaders = () => ( {
 	Authorization: `Bearer ${ process.env.ATORIZZATION_TOKEN }`,
@@ -44,17 +47,23 @@ interface StrapiEmpresa {
 	}
 }
 
-interface EmitenteIndex {
+export interface EmitenteIndex {
 	ids: Set<number>
 	cnpjToId: Map<string, number>
 	labels: Map<number, string>
 	mainAccountEmpresaId: number | null
 }
 
+let cachedEmitenteIndex: {
+	index: EmitenteIndex
+	expiresAt: number
+} | null = null
+
 async function strapiGet<T> ( path: string ): Promise<T> {
 	try {
 		const response = await axios.get( `${ strapiBase() }/${ path }`, {
 			headers: strapiHeaders(),
+			timeout: 25000,
 		} )
 		return response.data
 	} catch ( error: unknown ) {
@@ -72,7 +81,7 @@ async function strapiPut ( path: string, data: Record<string, unknown> ) {
 	const response = await axios.put(
 		`${ strapiBase() }/${ path }`,
 		{ data },
-		{ headers: strapiHeaders() }
+		{ headers: strapiHeaders(), timeout: 25000 }
 	)
 	return response.data
 }
@@ -88,10 +97,10 @@ async function buildEmitenteIndex (): Promise<EmitenteIndex> {
 			+ "&pagination[pageSize]=100"
 			+ "&fields[0]=nome&fields[1]=razao&fields[2]=CNPJ"
 		),
-		strapiGet<{ data: Array<{ attributes?: { cnpj?: string; mainAccount?: boolean } }> }>(
+		strapiGet<{ data: Array<{ attributes?: { cnpj?: string } }> }>(
 			"tokens?filters[mainAccount][$eq]=true"
 			+ "&pagination[pageSize]=1"
-			+ "&fields[0]=cnpj&fields[1]=mainAccount"
+			+ "&fields[0]=cnpj"
 		),
 	] )
 
@@ -119,6 +128,19 @@ async function buildEmitenteIndex (): Promise<EmitenteIndex> {
 		: null
 
 	return { ids, cnpjToId, labels, mainAccountEmpresaId }
+}
+
+export async function getEmitenteIndex (): Promise<EmitenteIndex> {
+	if ( cachedEmitenteIndex && Date.now() < cachedEmitenteIndex.expiresAt ) {
+		return cachedEmitenteIndex.index
+	}
+
+	const index = await buildEmitenteIndex()
+	cachedEmitenteIndex = {
+		index,
+		expiresAt: Date.now() + INDEX_CACHE_TTL_MS,
+	}
+	return index
 }
 
 export async function fetchPendingClientIds (): Promise<number[]> {
@@ -185,12 +207,11 @@ async function resolveEmitenteFromBusiness (
 			attributes?: {
 				pedidos?: {
 					data?: Array<{
-						id: number
 						attributes?: {
 							updatedAt?: string
 							fornecedor?: string
 							fornecedorId?: {
-								data?: { id?: number; attributes?: { CNPJ?: string } } | null
+								data?: { id?: number } | null
 							}
 						}
 					}>
@@ -235,15 +256,6 @@ async function resolveEmitenteFromBusiness (
 			if ( matchId ) {
 				return { emitenteId: matchId, businessId: business.id }
 			}
-
-			const empresaRes = await strapiGet<{ data: StrapiEmpresa[] }>(
-				"empresas?filters[CNPJ][$containsi]=" + encodeURIComponent( cnpj )
-				+ "&fields[0]=id&pagination[pageSize]=1"
-			)
-			const matchFromSearch = empresaRes.data?.[0]?.id
-			if ( matchFromSearch ) {
-				return { emitenteId: matchFromSearch, businessId: business.id }
-			}
 		}
 	}
 
@@ -260,104 +272,94 @@ function resolveTargetEmitenteId (
 	return index.mainAccountEmpresaId
 }
 
-export async function migrateEmpresaEmitenteBatch (
-	empresaIds: number[]
-): Promise<MigrationBatchResult> {
-	const index = await buildEmitenteIndex()
-	const results: MigrationItemResult[] = []
-
-	if ( !index.mainAccountEmpresaId && index.ids.size === 0 ) {
-		throw new Error(
-			"No emitente companies or mainAccount token found for fallback."
+export async function migrateSingleEmpresa (
+	empresaId: number,
+	index: EmitenteIndex
+): Promise<MigrationItemResult> {
+	try {
+		const empresaRes = await strapiGet<{ data: StrapiEmpresa }>(
+			`empresas/${ empresaId }`
+			+ "?fields[0]=nome&fields[1]=CNPJ&fields[2]=isEmitente"
+			+ "&populate[empresaEmitente][fields][0]=id"
 		)
-	}
+		const empresa = empresaRes.data
 
-	for ( const empresaId of empresaIds ) {
-		try {
-			const empresaRes = await strapiGet<{ data: StrapiEmpresa }>(
-				`empresas/${ empresaId }`
-				+ "?fields[0]=nome&fields[1]=CNPJ&fields[2]=isEmitente"
-				+ "&populate[empresaEmitente][fields][0]=id"
-			)
-			const empresa = empresaRes.data
-
-			if ( !empresa ) {
-				results.push( {
-					empresaId,
-					nome: String( empresaId ),
-					status: "error",
-					message: "Empresa not found",
-				} )
-				continue
-			}
-
-			if ( empresa.attributes?.isEmitente ) {
-				results.push( {
-					empresaId,
-					nome: getEmpresaLabel( empresa.attributes ),
-					status: "skipped_already_set",
-					message: "Empresa is an emitente",
-				} )
-				continue
-			}
-
-			if ( empresa.attributes?.empresaEmitente?.data?.id ) {
-				results.push( {
-					empresaId,
-					nome: getEmpresaLabel( empresa.attributes ),
-					status: "skipped_already_set",
-					message: "empresaEmitente already set",
-				} )
-				continue
-			}
-
-			const { emitenteId: businessEmitenteId, businessId } =
-				await resolveEmitenteFromBusiness( empresaId, index.cnpjToId )
-
-			const targetEmitenteId = resolveTargetEmitenteId(
-				businessEmitenteId,
-				index
-			)
-
-			if ( !targetEmitenteId ) {
-				results.push( {
-					empresaId,
-					nome: getEmpresaLabel( empresa.attributes ),
-					status: "error",
-					businessId: businessId ?? undefined,
-					message: "Could not resolve target emitente",
-				} )
-				continue
-			}
-
-			await strapiPut( `empresas/${ empresaId }`, {
-				empresaEmitente: targetEmitenteId,
-			} )
-
-			const usedMainAccount = businessEmitenteId == null
-				|| !index.ids.has( businessEmitenteId )
-
-			results.push( {
-				empresaId,
-				nome: getEmpresaLabel( empresa.attributes ),
-				status: usedMainAccount
-					? "updated_from_main_account"
-					: "updated_from_business",
-				emitenteId: targetEmitenteId,
-				emitenteLabel: index.labels.get( targetEmitenteId ),
-				businessId: businessId ?? undefined,
-			} )
-		} catch ( error: unknown ) {
-			const message = error instanceof Error ? error.message : "Unknown error"
-			results.push( {
+		if ( !empresa ) {
+			return {
 				empresaId,
 				nome: String( empresaId ),
 				status: "error",
-				message,
-			} )
+				message: "Empresa not found",
+			}
+		}
+
+		if ( empresa.attributes?.isEmitente ) {
+			return {
+				empresaId,
+				nome: getEmpresaLabel( empresa.attributes ),
+				status: "skipped_already_set",
+				message: "Empresa is an emitente",
+			}
+		}
+
+		if ( empresa.attributes?.empresaEmitente?.data?.id ) {
+			return {
+				empresaId,
+				nome: getEmpresaLabel( empresa.attributes ),
+				status: "skipped_already_set",
+				message: "empresaEmitente already set",
+			}
+		}
+
+		const { emitenteId: businessEmitenteId, businessId } =
+			await resolveEmitenteFromBusiness( empresaId, index.cnpjToId )
+
+		const targetEmitenteId = resolveTargetEmitenteId(
+			businessEmitenteId,
+			index
+		)
+
+		if ( !targetEmitenteId ) {
+			return {
+				empresaId,
+				nome: getEmpresaLabel( empresa.attributes ),
+				status: "error",
+				businessId: businessId ?? undefined,
+				message: "Could not resolve target emitente",
+			}
+		}
+
+		await strapiPut( `empresas/${ empresaId }`, {
+			empresaEmitente: targetEmitenteId,
+		} )
+
+		const usedMainAccount = businessEmitenteId == null
+			|| !index.ids.has( businessEmitenteId )
+
+		return {
+			empresaId,
+			nome: getEmpresaLabel( empresa.attributes ),
+			status: usedMainAccount
+				? "updated_from_main_account"
+				: "updated_from_business",
+			emitenteId: targetEmitenteId,
+			emitenteLabel: index.labels.get( targetEmitenteId ),
+			businessId: businessId ?? undefined,
+		}
+	} catch ( error: unknown ) {
+		const message = error instanceof Error ? error.message : "Unknown error"
+		return {
+			empresaId,
+			nome: String( empresaId ),
+			status: "error",
+			message,
 		}
 	}
+}
 
+function summarizeResults (
+	results: MigrationItemResult[]
+): MigrationBatchResult {
 	const updated = results.filter(
 		( item ) =>
 			item.status === "updated_from_business"
@@ -375,4 +377,23 @@ export async function migrateEmpresaEmitenteBatch (
 		errors,
 		results,
 	}
+}
+
+export async function migrateEmpresaEmitenteBatch (
+	empresaIds: number[]
+): Promise<MigrationBatchResult> {
+	const index = await getEmitenteIndex()
+
+	if ( !index.mainAccountEmpresaId && index.ids.size === 0 ) {
+		throw new Error(
+			"No emitente companies or mainAccount token found for fallback."
+		)
+	}
+
+	const results: MigrationItemResult[] = []
+	for ( const empresaId of empresaIds ) {
+		results.push( await migrateSingleEmpresa( empresaId, index ) )
+	}
+
+	return summarizeResults( results )
 }

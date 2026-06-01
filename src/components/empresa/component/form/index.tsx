@@ -178,11 +178,17 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	}, [ props.data ] )
 
 	useEffect( () => {
-		if ( session?.user.pemission !== "Adm" || ENVIO !== "UPDATE" ) return
+		const isNewClient = ENVIO === "POST"
+		const isAdminUpdate = ENVIO === "UPDATE"
+			&& session?.user.pemission === "Adm"
+		if ( !isNewClient && !isAdminUpdate ) return
+
 		( async () => {
 			try {
 				const res = await axios.get( "/api/db/empresas/emitentes" )
 				const items = res.data?.data ?? []
+				const defaultEmitenteId = res.data?.defaultEmitenteId
+
 				setEmitentesList(
 					items.map( ( e: any ) => ( {
 						id: e.id,
@@ -190,6 +196,10 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 						nome: e.attributes?.nome,
 					} ) )
 				)
+
+				if ( isNewClient && defaultEmitenteId ) {
+					setEmpresaEmitenteId( String( defaultEmitenteId ) )
+				}
 			} catch {
 				setEmitentesList( [] )
 			}
@@ -359,9 +369,9 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 					history: History.length === 0 ? historico : [ ...History, ...historico ],
 					...( session?.user.pemission === 'Adm' && {
 						isEmitente,
-						empresaEmitente: isEmitente || !EmpresaEmitenteId
-							? null
-							: parseInt( EmpresaEmitenteId, 10 ),
+					} ),
+					...( !isEmitente && EmpresaEmitenteId && {
+						empresaEmitente: parseInt( EmpresaEmitenteId, 10 ),
 					} ),
 					...( session?.user.pemission === 'User' && {
 						user: {
@@ -585,7 +595,8 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 										<Heading as={ GridItem } colSpan={ 12 } size="sd">
 											Dados da empresa
 										</Heading>
-										{ session?.user.pemission === 'Adm' && ENVIO === 'UPDATE' && (
+										{ session?.user.pemission === 'Adm'
+											&& ( ENVIO === 'UPDATE' || ENVIO === 'POST' ) && (
 											<GridItem colSpan={ 12 }>
 												<Box
 													bg="whiteAlpha.100"
