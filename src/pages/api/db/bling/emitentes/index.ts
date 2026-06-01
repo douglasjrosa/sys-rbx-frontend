@@ -1,5 +1,6 @@
 import axios from "axios"
 import { NextApiRequest, NextApiResponse } from "next"
+import { requireAdminSession } from "../../tokens/lib/requireAdmin"
 
 const TOKEN_FIELDS = [
 	"account",
@@ -10,6 +11,7 @@ const TOKEN_FIELDS = [
 	"expires_in",
 	"updatedAt",
 	"cnpj",
+	"mainAccount",
 ].join( "&fields[]=" )
 
 export default async function handler (
@@ -19,6 +21,9 @@ export default async function handler (
 	if ( req.method !== "GET" ) {
 		return res.status( 405 ).json( { message: "Only GET requests are allowed" } )
 	}
+
+	const session = await requireAdminSession( req, res )
+	if ( !session ) return
 
 	try {
 		const strapiToken = process.env.ATORIZZATION_TOKEN
@@ -74,6 +79,9 @@ export default async function handler (
 							account: matched.attributes?.account,
 							client_id: matched.attributes?.client_id,
 							client_secret: matched.attributes?.client_secret,
+							access_token: matched.attributes?.access_token,
+							refresh_token: matched.attributes?.refresh_token,
+							mainAccount: matched.attributes?.mainAccount ?? false,
 							hasAccessToken: Boolean( matched.attributes?.access_token ),
 							updatedAt: matched.attributes?.updatedAt,
 							expires_in: matched.attributes?.expires_in,

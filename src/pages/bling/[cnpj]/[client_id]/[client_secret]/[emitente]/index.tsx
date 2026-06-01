@@ -12,6 +12,9 @@ import {
 	StackDirection,
 	useBreakpointValue
 } from '@chakra-ui/react'
+import { GetServerSideProps } from "next"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/pages/api/auth/[...nextauth]"
 import { useRouter } from "next/router"
 import { getEmitenteDisplayName } from "@/utils/blingOAuth"
 
@@ -23,6 +26,30 @@ interface AccountToken {
 	expires_in: number
 	refresh_token: string
 	cnpj: string
+}
+
+export const getServerSideProps: GetServerSideProps = async ( context ) => {
+	const session = await getServerSession(
+		context.req,
+		context.res,
+		authOptions as any
+	)
+	const intendedUrl = context.resolvedUrl || "/bling"
+
+	if ( !session?.user ) {
+		return {
+			redirect: {
+				destination: `/auth/signin?callbackUrl=${ encodeURIComponent( intendedUrl ) }`,
+				permanent: false,
+			},
+		}
+	}
+
+	if ( ( session.user as { pemission?: string } ).pemission !== "Adm" ) {
+		return { redirect: { destination: "/", permanent: false } }
+	}
+
+	return { props: {} }
 }
 
 const Bling: React.FC = () => {
