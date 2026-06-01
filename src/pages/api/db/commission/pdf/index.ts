@@ -6,7 +6,6 @@ import PDFPrinter from "pdfmake"
 import { TDocumentDefinitions, Content } from "pdfmake/interfaces"
 import { fetchCommissionData as fetchCommission } from "../lib/fetchCommissionData"
 import type { CommissionMilestone, CommissionDeduction } from "@/utils/commissionCalculator"
-import { emitentes } from "@/components/data/emitentes"
 
 const formatCurrencyBRL = ( n: number ) =>
 	new Intl.NumberFormat( "pt-BR", { style: "currency", currency: "BRL" } ).format( n )
@@ -21,7 +20,6 @@ interface VendedorData {
 	nome: string
 	sobrenome: string
 	cpf: string
-	empresaEmitente: EmitenteData | null
 }
 
 interface EmitenteData {
@@ -38,9 +36,8 @@ function formatCpf ( v: string ): string {
 async function fetchVendedorData ( vendedorId: string ): Promise<VendedorData> {
 	const token = process.env.ATORIZZATION_TOKEN
 	const baseUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL
-	const populate = "populate[0]=empresa_emitente"
-	const fields = "fields[0]=username&fields[1]=nome&fields[2]=sobrenome&fields[3]=cpf&fields[4]=empresa_emitente"
-	const url = `${ baseUrl }/users/${ vendedorId }?${ fields }&${ populate }`
+	const fields = "fields[0]=username&fields[1]=nome&fields[2]=sobrenome&fields[3]=cpf"
+	const url = `${ baseUrl }/users/${ vendedorId }?${ fields }`
 	const res = await axios.get( url, {
 		headers: {
 			Authorization: `Bearer ${ token }`,
@@ -48,42 +45,11 @@ async function fetchVendedorData ( vendedorId: string ): Promise<VendedorData> {
 		},
 	} )
 	const u = res.data
-	let empresaEmitente: EmitenteData | null = null
-	const emitenteRel = u?.empresa_emitente
-	const emitenteId = typeof emitenteRel === "number" ? emitenteRel : emitenteRel?.data?.id ?? emitenteRel?.id
-	if ( emitenteRel ) {
-		const emitenteData = emitenteRel?.data ?? emitenteRel
-		const att = emitenteData?.attributes ?? ( typeof emitenteData === "object" && !Array.isArray( emitenteData ) && !emitenteId ? emitenteData : null )
-		if ( att && ( att.razao || att.nome || att.CNPJ || att.cnpj ) ) {
-			empresaEmitente = {
-				razao: att.razao || att.nome || "",
-				cnpj: att.CNPJ || att.cnpj || "",
-			}
-		} else if ( emitenteId ) {
-			const empRes = await axios.get(
-				`${ baseUrl }/empresas/${ emitenteId }?fields[0]=razao&fields[1]=nome&fields[2]=CNPJ`,
-				{
-					headers: {
-						Authorization: `Bearer ${ token }`,
-						"Content-Type": "application/json",
-					},
-				}
-			)
-			const emp = empRes.data?.data ?? empRes.data
-			const empAtt = emp?.attributes ?? emp
-			if ( empAtt ) {
-				empresaEmitente = {
-					razao: empAtt.razao || empAtt.nome || "",
-					cnpj: empAtt.CNPJ || empAtt.cnpj || "",
-				}
-			}
-		}
-	}
 	const nome = u?.nome || u?.username || "Vendedor"
 	const sobrenome = u?.sobrenome || ""
 	const cpf = u?.cpf ? formatCpf( u.cpf ) : ""
 	const username = u?.username ?? u?.data?.attributes?.username ?? ""
-	return { username, nome, sobrenome, cpf, empresaEmitente }
+	return { username, nome, sobrenome, cpf }
 }
 
 interface BusinessItem {
@@ -150,9 +116,11 @@ async function fetchBusinessesForMonth (
 
 async function fetchDefaultEmitente (): Promise<EmitenteData | null> {
 	try {
-		const emitenteCnpj = emitentes.default.emitente
 		const token = process.env.ATORIZZATION_TOKEN
-		const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/empresas?filters[CNPJ][$eq]=${ emitenteCnpj }&fields[0]=nome&fields[1]=razao&fields[2]=CNPJ`
+		const url = `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/empresas`
+			+ "?filters[isEmitente][$eq]=true"
+			+ "&fields[0]=nome&fields[1]=razao&fields[2]=CNPJ"
+			+ "&pagination[pageSize]=1&sort[0]=razao:asc"
 		const res = await axios.get( url, {
 			headers: {
 				Authorization: `Bearer ${ token }`,
@@ -210,7 +178,7 @@ export default async function handler (
 		)
 
 		const calc = commissionRes.data
-		const emitente = vendedorData.empresaEmitente ?? defaultEmitente
+		const emitente = defaultEmitente
 		const companyRazao = emitente?.razao || ""
 		const companyCnpj = emitente?.cnpj || ""
 		const vendedorDisplayName = [ vendedorData.nome, vendedorData.sobrenome ]

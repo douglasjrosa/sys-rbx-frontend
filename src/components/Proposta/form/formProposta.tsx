@@ -401,13 +401,16 @@ export const FormProposta = ( props: { businessDataAttrs: any | null; prodList: 
 
 
 	const fetchAccounts = useCallback( async () => {
-		const response = await fetch( '/api/strapi/tokens' )
+		const response = await fetch( '/api/db/empresas/emitentes' )
 
 		if ( !response.ok ) console.error( response )
 
-		const accounts = await response.json()
+		const { data } = await response.json()
 
-		const options = [ { attributes: { cnpj: '', account: 'Selecione um emitente' } }, ...accounts.data ]
+		const options = [
+			{ attributes: { CNPJ: '', razao: 'Selecione um emitente' } },
+			...( data ?? [] ),
+		]
 
 		setBlingAccounts( options )
 	}, [ setBlingAccounts ] )
@@ -489,9 +492,11 @@ export const FormProposta = ( props: { businessDataAttrs: any | null; prodList: 
 										<option
 											key={ `blingAccount${ key }` }
 											style={ { backgroundColor: "#1A202C" } }
-											value={ blingAccount.attributes.cnpj }
+											value={ blingAccount.attributes.CNPJ ?? blingAccount.attributes.cnpj ?? '' }
 										>
-											{ blingAccount.attributes.account }
+											{ blingAccount.attributes.razao
+												|| blingAccount.attributes.nome
+												|| blingAccount.attributes.account }
 										</option>
 									) ) }
 								</Select>

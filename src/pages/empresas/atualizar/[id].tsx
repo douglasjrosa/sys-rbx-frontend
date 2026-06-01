@@ -15,8 +15,9 @@ export default function EmpresaId () {
 	const toast = useToast()
 
 	useEffect( () => {
+		const id = router.query.id
+		if ( !id ) return
 		( async () => {
-			const id = router.query.id
 			setloading( true )
 			const url = `/api/db/empresas/getId/${ id }`
 			const response = await axios( url )
@@ -24,7 +25,7 @@ export default function EmpresaId () {
 			setDataEmp( empresa )
 			setloading( false )
 		} )()
-	}, [] )
+	}, [ router.query.id ] )
 
 	useEffect( () => {
 		if ( DataEmp ) {

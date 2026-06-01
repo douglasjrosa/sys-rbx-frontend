@@ -1,18 +1,37 @@
 import { FormLabel, Select, Skeleton } from "@chakra-ui/react"
 import React, { SetStateAction } from "react"
 
+interface EmitenteOption {
+	id?: number
+	attributes: {
+		CNPJ?: string
+		cnpj?: string
+		razao?: string
+		nome?: string
+		account?: string
+	}
+}
+
 interface EmitenteSelectProps {
-	accountsData: any[] | undefined
+	accountsData: EmitenteOption[] | undefined
 	emitenteCnpj: string
 	setEmitenteCnpjOnChange: React.Dispatch<SetStateAction<string>>
 }
+
+const getEmitenteCnpj = ( option: EmitenteOption ) =>
+	option.attributes.CNPJ ?? option.attributes.cnpj ?? ""
+
+const getEmitenteLabel = ( option: EmitenteOption ) =>
+	option.attributes.razao
+	|| option.attributes.nome
+	|| option.attributes.account
+	|| getEmitenteCnpj( option )
 
 const EmitenteSelect: React.FC<EmitenteSelectProps> = ( {
 	accountsData,
 	emitenteCnpj,
 	setEmitenteCnpjOnChange
 } ) => {
-
 	return (
 		<>
 			<FormLabel
@@ -36,13 +55,13 @@ const EmitenteSelect: React.FC<EmitenteSelectProps> = ( {
 					onChange={ ( e ) => setEmitenteCnpjOnChange( e.target.value ) }
 					value={ emitenteCnpj }
 				>
-					{ accountsData.map( ( accountData: any, key ) => (
+					{ accountsData.map( ( accountData, key ) => (
 						<option
-							key={ `accountData${ key }` }
+							key={ accountData.id ?? `emitente-${ key }` }
 							style={ { backgroundColor: "#1A202C" } }
-							value={ accountData.attributes.cnpj }
+							value={ getEmitenteCnpj( accountData ) }
 						>
-							{ accountData.attributes.account }
+							{ getEmitenteLabel( accountData ) }
 						</option>
 					) )
 					}

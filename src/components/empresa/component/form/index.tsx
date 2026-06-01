@@ -80,6 +80,11 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 	const [ engResi, setEngResi ] = useState( false )
 	const [ modEsp, setModEsp ] = useState( false )
 	const [ status, setStatus ] = useState( true )
+	const [ isEmitente, setIsEmitente ] = useState( false )
+	const [ EmpresaEmitenteId, setEmpresaEmitenteId ] = useState( "" )
+	const [ EmitentesList, setEmitentesList ] = useState<
+		{ id: number; razao?: string; nome?: string }[]
+	>( [] )
 	const [ tablecalc, setTablecalc ] = useState( "0.30" )
 	const [ maxPg, setMaxpg ] = useState( "0" )
 	const [ forpg, setForpg ] = useState( "desconto" )
@@ -161,10 +166,35 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 			setForpg( empresa.attributes?.forpg )
 			setFrete( empresa.attributes?.frete )
 			setStatus( empresa.attributes?.status )
+			setIsEmitente( empresa.attributes?.isEmitente ?? false )
+			setEmpresaEmitenteId(
+				empresa.attributes?.empresaEmitente?.data?.id
+					? String( empresa.attributes.empresaEmitente.data.id )
+					: ""
+			)
 			setModEsp( empresa.attributes?.modEsp )
 			setload( false )
 		}
 	}, [ props.data ] )
+
+	useEffect( () => {
+		if ( session?.user.pemission !== "Adm" || ENVIO !== "UPDATE" ) return
+		( async () => {
+			try {
+				const res = await axios.get( "/api/db/empresas/emitentes" )
+				const items = res.data?.data ?? []
+				setEmitentesList(
+					items.map( ( e: any ) => ( {
+						id: e.id,
+						razao: e.attributes?.razao,
+						nome: e.attributes?.nome,
+					} ) )
+				)
+			} catch {
+				setEmitentesList( [] )
+			}
+		} )()
+	}, [ session?.user.pemission, ENVIO ] )
 
 	const consulta = async () => {
 		if ( CNPJ ) {
@@ -327,6 +357,12 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 					inativOk: Inatividade,
 					razao: Razao,
 					history: History.length === 0 ? historico : [ ...History, ...historico ],
+					...( session?.user.pemission === 'Adm' && {
+						isEmitente,
+						empresaEmitente: isEmitente || !EmpresaEmitenteId
+							? null
+							: parseInt( EmpresaEmitenteId, 10 ),
+					} ),
 					...( session?.user.pemission === 'User' && {
 						user: {
 							id: session?.user.id,
@@ -549,6 +585,99 @@ export const FormEmpresa = ( props: { data?: any, envio: string } ) => {
 										<Heading as={ GridItem } colSpan={ 12 } size="sd">
 											Dados da empresa
 										</Heading>
+										{ session?.user.pemission === 'Adm' && ENVIO === 'UPDATE' && (
+											<GridItem colSpan={ 12 }>
+												<Box
+													bg="whiteAlpha.100"
+													border="1px solid"
+													borderColor="whiteAlpha.200"
+													rounded="md"
+													p={ 4 }
+												>
+													<Heading size="xs" mb={ 4 } textTransform="uppercase" letterSpacing="wider">
+														Emitente (NF)
+													</Heading>
+													<SimpleGrid
+														columns={ 12 }
+														spacing={ 3 }
+														alignItems="center"
+													>
+														<Flex
+															as={ GridItem }
+															colSpan={ [ 12, 6, 4 ] }
+															alignItems="center"
+														>
+															<FormLabel
+																fontSize="xs"
+																fontWeight="md"
+																mb={ 0 }
+																mr={ 2 }
+															>
+																Empresa emitente (emite NF)
+															</FormLabel>
+															<Switch
+																colorScheme="green"
+																borderColor="gray.900"
+																rounded="md"
+																isChecked={ isEmitente }
+																onChange={ ( e ) => {
+																	setIsEmitente( e.target.checked )
+																	if ( e.target.checked ) {
+																		setEmpresaEmitenteId( "" )
+																	}
+																} }
+															/>
+														</Flex>
+														{ !isEmitente && (
+															<FormControl
+																as={ GridItem }
+																colSpan={ [ 12, 6, 8 ] }
+															>
+																<FormLabel fontSize="xs" fontWeight="md">
+																	Empresa emitente vinculada
+																</FormLabel>
+																<Select
+																	focusBorderColor="#ffff"
+																	bg="#ffffff12"
+																	shadow="sm"
+																	size="xs"
+																	w="full"
+																	rounded="md"
+																	value={ EmpresaEmitenteId }
+																	onChange={ ( e ) => (
+																		setEmpresaEmitenteId( e.target.value )
+																	) }
+																>
+																	<option
+																		style={ { backgroundColor: "#1A202C" } }
+																		value=""
+																	>
+																		Nenhuma
+																	</option>
+																	{ EmitentesList
+																		.filter( ( emp ) => (
+																			String( emp.id ) !== ID
+																		) )
+																		.map( ( emp ) => (
+																			<option
+																				key={ emp.id }
+																				style={ {
+																					backgroundColor: "#1A202C",
+																				} }
+																				value={ String( emp.id ) }
+																			>
+																				{ emp.razao
+																					|| emp.nome
+																					|| `Empresa ${ emp.id }` }
+																			</option>
+																		) ) }
+																</Select>
+															</FormControl>
+														) }
+													</SimpleGrid>
+												</Box>
+											</GridItem>
+										) }
 										<FormControl as={ GridItem } colSpan={ [ 12, 4, 3, 2 ] }>
 											<FormLabel
 												fontSize="xs"

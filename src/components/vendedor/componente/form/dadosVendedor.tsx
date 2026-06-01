@@ -28,8 +28,6 @@ export const DadosVendedor = ( props: { id: any } ) => {
 	const [ Email, setEmail ] = useState( "" )
 	const [ Telefone, setTelefone ] = useState( "" )
 	const [ Status, setStatus ] = useState( "" )
-	const [ EmpresaEmitente, setEmpresaEmitente ] = useState<string>( "" )
-	const [ EmpresasList, setEmpresasList ] = useState<{ id: number; razao?: string; nome?: string }[]>( [] )
 	const toast = useToast()
 	const [ Bloq, setBloq ] = useState( false )
 
@@ -39,38 +37,17 @@ export const DadosVendedor = ( props: { id: any } ) => {
 			try {
 				const response = await axios.get( `/api/db/user/getId/${ IDVendedor }` )
 				const repo = response.data
-				const emitente = repo.empresa_emitente?.data
 				setNome( repo.nome || repo.username || "" )
 				setSobrenome( repo.sobrenome || "" )
 				setCpf( repo.cpf ? formatCpfForDisplay( repo.cpf ) : "" )
 				setEmail( repo.email || "" )
 				setTelefone( repo.tel || "" )
 				setStatus( String( repo.confirmed ?? "" ) )
-				setEmpresaEmitente( emitente?.id ? String( emitente.id ) : "" )
 			} catch ( error ) {
 				console.error( error )
 			}
 		} )()
 	}, [ IDVendedor ] )
-
-	useEffect( () => {
-		( async () => {
-			try {
-				const res = await axios.get( "/api/db/empresas/emitentes" )
-				const items = res.data?.data ?? []
-				setEmpresasList(
-					items.map( ( e: any ) => ( {
-						id: e.id,
-						razao: e.attributes?.razao,
-						nome: e.attributes?.nome,
-					} ) )
-				)
-			} catch {
-				setEmpresasList( [] )
-			}
-		} )()
-	}, [] )
-
 
 	const salvar = async () => {
 		setBloq( true )
@@ -86,15 +63,13 @@ export const DadosVendedor = ( props: { id: any } ) => {
 				pemission: "User",
 				tel: Telefone,
 				confirmed: Status === "true",
-				empresa_emitente: EmpresaEmitente ? parseInt( EmpresaEmitente, 10 ) : null,
 			}
 
-			const request = await axios( `/api/db/user/put/${ IDVendedor }`, {
+			await axios( `/api/db/user/put/${ IDVendedor }`, {
 				method: "PUT",
 				data: Data,
 			} )
 
-			const resposta = request.data
 			toast( {
 				title: 'Salvo com sucesso',
 				status: 'success',
@@ -113,8 +88,6 @@ export const DadosVendedor = ( props: { id: any } ) => {
 			setBloq( false )
 		}
 	}
-
-
 
 	const inputProps = {
 		focusBorderColor: "#ffff",
@@ -160,17 +133,6 @@ export const DadosVendedor = ( props: { id: any } ) => {
 							if ( CPF_REGEX.test( v ) ) setCpf( formatCpfForDisplay( v ) )
 						} }
 					/>
-				</FormControl>
-				<FormControl>
-					<FormLabel fontSize="xs">Empresa emitente</FormLabel>
-					<Select {...selectProps} value={ EmpresaEmitente } onChange={ ( e ) => setEmpresaEmitente( e.target.value ) }>
-						<option style={ optionStyle } value="">Nenhuma</option>
-						{ EmpresasList.map( ( emp ) => (
-							<option key={ emp.id } style={ optionStyle } value={ String( emp.id ) }>
-								{ emp.razao || emp.nome || `Empresa ${ emp.id }` }
-							</option>
-						) ) }
-					</Select>
 				</FormControl>
 				<FormControl>
 					<FormLabel fontSize="xs">E-mail do vendedor</FormLabel>

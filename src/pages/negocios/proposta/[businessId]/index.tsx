@@ -27,7 +27,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import { formatCurrency, parseCurrency } from "@/utils/customNumberFormats";
 import { formatCompanyDisplayName } from "@/utils/formatCompanyName";
-import { emitentes } from "@/components/data/emitentes";
 import { Z_INDEX } from "@/utils/zIndex";
 
 const Proposta = () => {
@@ -125,7 +124,7 @@ const Proposta = () => {
     const id = effectiveBusinessId || businessId;
     if (!id) return { businessData: null, companyData: null, orderData: null };
     const response = await fetch(
-      `/api/strapi/businesses/${id}?populate=*`,
+      `/api/strapi/businesses/${id}?populate[empresa][populate][0]=empresaEmitente`,
     );
     const business = await response.json();
 
@@ -142,15 +141,15 @@ const Proposta = () => {
   }, [businessId, effectiveBusinessId]);
 
   const fetchAccounts = useCallback(async () => {
-    const response = await fetch("/api/strapi/tokens");
+    const response = await fetch("/api/db/empresas/emitentes");
 
     if (!response.ok) console.error(response);
 
-    const accounts = await response.json();
+    const { data } = await response.json();
 
     return [
-      { attributes: { cnpj: "", account: "Selecione um emitente" } },
-      ...accounts.data,
+      { attributes: { CNPJ: "", razao: "Selecione um emitente" } },
+      ...(data ?? []),
     ];
   }, []);
 
@@ -196,23 +195,22 @@ const Proposta = () => {
   }, [effectiveBusinessId, fetchBusiness, enableFetches]);
 
   const fetchEmitenteId = useCallback(async () => {
-    if (!!companyData) {
-      if (!orderData && !emitenteCnpj && !!companyData?.attributes?.CNPJ) {
-        const clientCnpj = companyData.attributes.CNPJ;
-        const emitenteCnpj =
-          emitentes[clientCnpj]?.emitente ?? emitentes.default.emitente;
+    if (!companyData) return;
 
-        if (emitenteCnpj) setEmitenteCnpj(emitenteCnpj);
-      }
+    if (!orderData && !emitenteCnpj) {
+      const defaultCnpj =
+        companyData.attributes?.empresaEmitente?.data?.attributes?.CNPJ ?? "";
+      if (defaultCnpj) setEmitenteCnpj(defaultCnpj);
+      return;
+    }
 
-      if (!!emitenteCnpj) {
-        const response = await fetch(
-          `/api/strapi/empresas?filters[CNPJ]=${emitenteCnpj}`,
-        );
-        const emitente = await response.json();
-        const [emitenteData] = emitente.data;
-        setEmitenteId(emitenteData.id);
-      }
+    if (emitenteCnpj) {
+      const response = await fetch(
+        `/api/strapi/empresas?filters[CNPJ]=${emitenteCnpj}`,
+      );
+      const emitente = await response.json();
+      const [emitenteData] = emitente.data ?? [];
+      if (emitenteData?.id) setEmitenteId(String(emitenteData.id));
     }
   }, [companyData, orderData, emitenteCnpj]);
 
