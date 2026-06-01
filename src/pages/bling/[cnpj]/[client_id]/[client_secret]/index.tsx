@@ -85,7 +85,7 @@ const BlingOAuthCallback: React.FC = () => {
 			cnpj: cnpjStr,
 		}
 
-		( async () => {
+		const registerToken = async () => {
 			try {
 				const response = await fetch( "/api/bling/auth/register", {
 					method: "POST",
@@ -122,7 +122,9 @@ const BlingOAuthCallback: React.FC = () => {
 				setFailMessage( "Algo deu errado. Não foi possível registrar o token." )
 				setStatus( "error" )
 			}
-		} )()
+		}
+
+		void registerToken()
 	}, [ router.isReady, code, cnpj, client_id, client_secret ] )
 
 	return (
