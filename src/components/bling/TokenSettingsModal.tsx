@@ -4,6 +4,8 @@ import {
 	FormControl,
 	FormLabel,
 	Input,
+	InputGroup,
+	InputRightElement,
 	Modal,
 	ModalBody,
 	ModalCloseButton,
@@ -16,18 +18,19 @@ import {
 	Text,
 	useToast,
 } from "@chakra-ui/react"
-import { useEffect, useState } from "react"
-import { getEmitenteDisplayName } from "@/utils/blingOAuth"
+import { useEffect, useMemo, useState } from "react"
+import {
+	buildBlingRedirectUrl,
+	formatCnpjDisplay,
+	getEmitenteDisplayName,
+} from "@/utils/blingOAuth"
 
 export interface TokenFormData {
 	id?: number
-	account: string
 	cnpj: string
 	client_id: string
 	client_secret: string
 	mainAccount: boolean
-	access_token: string
-	refresh_token: string
 	expires_in: string
 	updatedAt?: string
 }
@@ -46,14 +49,11 @@ interface TokenSettingsModalProps {
 	onSaved: () => void
 }
 
-const emptyForm = ( cnpj: string, account: string ): TokenFormData => ( {
-	account,
+const emptyForm = ( cnpj: string ): TokenFormData => ( {
 	cnpj,
 	client_id: "",
 	client_secret: "",
 	mainAccount: false,
-	access_token: "",
-	refresh_token: "",
 	expires_in: "21600",
 } )
 
@@ -82,38 +82,71 @@ export const TokenSettingsModal = ( {
 			return
 		}
 		const attrs = emitente.attributes
-		const cnpj = attrs.CNPJ ?? ""
-		const defaultAccount = getEmitenteDisplayName( attrs )
+		const cnpj = String( attrs.CNPJ ?? "" ).replace( /\D/g, "" )
 		const token = attrs.token
 
 		if ( token?.id ) {
 			setForm( {
 				id: token.id,
-				account: token.account ?? defaultAccount,
 				cnpj,
 				client_id: token.client_id ?? "",
 				client_secret: token.client_secret ?? "",
 				mainAccount: token.mainAccount ?? false,
-				access_token: token.access_token ?? "",
-				refresh_token: token.refresh_token ?? "",
 				expires_in: String( token.expires_in ?? "21600" ),
 				updatedAt: token.updatedAt,
 			} )
 			return
 		}
 
-		setForm( emptyForm( cnpj, defaultAccount ) )
+		setForm( emptyForm( cnpj ) )
 	}, [ isOpen, emitente ] )
+
+	const displayName = emitente
+		? getEmitenteDisplayName( emitente.attributes )
+		: ""
+
+	const redirectUrl = useMemo( () => {
+		if ( !form?.cnpj || !form.client_id || !form.client_secret ) return ""
+		const origin = typeof window !== "undefined"
+			? window.location.origin
+			: ( process.env.NEXT_PUBLIC_BASE_URL ?? "" )
+		return buildBlingRedirectUrl(
+			origin,
+			form.cnpj,
+			form.client_id,
+			form.client_secret
+		)
+	}, [ form ] )
 
 	const updateField = ( key: keyof TokenFormData, value: string | boolean ) => {
 		setForm( ( prev ) => ( prev ? { ...prev, [ key ]: value } : prev ) )
 	}
 
+	const handleCopyRedirectUrl = async () => {
+		if ( !redirectUrl ) return
+		try {
+			await navigator.clipboard.writeText( redirectUrl )
+			toast( {
+				title: "Link copiado",
+				status: "success",
+				duration: 2000,
+				isClosable: true,
+			} )
+		} catch {
+			toast( {
+				title: "Não foi possível copiar",
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+			} )
+		}
+	}
+
 	const handleSave = async () => {
-		if ( !form?.cnpj || !form.account || !form.client_id || !form.client_secret ) {
+		if ( !form?.cnpj || !form.client_id || !form.client_secret ) {
 			toast( {
 				title: "Campos obrigatórios",
-				description: "Account, Client ID e Client Secret são obrigatórios.",
+				description: "CNPJ, Client ID e Client Secret são obrigatórios.",
 				status: "warning",
 				duration: 4000,
 				isClosable: true,
@@ -125,7 +158,6 @@ export const TokenSettingsModal = ( {
 		try {
 			const payload = {
 				data: {
-					account: form.account,
 					cnpj: form.cnpj,
 					client_id: form.client_id,
 					client_secret: form.client_secret,
@@ -206,21 +238,19 @@ export const TokenSettingsModal = ( {
 		<Modal isOpen={ isOpen } onClose={ onClose } size="lg">
 			<ModalOverlay backdropFilter="blur(4px)" />
 			<ModalContent bg="gray.800" color="white">
-				<ModalHeader>Configurações Bling — { form.account }</ModalHeader>
+				<ModalHeader>
+					Configurações Bling — { displayName }
+				</ModalHeader>
 				<ModalCloseButton />
 				<ModalBody>
 					<Stack spacing={ 4 }>
-						<FormControl isRequired>
-							<FormLabel fontSize="xs">Account</FormLabel>
-							<Input
-								{...inputProps}
-								value={ form.account }
-								onChange={ ( e ) => updateField( "account", e.target.value ) }
-							/>
-						</FormControl>
 						<FormControl>
 							<FormLabel fontSize="xs">CNPJ</FormLabel>
-							<Input {...inputProps} value={ form.cnpj } isReadOnly />
+							<Input
+								{...inputProps}
+								value={ formatCnpjDisplay( form.cnpj ) }
+								isReadOnly
+							/>
 						</FormControl>
 						<FormControl isRequired>
 							<FormLabel fontSize="xs">Client ID</FormLabel>
@@ -240,6 +270,32 @@ export const TokenSettingsModal = ( {
 							/>
 						</FormControl>
 						<FormControl>
+							<FormLabel fontSize="xs">Link de redirecionamento</FormLabel>
+							<InputGroup size="sm">
+								<Input
+									{...inputProps}
+									value={ redirectUrl }
+									isReadOnly
+									placeholder="Preencha Client ID e Client Secret"
+									fontSize="xs"
+									pr="4.5rem"
+								/>
+								<InputRightElement width="4.5rem">
+									<Button
+										h="1.75rem"
+										size="xs"
+										onClick={ handleCopyRedirectUrl }
+										isDisabled={ !redirectUrl }
+									>
+										Copiar
+									</Button>
+								</InputRightElement>
+							</InputGroup>
+							<Text fontSize="xs" color="gray.400" mt={ 1 }>
+								URL de callback OAuth para cadastrar no aplicativo Bling.
+							</Text>
+						</FormControl>
+						<FormControl>
 							<FormLabel fontSize="xs">Expires in (seconds)</FormLabel>
 							<Input
 								{...inputProps}
@@ -255,28 +311,6 @@ export const TokenSettingsModal = ( {
 							/>
 							<FormLabel fontSize="xs" mb={ 0 }>Main account</FormLabel>
 						</Flex>
-						{ form.access_token && (
-							<FormControl>
-								<FormLabel fontSize="xs">Access token</FormLabel>
-								<Input
-									{...inputProps}
-									value={ form.access_token }
-									isReadOnly
-									fontSize="xs"
-								/>
-							</FormControl>
-						) }
-						{ form.refresh_token && (
-							<FormControl>
-								<FormLabel fontSize="xs">Refresh token</FormLabel>
-								<Input
-									{...inputProps}
-									value={ form.refresh_token }
-									isReadOnly
-									fontSize="xs"
-								/>
-							</FormControl>
-						) }
 						{ form.updatedAt && (
 							<Text fontSize="xs" color="gray.400">
 								Última atualização: { new Date( form.updatedAt ).toLocaleString( "pt-BR" ) }

@@ -20,7 +20,7 @@ export default async function handler (
 	if ( req.method === "GET" ) {
 		try {
 			const response = await axios.get(
-				`${ baseUrl }?pagination[pageSize]=100&sort[0]=account:asc`,
+				`${ baseUrl }?pagination[pageSize]=100&sort[0]=cnpj:asc`,
 				{
 					headers: {
 						Authorization: `Bearer ${ strapiToken }`,
@@ -41,9 +41,9 @@ export default async function handler (
 		try {
 			const payload = parseRequestBody( req.body )
 			const data = ( payload.data ?? payload ) as Record<string, unknown>
-			if ( !data.cnpj || !data.account ) {
+			if ( !data.cnpj ) {
 				return res.status( 400 ).json( {
-					message: "cnpj and account are required",
+					message: "cnpj is required",
 				} )
 			}
 			const result = await upsertTokenByCnpj( data )

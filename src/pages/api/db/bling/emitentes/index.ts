@@ -3,7 +3,6 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { requireAdminSession } from "../../tokens/lib/requireAdmin"
 
 const TOKEN_FIELDS = [
-	"account",
 	"client_id",
 	"client_secret",
 	"access_token",
@@ -76,11 +75,8 @@ export default async function handler (
 					token: matched
 						? {
 							id: matched.id,
-							account: matched.attributes?.account,
 							client_id: matched.attributes?.client_id,
 							client_secret: matched.attributes?.client_secret,
-							access_token: matched.attributes?.access_token,
-							refresh_token: matched.attributes?.refresh_token,
 							mainAccount: matched.attributes?.mainAccount ?? false,
 							hasAccessToken: Boolean( matched.attributes?.access_token ),
 							updatedAt: matched.attributes?.updatedAt,

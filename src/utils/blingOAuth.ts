@@ -16,11 +16,33 @@ export const buildBlingOAuthUrl = ( clientId: string, state?: string ): string =
 	return `${ BLING_OAUTH_AUTHORIZE_URL }?${ params.toString() }`
 }
 
+export const normalizeCnpj = ( cnpj: string ): string =>
+	String( cnpj ).replace( /\D/g, "" )
+
+export const buildBlingRedirectPath = (
+	cnpj: string,
+	clientId: string,
+	clientSecret: string
+): string => {
+	const cnpjDigits = normalizeCnpj( cnpj )
+	return `/bling/${ cnpjDigits }/${ clientId }/${ clientSecret }`
+}
+
+export const buildBlingRedirectUrl = (
+	origin: string,
+	cnpj: string,
+	clientId: string,
+	clientSecret: string
+): string => {
+	const base = origin.replace( /\/$/, "" )
+	return `${ base }${ buildBlingRedirectPath( cnpj, clientId, clientSecret ) }`
+}
+
 export const getEmitenteDisplayName = ( attrs: {
 	razao?: string
 	nome?: string
 	CNPJ?: string
-} ): string => attrs.razao || attrs.nome || attrs.CNPJ || "Emitente"
+} ): string => attrs.nome || attrs.razao || attrs.CNPJ || "Emitente"
 
 export const formatCnpjDisplay = ( cnpj: string ): string => {
 	const digits = String( cnpj ).replace( /\D/g, "" )

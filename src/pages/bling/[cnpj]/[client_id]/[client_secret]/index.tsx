@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import {
 	Box,
 	Button,
@@ -16,16 +16,16 @@ import { GetServerSideProps } from "next"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/pages/api/auth/[...nextauth]"
 import { useRouter } from "next/router"
-import { getEmitenteDisplayName } from "@/utils/blingOAuth"
+import { formatCnpjDisplay, normalizeCnpj } from "@/utils/blingOAuth"
 
 interface AccountToken {
-	account: string
 	client_id: string
 	client_secret: string
 	access_token: string
 	expires_in: number
 	refresh_token: string
 	cnpj: string
+	mainAccount: boolean
 }
 
 export const getServerSideProps: GetServerSideProps = async ( context ) => {
@@ -52,50 +52,25 @@ export const getServerSideProps: GetServerSideProps = async ( context ) => {
 	return { props: {} }
 }
 
-const Bling: React.FC = () => {
+const BlingOAuthCallback: React.FC = () => {
+	const { query: { code, cnpj, client_id, client_secret } } = useRouter()
 
-	const { query: { code, cnpj, client_id, client_secret, emitente } } = useRouter()
-
-	const [ formData, setFormData ] = useState<any>( {} )
+	const [ formData, setFormData ] = useState<Record<string, string>>( {} )
 	const [ registered, setRegistered ] = useState( false )
 	const [ disabled, setDisabled ] = useState( false )
 	const [ fail, setFail ] = useState( "" )
-	const [ accountLabel, setAccountLabel ] = useState( "" )
 
-	const resolvedAccount = useMemo( () => {
-		const fromUrl = typeof emitente === "string" ? decodeURIComponent( emitente ) : ""
-		return accountLabel || fromUrl
-	}, [ emitente, accountLabel ] )
+	const cnpjDigits = typeof cnpj === "string" ? normalizeCnpj( cnpj ) : ""
 
-	useEffect( () => {
-		const cnpjValue = typeof cnpj === "string" ? cnpj : ""
-		if ( !cnpjValue ) return
-
-		( async () => {
-			try {
-				const res = await fetch(
-					`/api/strapi/empresas?filters[CNPJ]=${ cnpjValue }`
-				)
-				const json = await res.json()
-				const [ empresa ] = json.data ?? []
-				if ( empresa?.attributes ) {
-					setAccountLabel( getEmitenteDisplayName( empresa.attributes ) )
-				}
-			} catch {
-				/* keep URL value */
-			}
-		} )()
-	}, [ cnpj ] )
-
-	const registerBlingApiToken = async ( accountToken: AccountToken ): Promise<boolean> => {
+	const registerBlingApiToken = async (
+		accountToken: AccountToken
+	): Promise<boolean> => {
 		try {
-
 			const register = await fetch( "/api/db/tokens/bling/register", {
 				method: "POST",
 				body: JSON.stringify( { data: accountToken } )
 			} ).then( ( r ) => r.json() )
 			return register.data.attributes.hasOwnProperty( "access_token" )
-
 		} catch ( error ) {
 			console.error( error )
 			return false
@@ -109,23 +84,24 @@ const Bling: React.FC = () => {
 				method: "POST",
 				body: JSON.stringify( formData )
 			} ).then( ( r ) => r.json() ).then( async ( responseData ) => {
-
 				if ( responseData.hasOwnProperty( "error" ) ) {
 					setFail( `Error description: ${ responseData.error.description }` )
 					setDisabled( false )
-				}
-				else {
-					const { code, ...restFormData } = formData
+				} else {
 					const { scope, token_type, ...restResponseData } = responseData
 					const accountToken = {
 						mainAccount: false,
-						...restFormData,
+						cnpj: normalizeCnpj( formData.cnpj ),
+						client_id: formData.client_id,
+						client_secret: formData.client_secret,
 						...restResponseData
 					}
 					const success = await registerBlingApiToken( accountToken )
 					setRegistered( success )
 					setDisabled( success )
-					if ( !success ) setFail( "Não foi possível salvar o token no banco de dados." )
+					if ( !success ) {
+						setFail( "Não foi possível salvar o token no banco de dados." )
+					}
 				}
 			} )
 		} catch ( error ) {
@@ -138,9 +114,9 @@ const Bling: React.FC = () => {
 	const handleSubmit = ( e: FormEvent<HTMLFormElement> ) => {
 		e.preventDefault()
 		setDisabled( true )
-		const formData = new FormData( e.currentTarget )
-		const formDataObject = Object.fromEntries( formData.entries() )
-
+		const form = new FormData( e.currentTarget )
+		const formDataObject = Object.fromEntries( form.entries() ) as Record<string, string>
+		formDataObject.cnpj = normalizeCnpj( formDataObject.cnpj )
 		setFormData( formDataObject )
 	}
 
@@ -152,18 +128,17 @@ const Bling: React.FC = () => {
 			<chakra.form method="POST" onSubmit={ handleSubmit }>
 				<Stack direction={ stackDirection } spacing={ 5 } mb={ 5 }>
 					<FormControl>
-						<FormLabel>Bling account:</FormLabel>
+						<FormLabel>CNPJ</FormLabel>
 						<Input
 							type="text"
-							name="account"
+							name="cnpj"
 							focusBorderColor="#ffff"
 							bg='#ffffff12'
 							size="md"
 							w="full"
 							rounded="md"
-							isDisabled={ disabled }
-							value={ resolvedAccount }
-							required
+							readOnly
+							value={ formatCnpjDisplay( cnpjDigits ) }
 						/>
 					</FormControl>
 					<FormControl>
@@ -208,20 +183,6 @@ const Bling: React.FC = () => {
 							value={ code }
 						/>
 					</FormControl>
-					<FormControl>
-						<FormLabel>CNPJ:</FormLabel>
-						<Input
-							type="text"
-							name="cnpj"
-							focusBorderColor="#ffff"
-							bg='#ffffff12'
-							size="md"
-							w="full"
-							rounded="md"
-							readOnly
-							value={ cnpj }
-						/>
-					</FormControl>
 				</Stack>
 				<Flex justify="center" my={ 14 } >
 					<Button
@@ -251,4 +212,5 @@ const Bling: React.FC = () => {
 		</Box>
 	)
 }
-export default Bling
+
+export default BlingOAuthCallback
