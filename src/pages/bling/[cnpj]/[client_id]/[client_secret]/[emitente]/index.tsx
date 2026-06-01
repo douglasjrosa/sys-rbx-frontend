@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react"
+import { FormEvent, useEffect, useMemo, useState } from "react"
 import {
 	Box,
 	Button,
@@ -13,6 +13,7 @@ import {
 	useBreakpointValue
 } from '@chakra-ui/react'
 import { useRouter } from "next/router"
+import { getEmitenteDisplayName } from "@/utils/blingOAuth"
 
 interface AccountToken {
 	account: string
@@ -21,6 +22,7 @@ interface AccountToken {
 	access_token: string
 	expires_in: number
 	refresh_token: string
+	cnpj: string
 }
 
 const Bling: React.FC = () => {
@@ -31,7 +33,32 @@ const Bling: React.FC = () => {
 	const [ registered, setRegistered ] = useState( false )
 	const [ disabled, setDisabled ] = useState( false )
 	const [ fail, setFail ] = useState( "" )
+	const [ accountLabel, setAccountLabel ] = useState( "" )
 
+	const resolvedAccount = useMemo( () => {
+		const fromUrl = typeof emitente === "string" ? decodeURIComponent( emitente ) : ""
+		return accountLabel || fromUrl
+	}, [ emitente, accountLabel ] )
+
+	useEffect( () => {
+		const cnpjValue = typeof cnpj === "string" ? cnpj : ""
+		if ( !cnpjValue ) return
+
+		( async () => {
+			try {
+				const res = await fetch(
+					`/api/strapi/empresas?filters[CNPJ]=${ cnpjValue }`
+				)
+				const json = await res.json()
+				const [ empresa ] = json.data ?? []
+				if ( empresa?.attributes ) {
+					setAccountLabel( getEmitenteDisplayName( empresa.attributes ) )
+				}
+			} catch {
+				/* keep URL value */
+			}
+		} )()
+	}, [ cnpj ] )
 
 	const registerBlingApiToken = async ( accountToken: AccountToken ): Promise<boolean> => {
 		try {
@@ -108,7 +135,7 @@ const Bling: React.FC = () => {
 							w="full"
 							rounded="md"
 							isDisabled={ disabled }
-							value={ emitente }
+							value={ resolvedAccount }
 							required
 						/>
 					</FormControl>
@@ -185,13 +212,13 @@ const Bling: React.FC = () => {
 			{ registered &&
 				<Box my={ 50 } p={ 20 } bg={ 'green.600' } rounded="xl">
 					<Heading mb={ 10 }>Deu certo! Token registrado com sucesso na API do Bling.</Heading>
-					<Heading>Você já pode sair desta página.</Heading>
+					<Heading size="md">Você já pode sair desta página.</Heading>
 				</Box>
 			}
 			{ fail &&
 				<Box my={ 50 } p={ 20 } bg={ 'red.600' } rounded="xl">
 					<Heading mb={ 10 }>Algo deu errado! O Token não foi registrado na API do Bling.</Heading>
-					<Heading mb={ 10 }>{ fail }</Heading>
+					<Heading size="md" mb={ 10 }>{ fail }</Heading>
 				</Box>
 			}
 		</Box>
