@@ -24,7 +24,9 @@ export default async function refresh(req: NextApiRequest, res: NextApiResponse)
 
   let formData: RefreshRequestBody;
   try {
-    formData = JSON.parse(req.body);
+    formData = typeof req.body === 'string'
+      ? JSON.parse( req.body )
+      : req.body
   } catch (error) {
     res.status(400).json({ error: 'Invalid JSON in request body' });
     return;

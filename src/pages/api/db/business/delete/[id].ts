@@ -86,11 +86,7 @@ export default async function DeleteBusiness (
 			}
 		}
 
-		const trelloResult = await archiveTrelloCardsForBusiness(
-			String( id ),
-			incidentRecord,
-			propostaId,
-		)
+		const trelloResult = await archiveTrelloCardsForBusiness( incidentRecord )
 
 		if ( trelloResult.failed > 0 ) {
 			return res.status( 502 ).json( {

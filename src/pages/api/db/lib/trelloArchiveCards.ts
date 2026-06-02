@@ -18,66 +18,6 @@ export function extractTrelloCardIdsFromIncidentRecord (
 	return Array.from( ids )
 }
 
-async function searchTrelloCardsByQuery (
-	query: string,
-): Promise<string[]> {
-	const apiKey = process.env.TRELLO_API_KEY
-	const apiToken = process.env.TRELLO_API_TOKEN
-	const idBoard = process.env.TRELLO_BOARD_ID
-
-	if ( !apiKey || !apiToken || !idBoard ) {
-		return []
-	}
-
-	const params = new URLSearchParams( {
-		query,
-		idBoards: idBoard,
-		modelTypes: 'cards',
-		cards_limit: '50',
-		key: apiKey,
-		token: apiToken,
-	} )
-
-	try {
-		const response = await fetch(
-			`https://api.trello.com/1/search?${ params.toString() }`,
-		)
-		if ( !response.ok ) {
-			return []
-		}
-		const data = await response.json()
-		return ( data.cards ?? [] )
-			.map( ( card: { id?: string } ) => card.id )
-			.filter( ( id: string | undefined ): id is string => !!id )
-	} catch {
-		return []
-	}
-}
-
-export async function findTrelloCardIdsForBusiness (
-	businessId: string,
-	incidentRecord: unknown,
-	propostaId: string | number | null,
-): Promise<string[]> {
-	const cardIds = new Set<string>(
-		extractTrelloCardIdsFromIncidentRecord( incidentRecord ),
-	)
-
-	const searchQueries = [
-		`Negocio: Nº.${ businessId }`,
-	]
-	if ( propostaId != null && propostaId !== '' ) {
-		searchQueries.push( `Proposta / Pedido: Nº.${ propostaId }` )
-	}
-
-	for ( const query of searchQueries ) {
-		const found = await searchTrelloCardsByQuery( query )
-		found.forEach( ( id ) => cardIds.add( id ) )
-	}
-
-	return Array.from( cardIds )
-}
-
 export async function archiveTrelloCard (
 	cardId: string,
 ): Promise<{ ok: boolean; error?: string }> {
@@ -131,15 +71,9 @@ export type TrelloArchiveResult = {
 }
 
 export async function archiveTrelloCardsForBusiness (
-	businessId: string,
 	incidentRecord: unknown,
-	propostaId: string | number | null,
 ): Promise<TrelloArchiveResult> {
-	const cardIds = await findTrelloCardIdsForBusiness(
-		businessId,
-		incidentRecord,
-		propostaId,
-	)
+	const cardIds = extractTrelloCardIdsFromIncidentRecord( incidentRecord )
 
 	if ( cardIds.length === 0 ) {
 		return {

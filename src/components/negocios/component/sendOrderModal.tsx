@@ -1,5 +1,6 @@
 import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, resolveBlingClientIdAfterSave, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
 import { parseCurrency } from "@/utils/customNumberFormats"
+import { normalizeCnpj } from "@/utils/blingOAuth"
 import { Button, Flex, IconButton, Modal, Text, ModalBody, ModalContent, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
 import { useRouter } from "next/router"
 import { useCallback, useState } from "react"
@@ -99,7 +100,9 @@ const SendOrderModal = (props: any) => {
 				position: "bottom",
 			})
 
-			const blingAccountCnpj = fullOrderData.attributes.fornecedorId.data.attributes.CNPJ
+			const blingAccountCnpj = normalizeCnpj(
+				fullOrderData.attributes.fornecedorId.data.attributes.CNPJ
+			)
 			const clientCNPJ = fullOrderData.attributes.empresa.data.attributes.CNPJ
 
 			const checkIfClientExists = await clientExists(blingAccountCnpj, clientCNPJ)

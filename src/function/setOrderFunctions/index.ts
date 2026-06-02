@@ -1,5 +1,6 @@
 import { parseCurrency } from "@/utils/customNumberFormats"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
+import { normalizeCnpj } from "@/utils/blingOAuth"
 
 /** Human-readable detail from Bling proxy JSON (`errorMessage` / `responseError`). */
 function getBlingProxyErrorMessage ( payload: unknown, statusText: string ): string {
@@ -25,6 +26,9 @@ function getBlingProxyErrorMessage ( payload: unknown, statusText: string ): str
 	}
 	if ( typeof p.errorMessage === 'string' ) {
 		return p.errorMessage
+	}
+	if ( typeof p.error === 'string' ) {
+		return p.error
 	}
 	if ( typeof p.message === 'string' ) {
 		return p.message
@@ -90,8 +94,10 @@ export function delay ( ms: number ) {
 }
 
 export const clientExists = async ( blingAccountCnpj: string, clientCnpj: string ): Promise<any> => {
+	const account = normalizeCnpj( blingAccountCnpj )
+	const pesquisa = normalizeCnpj( clientCnpj )
 	const response = await fetch(
-		`/api/bling/${ blingAccountCnpj }/contatos?pesquisa=${ clientCnpj }`
+		`/api/bling/${ account }/contatos?pesquisa=${ encodeURIComponent( pesquisa ) }`
 	)
 	const searchClient = await response.json().catch( () => ( {} ) )
 	if ( !response.ok ) {
@@ -108,10 +114,14 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 
 	const clientData = orderData.attributes.empresa.data.attributes
 	const clientStrapiId = orderData.attributes.empresa.data.id
-	const blingAccountCnpj = orderData.attributes.fornecedorId.data.attributes.CNPJ
+	const blingAccountCnpj = normalizeCnpj(
+		orderData.attributes.fornecedorId.data.attributes.CNPJ
+	)
 
 	// Taking the types of contact of "Vendedor" and "Cliente" to save in the company data later in Bling
-	const typesOfContactsResponse = await fetch( `/api/bling/${ blingAccountCnpj }/contatos/tipos` )
+	const typesOfContactsResponse = await fetch(
+		`/api/bling/${ blingAccountCnpj }/contatos/tipos`
+	)
 	const typesOfContacts = await typesOfContactsResponse.json().catch( () => ( {} ) )
 	if ( !typesOfContactsResponse.ok ) {
 		const detail = getBlingProxyErrorMessage( typesOfContacts, typesOfContactsResponse.statusText )

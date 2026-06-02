@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { blingApiEndpoint, getBlingToken } from '@/pages/api/bling'
+import { normalizeCnpj } from '@/utils/blingOAuth'
 
 export default async function handler ( req: NextApiRequest, res: NextApiResponse ) {
 	try {
@@ -10,7 +11,15 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			return
 		}
 
-		const blingToken = await getBlingToken( cnpj as string )
+		const accountCnpj = normalizeCnpj(
+			Array.isArray( cnpj ) ? cnpj[ 0 ] : String( cnpj ?? '' )
+		)
+		if ( !accountCnpj ) {
+			res.status( 400 ).json( { error: 'Invalid Bling account CNPJ' } )
+			return
+		}
+
+		const blingToken = await getBlingToken( accountCnpj )
 
 		const queryParams = new URLSearchParams()
 		for ( const [ key, value ] of Object.entries( params ) ) {
@@ -71,8 +80,11 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 
 		res.status( response.status ).json( responseData )
 
-	} catch ( error: any ) {
-		console.error( 'Error in handler:', error )
-		res.status( 500 ).json( { error: error.message || 'Internal Server Error' } )
+	} catch ( error: unknown ) {
+		const message = error instanceof Error
+			? error.message
+			: 'Internal Server Error'
+		console.error( 'Bling proxy error:', error )
+		res.status( 500 ).json( { error: message, message } )
 	}
 }
