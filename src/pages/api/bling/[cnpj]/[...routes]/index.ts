@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { blingApiEndpoint, getBlingToken } from '@/pages/api/bling'
+import { BlingReauthRequiredError } from '@/pages/api/bling/lib/resolveAccessToken'
 import { normalizeCnpj } from '@/utils/blingOAuth'
 
 export default async function handler ( req: NextApiRequest, res: NextApiResponse ) {
@@ -85,6 +86,7 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			? error.message
 			: 'Internal Server Error'
 		console.error( 'Bling proxy error:', error )
-		res.status( 500 ).json( { error: message, message } )
+		const status = error instanceof BlingReauthRequiredError ? 401 : 500
+		res.status( status ).json( { error: message, message } )
 	}
 }

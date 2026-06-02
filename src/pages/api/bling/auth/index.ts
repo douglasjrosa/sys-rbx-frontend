@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { resolveBlingAccessToken } from "../lib/resolveAccessToken"
+import { resolveBlingAccessToken, BlingReauthRequiredError } from "../lib/resolveAccessToken"
 import { normalizeCnpj } from "@/utils/blingOAuth"
 
 export default async function getToken (
@@ -25,7 +25,12 @@ export default async function getToken (
 			? error.message
 			: "Erro ao obter o token"
 		console.error( "Bling auth error:", error )
-		const status = message.includes( "Nenhum token Bling" ) ? 404 : 500
+		let status = 500
+		if ( error instanceof BlingReauthRequiredError ) {
+			status = 401
+		} else if ( message.includes( "Nenhum token Bling" ) ) {
+			status = 404
+		}
 		res.status( status ).json( { message, error: message } )
 	}
 }
