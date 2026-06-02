@@ -8,6 +8,7 @@ import {
 	SimpleGrid,
 	Stack,
 	Text,
+	useToast,
 } from "@chakra-ui/react"
 import { GetServerSideProps } from "next"
 import { getServerSession } from "next-auth"
@@ -19,8 +20,8 @@ import {
 	formatCnpjDisplay,
 	getEmitenteDisplayName,
 	isTokenExpired,
+	normalizeCnpj,
 } from "@/utils/blingOAuth"
-
 interface EmitenteToken {
 	id: number
 	account?: string
@@ -75,6 +76,8 @@ export default function Bling () {
 		null
 	)
 	const [ settingsOpen, setSettingsOpen ] = useState( false )
+	const [ testingId, setTestingId ] = useState<number | null>( null )
+	const toast = useToast()
 
 	const fetchEmitentes = useCallback( async () => {
 		setLoading( true )
@@ -97,6 +100,58 @@ export default function Bling () {
 	const openSettings = ( item: EmitenteItem ) => {
 		setSettingsEmitente( item )
 		setSettingsOpen( true )
+	}
+
+	const testToken = async ( item: EmitenteItem ) => {
+		const cnpjDigits = normalizeCnpj( item.attributes.CNPJ ?? "" )
+		if ( !cnpjDigits ) {
+			toast( {
+				title: "CNPJ inválido",
+				status: "error",
+				duration: 5000,
+				isClosable: true,
+			} )
+			return
+		}
+
+		setTestingId( item.id )
+		try {
+			const res = await fetch(
+				`/api/db/bling/test-token/${ cnpjDigits }`,
+				{ method: "POST" }
+			)
+			const data = await res.json()
+			const displayName = getEmitenteDisplayName( item.attributes )
+
+			if ( data.valid ) {
+				toast( {
+					title: `${ displayName }: token OK`,
+					description: data.message,
+					status: "success",
+					duration: 8000,
+					isClosable: true,
+				} )
+				await fetchEmitentes()
+			} else {
+				toast( {
+					title: `${ displayName }: token inválido`,
+					description: data.message || "Falha ao testar o token",
+					status: "error",
+					duration: 12000,
+					isClosable: true,
+				} )
+			}
+		} catch {
+			toast( {
+				title: "Erro ao testar token",
+				description: "Não foi possível concluir o teste.",
+				status: "error",
+				duration: 8000,
+				isClosable: true,
+			} )
+		} finally {
+			setTestingId( null )
+		}
 	}
 
 	const getTokenStatus = ( item: EmitenteItem ) => {
@@ -175,6 +230,19 @@ export default function Bling () {
 												: "Autorizar no Bling" }
 										</Button>
 									</Link>
+								) }
+								{ token?.client_id && (
+									<Button
+										w="full"
+										size="sm"
+										variant="outline"
+										colorScheme="teal"
+										isLoading={ testingId === item.id }
+										isDisabled={ testingId !== null && testingId !== item.id }
+										onClick={ () => testToken( item ) }
+									>
+										Testar token
+									</Button>
 								) }
 							</Stack>
 						</Box>
