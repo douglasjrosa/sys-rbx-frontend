@@ -27,7 +27,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import { formatCurrency, parseCurrency } from "@/utils/customNumberFormats";
 import { formatCompanyDisplayName } from "@/utils/formatCompanyName";
+import { normalizeCnpj } from "@/utils/blingOAuth";
 import { Z_INDEX } from "@/utils/zIndex";
+
+const resolveEmitenteIdByCnpj = async (
+  cnpj: string
+): Promise<number | null> => {
+  const normalized = normalizeCnpj(cnpj);
+  if (!normalized) return null;
+
+  const response = await fetch(
+    `/api/strapi/empresas?filters[CNPJ][$eq]=${normalized}&fields[0]=id`
+  );
+  const result = await response.json();
+  return result?.data?.[0]?.id ?? null;
+};
 
 const Proposta = () => {
   const router = useRouter();
@@ -124,7 +138,9 @@ const Proposta = () => {
     const id = effectiveBusinessId || businessId;
     if (!id) return { businessData: null, companyData: null, orderData: null };
     const response = await fetch(
-      `/api/strapi/businesses/${id}?populate[empresa][populate][0]=empresaEmitente`,
+      `/api/strapi/businesses/${id}`
+      + "?populate[empresa][populate][0]=empresaEmitente"
+      + "&populate[pedidos][populate][0]=fornecedorId",
     );
     const business = await response.json();
 
@@ -205,12 +221,8 @@ const Proposta = () => {
     }
 
     if (emitenteCnpj) {
-      const response = await fetch(
-        `/api/strapi/empresas?filters[CNPJ]=${emitenteCnpj}`,
-      );
-      const emitente = await response.json();
-      const [emitenteData] = emitente.data ?? [];
-      if (emitenteData?.id) setEmitenteId(String(emitenteData.id));
+      const resolvedId = await resolveEmitenteIdByCnpj(emitenteCnpj);
+      if (resolvedId) setEmitenteId(String(resolvedId));
     }
   }, [companyData, orderData, emitenteCnpj]);
 
@@ -229,7 +241,9 @@ const Proposta = () => {
     if (stored) {
       try {
         const form = JSON.parse(stored);
-        if (form.emitenteCnpj !== undefined) setEmitenteCnpj(form.emitenteCnpj);
+        if (form.emitenteCnpj !== undefined && !orderData) {
+          setEmitenteCnpj(form.emitenteCnpj as string);
+        }
         if (form.deliverDate !== undefined) setDeliverDate(form.deliverDate);
         if (form.paymentTerms !== undefined) setPaymentTerms(form.paymentTerms);
         if (form.freightType !== undefined) setFreightType(form.freightType);
@@ -251,7 +265,7 @@ const Proposta = () => {
     queueMicrotask(() => {
       hasFormLoadedRef.current = true;
     });
-  }, [effectiveBusinessId]);
+  }, [effectiveBusinessId, orderData]);
 
   // Save form fields to localStorage only AFTER initial load (avoids overwriting with defaults)
   useEffect(() => {
@@ -353,7 +367,6 @@ const Proposta = () => {
     if (orderData && effectiveBusinessId) {
       const {
         dataEntrega,
-        fornecedor,
         prazo,
         valorFrete,
         frete,
@@ -363,7 +376,11 @@ const Proposta = () => {
         itens,
       } = orderData.attributes;
 
-      // Prefer localStorage form data (user edits) over orderData
+      const fornecedorRelation = orderData.attributes?.fornecedorId?.data;
+      const cnpjFromRelation =
+        fornecedorRelation?.attributes?.CNPJ ?? "";
+      const fornecedorIdFromRelation = fornecedorRelation?.id ?? null;
+
       const storedForm = localStorage.getItem(
         FORM_STORAGE_KEY(effectiveBusinessId),
       );
@@ -378,7 +395,10 @@ const Proposta = () => {
       setDeliverDate(
         (form.deliverDate as string) || dataEntrega || customDateIso(7),
       );
-      setEmitenteCnpj((form.emitenteCnpj as string) || fornecedor || "");
+      setEmitenteCnpj(cnpjFromRelation);
+      if (fornecedorIdFromRelation) {
+        setEmitenteId(String(fornecedorIdFromRelation));
+      }
       setPaymentTerms((form.paymentTerms as string) || prazo || "1");
       setFreightCost(
         form.freightCost !== undefined
@@ -460,7 +480,7 @@ const Proposta = () => {
         businessId,
         business: businessId,
         fornecedor: emitenteCnpj,
-        fornecedorId: emitenteId,
+        fornecedorId: emitenteId ? Number(emitenteId) : null,
         empresa: companyData.id,
         empresaId: companyData.id,
         CNPJClinet: companyData.attributes.CNPJ,
@@ -525,6 +545,20 @@ const Proposta = () => {
 
     setLoading(true);
 
+    const resolvedFornecedorId = await resolveEmitenteIdByCnpj(emitenteCnpj);
+
+    if (!resolvedFornecedorId) {
+      setLoading(false);
+      return toast({
+        title: "Emitente inválido",
+        description:
+          "Não foi possível identificar o emitente selecionado. Tente novamente.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    }
+
     fetch(`/api/strapi/businesses/${businessId}`, {
       method: "PUT",
       body: JSON.stringify({ data: { Budget: orderTotalValue } }),
@@ -535,10 +569,17 @@ const Proposta = () => {
       ? "/api/strapi/pedidos"
       : `/api/strapi/pedidos/${orderData.id}`;
 
+    const payload = {
+      ...orderSaveData,
+      fornecedor: emitenteCnpj,
+      fornecedorId: resolvedFornecedorId,
+      publishedAt: new Date().toISOString(),
+    };
+
     const response = await fetch(strapiEndPoint, {
       method,
       body: JSON.stringify({
-        data: orderSaveData,
+        data: payload,
       }),
     });
     const save = await response.json();
@@ -553,6 +594,11 @@ const Proposta = () => {
         isClosable: true,
       });
     } else {
+      const savedPedidoId = save.data.id;
+      await fetch(`/api/strapi/pedidos/${savedPedidoId}/actions/publish`, {
+        method: "POST",
+      });
+
       toast({
         title: "Tudo certo!",
         description: "A proposta foi salva.",
@@ -560,15 +606,47 @@ const Proposta = () => {
         duration: 6000,
         isClosable: true,
       });
-      // Keep localStorage so user can edit/delete items when returning to the proposal
       localStorage.setItem(
         ITEMS_STORAGE_KEY(effectiveBusinessId),
         JSON.stringify(itemsList),
       );
+      localStorage.setItem(
+        FORM_STORAGE_KEY(effectiveBusinessId),
+        JSON.stringify({
+          emitenteCnpj,
+          deliverDate,
+          paymentTerms,
+          freightType,
+          freightCost,
+          manualDiscount,
+          aditionalCosts,
+          clientOrderNumber,
+          orderObservations,
+        }),
+      );
       router.push(`/negocios/${effectiveBusinessId}`);
       setLoading(false);
     }
-  }, [orderSaveData, router, itemsList, effectiveBusinessId]);
+  }, [
+    orderSaveData,
+    router,
+    itemsList,
+    effectiveBusinessId,
+    emitenteCnpj,
+    emitenteId,
+    orderData,
+    businessId,
+    orderTotalValue,
+    deliverDate,
+    paymentTerms,
+    freightType,
+    freightCost,
+    manualDiscount,
+    aditionalCosts,
+    clientOrderNumber,
+    orderObservations,
+    toast,
+  ]);
 
   return (
     <Flex minH="100vh" w="100%" bg={"gray.800"} color={"white"}>

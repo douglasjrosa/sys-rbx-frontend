@@ -31,54 +31,14 @@ const pickLatestPedido = (
   live: PedidoResult | null,
   preview: PedidoResult | null
 ): PedidoResult | null => {
-  if (!live?.attributes) return preview;
-  if (!preview?.attributes) return live;
-
-  const liveAt = new Date(live.attributes.updatedAt ?? 0).getTime();
-  const previewAt = new Date(preview.attributes.updatedAt ?? 0).getTime();
-  return previewAt >= liveAt ? preview : live;
+  if (live?.attributes) return live;
+  return preview;
 };
 
-const fetchEmpresaByCnpj = async (
-  cnpj: string,
-  token: string,
-  baseUrl: string
-): Promise<Record<string, any> | null> => {
-  const normalized = normalizeCnpj(cnpj);
-  if (!normalized) return null;
-
-  try {
-    const url =
-      `${baseUrl}/empresas?filters[CNPJ][$eq]=${normalized}`
-      + "&pagination[pageSize]=1"
-      + "&fields[0]=nome&fields[1]=razao&fields[2]=fantasia"
-      + "&fields[3]=CNPJ&fields[4]=endereco&fields[5]=numero"
-      + "&fields[6]=cidade&fields[7]=uf&fields[8]=fone&fields[9]=email";
-
-    const res = await axios({
-      method: "GET",
-      url,
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return res.data?.data?.[0]?.attributes ?? null;
-  } catch {
-    return null;
-  }
-};
-
-const resolveEmitenteAttributes = async (
-  inf: Record<string, any>,
-  token: string,
-  baseUrl: string
-): Promise<Record<string, any> | null> => {
-  const fromRelation = inf.fornecedorId?.data?.attributes;
-  if (fromRelation) return fromRelation;
-
-  const cnpjFallback = inf.fornecedor ?? "";
-  if (!cnpjFallback) return null;
-
-  return fetchEmpresaByCnpj(cnpjFallback, token, baseUrl);
+const resolveEmitenteAttributes = (
+  inf: Record<string, any>
+): Record<string, any> | null => {
+  return inf.fornecedorId?.data?.attributes ?? null;
 };
 
 const buildFornecedorData = (empresa: Record<string, any>) => ({
@@ -134,7 +94,8 @@ export const getData = async (pedidoId: any) => {
     const inf = result.attributes;
     const Vendedor = inf.user?.data?.attributes?.username ?? "";
 
-    const empresaFornec = await resolveEmitenteAttributes(inf, token!, baseUrl!);
+    const empresaFornec = resolveEmitenteAttributes(inf);
+
     if (!empresaFornec) {
       return null;
     }
