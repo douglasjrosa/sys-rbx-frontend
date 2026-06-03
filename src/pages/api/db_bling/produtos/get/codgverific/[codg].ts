@@ -6,7 +6,7 @@ export default async function Get ( req: NextApiRequest, res: NextApiResponse ) 
 	const token = process.env.ATORIZZATION_TOKEN_BLING
 	if ( req.method === 'GET' ) {
 		const codg = req.query.codg
-		const url = process.env.BLING_API_URL + `/produto/${ codg }/json/`
+		const url = process.env.BLING_API_V3_ENDPOINT + `/produto/${ codg }/json/`
 		await axios( {
 			method: 'GET',
 			url: url,
