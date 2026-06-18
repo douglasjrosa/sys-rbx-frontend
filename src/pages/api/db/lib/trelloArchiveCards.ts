@@ -18,9 +18,16 @@ export function extractTrelloCardIdsFromIncidentRecord (
 	return Array.from( ids )
 }
 
+const ARCHIVE_RETRY_DELAY_MS = 500
+const ARCHIVE_MAX_ATTEMPTS = 3
+
+const delay = ( ms: number ) => new Promise( ( resolve ) => {
+	setTimeout( resolve, ms )
+} )
+
 export async function archiveTrelloCard (
 	cardId: string,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; retryable?: boolean }> {
 	const apiKey = process.env.TRELLO_API_KEY
 	const apiToken = process.env.TRELLO_API_TOKEN
 
@@ -52,7 +59,11 @@ export async function archiveTrelloCard (
 			} catch {
 				/* ignore parse errors */
 			}
-			return { ok: false, error: errorMessage }
+			return {
+				ok: false,
+				error: errorMessage,
+				retryable: response.status === 429 || response.status >= 500,
+			}
 		}
 
 		return { ok: true }
@@ -90,14 +101,22 @@ export async function archiveTrelloCardsForBusiness (
 	const errors: string[] = []
 
 	for ( const cardId of cardIds ) {
-		const result = await archiveTrelloCard( cardId )
-		if ( result.ok ) {
-			archived++
-		} else {
-			failed++
-			if ( result.error ) {
-				errors.push( `${ cardId }: ${ result.error }` )
+		for ( let attempt = 0; attempt < ARCHIVE_MAX_ATTEMPTS; attempt++ ) {
+			const result = await archiveTrelloCard( cardId )
+			if ( result.ok ) {
+				archived++
+				break
 			}
+
+			if ( !result.retryable || attempt === ARCHIVE_MAX_ATTEMPTS - 1 ) {
+				failed++
+				if ( result.error ) {
+					errors.push( `${ cardId }: ${ result.error }` )
+				}
+				break
+			}
+
+			await delay( ARCHIVE_RETRY_DELAY_MS * ( attempt + 1 ) )
 		}
 	}
 

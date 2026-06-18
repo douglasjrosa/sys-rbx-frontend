@@ -25,7 +25,7 @@ import { BtmRetorno } from "@/components/elements/btmRetorno";
 import { SetValue } from "@/function/currenteValor";
 import { formatBudgetDisplay } from "@/utils/customNumberFormats";
 import formatarDataParaSaoPaulo from "@/function/formatHora";
-import SendOrderModal from "./sendOrderModal";
+import { resolveBusinessBudget } from "@/function/setOrderFunctions";
 import { EtapaFunnel } from "./EtapaFunnel";
 import Link from "next/link";
 
@@ -196,7 +196,6 @@ export const NegocioHeader = (props: {
           etapa: Etapa,
           andamento: Status,
           Mperca: mpercaValue,
-          incidentRecord: [...props.chat, ChatConcluido],
           DataRetorno: DataRetorno,
           date_conclucao: DataAtual,
         },
@@ -223,7 +222,12 @@ export const NegocioHeader = (props: {
         method: "PUT",
         data: data,
       })
-        .then((res) => {
+        .then(async (res) => {
+          if (Etapa === 6) {
+            await axios.post(`/api/db/business/append-incident/${ID}`, {
+              entry: ChatConcluido,
+            });
+          }
           if (Etapa === 6 && Status === 1) {
             toast({
               title: "Atualização feita",
@@ -378,6 +382,13 @@ export const NegocioHeader = (props: {
         ? Number(Mperca)
         : null;
 
+    const resolvedBudget = await resolveBusinessBudget(
+      propostaId,
+      orderData?.orderValue
+        ?? pedido?.attributes?.totalGeral
+        ?? Budget,
+    );
+
     await axios({
       url: "/api/db/business/put/id/" + ID,
       method: "PUT",
@@ -385,18 +396,22 @@ export const NegocioHeader = (props: {
         data: {
           deadline: Deadline,
           nBusiness: Busines,
-          Budget: SetValue(Budget),
+          Budget: resolvedBudget,
           Approach: Approach,
           history: history,
           etapa: Etapa,
           andamento: Status,
           Mperca: mpercaValue,
-          incidentRecord: [...props.chat, ChatConcluido],
           DataRetorno: DataRetorno,
           date_conclucao: DataAtual,
         },
       },
     });
+    setBudget(resolvedBudget);
+    await axios.post(`/api/db/business/append-incident/${ID}`, {
+      entry: ChatConcluido,
+    });
+    props.onchat(true);
     setBlocksave(true);
   };
 

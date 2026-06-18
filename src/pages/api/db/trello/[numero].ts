@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { GetLoteProposta } from "../../lib/get_lote_nProposta"
 import { GetTrelloId } from "../../lib/get_trello_id"
 import { ErroTrello } from "../../lib/errtrello"
-import { IncidentRecord } from "../lib/businesses"
+import { appendIncidentRecords } from "../lib/businesses"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
 import {
 	getTrelloAssemblyLabel,
@@ -78,7 +78,13 @@ export default async function PostTrello (
 		}
 
 		try {
-			const cardsSent = []
+			const cardsSent: string[] = []
+			const incidentEntries: Array<{
+				msg: string
+				date: string
+				user: string
+			}> = []
+
 			for ( const i of items ) {
 				const Prenlote = lote.filter( ( f: any ) => (
 					f.attributes.produtosId == i.prodId &&
@@ -141,16 +147,17 @@ export default async function PostTrello (
 					data: dataBoard,
 				}
 
-				const cardSent = await axios.request( config ).then( async ( res: any ) => {
-					const resposta = `card id: ${ res.data.id } pode ser acessado pelo link: ${ res.data.shortUrl } `
-					const text = {
+				try {
+					const res = await axios.request( config )
+					const resposta =
+						`card id: ${ res.data.id } pode ser acessado pelo link: ${ res.data.shortUrl } `
+					incidentEntries.push( {
 						msg: resposta,
 						date: new Date().toISOString(),
 						user: "Sistema",
-					}
-					await IncidentRecord( text, negocioId )
-					return resposta
-				} ).catch( async ( err: any ) => {
+					} )
+					cardsSent.push( resposta )
+				} catch ( err: any ) {
 					const data = {
 						log: {
 							key: apiKey,
@@ -167,14 +174,22 @@ export default async function PostTrello (
 							Lote: nlote,
 							Modelo: i.titulo,
 							Montagem: montagemLabel,
-							erro_status: err.response.status,
-							erro_message: err.response.data,
+							erro_status: err.response?.status,
+							erro_message: err.response?.data,
 						},
 					}
-					return await ErroTrello( data )
-				} )
+					await ErroTrello( data )
+				}
+			}
 
-				cardsSent.push( cardSent )
+			if ( incidentEntries.length > 0 ) {
+				await appendIncidentRecords( String( negocioId ), incidentEntries )
+			}
+
+			if ( cardsSent.length === 0 ) {
+				return res.status( 502 ).json( {
+					message: "Nenhum card foi criado no Trello.",
+				} )
 			}
 			
 			res.status( 201 ).json( cardsSent )

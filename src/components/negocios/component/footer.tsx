@@ -31,18 +31,13 @@ export const NegocioFooter = ( props: { onGetValue: any; onOptimisticUpdate?: ( 
 
 		const record = [ ...props.data, msg ]
 
-		const data = {
-			data: {
-				incidentRecord: record,
-			},
-		}
 		if ( Valor.trim() !== '' ) {
 			setIsSending( true )
 			props.onOptimisticUpdate?.( record )
 			await axios( {
-				method: 'PUT',
-				url: '/api/db/business/put/id/' + ID,
-				data: data,
+				method: 'POST',
+				url: '/api/db/business/append-incident/' + ID,
+				data: { entry: msg },
 			} )
 				.then( ( res ) => {
 					props.onGetValue( true )

@@ -1,4 +1,4 @@
-import { parseCurrency } from "@/utils/customNumberFormats"
+import { parseCurrency, formatCurrency } from "@/utils/customNumberFormats"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
 import { normalizeCnpj } from "@/utils/blingOAuth"
 
@@ -265,6 +265,29 @@ export const fetchOrderData = async ( propostaId: string ) => {
 	const response = await fetch( `/api/strapi/pedidos/${ propostaId }?populate=*` )
 	if ( !response.ok ) throw new Error( `Error fetching order: ${ response.statusText }` )
 	return await response.json()
+}
+
+export const resolveBusinessBudget = async (
+	propostaId?: string | number | null,
+	fallbackBudget?: string | null,
+): Promise<string> => {
+	if ( propostaId ) {
+		try {
+			const order = await fetchOrderData( String( propostaId ) )
+			const totalGeral = order?.data?.attributes?.totalGeral
+			if ( totalGeral && parseCurrency( totalGeral ) > 0 ) {
+				return formatCurrency( parseCurrency( totalGeral ) )
+			}
+		} catch {
+			/* use fallback below */
+		}
+	}
+
+	if ( fallbackBudget && parseCurrency( fallbackBudget ) > 0 ) {
+		return formatCurrency( parseCurrency( fallbackBudget ) )
+	}
+
+	return formatCurrency( 0 )
 }
 
 export const sendCardsToTrello = async ( propostaId: string ) => {
@@ -600,15 +623,23 @@ export const updateOrderInStrapi = async ( blingOrderId: string, orderId: number
 	return responseData
 }
 
-export const updateBusinessInStrapi = async ( negocioId: string, blingOrderId: string ) => {
+export const updateBusinessInStrapi = async (
+	negocioId: string,
+	blingOrderId: string,
+	budget?: string,
+) => {
+	const data: Record<string, unknown> = {
+		Bpedido: blingOrderId,
+		stausPedido: true,
+	}
+
+	if ( budget && parseCurrency( budget ) > 0 ) {
+		data.Budget = budget
+	}
+
 	const response = await fetch( `/api/strapi/businesses/${ negocioId }`, {
 		method: 'PUT',
-		body: JSON.stringify( {
-			data: {
-				Bpedido: blingOrderId,
-				stausPedido: true
-			}
-		} )
+		body: JSON.stringify( { data } ),
 	} )
 	if ( !response.ok ) throw new Error( `Error fetching order in Strapi: ${ response.statusText }` )
 	return await response.json()
