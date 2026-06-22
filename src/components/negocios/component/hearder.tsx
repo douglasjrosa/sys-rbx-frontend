@@ -25,6 +25,7 @@ import { BtmRetorno } from "@/components/elements/btmRetorno";
 import { SetValue } from "@/function/currenteValor";
 import { formatBudgetDisplay } from "@/utils/customNumberFormats";
 import formatarDataParaSaoPaulo from "@/function/formatHora";
+import SendOrderModal from "./sendOrderModal";
 import { resolveBusinessBudget } from "@/function/setOrderFunctions";
 import { EtapaFunnel } from "./EtapaFunnel";
 import Link from "next/link";
