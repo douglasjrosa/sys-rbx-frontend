@@ -1,4 +1,4 @@
-import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, resolveBlingClientIdAfterSave, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
+import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, resolveBlingClientIdAfterSave, resolveBusinessBudget, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
 import { parseCurrency } from "@/utils/customNumberFormats"
 import { normalizeCnpj } from "@/utils/blingOAuth"
 import { Button, Flex, IconButton, Modal, Text, ModalBody, ModalContent, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
@@ -303,7 +303,15 @@ const SendOrderModal = (props: any) => {
 				position: "bottom",
 			})
 			const blingOrderId = String(blingOrder.data.id)
-			const updateNegocio = await updateBusinessInStrapi(String(businessId), blingOrderId)
+			const resolvedBudget = await resolveBusinessBudget(
+				propostaId,
+				fullOrderData.attributes.totalGeral ?? orderData.orderValue,
+			)
+			const updateNegocio = await updateBusinessInStrapi(
+				String(businessId),
+				blingOrderId,
+				resolvedBudget,
+			)
 
 			if (!updateNegocio.data?.id) {
 
@@ -442,7 +450,8 @@ const SendOrderModal = (props: any) => {
 			postNLote,
 			sendCardsToTrello,
 			updateOrderInStrapi,
-			getFormattedDate
+			getFormattedDate,
+			resolveBusinessBudget,
 		]
 	)
 

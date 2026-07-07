@@ -6,6 +6,7 @@ import {
 	resolveBlingSalesOrderId,
 } from '../../lib/blingOrderDelete'
 import { archiveTrelloCardsForBusiness } from '../../lib/trelloArchiveCards'
+import { fetchBusinessIncidentRecord } from '../../lib/businesses'
 
 type BlingIntegrationResult = {
 	deleted: boolean
@@ -38,7 +39,7 @@ export default async function DeleteBusiness (
 		const businessResponse = await axios.get(
 			`${ strapiBase }/businesses/${ id }` +
 			'?populate[pedidos][populate][fornecedorId][fields][0]=CNPJ' +
-			'&fields[0]=Bpedido&fields[1]=incidentRecord',
+			'&fields[0]=Bpedido',
 			{ headers: authHeaders },
 		)
 
@@ -53,7 +54,7 @@ export default async function DeleteBusiness (
 			pedido?.attributes?.Bpedido ||
 			null
 		const propostaId = pedido?.id ?? null
-		const incidentRecord = business?.attributes?.incidentRecord ?? []
+		const incidentRecord = await fetchBusinessIncidentRecord( String( id ) )
 
 		const blingResult: BlingIntegrationResult = {
 			deleted: false,

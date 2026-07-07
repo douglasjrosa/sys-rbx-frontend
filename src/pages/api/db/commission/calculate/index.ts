@@ -93,7 +93,7 @@ export default async function handler (
 		}
 
 		if ( !config ) {
-			return res.status( 404 ).json( {
+			return res.status( 200 ).json( {
 				message: "No commission config found for this seller and period",
 				hasConfig: false,
 			} )

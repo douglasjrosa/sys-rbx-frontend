@@ -23,7 +23,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { FaArrowLeft, FaCalculator } from 'react-icons/fa'
 import axios from 'axios'
 
-import { marginTables } from '@/components/data/marginTables'
+import { DEFAULT_MARGIN_TABLE_VALUE, marginTables, resolveMarginTableValue } from '@/components/data/marginTables'
 import { modCaix } from '@/components/data/modCaix'
 import {
 	FOOT_CONFIG_OPTIONS,
@@ -96,7 +96,7 @@ function createInitialFormState( empresa: string ): NovoProdutoFormState {
 		altura: '',
 		codigo: '',
 		pesoProd: '',
-		tabela: '',
+		tabela: DEFAULT_MARGIN_TABLE_VALUE,
 		empresa,
 		pe: '2',
 		assembly: 'disassembled',
@@ -221,13 +221,12 @@ export default function NovoProduto() {
 					const company = res.data.data?.[ 0 ]
 					if ( company ) {
 						setCompanyData( company )
-						const tablecalc = parseFloat( company.attributes.tablecalc )
-						if ( !isNaN( tablecalc ) ) {
-							setFormData( ( prev ) => ( {
-								...prev,
-								tabela: tablecalc.toFixed( 2 ),
-							} ) )
-						}
+						setFormData( ( prev ) => ( {
+							...prev,
+							tabela: resolveMarginTableValue(
+								company.attributes.tablecalc,
+							),
+						} ) )
 					}
 				} )
 				.catch( () => {
@@ -353,7 +352,15 @@ export default function NovoProduto() {
 
 		setIsCalculating( true )
 		try {
-			const params = buildNovoProdutoCalcParams( formData )
+			const tabela = resolveMarginTableValue( formData.tabela )
+			const calcForm = tabela === formData.tabela
+				? formData
+				: { ...formData, tabela }
+			if ( calcForm !== formData ) {
+				setFormData( calcForm )
+			}
+
+			const params = buildNovoProdutoCalcParams( calcForm )
 			const response = await axios.get(
 				`/api/rbx/${ session?.user?.email }/produtos?${ params.toString() }`,
 			)
@@ -434,7 +441,7 @@ export default function NovoProduto() {
 				comprimento: formData.comprimento,
 				largura: formData.largura,
 				altura: formData.altura,
-				tabela: formData.tabela,
+				tabela: resolveMarginTableValue( formData.tabela ),
 				empresa: cnpjStr,
 				lastUser: session?.user?.name || 'Sistema',
 				lastChange: lastChange,
@@ -631,13 +638,10 @@ export default function NovoProduto() {
 									<FormFieldLabel>Tabela de margem</FormFieldLabel>
 									<Select
 										name="tabela"
-										value={ formData.tabela }
+										value={ resolveMarginTableValue( formData.tabela ) }
 										onChange={ handleInputChange }
 										{ ...produtoSelectStyles }
 									>
-										<option value="" { ...produtoSelectOptionProps }>
-											Selecione a tabela
-										</option>
 										{ marginTables.map( ( t ) => (
 											<option
 												key={ t.id }
@@ -814,11 +818,11 @@ export default function NovoProduto() {
 							modelId={ formData.modelo }
 							packageSummary={ packageSummary }
 							marginLabel={
-								formData.tabela
-									? marginTables.find(
-										( t ) => t.profitMargin.toFixed( 2 ) === formData.tabela,
-									)?.name ?? 'Margem Padrão'
-									: 'Margem Padrão'
+								marginTables.find(
+									( t ) => t.profitMargin.toFixed( 2 ) === resolveMarginTableValue(
+										formData.tabela,
+									),
+								)?.name ?? 'Vip'
 							}
 							isAdmin={ isAdmin }
 							onPriceChange={ handleAdminPriceChange }

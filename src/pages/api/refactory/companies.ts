@@ -85,7 +85,19 @@ export default async function handler (
 		}
 	} else if ( req.method === 'PUT' ) {
 		try {
+			const session = await getServerSession( req, res, authOptions )
+
+			if ( !session?.user ) {
+				return res.status( 401 ).json( { error: 'Unauthorized' } )
+			}
+
 			const { id, ...dataToUpdate } = req.body
+
+			if ( dataToUpdate.tablecalc !== undefined ) {
+				if ( session.user.pemission !== 'Adm' ) {
+					return res.status( 403 ).json( { error: 'Forbidden' } )
+				}
+			}
 
 			const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL
 			const authToken = process.env.ATORIZZATION_TOKEN

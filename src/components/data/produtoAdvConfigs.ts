@@ -5,6 +5,7 @@ import {
 	type AccessoryItem,
 } from '@/components/data/accessoryConfig'
 import cxConfigsDefaultsJson from '@/components/data/cxConfigsDefaults.json'
+import { resolveMarginTableValue } from '@/components/data/marginTables'
 import type { AssemblyType } from '@/lib/calculadora-de-embalagem/utils/packagingCalculator'
 
 export type AdvConfigKey = string
@@ -249,7 +250,9 @@ export function buildNovoProdutoCalcParams( form: NovoProdutoFormState ): URLSea
 	] as const
 
 	for ( const key of scalarKeys ) {
-		const value = form[ key ]
+		const value = key === 'tabela'
+			? resolveMarginTableValue( form.tabela )
+			: form[ key ]
 		if ( value !== undefined && value !== null && String( value ).trim() !== '' ) {
 			params.append( key, String( value ) )
 		}
@@ -358,7 +361,9 @@ export function mapLegacyProductToForm(
 		altura: String( product.altura ?? '' ),
 		codigo: String( product.codigo ?? '' ),
 		pesoProd: String( product.pesoProd ?? '' ),
-		tabela: product.tabela != null ? String( product.tabela ) : prev.tabela,
+		tabela: resolveMarginTableValue(
+			product.tabela != null ? String( product.tabela ) : prev.tabela,
+		),
 		pe: product.pe != null ? String( product.pe ) : prev.pe,
 		assembly:
 			typeof product.assembly === 'string' && product.assembly.length > 0
@@ -391,7 +396,7 @@ export function mergeFormAdvIntoCalcCaixa(
 	info.comprimento = form.comprimento
 	info.largura = form.largura
 	info.altura = form.altura
-	info.tabela = form.tabela
+	info.tabela = resolveMarginTableValue( form.tabela )
 	info.obsCaixa = form.obsCaixa
 
 	if ( modelSupportsAssembly( form.modelo ) ) {

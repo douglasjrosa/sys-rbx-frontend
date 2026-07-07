@@ -129,7 +129,13 @@ const Painel: React.FC = () => {
 		}
 		axios
 			.get( `/api/db/commission/calculate?username=${ encodeURIComponent( User ) }&mes=${ Mes }&ano=${ Year }` )
-			.then( ( r ) => setCommissionData( r.data ) )
+			.then( ( r ) => {
+				if ( r.data?.hasConfig === false ) {
+					setCommissionData( null )
+					return
+				}
+				setCommissionData( r.data )
+			} )
 			.catch( () => setCommissionData( null ) )
 	}, [ User, Mes, Year ] )
 

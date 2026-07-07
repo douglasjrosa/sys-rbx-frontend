@@ -1321,32 +1321,36 @@ function Produtos() {
 							w={{ base: 'full', lg: 'auto' }}
 							alignItems={{ base: 'stretch', md: 'center' }}
 						>
-							<Select
-								size="sm"
-								width={{ base: 'full', md: '200px' }}
-								borderRadius="md"
-								value={selectedTable || ''}
-								onChange={(e) => setSelectedTable(e.target.value)}
-								bg="gray.700"
-								border="none"
-							>
-								<option value="" style={{ background: '#1A202C' }}>Tabela</option>
-								{marginTables.map(table => (
-									<option key={table.id} value={table.profitMargin.toFixed(2)} style={{ background: '#1A202C' }}>
-										{table.name} ({(table.profitMargin * 100).toFixed(0)}%)
-									</option>
-								))}
-							</Select>
-							<Button
-								size="sm"
-								colorScheme="blue"
-								variant="solid"
-								onClick={handleSaveTable}
-								isDisabled={!selectedTable}
-								w={{ base: 'full', md: 'auto' }}
-							>
-								Aplicar Margem
-							</Button>
+							{isAdminUser && (
+								<>
+									<Select
+										size="sm"
+										width={{ base: 'full', md: '200px' }}
+										borderRadius="md"
+										value={selectedTable || ''}
+										onChange={(e) => setSelectedTable(e.target.value)}
+										bg="gray.700"
+										border="none"
+									>
+										<option value="" style={{ background: '#1A202C' }}>Tabela</option>
+										{marginTables.map(table => (
+											<option key={table.id} value={table.profitMargin.toFixed(2)} style={{ background: '#1A202C' }}>
+												{table.name} ({(table.profitMargin * 100).toFixed(0)}%)
+											</option>
+										))}
+									</Select>
+									<Button
+										size="sm"
+										colorScheme="blue"
+										variant="solid"
+										onClick={handleSaveTable}
+										isDisabled={!selectedTable}
+										w={{ base: 'full', md: 'auto' }}
+									>
+										Aplicar Margem
+									</Button>
+								</>
+							)}
 							<Box w={{ base: 'full', md: 'auto' }}>
 								<Link
 									href={{

@@ -124,6 +124,43 @@ export const marginTables: MarginTable[] = [
 	},
 ]
 
+export const VIP_MARGIN_TABLE =
+	marginTables.find( ( table ) => table.name === 'Vip' ) ?? marginTables[ 1 ]
+
+export const DEFAULT_MARGIN_TABLE_VALUE =
+	VIP_MARGIN_TABLE.profitMargin.toFixed( 2 )
+
+export function resolveMarginTableValue (
+	value?: string | number | null,
+): string {
+	if ( value === undefined || value === null || String( value ).trim() === '' ) {
+		return DEFAULT_MARGIN_TABLE_VALUE
+	}
+
+	const raw = String( value ).trim()
+	let marginValue = parseFloat( raw.replace( '%', '' ) )
+
+	if ( isNaN( marginValue ) || marginValue <= 0 ) {
+		return DEFAULT_MARGIN_TABLE_VALUE
+	}
+
+	if ( marginValue > 1 && !raw.includes( '.' ) ) {
+		marginValue = marginValue / 100
+	}
+
+	if ( marginValue <= 0 ) {
+		return DEFAULT_MARGIN_TABLE_VALUE
+	}
+
+	const matched = marginTables.find(
+		( table ) => table.profitMargin.toFixed( 2 ) === marginValue.toFixed( 2 ),
+	)
+
+	return matched
+		? matched.profitMargin.toFixed( 2 )
+		: marginValue.toFixed( 2 )
+}
+
 export const discounts = [
 	{
 		id: 0,
