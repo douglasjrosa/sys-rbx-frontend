@@ -4,6 +4,19 @@ export const config = { maxDuration: 60 }
 
 const FETCH_TIMEOUT_MS = 55000
 
+/** Locaweb nginx WAF blocks legacy GET URLs above ~350 chars (acessorios JSON). */
+const LEGACY_GET_QUERY_MAX_LEN = 320
+
+function shouldPostLegacyCalc ( queryString: string, params: Record<string, unknown> ): boolean {
+	if ( params.calcular !== '1' ) {
+		return false
+	}
+	if ( params.acessorios !== undefined && params.acessorios !== '' ) {
+		return true
+	}
+	return queryString.length > LEGACY_GET_QUERY_MAX_LEN
+}
+
 export default async function handler ( req: NextApiRequest, res: NextApiResponse ) {
 	try {
 		const { email, routes, ...params } = req.query
@@ -28,7 +41,10 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		}
 
 		const queryString = queryParams.toString()
-		const externalUrl = `${ rbxApiUrl }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
+		const routePath = `${ rbxApiUrl }/${ routes.join( '/' ) }`
+		const useLegacyCalcPost =
+			req.method === 'GET' &&
+			shouldPostLegacyCalc( queryString, params as Record<string, unknown> )
 
 		let bodyData = req.body
 		if ( [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ) {
@@ -42,19 +58,29 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			}
 		}
 
+		const externalUrl = useLegacyCalcPost
+			? routePath
+			: `${ routePath }${ queryString ? '?' + queryString : '' }`
+		const fetchMethod = useLegacyCalcPost ? 'POST' : ( req.method as string )
+		const fetchBody = useLegacyCalcPost
+			? JSON.stringify( Object.fromEntries( queryParams.entries() ) )
+			: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string )
+				? JSON.stringify( bodyData )
+				: null
+
 		const controller = new AbortController()
 		const timeout = setTimeout( () => controller.abort(), FETCH_TIMEOUT_MS )
 
 		let response: Response
 		try {
 			response = await fetch( externalUrl, {
-				method: req.method as string,
+				method: fetchMethod,
 				headers: {
 					Email: String( email ),
 					Token: rbxApiToken,
 					'Content-Type': 'application/json'
 				},
-				body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null,
+				body: fetchBody,
 				signal: controller.signal
 			} )
 		} finally {

@@ -178,10 +178,17 @@ export default async function handler(
   params.set("fields", "vFinal,titulo,error");
 
   const queryStr = params.toString();
+  const paramObject = Object.fromEntries(params.entries());
+  delete paramObject.Token;
+  const useLegacyCalcPost =
+    Boolean(paramObject.acessorios) || queryStr.length > 320;
+  const produtosUrl = `${rbxApiUrl}/produtos`;
   const urlsToTry = [
-    `${rbxApiUrl}/produtos?${queryStr}`,
+    useLegacyCalcPost ? produtosUrl : `${produtosUrl}?${queryStr}`,
     rbxApiUrl.endsWith("/api")
-      ? `${rbxApiUrl.replace(/\/api$/, "")}/produtos?${queryStr}`
+      ? useLegacyCalcPost
+        ? `${rbxApiUrl.replace(/\/api$/, "")}/produtos`
+        : `${rbxApiUrl.replace(/\/api$/, "")}/produtos?${queryStr}`
       : null,
   ].filter(Boolean) as string[];
 
@@ -195,12 +202,13 @@ export default async function handler(
   for (const externalUrl of urlsToTry) {
     try {
       const response = await fetch(externalUrl, {
-        method: "GET",
+        method: useLegacyCalcPost ? "POST" : "GET",
         headers: {
           "Content-Type": "application/json",
           Token: rbxApiToken,
           Email: calcEmail,
         },
+        body: useLegacyCalcPost ? JSON.stringify(paramObject) : undefined,
         signal: controller.signal,
       });
 
