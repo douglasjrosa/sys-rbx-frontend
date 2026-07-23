@@ -3,6 +3,9 @@ import { normalizeCnpj } from "@/utils/blingOAuth";
 
 const DATA_ENTREGA_FIXO = "7 dias após oficialização do pedido.";
 
+/** Default lead time shown when delivery is within this many days from today. */
+const DATA_ENTREGA_DEFAULT_DAYS = 7;
+
 const PEDIDO_POPULATE =
   "populate[fornecedorId]=*&populate[empresa]=*&populate[user]=*"
   + "&populate[business]=*";
@@ -10,6 +13,60 @@ const PEDIDO_POPULATE =
 type PedidoResult = {
   id: number;
   attributes: Record<string, any>;
+};
+
+/**
+ * Calendar-date only (local timezone) so PDF text does not depend on time-of-day.
+ */
+const toLocalDateOnly = (value: Date): Date =>
+  new Date(value.getFullYear(), value.getMonth(), value.getDate());
+
+/**
+ * Parses proposal delivery date (ISO or yyyy-mm-dd) into a local calendar date.
+ */
+const parseDeliveryDate = (raw: unknown): Date | null => {
+  if (raw == null || raw === "") return null;
+  const str = String(raw).trim();
+  const datePart = str.includes("T") ? str.split("T")[0] : str.slice(0, 10);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+  return date;
+};
+
+const formatDeliveryDdMmYyyy = (date: Date): string => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+/**
+ * When delivery is more than 7 days after today, print dd/mm/yyyy;
+ * otherwise keep the fixed lead-time phrase.
+ */
+const resolveDataEntregaLabel = (rawDataEntrega: unknown): string => {
+  const delivery = parseDeliveryDate(rawDataEntrega);
+  if (!delivery) return DATA_ENTREGA_FIXO;
+
+  const today = toLocalDateOnly(new Date());
+  const threshold = new Date(today);
+  threshold.setDate(threshold.getDate() + DATA_ENTREGA_DEFAULT_DAYS);
+
+  if (delivery.getTime() > threshold.getTime()) {
+    return formatDeliveryDdMmYyyy(delivery);
+  }
+  return DATA_ENTREGA_FIXO;
 };
 
 const formatCnpj = (cnpj: string): string => {
@@ -148,7 +205,7 @@ export const getData = async (pedidoId: any) => {
       cliente_pedido,
       Desconto,
       DescontoAdd,
-      dataEntrega: DATA_ENTREGA_FIXO,
+      dataEntrega: resolveDataEntregaLabel(inf.dataEntrega),
       custoAdicional,
     };
   } catch (error) {
