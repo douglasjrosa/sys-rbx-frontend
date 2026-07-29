@@ -1,6 +1,7 @@
 import { Badge, Box, Button, Checkbox, Icon, Input, Table, TableContainer, Tbody, Td, Th, Thead, Tr, VStack, HStack } from "@chakra-ui/react"
 import React, { Dispatch, SetStateAction } from "react"
 import { BsX } from "react-icons/bs"
+import { FaClone } from "react-icons/fa"
 import { formatCurrency, parseCurrency } from "@/utils/customNumberFormats"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
 import { getTableBadgeColor, getTableNameInPortuguese } from "@/utils/tableUtils"
@@ -14,6 +15,21 @@ interface TableItemsProps {
 const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChange, companyTablecalc } ) => {
 
 	const MIN_QTD = 0
+
+	const handleCloneItem = ( index: number ) => {
+		const item = itemsList[ index ]
+		if ( !item ) return
+		const cloned = { ...item, mont: false, expo: false }
+		const rawPrice = parseCurrency( cloned.vFinal )
+		cloned.total = ( rawPrice * Number( cloned.Qtd || 1 ) )
+			.toLocaleString( 'pt-BR', {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2,
+			} )
+		const updated = [ ...itemsList ]
+		updated.splice( index + 1, 0, cloned )
+		setItemsListOnChange( updated )
+	}
 
 	const handleItemChange = ( args: { index: number, qtde?: number, mont?: boolean, expo?: boolean, deleteItem?: boolean } ) => {
 		const { index, qtde, mont, expo, deleteItem } = args
@@ -72,9 +88,10 @@ const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChang
 						<Th px='0' w={ "3rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
 							Qtd
 						</Th>
-						<Th px='0' w={ "6rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
-							Preço total
-						</Th>
+					<Th px='0' w={ "6rem" } color='white' textAlign={ 'center' } fontSize={ '0.7rem' }>
+						Preço total
+					</Th>
+					<Th px='0' w={ "1.3rem" }></Th>
 					</Tr>
 				</Thead>
 				<Tbody>
@@ -267,8 +284,34 @@ const TableItems: React.FC<TableItemsProps> = ( { itemsList, setItemsListOnChang
 										rounded="md"
 									/>
 								</Td>
-								<Td textAlign="center" fontSize="xs" verticalAlign="middle" py={5}>{ formatCurrency( item.total ) }</Td>
-							</Tr>
+							<Td textAlign="center" fontSize="xs" verticalAlign="middle" py={5}>{ formatCurrency( item.total ) }</Td>
+							<Td textAlign="center" fontSize="xs" verticalAlign="middle" py={5}>
+								<Button
+									bg="transparent"
+									color="blue.300"
+									border="1px solid"
+									borderColor="blue.300"
+									rounded="md"
+									width="24px"
+									height="24px"
+									minW="24px"
+									p={ 0 }
+									_hover={ {
+										bg: "blue.400",
+										color: "white",
+									} }
+									_active={ {
+										bg: "blue.500",
+										color: "white",
+									} }
+									_focus={ { boxShadow: "none" } }
+									onClick={ () => handleCloneItem( key ) }
+									title="Duplicar item"
+								>
+									<Icon as={ FaClone } boxSize={ 3 } />
+								</Button>
+							</Td>
+						</Tr>
 						)
 					} ) }
 				</Tbody>
