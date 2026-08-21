@@ -59,10 +59,6 @@ h2{color:#e06c75;margin-top:0}p{color:#9cdcfe;}</style>
 			return
 		}
 
-		if ( latamActive ) {
-			infos.fornecedor.data.cnpj = infos.fornecedor.data.cnpj.replace( /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "00.000.000/0000-00" )
-		}
-
 		const imagePath = path.join(
 			process.cwd(),
 			"public",
