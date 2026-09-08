@@ -161,6 +161,51 @@ export function toStrapiSyncProduto(
 	return { ...rest, prodId }
 }
 
+/**
+ * Normalizes produto.versions to chronological string ids.
+ */
+export function normalizeProdutoVersions( value: unknown ): string[] {
+	let rows: unknown[] = []
+	if ( Array.isArray( value ) ) {
+		rows = value
+	} else if ( typeof value === 'string' ) {
+		const trimmed = value.trim()
+		if ( !trimmed || trimmed === 'null' ) return []
+		try {
+			const parsed = JSON.parse( trimmed ) as unknown
+			if ( Array.isArray( parsed ) ) rows = parsed
+		} catch {
+			return []
+		}
+	}
+
+	const seen = new Set<string>()
+	const out: string[] = []
+	for ( const entry of rows ) {
+		if ( typeof entry !== 'string' && typeof entry !== 'number' ) continue
+		const code = String( entry ).trim()
+		if ( !code || !/^\d+$/.test( code ) || seen.has( code ) ) continue
+		seen.add( code )
+		out.push( code )
+	}
+	return out
+}
+
+/**
+ * Builds versions for a product that replaces a previous prodId.
+ */
+export function buildVersionsForReplacement(
+	previousVersions: unknown,
+	replacedProdId: number,
+): string[] {
+	const versions = normalizeProdutoVersions( previousVersions )
+	const replaced = String( replacedProdId )
+	if ( !versions.includes( replaced ) ) {
+		versions.push( replaced )
+	}
+	return versions
+}
+
 /** Active legacy products with numeric prodId for Strapi sync. */
 export function mapLegacyProductsForSync(
 	products: unknown[],

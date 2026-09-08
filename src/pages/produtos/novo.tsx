@@ -66,6 +66,8 @@ import {
 	parseLegacySaveResponse,
 	prepareLegacySavePayload,
 	toStrapiSyncProduto,
+	buildVersionsForReplacement,
+	normalizeProdutoVersions,
 } from '@/utils/produtoCalcResponse'
 import { ASSEMBLY_OPTIONS } from '@/lib/calculadora-de-embalagem/utils/formOptions'
 
@@ -141,6 +143,7 @@ export default function NovoProduto() {
 	const [ result, setResult ] = useState<ProdutoCalcInfo | null>( null )
 	const [ savePayload, setSavePayload ] = useState<ProdutoSavePayload | null>( null )
 	const [ replaceLoaded, setReplaceLoaded ] = useState<number | null>( null )
+	const [ previousVersions, setPreviousVersions ] = useState<string[]>( [] )
 	const [ accessoryMpOptions, setAccessoryMpOptions ] = useState<AccessoryMpOption[]>(
 		[],
 	)
@@ -242,6 +245,7 @@ export default function NovoProduto() {
 						if ( Number.isFinite( loadedId ) && loadedId > 0 ) {
 							setReplaceLoaded( loadedId )
 						}
+						setPreviousVersions( normalizeProdutoVersions( p.versions ) )
 
 						setFormData( ( prev ) => {
 							const mapped = mapLegacyProductToForm( p, prev )
@@ -462,9 +466,18 @@ export default function NovoProduto() {
 
 			const newIndice = parseLegacySaveResponse( wpRes.data )
 
+			const versionsForSync = replaceProdId
+				? buildVersionsForReplacement( previousVersions, replaceProdId )
+				: []
+
 			const syncRes = await axios.post( `/api/db/produtos/sync`, {
 				empresaId: company.id,
-				produtos: [ toStrapiSyncProduto( wpSaveData, newIndice ) ],
+				produtos: [
+					toStrapiSyncProduto(
+						{ ...wpSaveData, versions: versionsForSync },
+						newIndice,
+					),
+				],
 			} )
 
 			if ( syncRes.data.failed > 0 ) {
