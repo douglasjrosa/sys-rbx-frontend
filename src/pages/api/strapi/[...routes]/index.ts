@@ -47,13 +47,33 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
 		} )
 
-		const responseData = await response.json()
+		const rawBody = await response.text()
+		let responseData: unknown = null
+		if ( rawBody ) {
+			try {
+				responseData = JSON.parse( rawBody )
+			} catch {
+				if ( !response.ok ) {
+					res.status( response.status ).json( {
+						errorMessage: `Request failed: ${ response.statusText }`,
+						responseError: rawBody.slice( 0, 500 ),
+					} )
+					return
+				}
+				responseData = { ok: true, raw: rawBody.slice( 0, 500 ) }
+			}
+		}
 
 		if ( !response.ok ) {
 			res.status( response.status ).json( {
 				errorMessage: `Request failed: ${ response.statusText }`,
 				responseError: responseData
 			} )
+			return
+		}
+
+		if ( responseData === null ) {
+			res.status( response.status ).end()
 			return
 		}
 

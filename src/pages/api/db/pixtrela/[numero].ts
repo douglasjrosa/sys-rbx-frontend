@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import axios, { type AxiosError } from "axios"
 import type { NextApiRequest, NextApiResponse } from "next"
+import { resolveProductOrderLabel } from "@/utils/productDisplayName"
 
 export const config = { maxDuration: 60 }
 
@@ -9,6 +10,10 @@ type PedidoItem = {
 	Qtd?: number | string
 	nomeProd?: string
 	versions?: unknown
+	modelo?: string
+	comprimento?: string | number
+	largura?: string | number
+	altura?: string | number
 }
 
 type BoxTemplateData = {
@@ -226,21 +231,33 @@ export default async function postPixtrelaTasks(
 		const results: Array<{ externalKey: string; action: string }> = []
 		let usedRbxFallback = false
 
+		const prodIds: number[] = []
 		for (let index = 0; index < items.length; index += 1) {
-			const item = items[index]
-			const prodId = Number(item.prodId)
+			const prodId = Number(items[index].prodId)
 			if (!Number.isInteger(prodId) || prodId <= 0) {
 				return res.status(400).json(
 					errorPayload(
 						trace,
 						"validate",
 						`Item ${index} has invalid prodId.`,
-						{ itemIndex: index, prodId: item.prodId },
+						{ itemIndex: index, prodId: items[index].prodId },
 					),
 				)
 			}
+			prodIds.push(prodId)
+		}
 
-			const product = await fetchProductByProdId(prodId, trace)
+		const productRows = await Promise.all(
+			prodIds.map((prodId) => fetchProductByProdId(prodId, trace)),
+		)
+		const productByProdId = new Map(
+			prodIds.map((prodId, index) => [prodId, productRows[index]]),
+		)
+
+		for (let index = 0; index < items.length; index += 1) {
+			const item = items[index]
+			const prodId = prodIds[index]
+			const product = productByProdId.get(prodId) ?? null
 			const template = isBoxTemplateData(product?.templateData)
 				? {
 						...(product!.templateData as BoxTemplateData),
@@ -257,10 +274,11 @@ export default async function postPixtrelaTasks(
 
 			const versions = normalizeVersions(product?.versions ?? item.versions ?? [])
 			const qty = Math.max(1, Math.round(Number(item.Qtd) || 1))
-			const productName = String(
-				item.nomeProd ?? template?.boxName ?? `produto ${prodId}`,
-			).trim()
-			const name = `${empresaNome} - ${productName}`
+			const productLabel =
+				resolveProductOrderLabel(item).trim() ||
+				template?.boxName?.trim() ||
+				`produto ${prodId}`
+			const name = `${empresaNome} - ${productLabel}`
 			const externalKey = `${pedidoId}:${index}`
 
 			trace.mark("pixtrela_task_start", `item=${index} prodId=${prodId}`)

@@ -573,7 +573,6 @@ const Proposta = () => {
       ...orderSaveData,
       fornecedor: emitenteCnpj,
       fornecedorId: resolvedFornecedorId,
-      publishedAt: new Date().toISOString(),
     };
 
     const response = await fetch(strapiEndPoint, {
@@ -595,9 +594,17 @@ const Proposta = () => {
       });
     } else {
       const savedPedidoId = save.data.id;
-      await fetch(`/api/strapi/pedidos/${savedPedidoId}/actions/publish`, {
-        method: "POST",
-      });
+      const publishResponse = await fetch(
+        `/api/strapi/pedidos/${savedPedidoId}/actions/publish`,
+        { method: "POST" },
+      );
+      if (!publishResponse.ok) {
+        console.warn(
+          "Pedido publish skipped:",
+          publishResponse.status,
+          await publishResponse.text().catch(() => ""),
+        );
+      }
 
       toast({
         title: "Tudo certo!",

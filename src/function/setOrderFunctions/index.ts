@@ -301,6 +301,7 @@ export type SendTasksToPixtrelaResult = {
 	ok: boolean
 	results?: Array<{ externalKey: string; action: string }>
 	usedRbxFallback?: boolean
+	totalMs?: number
 	message?: string
 }
 

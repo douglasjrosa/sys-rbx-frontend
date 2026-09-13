@@ -412,25 +412,17 @@ const SendOrderModal = (props: any) => {
 			// Handling Pixtrela production tasks
 			toast({
 				title: "PIXTRELA:",
-				description: "Enviando tarefas de produção...",
-				status: "success",
+				description:
+					"Enviando tarefas de produção. Se o modelo ainda não foi " +
+					"sincronizado, o Pixtrela consulta o legado (RBX) e isso pode " +
+					"levar até 1 minuto por item.",
+				status: "info",
 				isClosable: true,
-				duration: 3000,
+				duration: 15000,
 				position: "bottom",
 			})
 			try {
 				const pixtrelaResult = await sendTasksToPixtrela(propostaId)
-				if (pixtrelaResult.usedRbxFallback) {
-					toast({
-						title: "PIXTRELA:",
-						description:
-							"Criando templates de produção a partir do legado (RBX)...",
-						status: "info",
-						isClosable: true,
-						duration: 5000,
-						position: "bottom",
-					})
-				}
 				if (!pixtrelaResult.ok && !pixtrelaResult.results?.length) {
 					toast({
 						title: "PIXTRELA: Ooops, tivemos um pequeno problema...",

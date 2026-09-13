@@ -23,12 +23,10 @@ interface ProductLike {
 	altura?: string | number
 }
 
-export function buildProductDisplayName( product: ProductLike ): string {
-	const category = getProductCategory( product.modelo )
-	const nomeProd = ( product.nomeProd ?? '' ).trim()
-
-	if ( nomeProd ) return `${ category }: ${ nomeProd }`
-
+function measurementsLabel(
+	category: string,
+	product: ProductLike,
+): string {
 	const comp = product.comprimento
 	const larg = product.largura
 	const alt = product.altura
@@ -41,4 +39,26 @@ export function buildProductDisplayName( product: ProductLike ): string {
 	}
 
 	return category
+}
+
+/**
+ * Product label for order integrations (Bling name suffix, Pixtrela task name).
+ * Uses nomeProd when set; otherwise falls back to category + measurements.
+ */
+export function resolveProductOrderLabel( product: ProductLike ): string {
+	const category = getProductCategory( product.modelo )
+	const nomeProd = ( product.nomeProd ?? '' ).trim()
+
+	if ( nomeProd ) return nomeProd
+
+	return measurementsLabel( category, product )
+}
+
+export function buildProductDisplayName( product: ProductLike ): string {
+	const category = getProductCategory( product.modelo )
+	const nomeProd = ( product.nomeProd ?? '' ).trim()
+
+	if ( nomeProd ) return `${ category }: ${ nomeProd }`
+
+	return measurementsLabel( category, product )
 }
