@@ -86,6 +86,7 @@ export type OrderStatusType = {
 	strapiLastOrderUpdated: boolean
 	strapiLoteUpdated: boolean
 	trelloCardsCreated: boolean
+	pixtrelaTasksCreated: boolean
 	strapiOrderUpdated: boolean
 }
 
@@ -294,6 +295,30 @@ export const sendCardsToTrello = async ( propostaId: string ) => {
 	const response = await fetch( `/api/db/trello/${ propostaId }`, { method: 'POST' } )
 	if ( !response.ok ) throw new Error( `Error fetching order: ${ response.statusText }` )
 	return await response.json()
+}
+
+export type SendTasksToPixtrelaResult = {
+	ok: boolean
+	results?: Array<{ externalKey: string; action: string }>
+	usedRbxFallback?: boolean
+	message?: string
+}
+
+export const sendTasksToPixtrela = async (
+	propostaId: string,
+): Promise<SendTasksToPixtrelaResult> => {
+	const response = await fetch( `/api/db/pixtrela/${ propostaId }`, {
+		method: "POST",
+	} )
+	const payload = await response.json().catch( () => ( {} ) )
+	if ( !response.ok ) {
+		throw new Error(
+			typeof payload?.message === "string"
+				? payload.message
+				: `Error sending tasks to Pixtrela: ${ response.statusText }`,
+		)
+	}
+	return payload as SendTasksToPixtrelaResult
 }
 
 type BlingProductLookup = {

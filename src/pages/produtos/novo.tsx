@@ -470,11 +470,37 @@ export default function NovoProduto() {
 				? buildVersionsForReplacement( previousVersions, replaceProdId )
 				: []
 
+			let templateData: Record<string, unknown> | null = null
+			let templateDataWarning = false
+			try {
+				const templateRes = await axios.get(
+					`/api/rbx/${ session.user.email }/produtos`,
+					{ params: { templateData: newIndice } },
+				)
+				const templatePayload = templateRes.data
+				if (
+					templatePayload &&
+					typeof templatePayload === 'object' &&
+					!Array.isArray( templatePayload ) &&
+					!( 'error' in templatePayload )
+				) {
+					templateData = templatePayload as Record<string, unknown>
+				} else {
+					templateDataWarning = true
+				}
+			} catch {
+				templateDataWarning = true
+			}
+
 			const syncRes = await axios.post( `/api/db/produtos/sync`, {
 				empresaId: company.id,
 				produtos: [
 					toStrapiSyncProduto(
-						{ ...wpSaveData, versions: versionsForSync },
+						{
+							...wpSaveData,
+							versions: versionsForSync,
+							...( templateData ? { templateData } : {} ),
+						},
 						newIndice,
 					),
 				],
@@ -486,13 +512,23 @@ export default function NovoProduto() {
 				)
 			}
 
-			toast( {
-				title: isEditMode
-					? 'Nova versão do produto salva com sucesso'
-					: 'Produto salvo com sucesso',
-				status: 'success',
-				duration: 5000,
-			} )
+			if ( templateDataWarning ) {
+				toast( {
+					title: 'Produto salvo, mas o snapshot de produção falhou',
+					description:
+						'O templateData não foi gravado. O envio do pedido tentará o fallback no RBX.',
+					status: 'warning',
+					duration: 8000,
+				} )
+			} else {
+				toast( {
+					title: isEditMode
+						? 'Nova versão do produto salva com sucesso'
+						: 'Produto salvo com sucesso',
+					status: 'success',
+					duration: 5000,
+				} )
+			}
 			router.push( `/produtos?empresaId=${ company.id }` )
 		} catch ( error: unknown ) {
 			const err = error as { response?: { data?: { error?: string } }; message?: string }

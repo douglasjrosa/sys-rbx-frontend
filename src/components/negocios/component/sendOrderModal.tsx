@@ -1,4 +1,4 @@
-import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, resolveBlingClientIdAfterSave, resolveBusinessBudget, saveClient, sendBlingOrder, sendCardsToTrello, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
+import { BlingOrderDataType, OrderStatusType, clientExists, fetchOrderData, getFormattedDate, handleInstallments, handleItems, postNLote, resolveBlingClientIdAfterSave, resolveBusinessBudget, saveClient, sendBlingOrder, sendCardsToTrello, sendTasksToPixtrela, updateBusinessInStrapi, updateLastOrderInStrapi, updateOrderInStrapi } from "@/function/setOrderFunctions"
 import { parseCurrency } from "@/utils/customNumberFormats"
 import { normalizeCnpj } from "@/utils/blingOAuth"
 import { Button, Flex, IconButton, Modal, Text, ModalBody, ModalContent, ModalHeader, ModalOverlay, useToast } from "@chakra-ui/react"
@@ -86,6 +86,7 @@ const SendOrderModal = (props: any) => {
 					strapiLastOrderUpdated: false,
 					strapiLoteUpdated: false,
 					trelloCardsCreated: false,
+					pixtrelaTasksCreated: false,
 					strapiOrderUpdated: false
 				}
 			const orderId = fullOrderData.id
@@ -408,6 +409,54 @@ const SendOrderModal = (props: any) => {
 			}
 			else orderStatus.trelloCardsCreated = true
 
+			// Handling Pixtrela production tasks
+			toast({
+				title: "PIXTRELA:",
+				description: "Enviando tarefas de produção...",
+				status: "success",
+				isClosable: true,
+				duration: 3000,
+				position: "bottom",
+			})
+			try {
+				const pixtrelaResult = await sendTasksToPixtrela(propostaId)
+				if (pixtrelaResult.usedRbxFallback) {
+					toast({
+						title: "PIXTRELA:",
+						description:
+							"Criando templates de produção a partir do legado (RBX)...",
+						status: "info",
+						isClosable: true,
+						duration: 5000,
+						position: "bottom",
+					})
+				}
+				if (!pixtrelaResult.ok && !pixtrelaResult.results?.length) {
+					toast({
+						title: "PIXTRELA: Ooops, tivemos um pequeno problema...",
+						description: "Erro ao enviar as tarefas para o Pixtrela.",
+						status: "error",
+						isClosable: true,
+						duration: 30000,
+						position: "bottom",
+					})
+					orderStatus.pixtrelaTasksCreated = false
+					return false
+				}
+				orderStatus.pixtrelaTasksCreated = true
+			} catch (error: any) {
+				toast({
+					title: "PIXTRELA: Ooops, tivemos um pequeno problema...",
+					description:
+						error?.message || "Erro ao enviar as tarefas para o Pixtrela.",
+					status: "error",
+					isClosable: true,
+					duration: 30000,
+					position: "bottom",
+				})
+				orderStatus.pixtrelaTasksCreated = false
+				return false
+			}
 
 			// Handling order update in Strapi
 			toast({
@@ -449,6 +498,7 @@ const SendOrderModal = (props: any) => {
 			updateLastOrderInStrapi,
 			postNLote,
 			sendCardsToTrello,
+			sendTasksToPixtrela,
 			updateOrderInStrapi,
 			getFormattedDate,
 			resolveBusinessBudget,
