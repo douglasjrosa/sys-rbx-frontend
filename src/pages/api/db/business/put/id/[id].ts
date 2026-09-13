@@ -2,6 +2,7 @@
 import axios from 'axios'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { updateEmpresaPurchase } from '../../../../lib/update-empresa-purchase'
+import { enqueueTemplateDataSyncForBusiness } from '../../../lib/sync-product-template-data'
 
 export default async function GetEmpresa (
 	req: NextApiRequest,
@@ -66,6 +67,8 @@ export default async function GetEmpresa (
 						// Don't fail the request if empresa update fails
 					}
 				}
+
+				enqueueTemplateDataSyncForBusiness( String( id ) )
 
 				res.status( 200 ).json( Response.data.data )
 

@@ -3,6 +3,7 @@ import axios from "axios"
 import { NextApiRequest, NextApiResponse } from "next"
 import { Historico } from "../../lib/historico"
 import { RegCompra } from "../../lib/empresa_reg_compra"
+import { enqueueTemplateDataSyncForBusiness } from "../../lib/sync-product-template-data"
 
 export default async function GetEmpresa (
 	req: NextApiRequest,
@@ -98,6 +99,8 @@ export default async function GetEmpresa (
 				}
 				const url = `empresas/${ data.empresa }`
 				const Register = await Historico( txt, url )
+
+				enqueueTemplateDataSyncForBusiness( response.data.data.id )
 
 				res.status( 200 ).json( {
 					status: 200,

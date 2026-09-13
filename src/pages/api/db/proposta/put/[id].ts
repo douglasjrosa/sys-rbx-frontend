@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { IncidentRecord } from "../../lib/businesses"
 import { Historico } from "../../lib/historico"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
+import { enqueueTemplateDataSyncForPedidoItems } from "../../lib/sync-product-template-data"
 
 export default async function PUTEmpresa (
 	req: NextApiRequest,
@@ -103,6 +104,7 @@ export default async function PUTEmpresa (
 				await IncidentRecord( txtOcorrencia, data.business )
 				const url2 = `businesses/${ data.business }`
 				await Historico( txt, url2 )
+				enqueueTemplateDataSyncForPedidoItems( data.itens )
 				res.status( 200 ).json( {
 					status: 200,
 					message: `Proposta comercial de numero: ${ data.nPedido }, do cliente ${ ClienteName }, foi atualizada pelo vendedor ${ data.vendedor } no dia ${ VisibliDateTime }`,

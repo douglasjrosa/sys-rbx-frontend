@@ -3,6 +3,7 @@ import axios from "axios"
 import { NextApiRequest, NextApiResponse } from "next"
 import { Historico } from "../../lib/historico"
 import { Populate } from "./populate"
+import { enqueueTemplateDataSyncForPedidoItems } from "../../lib/sync-product-template-data"
 
 export default async function PostEmpresa (
 	req: NextApiRequest,
@@ -125,6 +126,7 @@ export default async function PostEmpresa (
 				const Register = await Historico( txt, url )
 				const url2 = `businesses/${ data.business }`
 				await Historico( txt, url2 )
+				enqueueTemplateDataSyncForPedidoItems( data.itens )
 
 				res.status( 200 ).json( {
 					status: 200,

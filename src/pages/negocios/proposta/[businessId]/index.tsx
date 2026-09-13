@@ -606,6 +606,13 @@ const Proposta = () => {
         );
       }
 
+      void fetch(`/api/db/business/sync-template-data/${effectiveBusinessId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itens: itemsList }),
+        keepalive: true,
+      }).catch(() => undefined);
+
       toast({
         title: "Tudo certo!",
         description: "A proposta foi salva.",
