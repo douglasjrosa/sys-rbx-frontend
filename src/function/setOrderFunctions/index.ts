@@ -312,11 +312,26 @@ export const sendTasksToPixtrela = async (
 	} )
 	const payload = await response.json().catch( () => ( {} ) )
 	if ( !response.ok ) {
-		throw new Error(
-			typeof payload?.message === "string"
-				? payload.message
-				: `Error sending tasks to Pixtrela: ${ response.statusText }`,
-		)
+		const parts: string[] = []
+		if ( typeof payload?.message === "string" ) {
+			parts.push( payload.message )
+		}
+		if ( typeof payload?.stage === "string" ) {
+			parts.push( `stage=${ payload.stage }` )
+		}
+		if ( typeof payload?.detail === "string" ) {
+			parts.push( payload.detail )
+		}
+		if ( Array.isArray( payload?.trace ) && payload.trace.length > 0 ) {
+			const last = payload.trace[payload.trace.length - 1]
+			if ( last?.stage ) {
+				parts.push( `last=${ last.stage }@${ last.durationMs }ms` )
+			}
+		}
+		if ( parts.length === 0 ) {
+			parts.push( `Error sending tasks to Pixtrela: ${ response.statusText }` )
+		}
+		throw new Error( parts.join( " | " ) )
 	}
 	return payload as SendTasksToPixtrelaResult
 }

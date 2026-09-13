@@ -1,6 +1,8 @@
 /* eslint-disable no-undef */
-import axios from "axios"
+import axios, { type AxiosError } from "axios"
 import type { NextApiRequest, NextApiResponse } from "next"
+
+export const config = { maxDuration: 60 }
 
 type PedidoItem = {
 	prodId?: number | string
@@ -22,11 +24,36 @@ type ProductRow = {
 	templateData?: unknown
 }
 
-const FETCH_TIMEOUT_MS = 55_000
+type StageTrace = {
+	stage: string
+	durationMs: number
+	detail?: string
+}
+
+type PixtrelaTaskSource = "legacy" | "existing" | "payload" | "rbx"
+
+const STRAPI_TIMEOUT_MS = 12_000
+const PIXTRELA_TIMEOUT_MS = 45_000
 
 const strapiAuthHeaders = {
 	Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
 	"Content-Type": "application/json",
+}
+
+function createTrace() {
+	const startedAt = Date.now()
+	const stages: StageTrace[] = []
+	return {
+		mark(stage: string, detail?: string) {
+			stages.push({
+				stage,
+				durationMs: Date.now() - startedAt,
+				detail,
+			})
+		},
+		stages,
+		totalMs: () => Date.now() - startedAt,
+	}
 }
 
 function parsePedidoItens(itens: unknown): PedidoItem[] {
@@ -82,7 +109,26 @@ function isBoxTemplateData(value: unknown): value is BoxTemplateData {
 	)
 }
 
-async function fetchProductByProdId(prodId: number): Promise<ProductRow | null> {
+function isRbxTemplateSource(source: unknown): boolean {
+	return source === "rbx"
+}
+
+function formatAxiosError(error: AxiosError): string {
+	if (error.code === "ECONNABORTED") {
+		return "request timed out"
+	}
+	const status = error.response?.status
+	if (status) {
+		return `HTTP ${status}`
+	}
+	return error.message || "request failed"
+}
+
+async function fetchProductByProdId(
+	prodId: number,
+	trace: ReturnType<typeof createTrace>,
+): Promise<ProductRow | null> {
+	trace.mark("strapi_product_start", `prodId=${prodId}`)
 	const response = await axios({
 		url:
 			`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/produtos` +
@@ -90,11 +136,15 @@ async function fetchProductByProdId(prodId: number): Promise<ProductRow | null> 
 			`&fields[0]=prodId&fields[1]=versions&fields[2]=templateData` +
 			`&pagination[limit]=1`,
 		headers: strapiAuthHeaders,
-		timeout: FETCH_TIMEOUT_MS,
+		timeout: STRAPI_TIMEOUT_MS,
 	})
 	const row = response.data?.data?.[0]
-	if (!row) return null
+	if (!row) {
+		trace.mark("strapi_product_missing", `prodId=${prodId}`)
+		return null
+	}
 	const attrs = row.attributes ?? row
+	trace.mark("strapi_product_ok", `prodId=${prodId}`)
 	return {
 		prodId: Number(attrs.prodId ?? prodId),
 		versions: attrs.versions,
@@ -102,36 +152,21 @@ async function fetchProductByProdId(prodId: number): Promise<ProductRow | null> 
 	}
 }
 
-async function fetchRbxTemplateData(
-	prodId: number,
-	email: string,
-): Promise<BoxTemplateData | null> {
-	const rbxApiUrl = process.env.RIBERMAX_API_URL
-	const rbxApiToken = process.env.RIBERMAX_API_TOKEN
-	if (!rbxApiUrl || !rbxApiToken) return null
-
-	const response = await axios({
-		url: `${rbxApiUrl}/produtos`,
-		params: { templateData: prodId },
-		headers: {
-			Email: email,
-			Token: rbxApiToken,
-			Accept: "application/json",
-		},
-		timeout: FETCH_TIMEOUT_MS,
-		validateStatus: () => true,
-	})
-	if (
-		response.status >= 200 &&
-		response.status < 300 &&
-		isBoxTemplateData(response.data)
-	) {
-		return {
-			...response.data,
-			prodId: Number(response.data.prodId),
-		}
+function errorPayload(
+	trace: ReturnType<typeof createTrace>,
+	stage: string,
+	message: string,
+	extra: Record<string, unknown> = {},
+) {
+	trace.mark(stage, message)
+	return {
+		ok: false,
+		message,
+		stage,
+		trace: trace.stages,
+		totalMs: trace.totalMs(),
+		...extra,
 	}
-	return null
 }
 
 export default async function postPixtrelaTasks(
@@ -142,40 +177,50 @@ export default async function postPixtrelaTasks(
 		return res.status(405).json({ message: "Only POST requests are allowed" })
 	}
 
+	const trace = createTrace()
 	const pixtrelaApiUrl = (process.env.PIXTRELA_API_URL || "").replace(/\/+$/, "")
 	const pixtrelaApiSecret = (process.env.PIXTRELA_API_SECRET || "").trim()
 	if (!pixtrelaApiUrl || !pixtrelaApiSecret) {
-		return res.status(503).json({
-			message: "Pixtrela API is not configured (PIXTRELA_API_URL / SECRET).",
-		})
+		return res.status(503).json(
+			errorPayload(
+				trace,
+				"config",
+				"Pixtrela API is not configured (PIXTRELA_API_URL / SECRET).",
+			),
+		)
 	}
 
 	const { numero } = req.query
 	if (!numero || Array.isArray(numero)) {
-		return res.status(400).json({ message: "Invalid pedido number" })
+		return res.status(400).json(
+			errorPayload(trace, "validate", "Invalid pedido number"),
+		)
 	}
 
 	try {
+		trace.mark("strapi_pedido_start", `pedido=${numero}`)
 		const requestPedido = await axios({
 			url:
 				`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/pedidos/${numero}` +
 				`?populate[empresa][fields][0]=nome` +
 				`&populate[empresa][fields][1]=email`,
 			headers: strapiAuthHeaders,
-			timeout: FETCH_TIMEOUT_MS,
+			timeout: STRAPI_TIMEOUT_MS,
 		})
+		trace.mark("strapi_pedido_ok", `pedido=${numero}`)
+
 		const pedido = requestPedido.data.data
 		const pedidoId = Number(pedido.id)
 		const attrs = pedido.attributes
 		const items = parsePedidoItens(attrs.itens)
 		const empresaNome =
 			attrs.empresa?.data?.attributes?.nome?.trim() || "Sem empresa"
-		const empresaEmail =
-			attrs.empresa?.data?.attributes?.email?.trim() || "sistema@ribermax.com"
 		const deliveryDate = attrs.dataEntrega ?? null
 
 		if (items.length === 0) {
-			return res.status(400).json({ message: "Pedido has no items." })
+			return res.status(400).json(
+				errorPayload(trace, "validate", "Pedido has no items."),
+			)
 		}
 
 		const results: Array<{ externalKey: string; action: string }> = []
@@ -185,13 +230,18 @@ export default async function postPixtrelaTasks(
 			const item = items[index]
 			const prodId = Number(item.prodId)
 			if (!Number.isInteger(prodId) || prodId <= 0) {
-				return res.status(400).json({
-					message: `Item ${index} has invalid prodId.`,
-				})
+				return res.status(400).json(
+					errorPayload(
+						trace,
+						"validate",
+						`Item ${index} has invalid prodId.`,
+						{ itemIndex: index, prodId: item.prodId },
+					),
+				)
 			}
 
-			const product = await fetchProductByProdId(prodId)
-			let template = isBoxTemplateData(product?.templateData)
+			const product = await fetchProductByProdId(prodId, trace)
+			const template = isBoxTemplateData(product?.templateData)
 				? {
 						...(product!.templateData as BoxTemplateData),
 						prodId: Number((product!.templateData as BoxTemplateData).prodId),
@@ -199,21 +249,21 @@ export default async function postPixtrelaTasks(
 				: null
 			if (!template) {
 				usedRbxFallback = true
-				template = await fetchRbxTemplateData(prodId, empresaEmail)
-			}
-			if (!template) {
-				return res.status(502).json({
-					message: `Could not resolve templateData for prodId ${prodId}.`,
-					usedRbxFallback,
-				})
+				trace.mark(
+					"rbx_fallback_deferred",
+					`prodId=${prodId} (Pixtrela will fetch RBX)`,
+				)
 			}
 
 			const versions = normalizeVersions(product?.versions ?? item.versions ?? [])
 			const qty = Math.max(1, Math.round(Number(item.Qtd) || 1))
-			const productName = String(item.nomeProd ?? template.boxName).trim()
+			const productName = String(
+				item.nomeProd ?? template?.boxName ?? `produto ${prodId}`,
+			).trim()
 			const name = `${empresaNome} - ${productName}`
 			const externalKey = `${pedidoId}:${index}`
 
+			trace.mark("pixtrela_task_start", `item=${index} prodId=${prodId}`)
 			const response = await axios({
 				method: "POST",
 				url: `${pixtrelaApiUrl}/api/tasks`,
@@ -231,17 +281,36 @@ export default async function postPixtrelaTasks(
 					versions,
 					template,
 				},
-				timeout: FETCH_TIMEOUT_MS,
+				timeout: PIXTRELA_TIMEOUT_MS,
 				validateStatus: () => true,
 			})
+			trace.mark(
+				"pixtrela_task_response",
+				`item=${index} status=${response.status}`,
+			)
 
 			if (response.status < 200 || response.status >= 300) {
-				return res.status(502).json({
-					message: `Pixtrela rejected task for item ${index}.`,
-					status: response.status,
-					body: response.data,
-					usedRbxFallback,
-				})
+				return res.status(502).json(
+					errorPayload(
+						trace,
+						"pixtrela_task",
+						`Pixtrela rejected task for item ${index}.`,
+						{
+							itemIndex: index,
+							prodId,
+							pixtrelaStatus: response.status,
+							pixtrelaBody: response.data,
+							usedRbxFallback,
+						},
+					),
+				)
+			}
+
+			const templateSource = response.data?.templateSource as
+				| PixtrelaTaskSource
+				| undefined
+			if (isRbxTemplateSource(templateSource)) {
+				usedRbxFallback = true
 			}
 
 			results.push({
@@ -250,15 +319,29 @@ export default async function postPixtrelaTasks(
 			})
 		}
 
+		trace.mark("done", `items=${results.length}`)
 		return res.status(201).json({
 			ok: true,
 			results,
 			usedRbxFallback,
+			trace: trace.stages,
+			totalMs: trace.totalMs(),
 		})
-	} catch (error: any) {
-		return res.status(error?.response?.status || 400).json({
-			message: error?.message || "Failed to sync tasks to Pixtrela.",
-			details: error?.response?.data,
-		})
+	} catch (error: unknown) {
+		const axiosError = axios.isAxiosError(error) ? error : null
+		const stage = axiosError?.config?.url?.includes("/api/tasks")
+			? "pixtrela_task"
+			: "strapi"
+		const detail = axiosError ? formatAxiosError(axiosError) : undefined
+		const message =
+			error instanceof Error
+				? error.message
+				: "Failed to sync tasks to Pixtrela."
+		return res.status(axiosError?.response?.status === 504 ? 504 : 502).json(
+			errorPayload(trace, stage, message, {
+				detail,
+				responseData: axiosError?.response?.data,
+			}),
+		)
 	}
 }
