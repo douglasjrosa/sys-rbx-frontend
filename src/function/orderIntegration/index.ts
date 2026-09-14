@@ -9,7 +9,7 @@ import {
 	getFormattedDate,
 	handleInstallments,
 	handleItems,
-	postNLote,
+	ensureOrderLotes,
 	resolveBlingClientIdAfterSave,
 	resolveBusinessBudget,
 	saveClient,
@@ -386,8 +386,8 @@ export async function runStrapiIntegration(
 		}
 		ctx.orderStatus.strapiLastOrderUpdated = true
 
-		const nLoteUpdate = await postNLote(propostaId)
-		if (!nLoteUpdate?.lotes?.length) {
+		const loteEnsure = await ensureOrderLotes(propostaId)
+		if (!loteEnsure.ready || !loteEnsure.lotes?.length) {
 			ctx.orderStatus.strapiLoteUpdated = false
 			return {
 				target: "strapi",
@@ -454,11 +454,36 @@ export async function runIntegrationsParallel(
 	const wantsPixtrela = targets.includes("pixtrela")
 	const wantsStrapi = targets.includes("strapi")
 
+	let trelloPreFailure: IntegrationResult | null = null
+
+	if (wantsTrello || wantsStrapi) {
+		try {
+			const loteEnsure = await ensureOrderLotes(ctx.propostaId)
+			if (loteEnsure.ready && loteEnsure.lotes?.length) {
+				ctx.orderStatus.strapiLoteUpdated = true
+			}
+		} catch (error) {
+			if (wantsTrello) {
+				const message =
+					error instanceof Error ? error.message : "Erro ao gerar lotes."
+				trelloPreFailure = {
+					target: "trello",
+					ok: false,
+					message: "TRELLO: Lotes indisponíveis",
+					description: message,
+				}
+				ctx.orderStatus.trelloCardsCreated = false
+			}
+		}
+	}
+
 	const blingPromise = wantsBling
 		? runBlingIntegration(ctx)
 		: Promise.resolve(null)
 	const trelloPromise = wantsTrello
-		? runTrelloIntegration(ctx)
+		? trelloPreFailure
+			? Promise.resolve(trelloPreFailure)
+			: runTrelloIntegration(ctx)
 		: Promise.resolve(null)
 	const pixtrelaPromise = wantsPixtrela
 		? runPixtrelaIntegration(ctx, handlers.onPixtrelaItem)

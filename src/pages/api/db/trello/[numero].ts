@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 import axios from "axios"
 import { NextApiRequest, NextApiResponse } from "next"
-import { GetLoteProposta } from "../../lib/get_lote_nProposta"
 import { GetTrelloId } from "../../lib/get_trello_id"
 import { ErroTrello } from "../../lib/errtrello"
 import { appendIncidentRecords } from "../lib/businesses"
@@ -10,6 +9,7 @@ import {
 	getTrelloAssemblyLabel,
 	isOrderItemMont,
 } from "@/utils/assemblyLabel"
+import { ensureLotesForPedido } from "../lib/create-pedido-lotes"
 
 
 export default async function PostTrello (
@@ -18,17 +18,38 @@ export default async function PostTrello (
 ) {
 	if ( req.method === "POST" ) {
 		const { numero } = req.query
+		if ( !numero || Array.isArray( numero ) ) {
+			return res.status( 400 ).json( { message: "Número do pedido inválido." } )
+		}
 
-		const requestPedido = await axios( {
-			url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ numero }?populate=*`,
-			headers: {
-				Authorization: `Bearer ${ process.env.ATORIZZATION_TOKEN }`,
-				"Content-Type": "application/json",
-			},
-		} )
-		const pedido = requestPedido.data.data
+		let pedido
+		try {
+			const requestPedido = await axios( {
+				url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ numero }?populate=*`,
+				headers: {
+					Authorization: `Bearer ${ process.env.ATORIZZATION_TOKEN }`,
+					"Content-Type": "application/json",
+				},
+			} )
+			pedido = requestPedido.data.data
+		} catch ( error: any ) {
+			const message =
+				error?.response?.data?.error?.message ||
+				error?.message ||
+				"Não foi possível carregar o pedido no Strapi."
+			return res.status( 502 ).json( { message } )
+		}
 
-		const lote = await GetLoteProposta( numero )
+		let lote
+		try {
+			const ensured = await ensureLotesForPedido( String( numero ), pedido )
+			lote = ensured.lotes
+		} catch ( error: any ) {
+			const message =
+				error?.message ||
+				"Não foi possível gerar lotes para o pedido antes do Trello."
+			return res.status( 502 ).json( { message } )
+		}
 
 		const items = pedido.attributes.itens
 		const cliente = pedido.attributes.empresa.data.attributes.nome
@@ -188,13 +209,18 @@ export default async function PostTrello (
 
 			if ( cardsSent.length === 0 ) {
 				return res.status( 502 ).json( {
-					message: "Nenhum card foi criado no Trello.",
+					message:
+						"Nenhum card foi criado no Trello. Verifique credenciais e lista.",
 				} )
 			}
-			
+
 			res.status( 201 ).json( cardsSent )
 		} catch ( error: any ) {
-			res.status( error.status || 400 ).json( error )
+			const message =
+				error?.message ||
+				error?.response?.data?.message ||
+				"Erro inesperado ao enviar cards para o Trello."
+			res.status( error?.status || 502 ).json( { message } )
 		}
 	} else {
 		return res.status( 405 ).send( { message: "Only POST requests are allowed" } )

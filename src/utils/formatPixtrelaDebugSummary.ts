@@ -35,7 +35,13 @@ export function formatPixtrelaDebugSummary(
 				: action === "created"
 					? " (primeiro envio — criou task+subtasks)"
 					: ""
+		const excludedSlowStages = new Set([
+			"upsert_start",
+			"upsert_done",
+			"apply_step_ordering",
+		])
 		const slowStage = (item.pixtrelaDebugTrace ?? [])
+			.filter((stage) => !excludedSlowStages.has(stage.stage ?? ""))
 			.slice()
 			.sort((a, b) => (b.ms ?? 0) - (a.ms ?? 0))[0]
 		const slowHint = slowStage?.stage

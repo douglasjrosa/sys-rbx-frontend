@@ -262,6 +262,24 @@ export const postNLote = async ( propostaId: string ) => {
 	return data
 }
 
+export const ensureOrderLotes = async (
+	propostaId: string,
+): Promise<{ ready: boolean; created: boolean; lotes?: unknown[] }> => {
+	const response = await fetch(
+		`/api/db/nLote/ensure/${ propostaId }`,
+		{ method: "POST" },
+	)
+	const data = await response.json().catch( () => ( {} ) )
+	if ( !response.ok ) {
+		const message =
+			typeof data?.message === "string"
+				? data.message
+				: `HTTP ${ response.status }`
+		throw new Error( message )
+	}
+	return data
+}
+
 export const fetchOrderData = async ( propostaId: string ) => {
 	const response = await fetch( `/api/strapi/pedidos/${ propostaId }?populate=*` )
 	if ( !response.ok ) throw new Error( `Error fetching order: ${ response.statusText }` )
@@ -293,8 +311,15 @@ export const resolveBusinessBudget = async (
 
 export const sendCardsToTrello = async ( propostaId: string ) => {
 	const response = await fetch( `/api/db/trello/${ propostaId }`, { method: 'POST' } )
-	if ( !response.ok ) throw new Error( `Error fetching order: ${ response.statusText }` )
-	return await response.json()
+	const payload = await response.json().catch( () => ( {} ) )
+	if ( !response.ok ) {
+		const message =
+			typeof payload?.message === "string"
+				? payload.message
+				: `HTTP ${ response.status }`
+		throw new Error( message )
+	}
+	return payload
 }
 
 export type SendTasksToPixtrelaResult = {
