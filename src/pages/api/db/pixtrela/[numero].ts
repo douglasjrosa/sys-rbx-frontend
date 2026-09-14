@@ -2,11 +2,8 @@
 import axios, { type AxiosError } from "axios"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { resolveProductOrderLabel } from "@/utils/productDisplayName"
-import { pixtrelaDebugLog } from "../lib/pixtrela-debug-log"
 import {
-	describeTemplateDataShape,
 	findStrapiProductByProdId,
-	isBoxTemplateData,
 	toBoxTemplateData,
 } from "../lib/strapi-product-template"
 
@@ -39,21 +36,6 @@ type StageTrace = {
 }
 
 type PixtrelaTaskSource = "legacy" | "existing" | "payload" | "rbx"
-
-type ItemDebugRow = {
-	itemIndex: number
-	prodId: number
-	strapiProductId: number | null
-	strapiResolvedVia: string | null
-	strapiTemplateShape: string
-	sentTemplate: boolean
-	sentSubtaskCount: number
-	pixtrelaMs: number
-	pixtrelaStatus: number
-	pixtrelaAction: string | null
-	pixtrelaTemplateSource: string | null
-	pixtrelaDebugTrace: unknown
-}
 
 const STRAPI_TIMEOUT_MS = 12_000
 const PIXTRELA_TIMEOUT_MS = 45_000
@@ -163,24 +145,7 @@ async function fetchProductByProdId(
 		versionsResponse.data?.data ??
 		{}
 
-	trace.mark(
-		"strapi_product_ok",
-		`prodId=${prodId} via=${product.resolvedVia ?? "?"} ` +
-			`shape=${describeTemplateDataShape(product.templateData)}`,
-	)
-	pixtrelaDebugLog(
-		"pixtrela/[numero].ts:fetchProductByProdId",
-		"strapi product resolved",
-		{
-			prodId,
-			empresaId,
-			strapiProductId: product.id,
-			resolvedVia: product.resolvedVia ?? null,
-			templateValid: product.templateValid,
-			templateShape: describeTemplateDataShape(product.templateData),
-		},
-		"H1",
-	)
+	trace.mark("strapi_product_ok", `prodId=${prodId}`)
 	return {
 		prodId: product.prodId,
 		versions: versionsAttrs.versions,
@@ -202,8 +167,6 @@ function errorPayload(
 		ok: false,
 		message,
 		stage,
-		trace: trace.stages,
-		totalMs: trace.totalMs(),
 		...extra,
 	}
 }
@@ -290,7 +253,6 @@ export default async function postPixtrelaTasks(
 		}
 
 		const results: Array<{ externalKey: string; action: string }> = []
-		const itemDebug: ItemDebugRow[] = []
 		let usedRbxFallback = false
 
 		const prodIds: number[] = []
@@ -320,41 +282,10 @@ export default async function postPixtrelaTasks(
 			const item = items[index]
 			const prodId = Number(item.prodId)
 			const product = productByProdId.get(prodId) ?? null
-			const templateShape = describeTemplateDataShape(product?.templateData)
 			const template = toBoxTemplateData(product?.templateData)
 			if (!template) {
 				usedRbxFallback = true
-				trace.mark(
-					"rbx_fallback_deferred",
-					`prodId=${prodId} shape=${templateShape} (Pixtrela RBX)`,
-				)
-				pixtrelaDebugLog(
-					"pixtrela/[numero].ts:item",
-					"crm will send template=null",
-					{
-						itemIndex: index,
-						prodId,
-						empresaId,
-						templateShape,
-						strapiProductId: product?.strapiProductId ?? null,
-					},
-					"H2",
-				)
-			} else {
-				trace.mark(
-					"strapi_template_payload",
-					`prodId=${prodId} subtasks=${template.subtasks.length}`,
-				)
-				pixtrelaDebugLog(
-					"pixtrela/[numero].ts:item",
-					"crm will send template payload",
-					{
-						itemIndex: index,
-						prodId,
-						subtaskCount: template.subtasks.length,
-					},
-					"H2",
-				)
+				trace.mark("rbx_fallback_deferred", `prodId=${prodId}`)
 			}
 
 			const versions = normalizeVersions(product?.versions ?? item.versions ?? [])
@@ -367,7 +298,6 @@ export default async function postPixtrelaTasks(
 			const externalKey = `${pedidoId}:${index}`
 
 			trace.mark("pixtrela_task_start", `item=${index} prodId=${prodId}`)
-			const pixtrelaStartedAt = Date.now()
 			const response = await axios({
 				method: "POST",
 				url: `${pixtrelaApiUrl}/api/tasks`,
@@ -388,44 +318,13 @@ export default async function postPixtrelaTasks(
 				timeout: PIXTRELA_TIMEOUT_MS,
 				validateStatus: () => true,
 			})
-			const pixtrelaMs = Date.now() - pixtrelaStartedAt
 			const templateSource = response.data?.templateSource as
 				| PixtrelaTaskSource
 				| undefined
 			trace.mark(
 				"pixtrela_task_response",
-				`item=${index} status=${response.status} ms=${pixtrelaMs} ` +
-					`source=${templateSource ?? "none"}`,
+				`item=${index} status=${response.status}`,
 			)
-			pixtrelaDebugLog(
-				"pixtrela/[numero].ts:pixtrelaResponse",
-				"pixtrela api/tasks responded",
-				{
-					itemIndex: index,
-					prodId,
-					pixtrelaMs,
-					status: response.status,
-					action: response.data?.action ?? null,
-					templateSource: templateSource ?? null,
-					debugTrace: response.data?.debugTrace ?? null,
-					sentTemplate: template !== null,
-				},
-				templateSource === "rbx" ? "H4" : "H5",
-			)
-			itemDebug.push({
-				itemIndex: index,
-				prodId,
-				strapiProductId: product?.strapiProductId ?? null,
-				strapiResolvedVia: product?.resolvedVia ?? null,
-				strapiTemplateShape: templateShape,
-				sentTemplate: template !== null,
-				sentSubtaskCount: template?.subtasks.length ?? 0,
-				pixtrelaMs,
-				pixtrelaStatus: response.status,
-				pixtrelaAction: response.data?.action ?? null,
-				pixtrelaTemplateSource: templateSource ?? null,
-				pixtrelaDebugTrace: response.data?.debugTrace ?? null,
-			})
 
 			if (response.status < 200 || response.status >= 300) {
 				return res.status(502).json(
@@ -457,31 +356,17 @@ export default async function postPixtrelaTasks(
 		trace.mark("done", `items=${results.length}`)
 		const singleItemFailed =
 			requestedItemIndex !== null && results.length === 0
+		const firstIndex = indexesToProcess[0]
 		const summary = {
 			ok: !singleItemFailed,
 			results,
 			usedRbxFallback,
-			trace: trace.stages,
-			totalMs: trace.totalMs(),
-			debug: { empresaId, itemDebug },
+			itemIndex: requestedItemIndex ?? firstIndex,
+			prodId:
+				firstIndex !== undefined
+					? Number(items[firstIndex]?.prodId)
+					: undefined,
 		}
-		pixtrelaDebugLog(
-			"pixtrela/[numero].ts:done",
-			"pixtrela sync complete",
-			{ totalMs: summary.totalMs, usedRbxFallback, itemDebug },
-			"H5",
-		)
-		const firstItem = itemDebug[0]
-		res.setHeader(
-			"X-Pixtrela-Debug",
-			JSON.stringify({
-				totalMs: summary.totalMs,
-				usedRbxFallback,
-				sentTemplate: firstItem?.sentTemplate ?? null,
-				templateSource: firstItem?.pixtrelaTemplateSource ?? null,
-				pixtrelaMs: firstItem?.pixtrelaMs ?? null,
-			}).slice(0, 500),
-		)
 		return res.status(singleItemFailed ? 502 : 201).json(summary)
 	} catch (error: unknown) {
 		const axiosError = axios.isAxiosError(error) ? error : null

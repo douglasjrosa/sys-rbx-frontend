@@ -6,6 +6,7 @@ import {
 	runIntegrationsParallel,
 	type OrderIntegrationTarget,
 } from "@/function/orderIntegration"
+import { OrderIntegrationToastManager } from "@/utils/orderIntegrationToasts"
 import { useCallback, useMemo, useState } from "react"
 import { Box, Button, Text, VStack, useToast } from "@chakra-ui/react"
 
@@ -35,6 +36,10 @@ export default function ResendIntegrationButtons(
 	props: ResendIntegrationButtonsProps,
 ) {
 	const toast = useToast()
+	const toastManager = useMemo(
+		() => new OrderIntegrationToastManager(toast),
+		[toast],
+	)
 	const [loadingTarget, setLoadingTarget] = useState<OrderIntegrationTarget | null>(
 		null,
 	)
@@ -42,24 +47,6 @@ export default function ResendIntegrationButtons(
 	const orderStatus = useMemo(
 		() => parseOrderStatus(props.orderStatusRaw),
 		[props.orderStatusRaw],
-	)
-
-	const showResultToast = useCallback(
-		(
-			title: string,
-			description?: string,
-			status: "success" | "error" | "info" = "info",
-		) => {
-			toast({
-				title,
-				description,
-				status,
-				isClosable: true,
-				duration: status === "error" ? 30000 : 8000,
-				position: "bottom",
-			})
-		},
-		[toast],
 	)
 
 	const runTarget = useCallback(
@@ -76,63 +63,66 @@ export default function ResendIntegrationButtons(
 					existingBlingOrderId: props.blingOrderId,
 				})
 				if (!ctx) {
-					showResultToast(
+					toastManager.showFinalError(
 						"Erro",
 						"Não foi possível carregar os dados do pedido.",
-						"error",
 					)
 					return
 				}
 
-				toast({
-					title: "Enviando dados do pedido.",
-					status: "info",
-					isClosable: true,
-					duration: 4000,
-					position: "bottom",
-				})
+				toastManager.startPending()
 
-				await runIntegrationsParallel(ctx, [target], {
+				const { ok } = await runIntegrationsParallel(ctx, [target], {
 					onBling: (result) => {
-						showResultToast(
+						toastManager.showResult(
 							result.message,
 							result.description,
-							result.ok ? "success" : "error",
+							!result.ok,
 						)
 					},
 					onTrello: (result) => {
-						showResultToast(
+						toastManager.showResult(
 							result.message,
 							result.description,
-							result.ok ? "success" : "error",
+							!result.ok,
 						)
 					},
 					onPixtrelaItem: (item) => {
-						showResultToast(
-							`PIXTRELA: item ${item.itemIndex + 1}`,
-							item.summary,
-							item.ok ? "success" : "error",
+						toastManager.showResult(
+							item.title,
+							item.description,
+							!item.ok,
 						)
 					},
 					onStrapi: (result) => {
-						showResultToast(
+						toastManager.showResult(
 							result.message,
 							result.description,
-							result.ok ? "success" : "error",
+							!result.ok,
 						)
 					},
 				})
 
+				if (ok) {
+					toastManager.showFinalSuccess(
+						"Tudo certo!",
+						"Pedido reenviado com sucesso.",
+					)
+				} else {
+					toastManager.closePending()
+				}
+
 				props.onRefresh?.()
 			} catch (error) {
+				toastManager.closePending()
 				const description =
 					error instanceof Error ? error.message : "Erro inesperado."
-				showResultToast("Falha no envio", description, "error")
+				toastManager.showFinalError("Falha no envio", description)
 			} finally {
 				setLoadingTarget(null)
 			}
 		},
-		[props, showResultToast, toast],
+		[props, toastManager],
 	)
 
 	return (

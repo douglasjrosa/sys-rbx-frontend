@@ -1,4 +1,4 @@
-import { formatPixtrelaDebugSummary } from "@/utils/formatPixtrelaDebugSummary"
+import { formatPixtrelaItemToast } from "@/utils/formatPixtrelaItemToast"
 import { parseCurrency } from "@/utils/customNumberFormats"
 import { normalizeCnpj } from "@/utils/blingOAuth"
 import {
@@ -299,26 +299,37 @@ export async function runPixtrelaIntegration(
 						result.message ?? `Item ${itemIndex + 1} falhou no Pixtrela.`,
 					)
 				}
-				const itemDebug = result.debug as {
-					itemDebug?: Array<{ prodId?: number }>
-				} | undefined
-				const prodId = itemDebug?.itemDebug?.[0]?.prodId ?? 0
+				const prodId = result.prodId ?? 0
+				const action = result.results?.[0]?.action
+				const toastCopy = formatPixtrelaItemToast({
+					itemIndex,
+					prodId,
+					action,
+					ok: Boolean(result.ok),
+				})
 				onItemComplete?.({
 					itemIndex,
 					prodId,
 					ok: Boolean(result.ok),
-					summary: formatPixtrelaDebugSummary(result),
-					result,
+					action,
+					title: toastCopy.title,
+					description: toastCopy.description,
 				})
 			} catch (error) {
 				const message =
 					error instanceof Error ? error.message : "Erro no Pixtrela."
 				errors.push(`Item ${itemIndex + 1}: ${message}`)
+				const toastCopy = formatPixtrelaItemToast({
+					itemIndex,
+					ok: false,
+					errorMessage: message,
+				})
 				onItemComplete?.({
 					itemIndex,
 					prodId: 0,
 					ok: false,
-					summary: message,
+					title: toastCopy.title,
+					description: toastCopy.description,
 				})
 			}
 		}),

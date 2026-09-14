@@ -2,6 +2,7 @@ import {
 	buildOrderContext,
 	runIntegrationsParallel,
 } from "@/function/orderIntegration"
+import { OrderIntegrationToastManager } from "@/utils/orderIntegrationToasts"
 import {
 	Button,
 	Flex,
@@ -15,7 +16,7 @@ import {
 	useToast,
 } from "@chakra-ui/react"
 import { useRouter } from "next/router"
-import { useCallback, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { FaTimes } from "react-icons/fa"
 
 const WEEKDAYS_PT = [
@@ -67,6 +68,10 @@ const SendOrderModal = (props: {
 
 	const router = useRouter()
 	const toast = useToast()
+	const toastManager = useMemo(
+		() => new OrderIntegrationToastManager(toast),
+		[toast],
+	)
 	const [load, setload] = useState<boolean>(false)
 
 	const runParallelIntegrations = useCallback(async (): Promise<boolean> => {
@@ -74,25 +79,14 @@ const SendOrderModal = (props: {
 			orderData
 
 		if (!propostaId || !businessId) {
-			toast({
-				title: "Erro",
-				description:
-					"Dados incompletos. Verifique se o negócio possui uma proposta.",
-				status: "error",
-				isClosable: true,
-				duration: 5000,
-				position: "bottom",
-			})
+			toastManager.showFinalError(
+				"Erro",
+				"Dados incompletos. Verifique se o negócio possui uma proposta.",
+			)
 			return false
 		}
 
-		toast({
-			title: "Enviando dados do pedido.",
-			status: "info",
-			isClosable: true,
-			duration: 4000,
-			position: "bottom",
-		})
+		toastManager.startPending()
 
 		const ctx = await buildOrderContext({
 			propostaId: String(propostaId),
@@ -103,14 +97,10 @@ const SendOrderModal = (props: {
 		})
 
 		if (!ctx) {
-			toast({
-				title: "Erro ao carregar pedido",
-				description: "Não foi possível obter os dados da proposta.",
-				status: "error",
-				isClosable: true,
-				duration: 5000,
-				position: "bottom",
-			})
+			toastManager.showFinalError(
+				"Erro ao carregar pedido",
+				"Não foi possível obter os dados da proposta.",
+			)
 			return false
 		}
 
@@ -119,97 +109,76 @@ const SendOrderModal = (props: {
 			["bling", "trello", "pixtrela", "strapi"],
 			{
 				onBling: (result) => {
-					toast({
-						title: result.message,
-						description: result.description,
-						status: result.ok ? "success" : "error",
-						isClosable: true,
-						duration: result.ok ? 8000 : 30000,
-						position: "bottom",
-					})
+					toastManager.showResult(
+						result.message,
+						result.description,
+						!result.ok,
+					)
 				},
 				onTrello: (result) => {
-					toast({
-						title: result.message,
-						description: result.description,
-						status: result.ok ? "success" : "error",
-						isClosable: true,
-						duration: result.ok ? 8000 : 30000,
-						position: "bottom",
-					})
+					toastManager.showResult(
+						result.message,
+						result.description,
+						!result.ok,
+					)
 				},
 				onPixtrelaItem: (item) => {
-					toast({
-						title: `PIXTRELA: item ${item.itemIndex + 1}`,
-						description: item.summary,
-						status: item.ok ? "success" : "error",
-						isClosable: true,
-						duration: item.ok ? 60000 : 30000,
-						position: "bottom",
-					})
+					toastManager.showResult(
+						item.title,
+						item.description,
+						!item.ok,
+					)
 				},
 				onStrapi: (result) => {
-					toast({
-						title: result.message,
-						description: result.description,
-						status: result.ok ? "success" : "error",
-						isClosable: true,
-						duration: result.ok ? 8000 : 30000,
-						position: "bottom",
-					})
+					toastManager.showResult(
+						result.message,
+						result.description,
+						!result.ok,
+					)
 				},
 			},
 		)
 
 		return ok
-	}, [orderData, toast])
+	}, [orderData, toastManager])
 
 	const handleConfirm = useCallback(async () => {
 		setload(true)
 		onchat(false)
+		let finishedWithFinalToast = false
 		try {
 			const orderOk = await runParallelIntegrations()
 			if (!orderOk) {
-				toast({
-					title: "Negócio não foi concluído",
-					description:
-						"O pedido não foi integrado por completo. " +
+				toastManager.showFinalError(
+					"Negócio não foi concluído",
+					"O pedido não foi integrado por completo. " +
 						"Corrija os problemas indicados e tente novamente.",
-					status: "error",
-					isClosable: true,
-					duration: 30000,
-					position: "bottom",
-				})
+				)
+				finishedWithFinalToast = true
 				return
 			}
 			if (saveBusiness) {
 				await saveBusiness()
 			}
-			toast({
-				title: "Tudo certo!",
-				description: "Pedido enviado e negócio concluído com sucesso.",
-				status: "success",
-				isClosable: true,
-				duration: 5000,
-				position: "bottom",
-			})
+			toastManager.showFinalSuccess(
+				"Tudo certo!",
+				"Pedido enviado e negócio concluído com sucesso.",
+			)
+			finishedWithFinalToast = true
 			onClose()
 		} catch (error) {
 			const description =
 				error instanceof Error ? error.message : "Erro inesperado. Tente novamente."
-			toast({
-				title: "Erro ao confirmar pedido",
-				description,
-				status: "error",
-				duration: 30000,
-				isClosable: true,
-				position: "bottom",
-			})
+			toastManager.showFinalError("Erro ao confirmar pedido", description)
+			finishedWithFinalToast = true
 		} finally {
+			if (!finishedWithFinalToast) {
+				toastManager.closePending()
+			}
 			setload(false)
 			onchat(true)
 		}
-	}, [runParallelIntegrations, saveBusiness, toast, onClose, onchat])
+	}, [runParallelIntegrations, saveBusiness, toastManager, onClose, onchat])
 
 	const handleAlter = useCallback(() => {
 		onClose()

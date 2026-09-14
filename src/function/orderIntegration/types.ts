@@ -1,4 +1,4 @@
-import type { OrderStatusType, SendTasksToPixtrelaResult } from "@/function/setOrderFunctions"
+import type { OrderStatusType } from "@/function/setOrderFunctions"
 
 export type OrderIntegrationTarget = "bling" | "trello" | "pixtrela" | "strapi"
 
@@ -28,8 +28,9 @@ export type PixtrelaItemToastPayload = {
 	itemIndex: number
 	prodId: number
 	ok: boolean
-	summary: string
-	result?: SendTasksToPixtrelaResult
+	action?: string
+	title: string
+	description?: string
 }
 
 export type IntegrationToastHandlers = {

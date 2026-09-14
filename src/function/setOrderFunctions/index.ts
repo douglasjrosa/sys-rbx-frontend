@@ -326,10 +326,9 @@ export type SendTasksToPixtrelaResult = {
 	ok: boolean
 	results?: Array<{ externalKey: string; action: string }>
 	usedRbxFallback?: boolean
-	totalMs?: number
 	message?: string
-	debug?: unknown
-	trace?: unknown
+	itemIndex?: number
+	prodId?: number
 }
 
 export const sendPixtrelaItem = async (
@@ -392,15 +391,7 @@ export const sendTasksToPixtrela = async (
 		}
 		throw new Error( parts.join( " | " ) )
 	}
-	const result = payload as SendTasksToPixtrelaResult
-	// #region agent log
-	if ( typeof window !== "undefined" ) {
-		( window as Window & { __PIXTRELA_DEBUG__?: SendTasksToPixtrelaResult } )
-			.__PIXTRELA_DEBUG__ = result
-	}
-	console.warn( "[PIXTRELA_DEBUG]", result )
-	// #endregion
-	return result
+	return payload as SendTasksToPixtrelaResult
 }
 
 type BlingProductLookup = {
