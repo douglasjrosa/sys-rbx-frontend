@@ -307,6 +307,37 @@ export type SendTasksToPixtrelaResult = {
 	trace?: unknown
 }
 
+export const sendPixtrelaItem = async (
+	propostaId: string,
+	itemIndex: number,
+): Promise<SendTasksToPixtrelaResult> => {
+	const response = await fetch( `/api/db/pixtrela/${ propostaId }`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify( { itemIndex } ),
+	} )
+	const payload = await response.json().catch( () => ( {} ) )
+	if ( !response.ok || payload?.ok === false ) {
+		const parts: string[] = []
+		if ( typeof payload?.message === "string" ) {
+			parts.push( payload.message )
+		}
+		if ( typeof payload?.stage === "string" ) {
+			parts.push( `stage=${ payload.stage }` )
+		}
+		if ( typeof payload?.detail === "string" ) {
+			parts.push( payload.detail )
+		}
+		if ( parts.length === 0 ) {
+			parts.push(
+				`Error sending item ${ itemIndex } to Pixtrela: ${ response.statusText }`,
+			)
+		}
+		throw new Error( parts.join( " | " ) )
+	}
+	return payload as SendTasksToPixtrelaResult
+}
+
 export const sendTasksToPixtrela = async (
 	propostaId: string,
 ): Promise<SendTasksToPixtrelaResult> => {
@@ -483,25 +514,15 @@ export const createBlingProduct = async (
 	return await createBlingProduct( blingAccountCnpj, productData, delay + 1000 )
 }
 
-export const handleItems = async ( blingAccountCnpj: string, items: any[], toast: any ): Promise<any> => {
+export const handleItems = async (
+	blingAccountCnpj: string,
+	items: any[],
+): Promise<any> => {
 
 	let respItems: any[] = []
-	let index = 0
 	for ( const item of items ) {
-		index++
-
-		// first of all, check if the product is already registered in Bling
 		const { ncm, expo, mont, vFinal, Qtd, codigo } = item
 		const displayName = buildProductDisplayName( item )
-
-		toast( {
-			title: `Checando item ${ index }`,
-			description: displayName,
-			status: "success",
-			isClosable: true,
-			duration: 7000,
-			position: "bottom",
-		} )
 
 		let preco: number = parseCurrency( vFinal )
 		const acrescimo = 1 + ( expo ? 0.1 : 0 ) + ( mont ? 0.1 : 0 )

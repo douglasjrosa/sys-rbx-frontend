@@ -264,12 +264,37 @@ export default async function postPixtrelaTasks(
 			)
 		}
 
+		const body =
+			typeof req.body === "object" && req.body !== null
+				? (req.body as { itemIndex?: number })
+				: {}
+		const requestedItemIndex =
+			body.itemIndex === undefined || body.itemIndex === null
+				? null
+				: Number(body.itemIndex)
+
+		const indexesToProcess =
+			requestedItemIndex === null
+				? items.map((_, index) => index)
+				: [requestedItemIndex]
+
+		if (
+			requestedItemIndex !== null &&
+			(!Number.isInteger(requestedItemIndex) ||
+				requestedItemIndex < 0 ||
+				requestedItemIndex >= items.length)
+		) {
+			return res.status(400).json(
+				errorPayload(trace, "validate", "Invalid itemIndex for pedido."),
+			)
+		}
+
 		const results: Array<{ externalKey: string; action: string }> = []
 		const itemDebug: ItemDebugRow[] = []
 		let usedRbxFallback = false
 
 		const prodIds: number[] = []
-		for (let index = 0; index < items.length; index += 1) {
+		for (const index of indexesToProcess) {
 			const prodId = Number(items[index].prodId)
 			if (!Number.isInteger(prodId) || prodId <= 0) {
 				return res.status(400).json(
@@ -291,9 +316,9 @@ export default async function postPixtrelaTasks(
 			prodIds.map((prodId, index) => [prodId, productRows[index]]),
 		)
 
-		for (let index = 0; index < items.length; index += 1) {
+		for (const index of indexesToProcess) {
 			const item = items[index]
-			const prodId = prodIds[index]
+			const prodId = Number(item.prodId)
 			const product = productByProdId.get(prodId) ?? null
 			const templateShape = describeTemplateDataShape(product?.templateData)
 			const template = toBoxTemplateData(product?.templateData)
@@ -430,8 +455,10 @@ export default async function postPixtrelaTasks(
 		}
 
 		trace.mark("done", `items=${results.length}`)
+		const singleItemFailed =
+			requestedItemIndex !== null && results.length === 0
 		const summary = {
-			ok: true,
+			ok: !singleItemFailed,
 			results,
 			usedRbxFallback,
 			trace: trace.stages,
@@ -455,7 +482,7 @@ export default async function postPixtrelaTasks(
 				pixtrelaMs: firstItem?.pixtrelaMs ?? null,
 			}).slice(0, 500),
 		)
-		return res.status(201).json(summary)
+		return res.status(singleItemFailed ? 502 : 201).json(summary)
 	} catch (error: unknown) {
 		const axiosError = axios.isAxiosError(error) ? error : null
 		const stage = axiosError?.config?.url?.includes("/api/tasks")

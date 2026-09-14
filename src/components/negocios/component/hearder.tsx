@@ -26,6 +26,7 @@ import { SetValue } from "@/function/currenteValor";
 import { formatBudgetDisplay } from "@/utils/customNumberFormats";
 import formatarDataParaSaoPaulo from "@/function/formatHora";
 import SendOrderModal from "./sendOrderModal";
+import ResendIntegrationButtons from "./ResendIntegrationButtons";
 import { resolveBusinessBudget } from "@/function/setOrderFunctions";
 import { EtapaFunnel } from "./EtapaFunnel";
 import Link from "next/link";
@@ -73,7 +74,6 @@ export const NegocioHeader = (props: {
 
   const [pedido, setPedido] = useState<any>({ attributes: {} });
   const [orderData, setOrderData] = useState<any | null>();
-  const [modalMode, setModalMode] = useState<'confirm' | 'resend'>('confirm');
 
   useEffect(() => {
     if (props.onData) {
@@ -177,7 +177,6 @@ export const NegocioHeader = (props: {
       });
     } else {
       if (propostaId && Etapa === 6 && Status === 5) {
-        setModalMode('confirm');
         onOpen();
         return;
       }
@@ -478,18 +477,6 @@ export const NegocioHeader = (props: {
                 PDF
               </Button>
             )}
-            {session?.user.pemission === "Adm" && Etapa === 6 && Status === 5 && (
-              <Button
-                isDisabled={!propostaId}
-                colorScheme="linkedin"
-                size="sm"
-                minW="110px"
-                h="36px"
-                onClick={() => { setModalMode('resend'); onOpen(); }}
-              >
-                Reenviar Pedido
-              </Button>
-            )}
             {(Etapa !== 6 || session?.user.pemission === "Adm") && (
               <Button
                 colorScheme="red"
@@ -502,6 +489,21 @@ export const NegocioHeader = (props: {
               </Button>
             )}
           </Box>
+          {session?.user.pemission === "Adm" && Etapa === 6 && Status === 5 && (
+            <ResendIntegrationButtons
+              propostaId={String(propostaId ?? "")}
+              businessId={String(ID ?? "")}
+              orderValue={String(
+                orderData?.orderValue ?? pedido?.attributes?.totalGeral ?? "",
+              )}
+              vendedor={String(orderData?.vendedor ?? session?.user?.name ?? "")}
+              vendedorId={String(orderData?.vendedorId ?? session?.user?.id ?? "")}
+              blingOrderId={Bpedido ? String(Bpedido) : undefined}
+              orderStatusRaw={pedido?.attributes?.orderStatus}
+              itemCount={Array.isArray(DataItens) ? DataItens.length : 0}
+              onRefresh={() => props.onchat(true)}
+            />
+          )}
           <VStack flex={{ base: "unset", lg: 1 }} spacing={8} align="stretch" w="full" overflowY={{ base: "visible", lg: "auto" }} minH={0} pb="35px">
           {Bpedido && Etapa === 6 ? null : (
             <>
@@ -631,7 +633,6 @@ export const NegocioHeader = (props: {
             onClose={onClose}
             onchat={props.onchat}
             orderData={orderData}
-            mode={modalMode}
             deliveryDate={pedido?.attributes?.dataEntrega || ''}
             saveBusiness={saveBusinessAsWon}
             businessId={String(ID)}
@@ -751,11 +752,6 @@ export const NegocioHeader = (props: {
               PDF
             </Button>
           )}
-          {session?.user.pemission === "Adm" && Etapa === 6 && Status === 5 && (
-            <Button isDisabled={!propostaId} colorScheme="linkedin" onClick={() => { setModalMode('resend'); onOpen(); }}>
-              Reenviar Pedido
-            </Button>
-          )}
           {(Etapa !== 6 || session?.user.pemission === "Adm") && (
             <Button
               colorScheme="red"
@@ -771,7 +767,6 @@ export const NegocioHeader = (props: {
             onClose={onClose}
             onchat={props.onchat}
             orderData={orderData}
-            mode={modalMode}
             deliveryDate={pedido?.attributes?.dataEntrega || ''}
             saveBusiness={saveBusinessAsWon}
             businessId={String(ID)}
