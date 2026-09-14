@@ -10,12 +10,62 @@ import {
 	isOrderItemMont,
 } from "@/utils/assemblyLabel"
 import { ensureLotesForPedido } from "../lib/create-pedido-lotes"
+import {
+	fetchTrelloListCards,
+	findExistingTrelloCard,
+	type TrelloListCard,
+} from "../lib/trelloListCards"
+import { fetchBusinessIncidentRecord } from "../lib/businesses"
+import { archiveTrelloCardsForBusiness } from "../lib/trelloArchiveCards"
 
 
 export default async function PostTrello (
 	req: NextApiRequest,
 	res: NextApiResponse
 ) {
+	if ( req.method === "DELETE" ) {
+		const { numero } = req.query
+		if ( !numero || Array.isArray( numero ) ) {
+			return res.status( 400 ).json( { message: "Número do pedido inválido." } )
+		}
+
+		try {
+			const requestPedido = await axios( {
+				url: `${ process.env.NEXT_PUBLIC_STRAPI_API_URL }/pedidos/${ numero }?fields[0]=id&populate[business][fields][0]=id`,
+				headers: {
+					Authorization: `Bearer ${ process.env.ATORIZZATION_TOKEN }`,
+					"Content-Type": "application/json",
+				},
+			} )
+			const businessId =
+				requestPedido.data?.data?.attributes?.business?.data?.id
+			if ( !businessId ) {
+				return res.status( 400 ).json( { message: "Negócio não encontrado." } )
+			}
+
+			const incidentRecord = await fetchBusinessIncidentRecord( String( businessId ) )
+			const trelloResult = await archiveTrelloCardsForBusiness( incidentRecord )
+			if ( trelloResult.failed > 0 ) {
+				return res.status( 502 ).json( {
+					message: "Não foi possível arquivar todos os cards no Trello.",
+					error: trelloResult.errors.join( "; " ),
+				} )
+			}
+
+			return res.status( 200 ).json( {
+				ok: true,
+				archived: trelloResult.archived,
+				skipped: trelloResult.skipped,
+			} )
+		} catch ( error: any ) {
+			const message =
+				error?.message ||
+				error?.response?.data?.message ||
+				"Erro ao excluir cards no Trello."
+			return res.status( 502 ).json( { message } )
+		}
+	}
+
 	if ( req.method === "POST" ) {
 		const { numero } = req.query
 		if ( !numero || Array.isArray( numero ) ) {
@@ -98,6 +148,15 @@ export default async function PostTrello (
 			}
 		}
 
+		let listCards: TrelloListCard[] = []
+		if ( idList ) {
+			try {
+				listCards = await fetchTrelloListCards( idList )
+			} catch {
+				listCards = []
+			}
+		}
+
 		try {
 			const cardsSent: string[] = []
 			const incidentEntries: Array<{
@@ -137,11 +196,7 @@ export default async function PostTrello (
 				}
 				const montagemLabel = getTrelloAssemblyLabel( i.mont, assemblyKey )
 
-				const dataBoard = JSON.stringify( {
-					idList,
-					boardId: idBoard,
-					name: nomeCard,
-					desc: `Negocio: Nº.${ negocioId },
+				const cardDesc = `Negocio: Nº.${ negocioId },
 						Proposta / Pedido: Nº.${ numero },
 						Bling Pedido: Nº.${ numero },
 						Vendedor( a ): ${ VendedorName },
@@ -152,7 +207,34 @@ export default async function PostTrello (
 						Modelo: ${ i.titulo },
 						Montagem: ${ montagemLabel },
 						E-mail: ${ email },
-						E-mail NFe: ${ emailNfe }.`,
+						E-mail NFe: ${ emailNfe }.`
+
+				const existingCard = findExistingTrelloCard(
+					listCards,
+					String( numero ),
+					nomeCard,
+				)
+
+				if ( existingCard ) {
+					const link = existingCard.shortUrl
+						? ` pelo link: ${ existingCard.shortUrl }`
+						: ""
+					const resposta =
+						`card id: ${ existingCard.id } (existente) pode ser acessado${ link } `
+					incidentEntries.push( {
+						msg: resposta,
+						date: new Date().toISOString(),
+						user: "Sistema",
+					} )
+					cardsSent.push( resposta )
+					continue
+				}
+
+				const dataBoard = JSON.stringify( {
+					idList,
+					boardId: idBoard,
+					name: nomeCard,
+					desc: cardDesc,
 					due: estrega + 'T16:00:00.000Z',
 					dueReminder: 2880,
 					pos: "top",
@@ -178,6 +260,13 @@ export default async function PostTrello (
 						user: "Sistema",
 					} )
 					cardsSent.push( resposta )
+					listCards.push( {
+						id: res.data.id,
+						name: nomeCard,
+						desc: cardDesc,
+						closed: false,
+						shortUrl: res.data.shortUrl,
+					} )
 				} catch ( err: any ) {
 					const data = {
 						log: {
@@ -223,6 +312,6 @@ export default async function PostTrello (
 			res.status( error?.status || 502 ).json( { message } )
 		}
 	} else {
-		return res.status( 405 ).send( { message: "Only POST requests are allowed" } )
+		return res.status( 405 ).send( { message: "Only POST or DELETE requests are allowed" } )
 	}
 }

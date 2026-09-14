@@ -6,6 +6,7 @@ import {
 	findStrapiProductByProdId,
 	toBoxTemplateData,
 } from "../lib/strapi-product-template"
+import { deletePixtrelaTasksForPedido } from "../pixtrela/deletePedidoTasks"
 
 export const config = { maxDuration: 60 }
 
@@ -171,12 +172,32 @@ function errorPayload(
 	}
 }
 
-export default async function postPixtrelaTasks(
+export default async function pixtrelaPedidoRoute(
 	req: NextApiRequest,
 	res: NextApiResponse,
 ) {
+	if (req.method === "DELETE") {
+		const { numero } = req.query
+		if (!numero || Array.isArray(numero)) {
+			return res.status(400).json({ message: "Invalid pedido number" })
+		}
+
+		const result = await deletePixtrelaTasksForPedido(String(numero))
+		if (!result.ok) {
+			return res.status(502).json({
+				message: "Não foi possível excluir tarefas no Pixtrela.",
+				error: result.error,
+			})
+		}
+
+		return res.status(200).json({
+			ok: true,
+			deletedCount: result.deletedCount,
+		})
+	}
+
 	if (req.method !== "POST") {
-		return res.status(405).json({ message: "Only POST requests are allowed" })
+		return res.status(405).json({ message: "Only POST or DELETE requests are allowed" })
 	}
 
 	const trace = createTrace()

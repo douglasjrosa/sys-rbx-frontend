@@ -7,10 +7,18 @@ import {
 } from '../../lib/blingOrderDelete'
 import { archiveTrelloCardsForBusiness } from '../../lib/trelloArchiveCards'
 import { fetchBusinessIncidentRecord } from '../../lib/businesses'
+import { deletePixtrelaTasksForPedido } from '../../pixtrela/deletePedidoTasks'
 
 type BlingIntegrationResult = {
 	deleted: boolean
 	skipped: boolean
+	error?: string
+}
+
+type PixtrelaIntegrationResult = {
+	deleted: boolean
+	skipped: boolean
+	deletedCount?: number
 	error?: string
 }
 
@@ -100,6 +108,29 @@ export default async function DeleteBusiness (
 			} )
 		}
 
+		const pixtrelaResult: PixtrelaIntegrationResult = {
+			deleted: false,
+			skipped: true,
+		}
+
+		if ( propostaId ) {
+			pixtrelaResult.skipped = false
+			const deletePixtrela = await deletePixtrelaTasksForPedido( String( propostaId ) )
+			if ( !deletePixtrela.ok ) {
+				return res.status( 502 ).json( {
+					message: 'Não foi possível excluir as tarefas no Pixtrela.',
+					error: deletePixtrela.error,
+					integration: {
+						bling: blingResult,
+						trello: trelloResult,
+						pixtrela: pixtrelaResult,
+					},
+				} )
+			}
+			pixtrelaResult.deleted = deletePixtrela.deletedCount > 0
+			pixtrelaResult.deletedCount = deletePixtrela.deletedCount
+		}
+
 		const response = await axios( {
 			method: 'PUT',
 			url: `${ strapiBase }/businesses/${ id }`,
@@ -112,6 +143,7 @@ export default async function DeleteBusiness (
 			integration: {
 				bling: blingResult,
 				trello: trelloResult,
+				pixtrela: pixtrelaResult,
 			},
 		} )
 	} catch ( err: any ) {

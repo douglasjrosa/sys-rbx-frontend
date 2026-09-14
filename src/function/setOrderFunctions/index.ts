@@ -744,6 +744,146 @@ export const fetchStrapiClientId = async ( clientCNPJ: string ): Promise<number 
 	return responseData.data?.[ 0 ]?.id ?? null
 }
 
+export const resendStrapiOrderStatus = async (
+	orderId: number,
+	blingOrderId: string,
+	dataEntrega: string,
+	orderStatus: OrderStatusType,
+) => {
+	const response = await fetch( `/api/strapi/pedidos/${ orderId }`, {
+		method: 'PUT',
+		body: JSON.stringify( {
+			data: {
+				Bpedido: blingOrderId,
+				dataEntrega,
+				stausPedido: true,
+				orderStatus: JSON.stringify( orderStatus ),
+			},
+		} ),
+	} )
+	const responseData = await response.json()
+	if ( !response.ok ) {
+		console.error( responseData )
+		throw new Error( `Error updating order status in Strapi: ${ response.statusText }` )
+	}
+	return responseData
+}
+
+export const resetStrapiOrderIntegration = async ( input: {
+	orderId: number
+	businessId: string
+	orderStatus: OrderStatusType
+	blingOrderId?: string
+	clearBpedido?: boolean
+} ) => {
+	const pedidoPayload: Record<string, unknown> = {
+		orderStatus: JSON.stringify( input.orderStatus ),
+	}
+	if ( input.clearBpedido ) {
+		pedidoPayload.Bpedido = null
+		pedidoPayload.stausPedido = false
+	} else if ( input.blingOrderId ) {
+		pedidoPayload.Bpedido = input.blingOrderId
+		pedidoPayload.stausPedido = true
+	}
+
+	const pedidoResponse = await fetch( `/api/strapi/pedidos/${ input.orderId }`, {
+		method: 'PUT',
+		body: JSON.stringify( { data: pedidoPayload } ),
+	} )
+	const pedidoData = await pedidoResponse.json()
+	if ( !pedidoResponse.ok ) {
+		console.error( pedidoData )
+		throw new Error( `Error resetting order in Strapi: ${ pedidoResponse.statusText }` )
+	}
+
+	if ( input.clearBpedido ) {
+		const businessResponse = await fetch(
+			`/api/strapi/businesses/${ input.businessId }`,
+			{
+				method: 'PUT',
+				body: JSON.stringify( {
+					data: { Bpedido: null, stausPedido: false },
+				} ),
+			},
+		)
+		const businessData = await businessResponse.json()
+		if ( !businessResponse.ok ) {
+			console.error( businessData )
+			throw new Error(
+				`Error resetting business in Strapi: ${ businessResponse.statusText }`,
+			)
+		}
+		return { pedido: pedidoData, business: businessData }
+	}
+
+	return { pedido: pedidoData }
+}
+
+export const deleteBlingOrderForContext = async ( input: {
+	blingAccountCnpj: string
+	propostaId: string
+	existingBlingOrderId?: string
+} ): Promise<{ ok: boolean; error?: string }> => {
+	const response = await fetch( `/api/db/bling/${ input.propostaId }`, {
+		method: 'DELETE',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify( {
+			blingAccountCnpj: input.blingAccountCnpj,
+			existingBlingOrderId: input.existingBlingOrderId ?? null,
+		} ),
+	} )
+	const payload = await response.json().catch( () => ( {} ) )
+	if ( !response.ok ) {
+		return {
+			ok: false,
+			error:
+				payload?.message ||
+				payload?.error ||
+				`HTTP ${ response.status }`,
+		}
+	}
+	return { ok: true }
+}
+
+export const deleteTrelloCardsForBusiness = async (
+	businessId: string,
+): Promise<{ ok: boolean; error?: string }> => {
+	const response = await fetch( `/api/db/trello/business/${ businessId }`, {
+		method: 'DELETE',
+	} )
+	const payload = await response.json().catch( () => ( {} ) )
+	if ( !response.ok ) {
+		return {
+			ok: false,
+			error:
+				payload?.message ||
+				payload?.error ||
+				`HTTP ${ response.status }`,
+		}
+	}
+	return { ok: true }
+}
+
+export const deletePixtrelaTasks = async (
+	propostaId: string,
+): Promise<{ ok: boolean; error?: string }> => {
+	const response = await fetch( `/api/db/pixtrela/${ propostaId }`, {
+		method: 'DELETE',
+	} )
+	const payload = await response.json().catch( () => ( {} ) )
+	if ( !response.ok ) {
+		return {
+			ok: false,
+			error:
+				payload?.message ||
+				payload?.error ||
+				`HTTP ${ response.status }`,
+		}
+	}
+	return { ok: true }
+}
+
 export const updateLastOrderInStrapi = async ( clientCNPJ: string, orderValue: string, vendedor: string, vendedorId: string ) => {
 	const DateNow = new Date()
 

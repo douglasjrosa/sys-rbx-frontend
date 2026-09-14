@@ -19,6 +19,7 @@ import {
 	updateBusinessInStrapi,
 	updateLastOrderInStrapi,
 	updateOrderInStrapi,
+	resendStrapiOrderStatus,
 } from "@/function/setOrderFunctions"
 import { parseOrderStatus } from "./status"
 import type {
@@ -45,6 +46,13 @@ export type {
 	OrderIntegrationTarget,
 	PixtrelaItemToastPayload,
 } from "./types"
+export {
+	runBlingDelete,
+	runIntegrationDelete,
+	runPixtrelaDelete,
+	runStrapiCascadeDelete,
+	runTrelloDelete,
+} from "./delete"
 
 function parseItemCount(itens: unknown): number {
 	if (!Array.isArray(itens)) return 0
@@ -351,6 +359,46 @@ export async function runPixtrelaIntegration(
 	}
 }
 
+export async function runStrapiResendIntegration(
+	ctx: OrderContext,
+	blingOrderId: string,
+): Promise<IntegrationResult> {
+	const dataEntrega = ctx.fullOrderData.attributes?.dataEntrega ?? ""
+
+	try {
+		ctx.orderStatus.strapiOrderUpdated = true
+		const update = await resendStrapiOrderStatus(
+			ctx.orderId,
+			blingOrderId,
+			dataEntrega,
+			ctx.orderStatus,
+		)
+		if (!update.data?.id) {
+			ctx.orderStatus.strapiOrderUpdated = false
+			return {
+				target: "strapi",
+				ok: false,
+				message: "STRAPI: Falha ao atualizar status",
+				description: "Não foi possível salvar data e status do pedido.",
+			}
+		}
+		return {
+			target: "strapi",
+			ok: true,
+			message: "STRAPI: Data e status atualizados com sucesso.",
+		}
+	} catch (error) {
+		ctx.orderStatus.strapiOrderUpdated = false
+		return {
+			target: "strapi",
+			ok: false,
+			message: "STRAPI: Falha ao atualizar status",
+			description:
+				error instanceof Error ? error.message : "Erro ao atualizar Strapi.",
+		}
+	}
+}
+
 export async function runStrapiIntegration(
 	ctx: OrderContext,
 	blingOrderId: string,
@@ -453,6 +501,7 @@ export async function runIntegrationsParallel(
 	ctx: OrderContext,
 	targets: OrderIntegrationTarget[],
 	handlers: IntegrationToastHandlers = {},
+	options: { strapiResendOnly?: boolean } = {},
 ): Promise<{
 	ok: boolean
 	blingOrderId?: string
@@ -533,7 +582,9 @@ export async function runIntegrationsParallel(
 			handlers.onStrapi?.(strapiFail)
 			results.push(strapiFail)
 		} else {
-			const strapiResult = await runStrapiIntegration(ctx, blingOrderId)
+			const strapiResult = options.strapiResendOnly
+				? await runStrapiResendIntegration(ctx, blingOrderId)
+				: await runStrapiIntegration(ctx, blingOrderId)
 			handlers.onStrapi?.(strapiResult)
 			results.push(strapiResult)
 		}
