@@ -444,6 +444,17 @@ export default async function postPixtrelaTasks(
 			{ totalMs: summary.totalMs, usedRbxFallback, itemDebug },
 			"H5",
 		)
+		const firstItem = itemDebug[0]
+		res.setHeader(
+			"X-Pixtrela-Debug",
+			JSON.stringify({
+				totalMs: summary.totalMs,
+				usedRbxFallback,
+				sentTemplate: firstItem?.sentTemplate ?? null,
+				templateSource: firstItem?.pixtrelaTemplateSource ?? null,
+				pixtrelaMs: firstItem?.pixtrelaMs ?? null,
+			}).slice(0, 500),
+		)
 		return res.status(201).json(summary)
 	} catch (error: unknown) {
 		const axiosError = axios.isAxiosError(error) ? error : null

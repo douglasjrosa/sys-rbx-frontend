@@ -338,14 +338,11 @@ export const sendTasksToPixtrela = async (
 	}
 	const result = payload as SendTasksToPixtrelaResult
 	// #region agent log
-	if ( result.debug || result.trace ) {
-		console.info( "[PIXTRELA_DEBUG]", {
-			totalMs: result.totalMs,
-			usedRbxFallback: result.usedRbxFallback,
-			debug: result.debug,
-			trace: result.trace,
-		} )
+	if ( typeof window !== "undefined" ) {
+		( window as Window & { __PIXTRELA_DEBUG__?: SendTasksToPixtrelaResult } )
+			.__PIXTRELA_DEBUG__ = result
 	}
+	console.warn( "[PIXTRELA_DEBUG]", result )
 	// #endregion
 	return result
 }
