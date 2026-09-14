@@ -9,6 +9,7 @@ type ItemDebugRow = {
 	pixtrelaMs?: number
 	pixtrelaTemplateSource?: string | null
 	pixtrelaAction?: string | null
+	pixtrelaDebugTrace?: Array<{ stage?: string; ms?: number; detail?: string }>
 }
 
 export function formatPixtrelaDebugSummary(
@@ -28,9 +29,15 @@ export function formatPixtrelaDebugSummary(
 		const source = item.pixtrelaTemplateSource ?? "?"
 		const ms = item.pixtrelaMs ?? "?"
 		const action = item.pixtrelaAction ?? "?"
+		const slowStage = (item.pixtrelaDebugTrace ?? [])
+			.slice()
+			.sort((a, b) => (b.ms ?? 0) - (a.ms ?? 0))[0]
+		const slowHint = slowStage?.stage
+			? ` | slowest=${slowStage.stage}@${slowStage.ms}ms`
+			: ""
 		return (
 			`prod ${prodId}: ${ms}ms | enviouTemplate=${sent} | ` +
-			`strapi=${shape} | pixtrela=${source} | action=${action}`
+			`strapi=${shape} | pixtrela=${source} | action=${action}${slowHint}`
 		)
 	})
 	return `${header}\n${lines.join("\n")}`
