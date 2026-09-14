@@ -29,6 +29,12 @@ export function formatPixtrelaDebugSummary(
 		const source = item.pixtrelaTemplateSource ?? "?"
 		const ms = item.pixtrelaMs ?? "?"
 		const action = item.pixtrelaAction ?? "?"
+		const actionHint =
+			action === "skipped"
+				? " (reenvio idempotente — task ja existia)"
+				: action === "created"
+					? " (primeiro envio — criou task+subtasks)"
+					: ""
 		const slowStage = (item.pixtrelaDebugTrace ?? [])
 			.slice()
 			.sort((a, b) => (b.ms ?? 0) - (a.ms ?? 0))[0]
@@ -37,7 +43,7 @@ export function formatPixtrelaDebugSummary(
 			: ""
 		return (
 			`prod ${prodId}: ${ms}ms | enviouTemplate=${sent} | ` +
-			`strapi=${shape} | pixtrela=${source} | action=${action}${slowHint}`
+			`strapi=${shape} | pixtrela=${source} | action=${action}${actionHint}${slowHint}`
 		)
 	})
 	return `${header}\n${lines.join("\n")}`
