@@ -573,6 +573,7 @@ const Proposta = () => {
       ...orderSaveData,
       fornecedor: emitenteCnpj,
       fornecedorId: resolvedFornecedorId,
+      publishedAt: new Date().toISOString(),
     };
 
     const response = await fetch(strapiEndPoint, {
@@ -593,23 +594,13 @@ const Proposta = () => {
         isClosable: true,
       });
     } else {
-      const savedPedidoId = save.data.id;
-      const publishResponse = await fetch(
-        `/api/strapi/pedidos/${savedPedidoId}/actions/publish`,
-        { method: "POST" },
-      );
-      if (!publishResponse.ok) {
-        console.warn(
-          "Pedido publish skipped:",
-          publishResponse.status,
-          await publishResponse.text().catch(() => ""),
-        );
-      }
-
       void fetch(`/api/db/business/sync-template-data/${effectiveBusinessId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itens: itemsList }),
+        body: JSON.stringify({
+          itens: itemsList,
+          empresaId: companyData?.id ?? orderData?.attributes?.empresaId ?? null,
+        }),
         keepalive: true,
       }).catch(() => undefined);
 

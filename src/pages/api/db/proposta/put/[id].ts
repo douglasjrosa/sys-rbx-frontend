@@ -104,7 +104,10 @@ export default async function PUTEmpresa (
 				await IncidentRecord( txtOcorrencia, data.business )
 				const url2 = `businesses/${ data.business }`
 				await Historico( txt, url2 )
-				enqueueTemplateDataSyncForPedidoItems( data.itens )
+				enqueueTemplateDataSyncForPedidoItems(
+					data.itens,
+					Number( data.clienteId ) || null,
+				)
 				res.status( 200 ).json( {
 					status: 200,
 					message: `Proposta comercial de numero: ${ data.nPedido }, do cliente ${ ClienteName }, foi atualizada pelo vendedor ${ data.vendedor } no dia ${ VisibliDateTime }`,

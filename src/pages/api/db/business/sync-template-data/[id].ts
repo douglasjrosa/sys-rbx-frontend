@@ -21,8 +21,9 @@ export default async function syncTemplateDataHandler(
 
 	try {
 		const itens = req.body?.itens
+		const empresaId = Number(req.body?.empresaId ?? 0) || null
 		if (itens !== undefined) {
-			await syncTemplateDataForPedidoItems(itens)
+			await syncTemplateDataForPedidoItems(itens, empresaId)
 		} else {
 			await syncTemplateDataForBusinessId(id)
 		}

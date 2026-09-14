@@ -26,25 +26,31 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		const queryString = queryParams.toString()
 		const externalUrl = `${ strapiApiUrl }/${ routes.join( '/' ) }${ queryString ? '?' + queryString : '' }`
 
-		let bodyData
+		let bodyData: unknown = undefined
 		if ( [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ) {
 			if ( req.body ) {
-				try {
-					bodyData = JSON.parse( req.body )
-				} catch ( error ) {
-					res.status( 400 ).json( { error: 'Invalid JSON in request body' } )
-					return
+				if ( typeof req.body === 'string' ) {
+					try {
+						bodyData = JSON.parse( req.body )
+					} catch ( error ) {
+						res.status( 400 ).json( { error: 'Invalid JSON in request body' } )
+						return
+					}
+				} else {
+					bodyData = req.body
 				}
 			}
 		}
 
+		const method = req.method as string
+		const hasWriteBody = [ 'POST', 'PUT', 'PATCH' ].includes( method )
 		const response = await fetch( externalUrl, {
-			method: req.method as string,
+			method,
 			headers: {
 				'Content-Type': 'application/json',
 				'Authorization': `Bearer ${ strapiToken }`,
 			},
-			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
+			body: hasWriteBody ? JSON.stringify( bodyData ?? {} ) : null,
 		} )
 
 		const rawBody = await response.text()

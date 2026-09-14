@@ -126,7 +126,10 @@ export default async function PostEmpresa (
 				const Register = await Historico( txt, url )
 				const url2 = `businesses/${ data.business }`
 				await Historico( txt, url2 )
-				enqueueTemplateDataSyncForPedidoItems( data.itens )
+				enqueueTemplateDataSyncForPedidoItems(
+					data.itens,
+					Number( idCliente ) || null,
+				)
 
 				res.status( 200 ).json( {
 					status: 200,

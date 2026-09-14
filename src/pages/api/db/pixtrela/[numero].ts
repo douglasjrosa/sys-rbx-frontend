@@ -2,6 +2,11 @@
 import axios, { type AxiosError } from "axios"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { resolveProductOrderLabel } from "@/utils/productDisplayName"
+import {
+	findStrapiProductByProdId,
+	isBoxTemplateData,
+	toBoxTemplateData,
+} from "../lib/strapi-product-template"
 
 export const config = { maxDuration: 60 }
 
@@ -14,13 +19,6 @@ type PedidoItem = {
 	comprimento?: string | number
 	largura?: string | number
 	altura?: string | number
-}
-
-type BoxTemplateData = {
-	prodId: number
-	empresaNome: string
-	boxName: string
-	subtasks: unknown[]
 }
 
 type ProductRow = {
@@ -103,17 +101,6 @@ function normalizeVersions(value: unknown): string[] {
 	return out
 }
 
-function isBoxTemplateData(value: unknown): value is BoxTemplateData {
-	if (!value || typeof value !== "object") return false
-	const row = value as Record<string, unknown>
-	return (
-		Number.isFinite(Number(row.prodId)) &&
-		typeof row.empresaNome === "string" &&
-		typeof row.boxName === "string" &&
-		Array.isArray(row.subtasks)
-	)
-}
-
 function isRbxTemplateSource(source: unknown): boolean {
 	return source === "rbx"
 }
@@ -131,29 +118,39 @@ function formatAxiosError(error: AxiosError): string {
 
 async function fetchProductByProdId(
 	prodId: number,
+	empresaId: number | null,
 	trace: ReturnType<typeof createTrace>,
 ): Promise<ProductRow | null> {
-	trace.mark("strapi_product_start", `prodId=${prodId}`)
-	const response = await axios({
-		url:
-			`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/produtos` +
-			`?filters[prodId][$eq]=${prodId}` +
-			`&fields[0]=prodId&fields[1]=versions&fields[2]=templateData` +
-			`&pagination[limit]=1`,
-		headers: strapiAuthHeaders,
-		timeout: STRAPI_TIMEOUT_MS,
-	})
-	const row = response.data?.data?.[0]
-	if (!row) {
+	trace.mark(
+		"strapi_product_start",
+		`prodId=${prodId} empresaId=${empresaId ?? "any"}`,
+	)
+	const product = await findStrapiProductByProdId(prodId, empresaId)
+	if (!product) {
 		trace.mark("strapi_product_missing", `prodId=${prodId}`)
 		return null
 	}
-	const attrs = row.attributes ?? row
-	trace.mark("strapi_product_ok", `prodId=${prodId}`)
+
+	const versionsResponse = await axios({
+		url:
+			`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/produtos/${product.id}` +
+			`?fields[0]=versions&publicationState=preview`,
+		headers: strapiAuthHeaders,
+		timeout: STRAPI_TIMEOUT_MS,
+	})
+	const versionsAttrs =
+		versionsResponse.data?.data?.attributes ??
+		versionsResponse.data?.data ??
+		{}
+
+	trace.mark(
+		"strapi_product_ok",
+		`prodId=${prodId} hasTemplate=${isBoxTemplateData(product.templateData)}`,
+	)
 	return {
-		prodId: Number(attrs.prodId ?? prodId),
-		versions: attrs.versions,
-		templateData: attrs.templateData ?? null,
+		prodId: product.prodId,
+		versions: versionsAttrs.versions,
+		templateData: product.templateData,
 	}
 }
 
@@ -208,7 +205,8 @@ export default async function postPixtrelaTasks(
 			url:
 				`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/pedidos/${numero}` +
 				`?populate[empresa][fields][0]=nome` +
-				`&populate[empresa][fields][1]=email`,
+				`&populate[empresa][fields][1]=email` +
+				`&populate[empresa][fields][2]=id`,
 			headers: strapiAuthHeaders,
 			timeout: STRAPI_TIMEOUT_MS,
 		})
@@ -220,6 +218,7 @@ export default async function postPixtrelaTasks(
 		const items = parsePedidoItens(attrs.itens)
 		const empresaNome =
 			attrs.empresa?.data?.attributes?.nome?.trim() || "Sem empresa"
+		const empresaId = Number(attrs.empresa?.data?.id ?? attrs.empresaId ?? 0) || null
 		const deliveryDate = attrs.dataEntrega ?? null
 
 		if (items.length === 0) {
@@ -248,7 +247,7 @@ export default async function postPixtrelaTasks(
 		}
 
 		const productRows = await Promise.all(
-			prodIds.map((prodId) => fetchProductByProdId(prodId, trace)),
+			prodIds.map((prodId) => fetchProductByProdId(prodId, empresaId, trace)),
 		)
 		const productByProdId = new Map(
 			prodIds.map((prodId, index) => [prodId, productRows[index]]),
@@ -258,17 +257,17 @@ export default async function postPixtrelaTasks(
 			const item = items[index]
 			const prodId = prodIds[index]
 			const product = productByProdId.get(prodId) ?? null
-			const template = isBoxTemplateData(product?.templateData)
-				? {
-						...(product!.templateData as BoxTemplateData),
-						prodId: Number((product!.templateData as BoxTemplateData).prodId),
-					}
-				: null
+			const template = toBoxTemplateData(product?.templateData)
 			if (!template) {
 				usedRbxFallback = true
 				trace.mark(
 					"rbx_fallback_deferred",
-					`prodId=${prodId} (Pixtrela will fetch RBX)`,
+					`prodId=${prodId} empresaId=${empresaId ?? "any"} (Pixtrela RBX)`,
+				)
+			} else {
+				trace.mark(
+					"strapi_template_payload",
+					`prodId=${prodId} subtasks=${template.subtasks.length}`,
 				)
 			}
 

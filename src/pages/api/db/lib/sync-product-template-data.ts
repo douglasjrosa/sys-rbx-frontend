@@ -1,23 +1,17 @@
 import axios from "axios"
 
-const STRAPI_TIMEOUT_MS = 12_000
+import {
+	findStrapiProductByProdId,
+	isBoxTemplateData,
+	saveTemplateDataOnStrapiProduct,
+	type BoxTemplateData,
+} from "./strapi-product-template"
+
 const RBX_TIMEOUT_MS = 55_000
+const STRAPI_TIMEOUT_MS = 12_000
 
 type PedidoItemLike = {
 	prodId?: number | string
-}
-
-type StrapiProductRow = {
-	id: number
-	prodId: number
-	templateData: unknown
-}
-
-type BoxTemplateData = {
-	prodId: number
-	empresaNome: string
-	boxName: string
-	subtasks: unknown[]
 }
 
 function strapiHeaders() {
@@ -66,40 +60,6 @@ export function extractProdIds(items: PedidoItemLike[]): number[] {
 	return out
 }
 
-function isBoxTemplateData(value: unknown): value is BoxTemplateData {
-	if (!value || typeof value !== "object") return false
-	const row = value as Record<string, unknown>
-	return (
-		Number.isFinite(Number(row.prodId)) &&
-		typeof row.empresaNome === "string" &&
-		typeof row.boxName === "string" &&
-		Array.isArray(row.subtasks)
-	)
-}
-
-async function findStrapiProductByProdId(
-	prodId: number,
-): Promise<StrapiProductRow | null> {
-	const response = await axios({
-		method: "GET",
-		url:
-			`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/produtos` +
-			`?filters[prodId][$eq]=${prodId}` +
-			`&fields[0]=prodId&fields[1]=templateData` +
-			`&pagination[limit]=1`,
-		headers: strapiHeaders(),
-		timeout: STRAPI_TIMEOUT_MS,
-	})
-	const row = response.data?.data?.[0]
-	if (!row?.id) return null
-	const attrs = row.attributes ?? row
-	return {
-		id: Number(row.id),
-		prodId: Number(attrs.prodId ?? prodId),
-		templateData: attrs.templateData ?? null,
-	}
-}
-
 async function fetchTemplateDataFromRbx(
 	prodId: number,
 ): Promise<BoxTemplateData | null> {
@@ -122,24 +82,17 @@ async function fetchTemplateDataFromRbx(
 	}
 	if ("error" in payload) return null
 	if (!isBoxTemplateData(payload)) return null
-	return payload
+	return {
+		...(payload as BoxTemplateData),
+		prodId: Number((payload as BoxTemplateData).prodId),
+	}
 }
 
-async function saveTemplateDataOnStrapiProduct(
-	strapiProductId: number,
-	templateData: BoxTemplateData,
+async function syncTemplateDataForProdId(
+	prodId: number,
+	empresaId?: number | null,
 ): Promise<void> {
-	await axios({
-		method: "PUT",
-		url: `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/produtos/${strapiProductId}`,
-		headers: strapiHeaders(),
-		data: { data: { templateData } },
-		timeout: STRAPI_TIMEOUT_MS,
-	})
-}
-
-async function syncTemplateDataForProdId(prodId: number): Promise<void> {
-	const product = await findStrapiProductByProdId(prodId)
+	const product = await findStrapiProductByProdId(prodId, empresaId)
 	if (!product) return
 	if (isBoxTemplateData(product.templateData)) return
 
@@ -155,10 +108,11 @@ async function syncTemplateDataForProdId(prodId: number): Promise<void> {
  */
 export async function syncTemplateDataForProdIds(
 	prodIds: readonly number[],
+	empresaId?: number | null,
 ): Promise<void> {
 	for (const prodId of prodIds) {
 		try {
-			await syncTemplateDataForProdId(prodId)
+			await syncTemplateDataForProdId(prodId, empresaId)
 		} catch (error) {
 			console.error(
 				`templateData sync failed for prodId=${prodId}:`,
@@ -170,10 +124,11 @@ export async function syncTemplateDataForProdIds(
 
 export async function syncTemplateDataForPedidoItems(
 	itens: unknown,
+	empresaId?: number | null,
 ): Promise<void> {
 	const prodIds = extractProdIds(parsePedidoItens(itens))
 	if (prodIds.length === 0) return
-	await syncTemplateDataForProdIds(prodIds)
+	await syncTemplateDataForProdIds(prodIds, empresaId)
 }
 
 export async function syncTemplateDataForBusinessId(
@@ -183,15 +138,19 @@ export async function syncTemplateDataForBusinessId(
 		method: "GET",
 		url:
 			`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/businesses/${businessId}` +
-			`?populate[pedidos][fields][0]=itens`,
+			`?populate[pedidos][fields][0]=itens` +
+			`&populate[empresa][fields][0]=id`,
 		headers: strapiHeaders(),
 		timeout: STRAPI_TIMEOUT_MS,
 	})
+	const empresaId = Number(
+		response.data?.data?.attributes?.empresa?.data?.id ?? 0,
+	) || null
 	const pedidos = response.data?.data?.attributes?.pedidos?.data || []
 	const items = pedidos.flatMap((pedido: { attributes?: { itens?: unknown } }) =>
 		parsePedidoItens(pedido.attributes?.itens),
 	)
-	await syncTemplateDataForPedidoItems(items)
+	await syncTemplateDataForPedidoItems(items, empresaId)
 }
 
 export function enqueueTemplateDataSyncForBusiness(
@@ -207,8 +166,11 @@ export function enqueueTemplateDataSyncForBusiness(
 	})
 }
 
-export function enqueueTemplateDataSyncForPedidoItems(itens: unknown): void {
-	void syncTemplateDataForPedidoItems(itens).catch((error) => {
+export function enqueueTemplateDataSyncForPedidoItems(
+	itens: unknown,
+	empresaId?: number | null,
+): void {
+	void syncTemplateDataForPedidoItems(itens, empresaId).catch((error) => {
 		console.error(
 			"templateData sync failed for pedido items:",
 			error instanceof Error ? error.message : error,
