@@ -13,6 +13,27 @@ export type StrapiProductRow = {
 	id: number
 	prodId: number
 	templateData: unknown
+	resolvedVia?: "live" | "preview"
+	templateValid: boolean
+}
+
+export function describeTemplateDataShape(value: unknown): string {
+	const normalized = normalizeTemplateData(value)
+	if (normalized == null) return "missing_or_null"
+	if (typeof normalized !== "object" || Array.isArray(normalized)) {
+		return `invalid_type:${typeof normalized}`
+	}
+	const row = normalized as Record<string, unknown>
+	const parts: string[] = []
+	if (!Number.isFinite(Number(row.prodId))) parts.push("prodId")
+	if (typeof row.empresaNome !== "string") parts.push("empresaNome")
+	if (typeof row.boxName !== "string") parts.push("boxName")
+	if (!Array.isArray(row.subtasks)) parts.push("subtasks")
+	if (parts.length === 0) {
+		const count = Array.isArray(row.subtasks) ? row.subtasks.length : 0
+		return `valid_subtasks=${count}`
+	}
+	return `invalid_fields:${parts.join(",")}`
 }
 
 function strapiHeaders() {
@@ -98,6 +119,8 @@ export async function findStrapiProductByProdId(
 				id: Number(row.id),
 				prodId: Number(attrs.prodId ?? prodId),
 				templateData,
+				resolvedVia: publicationState,
+				templateValid: isBoxTemplateData(templateData),
 			}
 		}
 	}
