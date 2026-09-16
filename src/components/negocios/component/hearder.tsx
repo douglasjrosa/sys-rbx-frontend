@@ -91,7 +91,11 @@ export const NegocioHeader = (props: {
       setEtapa(Number.isNaN(etapaNum) ? 2 : etapaNum);
       props.onLoad(false);
       setPedido(props.onData.attributes.pedidos?.data?.[0]);
-      setBpedido(props.onData.attributes.Bpedido);
+      setBpedido(
+        props.onData.attributes.Bpedido ??
+          props.onData.attributes.pedidos?.data?.[0]?.attributes?.Bpedido ??
+          "",
+      );
       setPropostaId(props.onData.attributes.pedidos?.data?.[0]?.id);
       setDataItens(
         props.onData.attributes.pedidos?.data?.[0]?.attributes.itens,
@@ -423,6 +427,28 @@ export const NegocioHeader = (props: {
     ? new Date(DataRetorno).toISOString().slice(0, 10)
     : ""
 
+  const isAdmin = session?.user.pemission === "Adm"
+  const hasBlingOrder = Boolean(Bpedido)
+  const showResendIntegrationButtons =
+    isAdmin && Etapa === 6 && (Status === 5 || hasBlingOrder)
+  const hideWonBusinessFields = hasBlingOrder && Etapa === 6
+
+  const resendIntegrationButtons = showResendIntegrationButtons ? (
+    <ResendIntegrationButtons
+      propostaId={String(propostaId ?? "")}
+      businessId={String(ID ?? "")}
+      orderValue={String(
+        orderData?.orderValue ?? pedido?.attributes?.totalGeral ?? "",
+      )}
+      vendedor={String(orderData?.vendedor ?? session?.user?.name ?? "")}
+      vendedorId={String(orderData?.vendedorId ?? session?.user?.id ?? "")}
+      blingOrderId={Bpedido ? String(Bpedido) : undefined}
+      orderStatusRaw={pedido?.attributes?.orderStatus}
+      itemCount={Array.isArray(DataItens) ? DataItens.length : 0}
+      onRefresh={() => props.onchat(true)}
+    />
+  ) : null
+
   const FieldBox = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <Box w={FIELD_WIDTH} textAlign="center">
       <FormLabel fontSize={LABEL_FONT_SIZE} fontWeight="md" textAlign="center" w="full">
@@ -489,23 +515,9 @@ export const NegocioHeader = (props: {
               </Button>
             )}
           </Box>
-          {session?.user.pemission === "Adm" && Etapa === 6 && Status === 5 && (
-            <ResendIntegrationButtons
-              propostaId={String(propostaId ?? "")}
-              businessId={String(ID ?? "")}
-              orderValue={String(
-                orderData?.orderValue ?? pedido?.attributes?.totalGeral ?? "",
-              )}
-              vendedor={String(orderData?.vendedor ?? session?.user?.name ?? "")}
-              vendedorId={String(orderData?.vendedorId ?? session?.user?.id ?? "")}
-              blingOrderId={Bpedido ? String(Bpedido) : undefined}
-              orderStatusRaw={pedido?.attributes?.orderStatus}
-              itemCount={Array.isArray(DataItens) ? DataItens.length : 0}
-              onRefresh={() => props.onchat(true)}
-            />
-          )}
           <VStack flex={{ base: "unset", lg: 1 }} spacing={8} align="stretch" w="full" overflowY={{ base: "visible", lg: "auto" }} minH={0} pb="35px">
-          {Bpedido && Etapa === 6 ? null : (
+          {resendIntegrationButtons}
+          {hideWonBusinessFields ? null : (
             <>
               <FieldBox label="Data de Retorno">
                 <Input
@@ -652,7 +664,8 @@ export const NegocioHeader = (props: {
           <Flex alignItems="center">
             <Heading size="xs">{props.title}</Heading>
           </Flex>
-          {Bpedido && Etapa === 6 ? null : (
+          {resendIntegrationButtons}
+          {hideWonBusinessFields ? null : (
             <>
               <Box>
                 <FormLabel fontSize="xs" fontWeight="md">Data de retorno</FormLabel>
