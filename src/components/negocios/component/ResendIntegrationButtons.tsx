@@ -7,7 +7,9 @@ import {
 	runIntegrationsParallel,
 	type OrderIntegrationTarget,
 } from "@/function/orderIntegration"
+import { buildBusinessStrapiStatusUpdate } from "@/function/orderIntegration/businessStrapiStatus"
 import { OrderIntegrationToastManager } from "@/utils/orderIntegrationToasts"
+import axios from "axios"
 import { useCallback, useMemo, useState } from "react"
 import { Box, Button, Flex, Text, VStack, useToast } from "@chakra-ui/react"
 
@@ -20,6 +22,8 @@ type ResendIntegrationButtonsProps = {
 	blingOrderId?: string
 	orderStatusRaw?: unknown
 	itemCount: number
+	etapa: number
+	andamento: number
 	onRefresh?: () => void
 }
 
@@ -35,7 +39,11 @@ const TARGETS: Array<{
 		resendLabel: "Reenviar",
 		deleteLabel: "Excluir do Pixtrela",
 	},
-	{ key: "strapi", resendLabel: "Reenviar", deleteLabel: "Excluir do Strapi" },
+	{
+		key: "strapi",
+		resendLabel: "Atualizar no Strapi",
+		deleteLabel: "Excluir do Strapi",
+	},
 ]
 
 const TARGET_LABELS: Record<OrderIntegrationTarget, string> = {
@@ -65,8 +73,38 @@ export default function ResendIntegrationButtons(
 
 	const isBusy = loadingResend !== null || loadingDelete !== null
 
+	const runStrapiStatusUpdate = useCallback(async () => {
+		if (!props.businessId) return
+		setLoadingResend("strapi")
+		try {
+			toastManager.startPending()
+			await axios.put(`/api/db/business/put/id/${props.businessId}`, {
+				data: buildBusinessStrapiStatusUpdate({
+					etapa: props.etapa,
+					andamento: props.andamento,
+				}),
+			})
+			toastManager.showFinalSuccess(
+				"Tudo certo!",
+				"Etapa e status atualizados no Strapi.",
+			)
+			props.onRefresh?.()
+		} catch (error) {
+			toastManager.closePending()
+			const description =
+				error instanceof Error ? error.message : "Erro inesperado."
+			toastManager.showFinalError("Falha no envio", description)
+		} finally {
+			setLoadingResend(null)
+		}
+	}, [props, toastManager])
+
 	const runTarget = useCallback(
 		async (target: OrderIntegrationTarget) => {
+			if (target === "strapi") {
+				await runStrapiStatusUpdate()
+				return
+			}
 			if (!props.propostaId) return
 			setLoadingResend(target)
 			try {
@@ -143,7 +181,7 @@ export default function ResendIntegrationButtons(
 				setLoadingResend(null)
 			}
 		},
-		[props, toastManager],
+		[props, toastManager, runStrapiStatusUpdate],
 	)
 
 	const runDelete = useCallback(
@@ -202,6 +240,14 @@ export default function ResendIntegrationButtons(
 			{TARGETS.map((row) => {
 				const sent = integrationSent(row.key, orderStatus)
 				const destination = TARGET_LABELS[row.key]
+				const resendDisabled =
+					row.key === "strapi"
+						? !props.businessId || isBusy
+						: !props.propostaId || isBusy
+				const resendLabel =
+					row.key === "strapi"
+						? row.resendLabel
+						: `${row.resendLabel} para o ${destination}`
 				return (
 					<Box key={row.key} w="full">
 						<Flex w="full" gap={2}>
@@ -213,11 +259,11 @@ export default function ResendIntegrationButtons(
 								py={2}
 								colorScheme="linkedin"
 								variant="solid"
-								isDisabled={!props.propostaId || isBusy}
+								isDisabled={resendDisabled}
 								isLoading={loadingResend === row.key}
 								onClick={() => runTarget(row.key)}
 							>
-								{row.resendLabel} para o {destination}
+								{resendLabel}
 							</Button>
 							<Button
 								flex={1}

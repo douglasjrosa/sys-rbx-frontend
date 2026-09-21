@@ -429,8 +429,7 @@ export const NegocioHeader = (props: {
 
   const isAdmin = session?.user.pemission === "Adm"
   const hasBlingOrder = Boolean(Bpedido)
-  const showResendIntegrationButtons =
-    isAdmin && Etapa === 6 && (Status === 5 || hasBlingOrder)
+  const showResendIntegrationButtons = isAdmin
   const hideWonBusinessFields = hasBlingOrder && Etapa === 6
 
   const resendIntegrationButtons = showResendIntegrationButtons ? (
@@ -445,6 +444,8 @@ export const NegocioHeader = (props: {
       blingOrderId={Bpedido ? String(Bpedido) : undefined}
       orderStatusRaw={pedido?.attributes?.orderStatus}
       itemCount={Array.isArray(DataItens) ? DataItens.length : 0}
+      etapa={Number(Etapa)}
+      andamento={Number(Status)}
       onRefresh={() => props.onchat(true)}
     />
   ) : null
@@ -516,7 +517,6 @@ export const NegocioHeader = (props: {
             )}
           </Box>
           <VStack flex={{ base: "unset", lg: 1 }} spacing={8} align="stretch" w="full" overflowY={{ base: "visible", lg: "auto" }} minH={0} pb="35px">
-          {resendIntegrationButtons}
           {hideWonBusinessFields ? null : (
             <>
               <FieldBox label="Data de Retorno">
@@ -637,6 +637,11 @@ export const NegocioHeader = (props: {
               </Button>
             </Box>
           )}
+          {resendIntegrationButtons ? (
+            <Box w={ACTION_WIDTH} alignSelf="center">
+              {resendIntegrationButtons}
+            </Box>
+          ) : null}
           </VStack>
         </Flex>
         {orderData && (
@@ -664,7 +669,6 @@ export const NegocioHeader = (props: {
           <Flex alignItems="center">
             <Heading size="xs">{props.title}</Heading>
           </Flex>
-          {resendIntegrationButtons}
           {hideWonBusinessFields ? null : (
             <>
               <Box>
@@ -755,6 +759,7 @@ export const NegocioHeader = (props: {
           {Blocksave ? null : (
             <Button colorScheme="whatsapp" onClick={Salve}>Salvar</Button>
           )}
+          {resendIntegrationButtons}
           {Etapa !== 6 && (
             <Link href={`/negocios/proposta/${ID}`}>
               <Button colorScheme="green">Proposta</Button>
