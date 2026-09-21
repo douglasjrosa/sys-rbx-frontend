@@ -28,6 +28,10 @@ export const modCaix = [
     title: 'Caixa Resistente',
   },
   {
+    id: 'caixa_resistente_pluss',
+    title: 'Caixa Resistente Pluss',
+  },
+  {
     id: 'engradado_economico',
     title: 'Engradado econômico',
   },

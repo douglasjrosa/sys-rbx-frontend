@@ -140,6 +140,34 @@
       "printable"
     ]
   },
+  "caixa_resistente_pluss": {
+    "titulo": "Caixa Resistente Pluss",
+    "advConfigs": [
+      "comprimento",
+      "largura",
+      "altura",
+      "configPe",
+      "BaseSN",
+      "LatESN",
+      "LatDSN",
+      "TampaSN",
+      "CabESN",
+      "CabDSN",
+      "LatAdFrSN",
+      "CabAdFrSN",
+      "LatAdExSN",
+      "CabAdExSN",
+      "LatForaSN",
+      "CabChaoSN",
+      "CabTopoSN",
+      "qPes",
+      "qTabuas",
+      "qSarLat",
+      "qSarCab",
+      "qSarTampa",
+      "printable"
+    ]
+  },
   "caixa_super_reforcada": {
     "titulo": "Caixa Super Reforçada",
     "advConfigs": [
