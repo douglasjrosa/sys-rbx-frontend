@@ -1,6 +1,7 @@
 import { parseCurrency, formatCurrency } from "@/utils/customNumberFormats"
 import { buildProductDisplayName } from "@/utils/productDisplayName"
 import { normalizeCnpj } from "@/utils/blingOAuth"
+import { roundMoney, splitInstallmentAmounts } from "./blingMoney"
 
 /** Human-readable detail from Bling proxy JSON (`errorMessage` / `responseError`). */
 function getBlingProxyErrorMessage ( payload: unknown, statusText: string ): string {
@@ -542,7 +543,7 @@ export const handleItems = async (
 
 		let preco: number = parseCurrency( vFinal )
 		const acrescimo = 1 + ( expo ? 0.1 : 0 ) + ( mont ? 0.1 : 0 )
-		preco = +( preco * acrescimo ).toFixed( 2 )
+		preco = roundMoney( preco * acrescimo )
 
 		const productData = {
 			codigo,
@@ -621,22 +622,10 @@ export const handleInstallments = async ( blingAccountCnpj: string, dataSaida: s
 
 	const dueDays = prazo.replace( /[^\d/]/g, "" ).split( "/" ).filter( v => !!v )
 	const countInstallments = dueDays.length
-
-	// Calcular o valor base arredondado para duas casas decimais
-	const baseInstallment = Math.floor( ( totalOrderValue / countInstallments ) * 100 ) / 100
-
-	// Criar um array de parcelas com o valor base
-	let installmentValues = Array( countInstallments ).fill( baseInstallment )
-
-	// Calcular o valor total base e o valor restante
-	const totalBase = baseInstallment * countInstallments
-	const remainingValue = totalOrderValue - totalBase
-
-	// Ajustar a última parcela para compensar o valor restante
-	installmentValues[ installmentValues.length - 1 ] = ( baseInstallment + remainingValue )
-
-	// Garantir que todas as parcelas sejam números com duas casas decimais
-	installmentValues = installmentValues.map( inst => Number( inst.toFixed( 2 ) ) )
+	const installmentValues = splitInstallmentAmounts(
+		totalOrderValue,
+		countInstallments,
+	)
 
 	const installments = []
 	for ( const [ key, dueDay ] of Object.entries( dueDays ) ) {

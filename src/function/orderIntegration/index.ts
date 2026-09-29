@@ -21,6 +21,11 @@ import {
 	updateOrderInStrapi,
 	resendStrapiOrderStatus,
 } from "@/function/setOrderFunctions"
+import {
+	computeBlingSaleTotalCents,
+	fromCents,
+	roundMoney,
+} from "@/function/setOrderFunctions/blingMoney"
 import { parseOrderStatus } from "./status"
 import type {
 	IntegrationResult,
@@ -181,14 +186,24 @@ export async function runBlingIntegration(
 	}
 	ctx.orderStatus.blingProductsExist = true
 
-	const { dataEntrega, prazo, totalGeral, cliente_pedido, obs } = attrs
-	const totalOrderValue = parseCurrency(totalGeral)
+	const { dataEntrega, prazo, cliente_pedido, obs } = attrs
+	const frete = roundMoney(parseCurrency(attrs.valorFrete))
+	const outrasDespesas = roundMoney(parseCurrency(attrs.custoAdicional))
+	const desconto = roundMoney(parseCurrency(attrs.descontoTotal))
+	const saleTotal = fromCents(
+		computeBlingSaleTotalCents({
+			items: blingItems,
+			frete,
+			outrasDespesas,
+			desconto,
+		}),
+	)
 	const today = getFormattedDate()
 	const installments = await handleInstallments(
 		blingAccountCnpj,
 		dataEntrega,
 		prazo,
-		totalOrderValue,
+		saleTotal,
 	)
 
 	const orderNumber = cliente_pedido ?? ""
@@ -206,11 +221,11 @@ export async function runBlingIntegration(
 		itens: blingItems,
 		parcelas: installments,
 		numeroPedidoCompra: orderNumber,
-		outrasDespesas: parseCurrency(attrs.custoAdicional),
-		desconto: { valor: parseCurrency(attrs.descontoTotal) },
+		outrasDespesas,
+		desconto: { valor: desconto },
 		transporte: {
 			fretePorConta: attrs.frete === "CIF" ? 0 : 1,
-			frete: parseCurrency(attrs.valorFrete),
+			frete,
 		},
 		observacoes,
 	}
