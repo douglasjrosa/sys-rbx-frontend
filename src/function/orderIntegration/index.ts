@@ -27,6 +27,10 @@ import {
 	roundMoney,
 } from "@/function/setOrderFunctions/blingMoney"
 import { parseOrderStatus } from "./status"
+import {
+	buildPixtrelaItemWaves,
+	waveItemsFromOrderItens,
+} from "./pixtrela-item-waves"
 import type {
 	IntegrationResult,
 	IntegrationToastHandlers,
@@ -305,58 +309,64 @@ export async function runPixtrelaIntegration(
 		}
 	}
 
-	const itemIndexes = Array.from({ length: ctx.itemCount }, (_, i) => i)
+	const waveItems = waveItemsFromOrderItens(
+		ctx.fullOrderData?.attributes?.itens,
+		ctx.itemCount,
+	)
+	const waves = buildPixtrelaItemWaves(waveItems)
 	let usedRbxFallback = false
 	let successCount = 0
 	const errors: string[] = []
 
-	await Promise.all(
-		itemIndexes.map(async (itemIndex) => {
-			try {
-				const result = await sendPixtrelaItem(ctx.propostaId, itemIndex)
-				if (result.usedRbxFallback) usedRbxFallback = true
-				if (result.ok) {
-					successCount += 1
-				} else {
-					errors.push(
-						result.message ?? `Item ${itemIndex + 1} falhou no Pixtrela.`,
-					)
-				}
-				const prodId = result.prodId ?? 0
-				const action = result.results?.[0]?.action
-				const toastCopy = formatPixtrelaItemToast({
-					itemIndex,
-					prodId,
-					action,
-					ok: Boolean(result.ok),
-				})
-				onItemComplete?.({
-					itemIndex,
-					prodId,
-					ok: Boolean(result.ok),
-					action,
-					title: toastCopy.title,
-					description: toastCopy.description,
-				})
-			} catch (error) {
-				const message =
-					error instanceof Error ? error.message : "Erro no Pixtrela."
-				errors.push(`Item ${itemIndex + 1}: ${message}`)
-				const toastCopy = formatPixtrelaItemToast({
-					itemIndex,
-					ok: false,
-					errorMessage: message,
-				})
-				onItemComplete?.({
-					itemIndex,
-					prodId: 0,
-					ok: false,
-					title: toastCopy.title,
-					description: toastCopy.description,
-				})
+	async function sendOne(itemIndex: number): Promise<void> {
+		try {
+			const result = await sendPixtrelaItem(ctx.propostaId, itemIndex)
+			if (result.usedRbxFallback) usedRbxFallback = true
+			if (result.ok) {
+				successCount += 1
+			} else {
+				errors.push(
+					result.message ?? `Item ${itemIndex + 1} falhou no Pixtrela.`,
+				)
 			}
-		}),
-	)
+			const prodId = result.prodId ?? 0
+			const action = result.results?.[0]?.action
+			const toastCopy = formatPixtrelaItemToast({
+				itemIndex,
+				prodId,
+				action,
+				ok: Boolean(result.ok),
+			})
+			onItemComplete?.({
+				itemIndex,
+				prodId,
+				ok: Boolean(result.ok),
+				action,
+				title: toastCopy.title,
+				description: toastCopy.description,
+			})
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Erro no Pixtrela."
+			errors.push(`Item ${itemIndex + 1}: ${message}`)
+			const toastCopy = formatPixtrelaItemToast({
+				itemIndex,
+				ok: false,
+				errorMessage: message,
+			})
+			onItemComplete?.({
+				itemIndex,
+				prodId: 0,
+				ok: false,
+				title: toastCopy.title,
+				description: toastCopy.description,
+			})
+		}
+	}
+
+	for (const wave of waves) {
+		await Promise.all(wave.map(sendOne))
+	}
 
 	const ok = successCount === ctx.itemCount
 	ctx.orderStatus.pixtrelaTasksCreated = ok
