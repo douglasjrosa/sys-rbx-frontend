@@ -3,38 +3,80 @@ import { buildProductDisplayName } from "@/utils/productDisplayName"
 import { normalizeCnpj } from "@/utils/blingOAuth"
 import { roundMoney, splitInstallmentAmounts } from "./blingMoney"
 
+type BlingErrorField = {
+	msg?: string
+	element?: string
+	collection?: Array<{ msg?: string }>
+}
+
+function formatBlingFieldErrors ( fields: unknown ): string[] {
+	if ( !Array.isArray( fields ) ) return []
+	return fields.flatMap( ( field ) => {
+		if ( !field || typeof field !== 'object' ) return []
+		const item = field as BlingErrorField
+		const lines: string[] = []
+		if ( item.msg ) {
+			lines.push( item.element ? `${ item.element }: ${ item.msg }` : item.msg )
+		}
+		item.collection?.forEach( ( nested ) => {
+			if ( nested?.msg ) lines.push( nested.msg )
+		} )
+		return lines
+	} )
+}
+
+function stringifyBlingDescription ( description: unknown ): string {
+	if ( Array.isArray( description ) && description.length > 0 ) {
+		return description.map( String ).join( ' | ' )
+	}
+	if ( typeof description === 'string' && description.trim() ) {
+		return description
+	}
+	return ''
+}
+
 /** Human-readable detail from Bling proxy JSON (`errorMessage` / `responseError`). */
-function getBlingProxyErrorMessage ( payload: unknown, statusText: string ): string {
+export function getBlingProxyErrorMessage (
+	payload: unknown,
+	statusText: string,
+): string {
 	if ( !payload || typeof payload !== 'object' ) {
 		return statusText
 	}
 	const p = payload as Record<string, unknown>
 	const wrapped = p.responseError as Record<string, unknown> | undefined
 	const errCandidate = wrapped?.error ?? p.error
+	const parts: string[] = []
 	if ( errCandidate && typeof errCandidate === 'object' ) {
 		const err = errCandidate as Record<string, unknown>
-		const desc = err.description
-		if ( Array.isArray( desc ) && desc.length > 0 ) {
-			return String( desc[ 0 ] )
+		const description = stringifyBlingDescription( err.description )
+		if ( description ) parts.push( description )
+		if ( typeof err.message === 'string' && err.message.trim() ) {
+			parts.push( err.message )
 		}
-		if ( typeof desc === 'string' ) {
-			return desc
-		}
-		const firstField = ( err.fields as Array<{ msg?: string }> | undefined )?.[ 0 ]
-		if ( firstField?.msg ) {
-			return firstField.msg
-		}
+		parts.push( ...formatBlingFieldErrors( err.fields ) )
 	}
-	if ( typeof p.errorMessage === 'string' ) {
-		return p.errorMessage
+	if ( typeof p.errorMessage === 'string' && p.errorMessage.trim() ) {
+		parts.push( p.errorMessage )
 	}
-	if ( typeof p.error === 'string' ) {
-		return p.error
+	if ( typeof p.error === 'string' && p.error.trim() ) {
+		parts.push( p.error )
 	}
-	if ( typeof p.message === 'string' ) {
-		return p.message
+	if ( typeof p.message === 'string' && p.message.trim() ) {
+		parts.push( p.message )
 	}
-	return statusText
+	const unique = [ ...new Set( parts.filter( Boolean ) ) ]
+	return unique.join( ' | ' ) || statusText || 'Erro desconhecido do Bling'
+}
+
+export function sanitizeBlingEmail ( value: unknown ): string {
+	const raw = String( value ?? '' ).trim()
+	if ( !raw ) return ''
+	const withoutMailto = raw.replace( /^mailto:/i, '' ).trim()
+	const match = withoutMailto.match(
+		/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i,
+	)
+	return match?.[ 0 ] ?? withoutMailto
 }
 
 export type BlingOrderDataType = {
@@ -159,7 +201,8 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 		"tipo": "J",
 		"indicadorIe": 1,
 		"ie": clientData.Ie,
-		"email": clientData.emailNfe,
+		"email": sanitizeBlingEmail( clientData.emailNfe )
+			|| sanitizeBlingEmail( clientData.email ),
 		"endereco": {
 			"geral": {
 				"endereco": clientData.endereco,
@@ -210,11 +253,23 @@ export const saveClient = async ( orderData: any, blingClientId?: number ): Prom
 		? await saveClientResponse.json()
 		: {}
 
-	let error
-	if ( !blingClientId && !saveClientResponse.ok && !saveClientData.data?.id ) {
-		error = saveClientData.responseError?.error
-		console.error( saveClientResponse )
-		return { error }
+	if ( !saveClientResponse.ok && !saveClientData.data?.id ) {
+		const detail = getBlingProxyErrorMessage(
+			saveClientData,
+			saveClientResponse.statusText || `HTTP ${ saveClientResponse.status }`,
+		)
+		console.error( 'Bling contact save failed', {
+			status: saveClientResponse.status,
+			method,
+			cnpj: clientData.CNPJ,
+			email: newClientData.email,
+			detail,
+			response: saveClientData,
+		} )
+		return {
+			error: saveClientData.responseError?.error ?? saveClientData,
+			detail,
+		}
 	}
 
 	const createdId = saveClientData.data?.id

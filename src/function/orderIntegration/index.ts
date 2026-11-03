@@ -124,13 +124,17 @@ export async function runBlingIntegration(
 	const blingClientId = checkIfClientExists?.id
 	const saved = await saveClient(fullOrderData, blingClientId)
 
-	if (typeof saved === "object" && saved !== null && "error" in saved && saved.error) {
+	if (typeof saved === "object" && saved !== null && "error" in saved) {
 		ctx.orderStatus.blingClientExists = false
+		const savedError = saved as { error?: unknown; detail?: string }
+		const detail =
+			savedError.detail
+			|| "Não foi possível cadastrar o cliente no Bling."
 		return {
 			target: "bling",
 			ok: false,
 			message: "BLING: Problemas com o cadastro do cliente.",
-			description: "Não foi possível cadastrar o cliente no Bling.",
+			description: detail,
 		}
 	}
 
