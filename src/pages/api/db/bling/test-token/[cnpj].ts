@@ -2,7 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next"
 import {
 	BlingReauthRequiredError,
 } from "@/pages/api/bling/lib/resolveAccessToken"
-import { blingApiEndpoint, getBlingToken } from "@/pages/api/bling"
+import {
+	blingApiEndpoint,
+	blingBearerHeaders,
+	getBlingToken,
+} from "@/pages/api/bling"
 import { isTokenExpired, normalizeCnpj } from "@/utils/blingOAuth"
 import { requireAdminSession } from "../../tokens/lib/requireAdmin"
 
@@ -82,10 +86,7 @@ export default async function handler (
 		const testResponse = await fetch(
 			`${ blingApiEndpoint }/${ BLING_TEST_PATH }`,
 			{
-				headers: {
-					Authorization: `Bearer ${ accessToken }`,
-					"Content-Type": "application/json",
-				},
+				headers: blingBearerHeaders( accessToken ),
 			}
 		)
 

@@ -1,4 +1,7 @@
-import { normalizeBlingApiV3Endpoint } from '@/pages/api/bling';
+import {
+	blingOAuthHeaders,
+	normalizeBlingApiV3Endpoint,
+} from '@/pages/api/bling';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 interface RefreshRequestBody {
@@ -45,10 +48,7 @@ export default async function refresh(req: NextApiRequest, res: NextApiResponse)
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${credentials}`,
-      },
+      headers: blingOAuthHeaders(credentials),
       body: JSON.stringify({
         grant_type: 'refresh_token',
         refresh_token,

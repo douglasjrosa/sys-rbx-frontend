@@ -1,4 +1,7 @@
-import { normalizeBlingApiV3Endpoint } from '@/pages/api/bling'
+import {
+	blingOAuthHeaders,
+	normalizeBlingApiV3Endpoint,
+} from '@/pages/api/bling'
 
 export type RefreshedBlingToken = {
 	access_token: string
@@ -24,10 +27,7 @@ export async function refreshOAuthToken (
 
 	const response = await fetch( url, {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Basic ${ credentials }`,
-		},
+		headers: blingOAuthHeaders( credentials ),
 		body: JSON.stringify( {
 			grant_type: 'refresh_token',
 			refresh_token,

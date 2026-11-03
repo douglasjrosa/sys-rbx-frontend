@@ -1,5 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { blingApiEndpoint, getBlingToken } from '@/pages/api/bling'
+import {
+	blingApiEndpoint,
+	blingBearerHeaders,
+	getBlingToken,
+} from '@/pages/api/bling'
 import { BlingReauthRequiredError } from '@/pages/api/bling/lib/resolveAccessToken'
 import { normalizeCnpj } from '@/utils/blingOAuth'
 
@@ -54,10 +58,7 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 
 		const response = await fetch( externalUrl, {
 			method: req.method as string,
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${ blingToken }`,
-			},
+			headers: blingBearerHeaders( blingToken ),
 			body: [ 'POST', 'PUT', 'PATCH' ].includes( req.method as string ) ? JSON.stringify( bodyData ) : null
 		} )
 

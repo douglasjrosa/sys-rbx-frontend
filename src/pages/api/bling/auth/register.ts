@@ -1,4 +1,7 @@
-import { normalizeBlingApiV3Endpoint } from '@/pages/api/bling'
+import {
+	blingOAuthHeaders,
+	normalizeBlingApiV3Endpoint,
+} from '@/pages/api/bling'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export default function handler ( req: NextApiRequest, res: NextApiResponse ) {
@@ -16,10 +19,7 @@ export default function handler ( req: NextApiRequest, res: NextApiResponse ) {
 		const url = normalizeBlingApiV3Endpoint( process.env.BLING_API_TOKEN_ENDPOINT )
 		fetch( url, {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Basic ${ credentials }`
-			},
+			headers: blingOAuthHeaders( credentials ),
 			body: JSON.stringify( {
 				grant_type: 'authorization_code',
 				code: code

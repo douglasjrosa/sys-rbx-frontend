@@ -27,6 +27,33 @@ export const blingApiEndpoint = normalizeBlingApiV3Endpoint(
 	process.env.BLING_API_V3_ENDPOINT as string | undefined
 )
 
+export const BLING_ENABLE_JWT_VALUE = '1'
+
+export function blingRequestHeaders (
+	extra: Record<string, string> = {},
+): Record<string, string> {
+	return {
+		'enable-jwt': BLING_ENABLE_JWT_VALUE,
+		...extra,
+	}
+}
+
+export function blingBearerHeaders ( accessToken: string ): Record<string, string> {
+	return blingRequestHeaders( {
+		Authorization: `Bearer ${ accessToken }`,
+		'Content-Type': 'application/json',
+	} )
+}
+
+export function blingOAuthHeaders (
+	credentialsBase64: string,
+): Record<string, string> {
+	return blingRequestHeaders( {
+		Authorization: `Basic ${ credentialsBase64 }`,
+		'Content-Type': 'application/json',
+	} )
+}
+
 export async function getBlingToken ( account: string ): Promise<string> {
 	return resolveBlingAccessToken( normalizeCnpj( account ) )
 }
