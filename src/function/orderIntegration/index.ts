@@ -13,6 +13,7 @@ import {
 	resolveBlingClientIdAfterSave,
 	resolveBusinessBudget,
 	saveClient,
+	blingOrderExists,
 	sendBlingOrder,
 	sendCardsToTrello,
 	sendPixtrelaItem,
@@ -121,6 +122,21 @@ export async function runBlingIntegration(
 ): Promise<IntegrationResult & { blingOrderId?: string }> {
 	const { fullOrderData, blingAccountCnpj, propostaId } = ctx
 	const attrs = fullOrderData.attributes
+	const existingBlingSaleId = await blingOrderExists(
+		blingAccountCnpj,
+		String(propostaId),
+	)
+	if (existingBlingSaleId) {
+		ctx.orderStatus.blingOrderCreated = true
+		return {
+			target: "bling",
+			ok: true,
+			message: "BLING: Pedido já existe no Bling.",
+			description: "O pedido não foi reenviado. O Bpedido será gravado no Strapi.",
+			blingOrderId: String(existingBlingSaleId),
+		}
+	}
+
 	const clientCNPJ = attrs.empresa.data.attributes.CNPJ
 
 	const checkIfClientExists = await clientExists(blingAccountCnpj, clientCNPJ)

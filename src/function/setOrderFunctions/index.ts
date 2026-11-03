@@ -716,12 +716,12 @@ export const blingOrderExists = async ( blingAccountCnpj: string, orderNumber: s
 export const sendBlingOrder = async ( blingAccountCnpj: string, orderData: any ) => {
 
 	const orderId = await blingOrderExists( blingAccountCnpj, String( orderData.numero ) )
+	if ( orderId ) {
+		return { data: { id: orderId } }
+	}
 
-	const method = orderId ? "PUT" : "POST"
-	const putEndpoint = orderId ? `/${ orderId }` : ""
-
-	const response = await fetch( `/api/bling/${ blingAccountCnpj }/pedidos/vendas${ putEndpoint }`, {
-		method,
+	const response = await fetch( `/api/bling/${ blingAccountCnpj }/pedidos/vendas`, {
+		method: "POST",
 		body: JSON.stringify( orderData )
 	} )
 	await delay( 500 )
