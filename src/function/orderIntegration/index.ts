@@ -110,7 +110,10 @@ async function persistOrderStatus(
 		ctx.orderId,
 		ctx.orderStatus,
 	)
-	return Boolean(update.data?.id)
+	if (!update.data?.id) return false
+	if (!ctx.businessId) return true
+	const business = await updateBusinessInStrapi(ctx.businessId, blingOrderId)
+	return Boolean(business.data?.id)
 }
 
 export async function runBlingIntegration(
