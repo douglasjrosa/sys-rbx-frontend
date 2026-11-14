@@ -10,6 +10,8 @@ type ExtendedDefaultUser = DefaultUser & {
 	pemission: string
 }
 
+const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60
+
 export const authOptions: NextAuthOptions = {
 	jwt: {
 		secret: process.env.JWT_SIGNING_PRIVATE_KEY,
@@ -17,7 +19,7 @@ export const authOptions: NextAuthOptions = {
 	secret: process.env.NEXTAUTH_SECRET,
 	session: {
 		strategy: "jwt",
-		maxAge: 4 * 60 * 60,
+		maxAge: SESSION_MAX_AGE_SECONDS,
 	},
 	providers: [
 		CredentialsProvider( {
@@ -75,7 +77,7 @@ export const authOptions: NextAuthOptions = {
 		jwt: async ( { token, user } ): Promise<any> => {
 			const isSignIn = !!user
 			const actualDateInSeconds = Math.floor( Date.now() / 1000 )
-			const tokenExpirationInSeconds = Math.floor( 4 * 60 * 60 )
+			const tokenExpirationInSeconds = SESSION_MAX_AGE_SECONDS
 
 			if ( isSignIn ) {
 				if ( !user?.jwt || !user?.id || !user?.name || !user?.email ) {
