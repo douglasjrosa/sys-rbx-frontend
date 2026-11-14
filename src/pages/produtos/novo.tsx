@@ -149,6 +149,8 @@ export default function NovoProduto() {
 	)
 	const [ isLoadingAccessoryMps, setIsLoadingAccessoryMps ] = useState( false )
 	const pageBottomRef = useRef<HTMLDivElement>( null )
+	const productLoadKeyRef = useRef<string | null>( null )
+	const sessionEmail = session?.user?.email ?? ''
 
 	const cardBg = useColorModeValue( 'gray.700', 'gray.700' )
 	const bgColor = useColorModeValue( 'gray.800', 'gray.800' )
@@ -215,15 +217,28 @@ export default function NovoProduto() {
 	}, [ result ] )
 
 	useEffect( () => {
-		if ( cnpj && session?.user?.email && router.isReady ) {
-			setIsLoading( true )
+		if ( !cnpj || !sessionEmail || !router.isReady ) {
+			return
+		}
 
-			axios
-				.get( `/api/refactory/companies?searchString=${ cnpj }` )
-				.then( ( res ) => {
-					const company = res.data.data?.[ 0 ]
-					if ( company ) {
-						setCompanyData( company )
+		const prodKey = Array.isArray( prodId ) ? prodId[ 0 ] : prodId
+		const loadKey = isEditMode && prodKey
+			? `edit:${ prodKey }:${ cnpj }:${ sessionEmail }`
+			: `new:${ cnpj }:${ sessionEmail }`
+		if ( productLoadKeyRef.current === loadKey ) {
+			return
+		}
+		productLoadKeyRef.current = loadKey
+
+		setIsLoading( true )
+
+		axios
+			.get( `/api/refactory/companies?searchString=${ cnpj }` )
+			.then( ( res ) => {
+				const company = res.data.data?.[ 0 ]
+				if ( company ) {
+					setCompanyData( company )
+					if ( !isEditMode ) {
 						setFormData( ( prev ) => ( {
 							...prev,
 							tabela: resolveMarginTableValue(
@@ -231,61 +246,61 @@ export default function NovoProduto() {
 							),
 						} ) )
 					}
+				}
+			} )
+			.catch( () => {
+				/* company banner optional */
+			} )
+
+		if ( isEditMode && prodId ) {
+			axios
+				.get( `/api/rbx/${ sessionEmail }/produtos?prodId=${ prodId }` )
+				.then( ( res ) => {
+					const p = res.data as Record<string, unknown>
+					const loadedId = Number( p.loaded )
+					if ( Number.isFinite( loadedId ) && loadedId > 0 ) {
+						setReplaceLoaded( loadedId )
+					}
+					setPreviousVersions( normalizeProdutoVersions( p.versions ) )
+
+					setFormData( ( prev ) => {
+						const mapped = mapLegacyProductToForm( p, prev )
+						const quantityInfo = mergeCalcQuantityInfo( p, undefined )
+						return {
+							...prev,
+							...mapped,
+							advQuantities: mapCalcInfoToAdvQuantities(
+								quantityInfo,
+								String( mapped.modelo ?? prev.modelo ),
+								prev.advQuantities,
+							),
+						}
+					} )
+
+					try {
+						const { info, savePayload: payload } = normalizeProdutoCalcResponse( p )
+						setResult( info as ProdutoCalcInfo )
+						setSavePayload( payload )
+					} catch {
+						/* user must recalculate if calc fields are incomplete */
+					}
 				} )
 				.catch( () => {
-					/* company banner optional */
+					toast( { title: 'Erro ao carregar produto', status: 'error' } )
 				} )
-
-			if ( isEditMode && prodId ) {
-				axios
-					.get( `/api/rbx/${ session.user.email }/produtos?prodId=${ prodId }` )
-					.then( ( res ) => {
-						const p = res.data as Record<string, unknown>
-						const loadedId = Number( p.loaded )
-						if ( Number.isFinite( loadedId ) && loadedId > 0 ) {
-							setReplaceLoaded( loadedId )
-						}
-						setPreviousVersions( normalizeProdutoVersions( p.versions ) )
-
-						setFormData( ( prev ) => {
-							const mapped = mapLegacyProductToForm( p, prev )
-							const quantityInfo = mergeCalcQuantityInfo( p, undefined )
-							return {
-								...prev,
-								...mapped,
-								advQuantities: mapCalcInfoToAdvQuantities(
-									quantityInfo,
-									String( mapped.modelo ?? prev.modelo ),
-									prev.advQuantities,
-								),
-							}
-						} )
-
-						try {
-							const { info, savePayload: payload } = normalizeProdutoCalcResponse( p )
-							setResult( info as ProdutoCalcInfo )
-							setSavePayload( payload )
-						} catch {
-							/* user must recalculate if calc fields are incomplete */
-						}
-					} )
-					.catch( () => {
-						toast( { title: 'Erro ao carregar produto', status: 'error' } )
-					} )
-					.finally( () => setIsLoading( false ) )
-			} else {
-				setIsLoading( false )
-			}
+				.finally( () => setIsLoading( false ) )
+		} else {
+			setIsLoading( false )
 		}
-	}, [ isEditMode, prodId, cnpj, session, router.isReady, toast ] )
+	}, [ isEditMode, prodId, cnpj, sessionEmail, router.isReady, toast ] )
 
 	useEffect( () => {
-		if ( !session?.user?.email ) {
+		if ( !sessionEmail ) {
 			return
 		}
 		setIsLoadingAccessoryMps( true )
 		axios
-			.get( `/api/rbx/${ session.user.email }/produtos?accessoryMps=1` )
+			.get( `/api/rbx/${ sessionEmail }/produtos?accessoryMps=1` )
 			.then( ( res ) => {
 				const options = ( res.data as { options?: AccessoryMpOption[] } )?.options
 				setAccessoryMpOptions( Array.isArray( options ) ? options : [] )
@@ -299,7 +314,7 @@ export default function NovoProduto() {
 				} )
 			} )
 			.finally( () => setIsLoadingAccessoryMps( false ) )
-	}, [ session?.user?.email, toast ] )
+	}, [ sessionEmail, toast ] )
 
 	const patchForm = useCallback(
 		( patch: Partial<NovoProdutoFormState>, fieldName?: string ) => {
@@ -470,40 +485,17 @@ export default function NovoProduto() {
 				? buildVersionsForReplacement( previousVersions, replaceProdId )
 				: []
 
-			let templateData: Record<string, unknown> | null = null
-			let templateDataWarning = false
-			try {
-				const templateRes = await axios.get(
-					`/api/rbx/${ session.user.email }/produtos`,
-					{ params: { templateData: newIndice } },
-				)
-				const templatePayload = templateRes.data
-				if (
-					templatePayload &&
-					typeof templatePayload === 'object' &&
-					!Array.isArray( templatePayload ) &&
-					!( 'error' in templatePayload )
-				) {
-					templateData = templatePayload as Record<string, unknown>
-				} else {
-					templateDataWarning = true
-				}
-			} catch {
-				templateDataWarning = true
-			}
+			const syncProdutoBase = toStrapiSyncProduto(
+				{
+					...wpSaveData,
+					versions: versionsForSync,
+				},
+				newIndice,
+			)
 
 			const syncRes = await axios.post( `/api/db/produtos/sync`, {
 				empresaId: company.id,
-				produtos: [
-					toStrapiSyncProduto(
-						{
-							...wpSaveData,
-							versions: versionsForSync,
-							...( templateData ? { templateData } : {} ),
-						},
-						newIndice,
-					),
-				],
+				produtos: [ syncProdutoBase ],
 			} )
 
 			if ( syncRes.data.failed > 0 ) {
@@ -512,23 +504,48 @@ export default function NovoProduto() {
 				)
 			}
 
-			if ( templateDataWarning ) {
-				toast( {
-					title: 'Produto salvo, mas o snapshot de produção falhou',
-					description:
-						'O templateData não foi gravado. O envio do pedido tentará o fallback no RBX.',
-					status: 'warning',
-					duration: 8000,
-				} )
-			} else {
-				toast( {
-					title: isEditMode
-						? 'Nova versão do produto salva com sucesso'
-						: 'Produto salvo com sucesso',
-					status: 'success',
-					duration: 5000,
-				} )
-			}
+			const userEmail = session.user.email
+			const empresaId = company.id
+			void ( async () => {
+				try {
+					const templateRes = await axios.get(
+						`/api/rbx/${ userEmail }/produtos`,
+						{ params: { templateData: newIndice } },
+					)
+					const templatePayload = templateRes.data
+					if (
+						!templatePayload
+						|| typeof templatePayload !== 'object'
+						|| Array.isArray( templatePayload )
+						|| ( 'error' in templatePayload )
+					) {
+						return
+					}
+					await axios.post( `/api/db/produtos/sync`, {
+						empresaId,
+						produtos: [
+							toStrapiSyncProduto(
+								{
+									...wpSaveData,
+									versions: versionsForSync,
+									templateData: templatePayload as Record<string, unknown>,
+								},
+								newIndice,
+							),
+						],
+					} )
+				} catch {
+					/* Order send still has RBX templateData fallback. */
+				}
+			} )()
+
+			toast( {
+				title: isEditMode
+					? 'Nova versão do produto salva com sucesso'
+					: 'Produto salvo com sucesso',
+				status: 'success',
+				duration: 5000,
+			} )
 			router.push( `/produtos?empresaId=${ company.id }` )
 		} catch ( error: unknown ) {
 			const err = error as { response?: { data?: { error?: string } }; message?: string }
