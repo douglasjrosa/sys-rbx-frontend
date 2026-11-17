@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
+import { parseLegacyJsonResponse } from '@/pages/api/rbx/lib/parseLegacyJson'
 
 export const config = { maxDuration: 60 }
 
@@ -90,7 +91,7 @@ export default async function handler ( req: NextApiRequest, res: NextApiRespons
 		const responseText = await response.text()
 		let responseData: unknown
 		try {
-			responseData = responseText ? JSON.parse( responseText ) : {}
+			responseData = parseLegacyJsonResponse( responseText )
 		} catch {
 			res.status( 502 ).json( {
 				error: 'Invalid JSON response from legacy API',
