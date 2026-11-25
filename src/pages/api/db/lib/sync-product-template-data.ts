@@ -8,7 +8,7 @@ import {
 	type BoxTemplateData,
 } from "./strapi-product-template"
 
-const RBX_TIMEOUT_MS = 120_000
+const RBX_TIMEOUT_MS = 55_000
 const STRAPI_TIMEOUT_MS = 12_000
 
 type PedidoItemLike = {

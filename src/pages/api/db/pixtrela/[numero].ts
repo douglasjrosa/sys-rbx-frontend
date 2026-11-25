@@ -9,7 +9,7 @@ import {
 import { resolveTemplateDataForProdId } from "../lib/sync-product-template-data"
 import { deletePixtrelaTasksForPedido } from "../pixtrela/deletePedidoTasks"
 
-export const config = { maxDuration: 120 }
+export const config = { maxDuration: 60 }
 
 type PedidoItem = {
 	prodId?: number | string
@@ -40,7 +40,7 @@ type StageTrace = {
 type PixtrelaTaskSource = "legacy" | "existing" | "payload" | "rbx"
 
 const STRAPI_TIMEOUT_MS = 12_000
-const PIXTRELA_TIMEOUT_MS = 120_000
+const PIXTRELA_TIMEOUT_MS = 55_000
 
 const strapiAuthHeaders = {
 	Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
