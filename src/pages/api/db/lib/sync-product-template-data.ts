@@ -1,5 +1,6 @@
 import axios from "axios"
 
+import { parseLegacyJsonResponse } from "@/pages/api/rbx/lib/parseLegacyJson"
 import {
 	findStrapiProductByProdId,
 	isBoxTemplateData,
@@ -7,7 +8,7 @@ import {
 	type BoxTemplateData,
 } from "./strapi-product-template"
 
-const RBX_TIMEOUT_MS = 55_000
+const RBX_TIMEOUT_MS = 120_000
 const STRAPI_TIMEOUT_MS = 12_000
 
 type PedidoItemLike = {
@@ -72,11 +73,21 @@ async function fetchTemplateDataFromRbx(
 		params: { templateData: prodId },
 		headers: rbxHeaders(),
 		timeout: RBX_TIMEOUT_MS,
+		responseType: "text",
+		transformResponse: [(body) => body],
 		validateStatus: () => true,
 	})
 
-	const payload = response.data
 	if (response.status < 200 || response.status >= 300) return null
+	const raw = typeof response.data === "string" ? response.data : ""
+	if (!raw.trim()) return null
+
+	let payload: unknown
+	try {
+		payload = parseLegacyJsonResponse(raw)
+	} catch {
+		return null
+	}
 	if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
 		return null
 	}
@@ -86,6 +97,35 @@ async function fetchTemplateDataFromRbx(
 		...(payload as BoxTemplateData),
 		prodId: Number((payload as BoxTemplateData).prodId),
 	}
+}
+
+/**
+ * Returns a usable box template for Pixtrela: Strapi snapshot first, else RBX.
+ * Persists RBX payload onto Strapi when possible so later concludes stay fast.
+ */
+export async function resolveTemplateDataForProdId(
+	prodId: number,
+	empresaId?: number | null,
+): Promise<BoxTemplateData | null> {
+	const product = await findStrapiProductByProdId(prodId, empresaId)
+	if (product && isBoxTemplateData(product.templateData)) {
+		return {
+			...(product.templateData as BoxTemplateData),
+			prodId: Number((product.templateData as BoxTemplateData).prodId),
+		}
+	}
+
+	const fromRbx = await fetchTemplateDataFromRbx(prodId)
+	if (!fromRbx) return null
+
+	if (product?.id) {
+		try {
+			await saveTemplateDataOnStrapiProduct(product.id, fromRbx)
+		} catch {
+			/* Pixtrela can still use the in-memory payload. */
+		}
+	}
+	return fromRbx
 }
 
 async function syncTemplateDataForProdId(

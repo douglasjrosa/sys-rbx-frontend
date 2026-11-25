@@ -6,9 +6,10 @@ import {
 	findStrapiProductByProdId,
 	toBoxTemplateData,
 } from "../lib/strapi-product-template"
+import { resolveTemplateDataForProdId } from "../lib/sync-product-template-data"
 import { deletePixtrelaTasksForPedido } from "../pixtrela/deletePedidoTasks"
 
-export const config = { maxDuration: 60 }
+export const config = { maxDuration: 120 }
 
 type PedidoItem = {
 	prodId?: number | string
@@ -39,7 +40,7 @@ type StageTrace = {
 type PixtrelaTaskSource = "legacy" | "existing" | "payload" | "rbx"
 
 const STRAPI_TIMEOUT_MS = 12_000
-const PIXTRELA_TIMEOUT_MS = 45_000
+const PIXTRELA_TIMEOUT_MS = 120_000
 
 const strapiAuthHeaders = {
 	Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
@@ -303,10 +304,16 @@ export default async function pixtrelaPedidoRoute(
 			const item = items[index]
 			const prodId = Number(item.prodId)
 			const product = productByProdId.get(prodId) ?? null
-			const template = toBoxTemplateData(product?.templateData)
+			let template = toBoxTemplateData(product?.templateData)
 			if (!template) {
-				usedRbxFallback = true
-				trace.mark("rbx_fallback_deferred", `prodId=${prodId}`)
+				trace.mark("rbx_template_resolve_start", `prodId=${prodId}`)
+				template = await resolveTemplateDataForProdId(prodId, empresaId)
+				if (template) {
+					usedRbxFallback = true
+					trace.mark("rbx_template_resolve_ok", `prodId=${prodId}`)
+				} else {
+					trace.mark("rbx_template_resolve_miss", `prodId=${prodId}`)
+				}
 			}
 
 			const versions = normalizeVersions(product?.versions ?? item.versions ?? [])
