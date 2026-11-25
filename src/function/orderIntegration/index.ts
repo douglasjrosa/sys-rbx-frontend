@@ -564,7 +564,7 @@ export async function runIntegrationsParallel(
 
 	let trelloPreFailure: IntegrationResult | null = null
 
-	if (wantsTrello || wantsStrapi) {
+	if (wantsTrello || wantsStrapi || wantsPixtrela) {
 		try {
 			const loteEnsure = await ensureOrderLotes(ctx.propostaId)
 			if (loteEnsure.ready && loteEnsure.lotes?.length) {

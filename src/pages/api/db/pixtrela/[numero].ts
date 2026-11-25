@@ -7,11 +7,16 @@ import {
 	toBoxTemplateData,
 } from "../lib/strapi-product-template"
 import { resolveTemplateDataForProdId } from "../lib/sync-product-template-data"
+import {
+	ensureLotesForPedido,
+	type PedidoLoteRow,
+} from "../lib/create-pedido-lotes"
 import { deletePixtrelaTasksForPedido } from "../pixtrela/deletePedidoTasks"
 
 export const config = { maxDuration: 60 }
 
 type PedidoItem = {
+	id?: number | string
 	prodId?: number | string
 	Qtd?: number | string
 	nomeProd?: string
@@ -45,6 +50,21 @@ const PIXTRELA_TIMEOUT_MS = 55_000
 const strapiAuthHeaders = {
 	Authorization: `Bearer ${process.env.ATORIZZATION_TOKEN}`,
 	"Content-Type": "application/json",
+}
+
+function resolveItemLotNumber(
+	lotes: PedidoLoteRow[],
+	item: PedidoItem,
+): number | null {
+	const match = lotes.find(
+		(row) =>
+			String(row.attributes.produtosId) === String(item.prodId) &&
+			String(row.attributes.qtde) === String(item.Qtd) &&
+			String(row.attributes.item_id) === String(item.id),
+	)
+	if (!match) return null
+	const lotNumber = Number(match.attributes.lote)
+	return Number.isInteger(lotNumber) && lotNumber > 0 ? lotNumber : null
 }
 
 function createTrace() {
@@ -277,6 +297,19 @@ export default async function pixtrelaPedidoRoute(
 		const results: Array<{ externalKey: string; action: string }> = []
 		let usedRbxFallback = false
 
+		trace.mark("lote_ensure_start", `pedido=${numero}`)
+		const { lotes } = await ensureLotesForPedido(String(numero), pedido)
+		if (!lotes.length) {
+			return res.status(502).json(
+				errorPayload(
+					trace,
+					"lote",
+					"Could not resolve lot numbers for pedido items.",
+				),
+			)
+		}
+		trace.mark("lote_ensure_ok", `lotes=${lotes.length}`)
+
 		const prodIds: number[] = []
 		for (const index of indexesToProcess) {
 			const prodId = Number(items[index].prodId)
@@ -318,6 +351,17 @@ export default async function pixtrelaPedidoRoute(
 
 			const versions = normalizeVersions(product?.versions ?? item.versions ?? [])
 			const qty = Math.max(1, Math.round(Number(item.Qtd) || 1))
+			const lotNumber = resolveItemLotNumber(lotes, item)
+			if (lotNumber === null) {
+				return res.status(502).json(
+					errorPayload(
+						trace,
+						"lote",
+						`Missing lot number for item ${index}.`,
+						{ itemIndex: index, prodId, itemId: item.id },
+					),
+				)
+			}
 			const productLabel =
 				resolveProductOrderLabel(item).trim() ||
 				template?.boxName?.trim() ||
@@ -340,6 +384,7 @@ export default async function pixtrelaPedidoRoute(
 					deliveryDate,
 					externalKey,
 					templateTaskCode: String(prodId),
+					lotNumber,
 					versions,
 					template,
 				},
