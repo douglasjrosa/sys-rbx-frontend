@@ -381,6 +381,8 @@ export const NegocioHeader = (props: {
   };
 
   const saveBusinessAsWon = async () => {
+    const WON_ETAPA = 6
+    const WON_ANDAMENTO = 5
     const mpercaValue =
       Mperca !== "" && Mperca != null && !Number.isNaN(Number(Mperca))
         ? Number(Mperca)
@@ -393,6 +395,14 @@ export const NegocioHeader = (props: {
         ?? Budget,
     );
 
+    const wonChatEntry = {
+      msg: `Parabéns, você concluiu esse Negocio com sucesso`,
+      date: DataAtual,
+      user: "Sistema",
+      susseso: "green",
+      flag: "Ganho",
+    }
+
     await axios({
       url: "/api/db/business/put/id/" + ID,
       method: "PUT",
@@ -403,17 +413,19 @@ export const NegocioHeader = (props: {
           Budget: resolvedBudget,
           Approach: Approach,
           history: history,
-          etapa: Etapa,
-          andamento: Status,
+          etapa: WON_ETAPA,
+          andamento: WON_ANDAMENTO,
           Mperca: mpercaValue,
           DataRetorno: DataRetorno,
           date_conclucao: DataAtual,
         },
       },
     });
+    setEtapa(WON_ETAPA)
+    setStatus(WON_ANDAMENTO)
     setBudget(resolvedBudget);
     await axios.post(`/api/db/business/append-incident/${ID}`, {
-      entry: ChatConcluido,
+      entry: wonChatEntry,
     });
     props.onchat(true);
     setBlocksave(true);
@@ -444,8 +456,6 @@ export const NegocioHeader = (props: {
       blingOrderId={Bpedido ? String(Bpedido) : undefined}
       orderStatusRaw={pedido?.attributes?.orderStatus}
       itemCount={Array.isArray(DataItens) ? DataItens.length : 0}
-      etapa={Number(Etapa)}
-      andamento={Number(Status)}
       onRefresh={() => props.onchat(true)}
     />
   ) : null

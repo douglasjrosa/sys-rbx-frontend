@@ -7,7 +7,7 @@ import {
 	runIntegrationsParallel,
 	type OrderIntegrationTarget,
 } from "@/function/orderIntegration"
-import { buildBusinessStrapiStatusUpdate } from "@/function/orderIntegration/businessStrapiStatus"
+import { buildBusinessWonStrapiUpdate } from "@/function/orderIntegration/businessStrapiStatus"
 import { OrderIntegrationToastManager } from "@/utils/orderIntegrationToasts"
 import axios from "axios"
 import { useCallback, useMemo, useState } from "react"
@@ -22,8 +22,6 @@ type ResendIntegrationButtonsProps = {
 	blingOrderId?: string
 	orderStatusRaw?: unknown
 	itemCount: number
-	etapa: number
-	andamento: number
 	onRefresh?: () => void
 }
 
@@ -79,14 +77,11 @@ export default function ResendIntegrationButtons(
 		try {
 			toastManager.startPending()
 			await axios.put(`/api/db/business/put/id/${props.businessId}`, {
-				data: buildBusinessStrapiStatusUpdate({
-					etapa: props.etapa,
-					andamento: props.andamento,
-				}),
+				data: buildBusinessWonStrapiUpdate(),
 			})
 			toastManager.showFinalSuccess(
 				"Tudo certo!",
-				"Etapa e status atualizados no Strapi.",
+				"Negócio marcado como ganho no Strapi.",
 			)
 			props.onRefresh?.()
 		} catch (error) {
